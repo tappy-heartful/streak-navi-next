@@ -17,7 +17,7 @@ export default function AgreementPage() {
   const router = useRouter();
 
   useEffect(() => {
-    document.title = "利用規約 | SSJO Connect";
+    document.title = "利用規約 | SSJO Navi";
   }, []);
 
   const handleAgree = async () => {
@@ -67,14 +67,14 @@ export default function AgreementPage() {
       <div className="inner">
         <div className="agreement-wrapper">
           <div className="agreement-header">
-            <h3>Streak Connect 利用規約</h3>
+            <h3>Streak Navi 利用規約</h3>
             <p>本サービスをご利用いただくために、以下の内容をご確認ください。</p>
           </div>
 
           <div className="agreement-box">
             <div className="agreement-content">
               <h4>第1条（目的）</h4>
-              <p>本規約は、SSJO（以下「当団体」）が提供するシステム「Streak Connect」（以下「本サービス」）の利用条件を定めるものです。</p>
+              <p>本規約は、SSJO（以下「当団体」）が提供するシステム「Streak Navi」（以下「本サービス」）の利用条件を定めるものです。</p>
 
               <h4>第2条（LINE連携による情報取得）</h4>
               <p>本サービスはLINE株式会社の提供するLINEログインを利用しています。ユーザーが同意した場合に限り、以下の情報を取得し、本人確認および予約管理の目的で使用します。</p>

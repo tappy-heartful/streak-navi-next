@@ -7,8 +7,8 @@ import Script from "next/script";
 import CommonDialog from "@/src/components/CommonDialog";
 
 export const metadata: Metadata = {
-  title: "SSJO",
-  description: "Swing Streak Jazz Orchestra Official Store & Reserve",
+  title: "Streak Navi",
+  description: "Swing Streak Jazz Orchestra ポータルサイト",
   icons: {
     icon: "https://tappy-heartful.github.io/streak-images/connect/favicon.png",
     apple: "https://tappy-heartful.github.io/streak-images/connect/favicon.png",

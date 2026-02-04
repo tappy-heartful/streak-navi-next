@@ -22,7 +22,7 @@ import { showDialog } from "@/src/components/CommonDialog"; // 先ほど作っ�
 
 // --- 定数 ---
 export const isTest = typeof window !== 'undefined' && window.location.hostname.includes('test');
-export const globalAppName = isTest ? 'streakConnectTest' : 'streakConnect';
+export const globalAppName = isTest ? 'streakNaviTest' : 'streakNavi';
 export const globalClientId = '2007808275';
 export const globalAuthServerRender = 'https://streak-navi-auth-server-kz3v.onrender.com';
 

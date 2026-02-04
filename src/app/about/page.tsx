@@ -11,7 +11,7 @@ export default function AboutPage() {
 
   return (
     <main className="about-page">
-      <h1 className="page-title">サイト情報 | Streak Connect</h1>
+      <h1 className="page-title">サイト情報 | Streak Navi</h1>
 
       <div className="tabs">
         <div
@@ -45,7 +45,7 @@ export default function AboutPage() {
         <section className={`tab-content ${activeTab === "about" ? "active" : ""}`}>
           <h2>このサイトについて</h2>
           <p>
-            <strong>Streak Connect</strong> は、Swing Streak Jazz
+            <strong>Streak Navi</strong> は、Swing Streak Jazz
             Orchestra（SSJO）の活動をより円滑に、より楽しくするためのメンバー・ファン向けポータルサイトです。
           </p>
           <p>
