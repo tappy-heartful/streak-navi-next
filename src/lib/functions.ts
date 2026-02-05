@@ -22,9 +22,12 @@ import { showDialog } from "@/src/components/CommonDialog"; // 先ほど作っ�
 
 // --- 定数 ---
 export const isTest = typeof window !== 'undefined' && window.location.hostname.includes('test');
-export const globalAppName = isTest ? 'streakNaviTest' : 'streakNavi';
+export const isLocal = typeof window !== 'undefined' && window.location.hostname.includes('localhost');
+export const globalAppName = isLocal ? 'streakNaviLocal' : isTest ? 'streakNaviTest' : 'streakNavi';
 export const globalClientId = '2007808275';
 export const globalAuthServerRender = 'https://streak-navi-auth-server-kz3v.onrender.com';
+export const globalGetLineLoginUrl = globalAuthServerRender + '/get-line-login-url?appType=next-navi';
+export const globalLineLoginUrl = globalAuthServerRender + '/line-login?appType=next-navi';
 
 // --- セッション管理 (localStorage/sessionStorage) ---
 const getStorageKey = (key: string) => `${globalAppName}.${key}`;
