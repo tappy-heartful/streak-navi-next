@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   title: "Streak Navi",
   description: "Swing Streak Jazz Orchestra ポータルサイト",
   icons: {
-    icon: "https://tappy-heartful.github.io/streak-images/connect/favicon.png",
-    apple: "https://tappy-heartful.github.io/streak-images/connect/favicon.png",
+    icon: "https://tappy-heartful.github.io/streak-images/navi/favicon.png",
+    apple: "https://tappy-heartful.github.io/streak-images/navi/favicon.png",
   },
 };
 
