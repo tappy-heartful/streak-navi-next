@@ -223,6 +223,98 @@ body.fixed {
   to { opacity: 1; }
 }
 
+/* フッター */
+/* --- Footer --- */
+footer {
+  text-align: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+  font-size: 0.85rem;
+  color: #888;
+  line-height: 1.6;
+}
+
+.developed-by {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.footer-actions {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.footer-actions a {
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+.footer-actions a:hover {
+  text-decoration: underline;
+}
+
+/* --- First Login Overlay (全画面演出) --- */
+.first-login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(240, 255, 240, 0.96); /* 薄い緑がかった背景 */
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+/* JSで .show を付与した時に表示 */
+.first-login-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.first-login-content {
+  text-align: center;
+  /* showになった瞬間にpopInアニメーションを実行 */
+  animation: popIn 0.8s ease forwards;
+}
+
+.first-login-overlay.show .first-login-content {
+  animation: popIn 0.8s ease forwards;
+}
+
+.first-login-content .line-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+}
+
+.first-login-content .welcome-message {
+  font-size: 22px;
+  color: #333;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 /* 初回ログインポップアップ */
 /* 全画面ウェルカム演出 */
 .first-login-overlay {

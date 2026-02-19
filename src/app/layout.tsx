@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+"use client"; // usePathnameを使うために追加
+
+import { usePathname } from "next/navigation";
 import { AuthProvider } from "@/src/contexts/AuthContext";
 import "./globals.css";
 import Header from "../components/Header";
@@ -6,20 +8,19 @@ import Footer from "../components/Footer";
 import Script from "next/script";
 import CommonDialog from "@/src/components/CommonDialog";
 
-export const metadata: Metadata = {
-  title: "Streak Navi",
-  description: "Swing Streak Jazz Orchestra ポータルサイト",
-  icons: {
-    icon: "https://tappy-heartful.github.io/streak-images/navi/favicon.png",
-    apple: "https://tappy-heartful.github.io/streak-images/navi/favicon.png",
-  },
-};
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  // ヘッダー・フッターを非表示にしたいパスのリスト
+  const noLayoutPaths = ["/login", "/callback", "/agreement"];
+  
+  // 現在のパスがリストに含まれているかチェック
+  const isNoLayout = noLayoutPaths.includes(pathname);
+
   return (
     <html lang="ja">
       <head>
@@ -30,16 +31,18 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-        <Header />
-        {children}
-        <Footer />
-        
-        {/* Instagramの埋め込み用スクリプト */}
-        <Script 
-          src="https://www.instagram.com/embed.js" 
-          strategy="afterInteractive" 
-        />
-        <CommonDialog />
+          {/* ログイン画面などの時は非表示にする */}
+          {!isNoLayout && <Header />}
+          
+          {children}
+          
+          {!isNoLayout && <Footer />}
+          
+          <Script 
+            src="https://www.instagram.com/embed.js" 
+            strategy="afterInteractive" 
+          />
+          <CommonDialog />
         </AuthProvider>
       </body>
     </html>

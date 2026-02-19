@@ -113,11 +113,7 @@ export default function LoginPage() {
 
       <div className={styles.title}>
         <h1>
-          Streak {utils.isTest ? (
-            <span style={{ color: 'rgb(208, 2, 2)' }}>T</span>
-          ) : (
-            <span style={{ color: 'rgb(208, 2, 2)' }}>N</span>
-          )}est
+          Streak <span style={{ color: 'rgb(208, 2, 2)' }}>N</span>avi
         </h1>
       </div>
 
