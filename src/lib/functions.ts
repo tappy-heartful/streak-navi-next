@@ -169,95 +169,130 @@ export async function archiveAndDeleteDoc(collectionName: string, docId: string)
     await deleteDoc(docRef);
   }
 }
+/**
+ * DateオブジェクトまたはFirestoreのTimestampをフォーマット
+ */
+export function format(dateOrTimestamp: any, formatString = 'yyyy.MM.dd'): string {
+  if (!dateOrTimestamp) return '';
+  let date: Date;
+
+  if (typeof dateOrTimestamp.toDate === 'function') {
+    date = dateOrTimestamp.toDate();
+  } else if (dateOrTimestamp instanceof Date) {
+    date = dateOrTimestamp;
+  } else if (dateOrTimestamp.seconds !== undefined) {
+    date = new Date(dateOrTimestamp.seconds * 1000);
+  } else if (typeof dateOrTimestamp === 'number') {
+    date = new Date(dateOrTimestamp);
+  } else if (typeof dateOrTimestamp === 'string') {
+    date = new Date(dateOrTimestamp.replace(/\./g, '/'));
+  } else {
+    return '';
+  }
+
+  if (isNaN(date.getTime())) return '';
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  if (formatString === 'yyyy.MM.dd') return `${year}.${month}.${day}`;
+  if (formatString === 'yyyy/MM/dd HH:mm') {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}/${month}/${day} ${hours}:${minutes}`;
+  }
+  return `${year}.${month}.${day}`;
+}
+
+export function parseDate(dateString: string): Date | null {
+  if (!dateString || typeof dateString !== 'string') return null;
+  const parts = dateString.split('.');
+  if (parts.length !== 3) return null;
+  const y = parseInt(parts[0], 10), m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+  const date = new Date(y, m - 1, d);
+  return (date.getFullYear() === y && date.getMonth() + 1 === m && date.getDate() === d) ? date : null;
+}
 
 /**
- * チケット削除処理（TypeScript版）
- * @param liveId ライブドキュメントのID
- * @param uid ユーザーのUID
- * @param isConfirm 削除前に確認ダイアログを表示するか
+ * 期間内チェック
  */
-export async function deleteTicket(
-  liveId: string, 
-  uid: string | undefined, 
-  isConfirm = true
-): Promise<boolean> {
-  // 1. 基本チェック
-  if (!uid || !liveId) {
-    console.error("UID or LiveID is missing");
-    return false;
-  }
+export function isInTerm(startDateStr: string, endDateStr: string): boolean {
+  const now = Date.now();
+  const start = startDateStr ? new Date(startDateStr.replace(/\./g, '/') + 'T00:00:00').getTime() : 0;
+  const end = endDateStr ? new Date(endDateStr.replace(/\./g, '/') + 'T23:59:59').getTime() : Infinity;
+  return now >= start && now <= end;
+}
 
-  // 2. ユーザーへの最終確認
-  if (isConfirm) {
-    const ok = await showDialog(
-      'この予約を取り消しますか？\n（この操作は元に戻せません）'
-    );
-    if (!ok) return false;
-  }
+export function buildGoogleDriveHtml(driveUrl: string, showNotice = false): string {
+  const match = driveUrl?.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!match) return '';
+  return `
+    <div class="drive-embed-wrapper">
+      <div class="drive-embed">
+        <iframe src="https://drive.google.com/file/d/${match[1]}/preview" allowfullscreen></iframe>
+      </div>
+      ${showNotice ? `<div class="drive-notice">🔒バンド内限定公開</div>` : ''}
+    </div>`;
+}
 
-  const ticketId = `${liveId}_${uid}`;
+// --- プレイヤー補助ロジック ---
 
-  try {
-    showSpinner();
+export function getWatchVideosOrder(currentIndex: number, items: any[]): string[] {
+  const ids = items.map(n => n.youtubeId_decoded || extractYouTubeId(n.referenceTrack_decoded));
+  return [...ids.slice(currentIndex), ...ids.slice(0, currentIndex)];
+}
 
-    // 3. トランザクション開始
-    await runTransaction(db, async (transaction) => {
-      const liveRef = doc(db, 'lives', liveId);
-      const resRef = doc(db, 'tickets', ticketId);
+export function getRandomIndex(exclude: number, arrayLength: number): number {
+  if (arrayLength <= 1) return 0;
+  let idx;
+  do { idx = Math.floor(Math.random() * arrayLength); } while (idx === exclude);
+  return idx;
+}
 
-      // データの取得
-      const liveSnap = await transaction.get(liveRef);
-      const resSnap = await transaction.get(resRef);
-
-      if (!resSnap.exists()) {
-        throw new Error('予約データが見つかりませんでした。');
-      }
-
-      const ticketData = resSnap.data();
-      const cancelCount = ticketData.totalCount || 0; // 返却する人数
-
-      // 4. 在庫の差し戻し
-      if (liveSnap.exists()) {
-        const currentTotalReserved = liveSnap.data().totalReserved || 0;
-        // 計算結果がマイナスにならないようガード
-        const newTotalReserved = Math.max(
-          0,
-          currentTotalReserved - cancelCount,
-        );
-
-        transaction.update(liveRef, {
-          totalReserved: newTotalReserved,
-        });
-      }
-
-      // 5. チケットの削除
-      transaction.delete(resRef);
-    });
-
-    hideSpinner();
-    await showDialog('予約を取り消しました', true);
-    return true;
-
-  } catch (e: any) {
-    console.error("Delete ticket error:", e);
-    
-    // エラーログの記録（必要に応じて）
-    await writeLog({
-      dataId: ticketId,
-      action: 'Ticket予約取消',
-      status: 'error',
-      errorDetail: { message: e.message, stack: e.stack },
-    });
-
-    hideSpinner();
-    await showDialog(`エラーが発生しました: ${e.message}`, true);
-    return false;
-
-  } finally {
-    hideSpinner();
+/**
+ * React環境ではwindow.confirmはあまり使いませんが、
+ * 忠実な再現のために残します。
+ */
+export function errorHandler(errorMessage: string) {
+  hideSpinner();
+  console.error('Error:', errorMessage);
+  if (typeof window !== 'undefined' && confirm(`エラーが発生しました: ${errorMessage}\n画面をリロードしますか？`)) {
+    window.location.reload();
   }
 }
 
 // すでに CommonDialog.tsx で export していますが、
 // もし lib/functions.ts からも呼び出したい場合は再エクスポートしておくと便利です
 export { showDialog };
+// --- すでにあるコードの末尾に追記 ---
+
+// Firestoreの純正関数を再エクスポート
+export {
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  serverTimestamp,
+  increment, // これもよく使うので追加しておくと便利です
+  writeBatch,
+  runTransaction,
+} from "firebase/firestore";
+
+// 型定義も必要なら再エクスポート
+export type {
+  DocumentReference,
+  Query,
+  QuerySnapshot,
+  DocumentSnapshot,
+} from "firebase/firestore";
+
+// 初期化した db インスタンスもエクスポート
+export { db };
