@@ -1,43 +1,42 @@
 "use client";
 
-import { useEffect, Suspense } from "react"; // Suspenseを追加
+import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { auth, db } from "@/src/lib/firebase";
 import { signInWithCustomToken } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { showSpinner, hideSpinner, globalAuthServerRender, setSession } from "@/src/lib/functions";
+import { showSpinner, hideSpinner, globalLineLoginUrl, setSession } from "@/src/lib/functions";
 
-// --- メインのページコンポーネント ---
-export default function CallbackPage() {
-  return (
-    // これで囲むことでビルドエラーが解消されます
-    <Suspense fallback={<div className="loading-screen">Loading...</div>}>
-      <CallbackContent />
-    </Suspense>
-  );
-}
-
-// --- 実際のログインロジックを持つコンポーネント ---
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const hasCalled = useRef(false); // 二重実行防止フラグ
 
   useEffect(() => {
     const code = searchParams.get("code");
     const state = searchParams.get("state");
+    const error = searchParams.get("error");
 
-    if (code && state) {
+    if (error) {
+      alert("LINEログインをキャンセルしました");
+      router.push("/login");
+      return;
+    }
+
+    if (code && state && !hasCalled.current) {
+      hasCalled.current = true; // 実行済みマーク
       handleLogin(code, state);
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   async function handleLogin(code: string, state: string) {
     try {
       showSpinner();
+      // LINEの登録URLと完全一致させるため、クエリパラメータを除いた現在のURLを作成
       const redirectUri = window.location.origin + window.location.pathname;
 
-      // 1. 自前サーバーでLINE認証
-      const res = await fetch(`${globalAuthServerRender}/line-login`, {
+      // 1. 自前サーバーで認証
+      const res = await fetch(globalLineLoginUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, state, redirectUri }),
@@ -47,10 +46,11 @@ function CallbackContent() {
       if (data.error) throw new Error(data.error);
 
       // 2. Firebaseログイン
-      const { user } = await signInWithCustomToken(auth, data.customToken);
+      const userCredential = await signInWithCustomToken(auth, data.customToken);
+      const user = userCredential.user;
 
       // 3. Firestoreデータ更新
-      const userRef = doc(db, "connectUsers", user.uid);
+      const userRef = doc(db, "users", user.uid);
       const snap = await getDoc(userRef);
       
       const userData = {
@@ -61,24 +61,53 @@ function CallbackContent() {
       };
       
       await setDoc(userRef, userData, { merge: true });
+
+      // 最新データをセッションに同期
       const updatedSnap = await getDoc(userRef);
       const finalData = updatedSnap.data();
+
+      if (finalData) {
+        // 全フィールドをセッションに格納（バニラ時代のロジックを継承）
+        Object.entries(finalData).forEach(([key, value]) => {
+          // FirebaseのTimestamp型などを考慮して保存
+          setSession(key, value);
+        });
+        setSession("uid", user.uid);
+      }
+
       const redirectAfterLogin = data.redirectAfterLogin || "/home";
       
       // 4. 規約同意チェック & リダイレクト
       if (!finalData?.agreedAt) {
-        router.push("/agreement"); // 同意ページへ
-        setSession("redirectAfterLogin", redirectAfterLogin || "/home");
+        // 同意ページへ行く前に、本来行きたかった場所を覚えておく
+        setSession("redirectAfterLogin", redirectAfterLogin);
+        router.push("/agreement"); 
       } else {
-        router.push(redirectAfterLogin || "/home"); // "/" から "/home" へ修正（Homeフォルダ案に合わせる場合）
+        // ログイン成功フラグ（演出用）
+        setSession("fromLogin", "true");
+        router.push(redirectAfterLogin);
       }
     } catch (e: any) {
+      console.error(e);
       alert("ログインに失敗しました: " + e.message);
-      router.push("/home");
+      router.push("/login"); // 失敗時はログインへ戻す
     } finally {
       hideSpinner();
     }
   }
 
-  return <div className="loading-screen">Authenticating...</div>;
+  return (
+    <div className="loading-screen" style={{ textAlign: "center", marginTop: "50px" }}>
+      <p>認証中...</p>
+      {/* ここにスピナーのCSSがあれば適用 */}
+    </div>
+  );
+}
+
+export default function CallbackPage() {
+  return (
+    <Suspense fallback={<div className="loading-screen">読み込み中...</div>}>
+      <CallbackContent />
+    </Suspense>
+  );
 }

@@ -1,0 +1,101 @@
+/* login.module.css */
+.loginPage {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.title {
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 10;
+  margin-top: 40px;
+}
+
+.title h1 {
+  display: inline-block;
+  font-family: Impact, sans-serif;
+  color: white;
+  background-color: black;
+  padding: 10px 20px;
+  font-size: 32px;
+  border-radius: 8px;
+}
+
+.loginBtn {
+  background-color: #06c755;
+  color: white;
+  font-size: 18px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  transition: background-color 0.3s;
+}
+
+.loginBtn:hover {
+  background-color: #04a94f;
+}
+
+.loginBtn:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.loggingIn {
+  animation: pulseText 3s infinite;
+}
+
+@keyframes pulseText {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 背景レイヤー */
+.bgLayer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: black;
+  z-index: -2;
+  transition: opacity 2s ease-in-out;
+}
+
+.bgCover {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.35);
+  z-index: -1;
+}
+
+/* アニメーションクラス */
+.zoomIn {
+  animation: zoomInAnim 10s ease-in-out forwards;
+}
+
+.zoomOut {
+  animation: zoomOutAnim 10s ease-in-out forwards;
+}
+
+@keyframes zoomInAnim {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
+@keyframes zoomOutAnim {
+  from { transform: scale(1.1); }
+  to { transform: scale(1); }
+}
