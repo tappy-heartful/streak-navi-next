@@ -1,0 +1,115 @@
+/* app/agreement/agreement.module.css */
+.container {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: sans-serif;
+  line-height: 1.6;
+}
+
+.pageHeader h1 {
+  color: #4caf50;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 1.5rem;
+}
+
+.list {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.listItem {
+  margin-bottom: 0.5rem;
+}
+
+.cautionBox {
+  background-color: #fff9f9;
+  border: 1px solid #ffcccc;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.cautionTitle {
+  color: #d32f2f;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.checkboxContainer {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 10px;
+}
+
+.checkbox {
+  transform: scale(1.2);
+}
+
+.buttonContainer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.agreeButton {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 300px;
+  transition: background-color 0.2s;
+}
+
+.agreeButton:disabled {
+  background-color: #bbb;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.note {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.link {
+  color: #4caf50;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.pageFooter {
+  margin-top: 2rem;
+  text-align: center;
+  padding-bottom: 2rem;
+}
+
+.backLink {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.9rem;
+}

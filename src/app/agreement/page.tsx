@@ -1,136 +1,122 @@
-"use client";
+// app/agreement/page.tsx
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/src/contexts/AuthContext"; // ここでカスタムフックをインポート
-import { db } from "@/src/lib/firebase";
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { showSpinner, hideSpinner, getSession, removeSession } from "@/src/lib/functions";
-import Link from "next/link";
-import "./agreement.css";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { getSession } from '@/src/lib/functions';
+import styles from './agreement.module.css';
 
 export default function AgreementPage() {
-  const [agreed, setAgreed] = useState(false);
-  
-  // --- 修正ポイント：フックは必ずここで呼ぶ！ ---
-  const { user, loading, refreshUserData } = useAuth(); 
   const router = useRouter();
+  const [isAgreed, setIsAgreed] = useState(false);
+  const [uid, setUid] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = "利用規約 | SSJO Navi";
-  }, []);
-
-  const handleAgree = async () => {
-    // loading中はボタンが押せないよう制御していますが、念のため
-    if (loading || !user) return;
-
-    showSpinner();
-    try {
-      const userRef = doc(db, "connectUsers", user.uid);
-      await updateDoc(userRef, {
-        agreedAt: serverTimestamp(),
-        status: "active"
-      });
-
-      // --- refreshUserData を実行して Context の userData を最新にする ---
-      await refreshUserData(); 
-
-      const target = getSession("redirectAfterLogin") || "/";
-      removeSession("redirectAfterLogin");
-      
-      router.push(target);
-    } catch (e) {
-      console.error("Agreement error:", e);
-      alert("登録処理中にエラーが発生しました。");
-    } finally {
-      hideSpinner();
+    // セッションからUIDを取得（なければログインへ戻す）
+    const storedUid = getSession('uid');
+    if (!storedUid) {
+      router.push('/login');
+    } else {
+      setUid(storedUid);
     }
+  }, [router]);
+
+  const handleAgree = () => {
+    if (!isAgreed || !uid) return;
+    
+    // 既存：ユーザ編集画面へ（isInit=trueを付与）
+    // Next.jsではクエリパラメータとして渡す
+    router.push(`/user-edit?isInit=true&uid=${uid}`);
   };
 
-  if (loading) {
-    return (
-      <div className="agreement-page">
-        <div className="loading-text">認証情報を確認中...</div>
-      </div>
-    );
-  }
-
   return (
-    <main className="agreement-page">
-      <section className="hero-mini">
-        <div className="hero-content">
-          <h1 className="page-title">TERMS OF SERVICE</h1>
-          <p className="tagline">利用規約および個人情報の取り扱い</p>
+    <div className={styles.container}>
+      <header className={styles.pageHeader}>
+        <h1>ご利用に関する同意</h1>
+      </header>
+
+      <main>
+        <p>
+          本Webアプリ「Streak Navi」は、Swing Streak Jazz Orchestraのメンバー専用の非公開ツールです。
+        </p>
+
+        <section>
+          <h3 className={styles.sectionTitle}>LINE情報の取得について</h3>
+          <p>
+            本人確認およびログイン管理のため、LINEアカウントから以下の情報を取得します：
+          </p>
+          <ul className={styles.list}>
+            <li className={styles.listItem}>表示名</li>
+            <li className={styles.listItem}>プロフィール画像</li>
+            <li className={styles.listItem}>ユーザーID</li>
+          </ul>
+          <p>取得した情報は以下の通り適切に保護されます：</p>
+          <ul className={styles.list}>
+            <li className={styles.listItem}>アカウント識別のみに使用し、バンド外には一切公開されません</li>
+            <li className={styles.listItem}>
+              情報は<strong>Googleの提供する安全なクラウドストレージ（Firebase）</strong>にて暗号化・保護して保存されます
+            </li>
+            <li className={styles.listItem}>第三者に提供・共有されることはありません</li>
+          </ul>
+        </section>
+
+        <section className={styles.cautionBox}>
+          <span className={styles.cautionTitle}>⚠️ 注意事項と禁止事項</span>
+          <ul className={styles.list}>
+            <li className={styles.listItem}>
+              <strong>個人情報の登録禁止：</strong>
+              住所、電話番号、マイナンバー、クレジットカード情報などの個人情報は絶対に入力しないでください。
+            </li>
+            <li className={styles.listItem}>
+              <strong>迷惑行為の禁止：</strong>
+              他の利用者が不快に感じるデータや、公序良俗に反する情報の登録は禁止します。
+            </li>
+            <li className={styles.listItem}>
+              <strong>不正操作の禁止：</strong>
+              ブラウザの開発者ツール等を用いたシステムの改ざんや、不正なアクセス試行を禁止します。
+            </li>
+          </ul>
+        </section>
+
+        <p>本アプリの円滑な運営のため、上記ルールを守ってご利用ください。</p>
+
+        <div className={styles.checkboxContainer}>
+          <label className={styles.label}>
+            <input 
+              type="checkbox" 
+              className={styles.checkbox}
+              checked={isAgreed}
+              onChange={(e) => setIsAgreed(e.target.checked)}
+            />
+            上記の内容を理解し、同意します
+          </label>
         </div>
-      </section>
 
-      <div className="inner">
-        <div className="agreement-wrapper">
-          <div className="agreement-header">
-            <h3>Streak Navi 利用規約</h3>
-            <p>本サービスをご利用いただくために、以下の内容をご確認ください。</p>
-          </div>
-
-          <div className="agreement-box">
-            <div className="agreement-content">
-              <h4>第1条（目的）</h4>
-              <p>本規約は、SSJO（以下「当団体」）が提供するシステム「Streak Navi」（以下「本サービス」）の利用条件を定めるものです。</p>
-
-              <h4>第2条（LINE連携による情報取得）</h4>
-              <p>本サービスはLINE株式会社の提供するLINEログインを利用しています。ユーザーが同意した場合に限り、以下の情報を取得し、本人確認および予約管理の目的で使用します。</p>
-              <ul>
-                <li>表示名（ニックネーム）</li>
-                <li>プロフィール画像URL</li>
-                <li>ユーザー識別子（内部管理用のID）</li>
-              </ul>
-
-              <h4>第3条（データの保管とセキュリティ）</h4>
-              <p>取得したデータおよび予約情報は、Google Cloud Platform（Firebase）の暗号化されたデータベースに安全に保管されます。</p>
-              <ul>
-                <li><strong>データの暗号化:</strong> 全てのデータは、Googleの高度なセキュリティ基準に従い、保管時および通信時に暗号化されます。</li>
-                <li><strong>ハッシュ化の利用:</strong> 認証に関わる重要な識別子等は、ハッシュ化技術を用いて保護され、当団体の管理者であっても元の情報を直接閲覧できない形で管理されます。</li>
-              </ul>
-
-              <h4>第4条（予約の管理）</h4>
-              <p>ユーザーは本サービスを通じてチケットの予約・変更を行うことができます。正確な情報を提供いただけない場合、当日ご入場いただけない場合がございます。</p>
-
-              <h4>第5条（禁止事項）</h4>
-              <p>・虚偽の情報を用いた予約行為<br />
-                 ・チケットの営利目的での転売<br />
-                 ・当団体の運営を妨げる行為</p>
-
-              <h4>第6条（免責事項）</h4>
-              <p>当団体は、本サービスの利用により発生した損害について、一切の責任を負わないものとします。</p>
-              
-              <p className="agreement-footer">2026年1月29日 制定</p>
-            </div>
-          </div>
-
-          <div className="agreement-actions">
-            <label className="checkbox-container">
-              <input 
-                type="checkbox" 
-                checked={agreed} 
-                onChange={(e) => setAgreed(e.target.checked)} 
-              />
-              <span className="checkmark"></span>
-              規約および個人情報の取り扱いに同意します
-            </label>
-
-            <button 
-              disabled={!agreed || !user} 
-              onClick={handleAgree} 
-              className={`btn-agree ${agreed && user ? 'active' : ''}`}
-            >
-              同意して登録を完了する
-            </button>
-            
-            <div className="cancel-link">
-              <Link href="/">同意せずに戻る</Link>
-            </div>
-          </div>
+        <div className={styles.buttonContainer}>
+          <button 
+            className={styles.agreeButton} 
+            disabled={!isAgreed}
+            onClick={handleAgree}
+          >
+            同意して進む
+          </button>
         </div>
+
+        <p className={styles.note}>
+          詳細は{' '}
+          <Link href="/about" target="_blank" className={styles.link}>
+            サイト情報
+          </Link>{' '}
+          をご確認ください。
+        </p>
+      </main>
+
+      <div className={styles.pageFooter}>
+        <Link href="/login" className={styles.backLink}>
+          ← ログインに戻る
+        </Link>
       </div>
-    </main>
+    </div>
   );
 }

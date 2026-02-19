@@ -87,7 +87,8 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setIsLoggingIn(true);
     try {
-      const res = await fetch(`${utils.globalAuthServerRender}/get-line-login-url`);
+      const fetchUrl = `${utils.globalGetLineLoginUrl}`;
+      const res = await fetch(fetchUrl);
       const { loginUrl } = await res.json();
       window.location.href = loginUrl;
     } catch (err: any) {
