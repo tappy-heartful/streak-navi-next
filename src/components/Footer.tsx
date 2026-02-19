@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 
 export default function Footer() {
   const pathname = usePathname();
-  if (["/login", "/login/callback", "/agreement"].includes(pathname)) return null;
+  if (["/login", "/callback", "/agreement", "/about"].includes(pathname)) return null;
   const [showOverlay, setShowOverlay] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [userData, setUserData] = useState({

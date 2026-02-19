@@ -15,7 +15,7 @@ export default function Header() {
   const pathname = usePathname();
   
   // メニューを表示しないページ
-  if (["/login", "/callback", "/agreement"].includes(pathname)) return null;
+  if (["/login", "/callback", "/agreement", "/about"].includes(pathname)) return null;
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userData, setUserData] = useState({
