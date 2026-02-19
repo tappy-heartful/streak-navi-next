@@ -13,11 +13,15 @@ import {
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  
+  // メニューを表示しないページ
   if (["/login", "/callback", "/agreement"].includes(pathname)) return null;
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userData, setUserData] = useState({
     displayName: "",
-    pictureUrl: "",
+    // 初期値を空文字ではなく null にするか、デフォルト画像にする
+    pictureUrl: null as string | null, 
     uid: ""
   });
 
@@ -28,19 +32,16 @@ export default function Header() {
       pictureUrl: getSession("pictureUrl") || globalLineDefaultImage,
       uid: getSession("uid") || ""
     });
-  }, [pathname]); // 画面遷移のたびに最新情報を確認
+  }, [pathname]);
 
-  // メニュー制御
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
-  // ログアウト
   const handleLogout = () => {
     clearAllAppSession();
     router.push("/login");
   };
 
-  // シェア機能
   const handleShare = () => {
     const url = window.location.href;
     if (navigator.share) {
@@ -55,7 +56,6 @@ export default function Header() {
     }
   };
 
-  // リンク付きメニュー項目のレンダリング用
   const menuLink = (href: string, label: string, icon?: string) => (
     <Link href={href} onClick={closeMenu}>
       {icon && <i className={icon}></i>} {label}
@@ -72,25 +72,29 @@ export default function Header() {
         </div>
 
         <div className="header-right" onClick={toggleMenu}>
-          <img 
-            src={userData.pictureUrl} 
-            alt="LINE" 
-            className="line-icon" 
-          />
+          {/* 修正ポイント：画像URLがあるときだけ img を描画する */}
+          {userData.pictureUrl && (
+            <img
+              src={userData.pictureUrl}
+              alt="LINE"
+              className="line-icon"
+            />
+          )}
           <div className="hamburger-menu">
             <i className="fa-solid fa-bars"></i>
           </div>
         </div>
 
-        {/* Overlay */}
         {isMenuOpen && (
           <div className="menu-overlay" onClick={closeMenu}></div>
         )}
 
-        {/* Slide Menu */}
         <div className={`slide-menu ${isMenuOpen ? "open" : ""}`}>
           <div className="menu-header">
-            <img src={userData.pictureUrl} className="menu-user-icon" alt="user" />
+            {/* 修正ポイント：ここも同様 */}
+            {userData.pictureUrl && (
+              <img src={userData.pictureUrl} className="menu-user-icon" alt="user" />
+            )}
             <div 
               className="menu-user-name" 
               onClick={() => {
@@ -135,7 +139,7 @@ export default function Header() {
 
       <div className="breadcrumb-bar">
         <div id="breadcrumb-container">
-          {/* パンくずリストのロジックは各ページまたは共通コンポーネントで実装 */}
+          {/* コンポーネント化を検討してもいいですね */}
         </div>
         <button className="share-button" onClick={handleShare}>
           <i className="fas fa-share-alt"></i>

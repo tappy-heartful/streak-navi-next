@@ -87,25 +87,44 @@ export function buildInstagramHtml(url: string, includeWrapper = true): string {
   return includeWrapper ? `<div class="instagram-embed">${html}</div>` : html;
 }
 
-// --- YouTube 埋め込み用 ---
+
+
+// 補助：extractYouTubeId も念のため安全にしておく
 export function extractYouTubeId(input: string): string {
+  if (!input) return ''; // nullやundefined対策
   try {
-    const url = new URL(input);
-    return url.searchParams.get('v') || url.pathname.split('/').pop() || input;
+    if (input.includes('youtube.com') || input.includes('youtu.be')) {
+      const url = new URL(input);
+      return url.searchParams.get('v') || url.pathname.split('/').pop() || '';
+    }
+    return input; // URL形式でなければそのまま返す
   } catch {
     return input;
   }
 }
 
-export function buildYouTubeHtml(youtubeInput: string | string[], showNotice = false): string {
+export function buildYouTubeHtml(
+  youtubeInput: string | string[], 
+  showNotice = false
+): string {
+  // 入力自体がない場合は空文字を返す
   if (!youtubeInput) return '';
-  const videoIds = Array.isArray(youtubeInput) 
-    ? youtubeInput.map(extractYouTubeId).filter(id => id.length === 11)
-    : [extractYouTubeId(youtubeInput)].filter(id => id.length === 11);
 
+  // 1. まず配列に統一して処理する
+  const inputs = Array.isArray(youtubeInput) ? youtubeInput : [youtubeInput];
+
+  // 2. IDを抽出。filterの中で id 自体が存在し、かつ長さが11であることを確認
+  const videoIds = inputs
+    .map(input => extractYouTubeId(input))
+    .filter((id): id is string => !!id && id.length === 11); // ここで id の存在を確認
+
+  // 抽出できたIDがない場合は終了
   if (videoIds.length === 0) return '';
+
   const embedId = videoIds[0];
-  const youtubeLink = Array.isArray(youtubeInput)
+
+  // 3. リンクの生成
+  const youtubeLink = Array.isArray(youtubeInput) && videoIds.length > 1
     ? `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(',')}`
     : `https://www.youtube.com/watch?v=${embedId}`;
 
@@ -116,7 +135,9 @@ export function buildYouTubeHtml(youtubeInput: string | string[], showNotice = f
       </div>
       <div class="youtube-link-container">
         ${showNotice ? `<span class="youtube-notice">🔒限定公開</span>` : ''}
-        <a href="${youtubeLink}" target="_blank" rel="noopener noreferrer">YouTubeでみる</a>
+        <a href="${youtubeLink}" target="_blank" rel="noopener noreferrer">
+          ${videoIds.length > 1 ? 'プレイリストを聴く' : 'YouTubeでみる'}
+        </a>
       </div>
     </div>`;
 }

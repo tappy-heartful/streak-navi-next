@@ -1,530 +1,302 @@
-/* --- ヒーローセクション --- */
-.homeHero {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1.1;
+/* home.module.css */
+
+.homeContainer {
+  padding-bottom: 40px;
+}
+
+/* お知らせセクション */
+.announcementContainer {
+  margin-bottom: 20px;
+}
+
+.announcementHeader {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  overflow: hidden;
+  margin-bottom: 10px;
 }
 
-.homeHero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('https://tappy-heartful.github.io/streak-images/navi/background/home.jpg');
-  background-size: cover;
-  background-position: center;
-  filter: blur(2px) brightness(0.5);
-  z-index: -1;
-}
-
-.homeHero::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 60%;
-  background: linear-gradient(to bottom, transparent, #000);
-  z-index: 0;
-}
-
-.homeHeroContent {
-  text-align: center;
-  z-index: 1;
-  padding-top: 80px;
-}
-
-.bandName {
-  font-family: 'Impact', 'Charcoal', sans-serif;
-  font-size: 3.2rem;
-  line-height: 1.1;
+.notificationList {
+  list-style: none;
+  padding-left: 0;
   margin: 0;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
 }
 
-.subName {
-  font-size: 1.8rem;
+.notificationList li {
+  margin-bottom: 10px;
+}
+
+.notificationLink {
   display: block;
-}
-
-.accentJ {
-  color: #e7211a;
-}
-
-.tagline {
-  font-size: 0.9rem;
-  margin-top: 10px;
-  color: #eee;
-  font-weight: bold;
-  letter-spacing: 0.2em;
-}
-
-/* --- ステータス・共通 --- */
-.statusBadge {
-  font-size: 0.8rem;
-  color: #888;
-  background: #222;
-  padding: 4px 12px;
-  border-radius: 4px;
-  border: 1px solid #333;
-  display: inline-block;
-}
-
-/* --- チケット情報 --- */
-.ticketGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  margin-top: 40px;
-}
-
-.ticketCard {
-  display: flex;
-  flex-direction: column;
-  background: #111;
-  border: 1px solid #222;
-  overflow: hidden;
-  transition: 0.3s;
-}
-
-@media (min-width: 768px) {
-  .ticketCard {
-    flex-direction: row;
-    min-height: 220px;
-  }
-}
-
-.ticketImgWrapper {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: background 0.3s ease;
+  font-size: 16px;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
   position: relative;
-  width: 100%;
-  aspect-ratio: 16/9;
-  background: #222;
-  overflow: hidden;
-  cursor: pointer;
+  color: #333;
+  text-decoration: none;
 }
 
-@media (min-width: 768px) {
-  .ticketImgWrapper {
-    width: 35%;
-    aspect-ratio: auto;
-  }
-}
-
-.ticketImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.8;
-  transition: 0.5s;
-}
-
-.imgOverlay {
+/* 矢印アイコン (itemのみ) */
+.notificationLink:not(div)::after {
+  content: '›';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(231, 33, 26, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 1.5rem;
-  opacity: 0;
-  transition: 0.3s;
-  z-index: 2;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #999;
+  transition: transform 0.2s ease;
 }
 
-.ticketImgWrapper:hover .imgOverlay {
-  opacity: 1;
-}
-.ticketImgWrapper:hover .ticketImg {
-  transform: scale(1.05);
-  opacity: 1;
+.notificationLink:hover {
+  background-color: #e0f5e9;
 }
 
-.ticketInfo {
-  padding: 25px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.tDate {
-  font-family: 'Impact', sans-serif;
-  color: #e7211a;
-  font-size: 1.2rem;
-  letter-spacing: 0.1em;
-}
-
-.tTitle {
-  color: #fff;
-  font-size: 1.5rem;
-  margin: 10px 0;
+.pendingMessage {
   font-weight: bold;
+  color: #ffae9c;
+  padding-left: 10px;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  list-style: none;
 }
 
-.tDetails {
-  font-size: 0.85rem;
-  color: #aaa;
-  line-height: 1.6;
-}
-
-.tDetails :global(.fa-solid) {
-  width: 20px;
-  color: #e7211a;
-}
-
-/* --- ボタン --- */
-.btnBase {
+.emptyMessage {
+  text-align: center;
+  color: #777;
+  font-size: 14px;
   padding: 12px;
-  text-align: center;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+
+/* 新着譜面セクション */
+.scoreHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.playlistButton {
+  background-color: #ff0000;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  text-decoration: none;
   font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  border: none;
-  transition: 0.3s;
-  flex: 1;
-  font-size: 0.8rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  gap: 5px;
+  transition: opacity 0.2s;
 }
 
-.btnDetail {
-  composes: btnBase;
-  background: transparent;
-  border: 1px solid #fff;
-  color: #fff;
-  margin-top: 20px;
-}
-.btnDetail:hover {
-  background: #fff;
-  color: #000;
+.playlistButton:hover {
+  opacity: 0.8;
 }
 
-.btnTicketDetail {
-  composes: btnBase;
-  background: #fff;
-  color: #000;
-}
-.btnTicketDetail:hover {
-  background: #e9e9e9;
+.quickScoreGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.btnReserve {
-  composes: btnBase;
-  background: #e7211a;
-  color: #fff;
-  margin-top: 20px;
-}
-.btnReserve:hover {
-  background: #b61a15;
-}
-
-.btnDelete {
-  composes: btnBase;
-  background: transparent;
-  border: 1px solid #e7211a;
-  color: #e7211a;
-}
-.btnDelete:hover {
-  background: rgba(231, 33, 26, 0.1);
-}
-
-.reservedLabel {
-  background: #e7211a;
-  color: #fff;
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 3px;
-  margin-right: 5px;
-  vertical-align: middle;
-}
-
-/* --- Concept --- */
-.conceptLead {
-  font-size: 1.4rem;
-  color: #e7211a;
-  font-weight: bold;
-  line-height: 1.5;
-  margin-bottom: 25px;
-}
-
-.conceptText {
-  line-height: 1.8;
-  color: #ccc;
-  font-size: 0.95rem;
-}
-
-/* --- メンバー情報 --- */
-.bgDarker {
-  background-color: #050505;
-  padding-top: 80px;
-  padding-bottom: 80px;
-}
-
-.subSectionTitle {
+.quickScoreLink {
+  display: block;
+  padding: 12px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
   text-align: center;
-  color: #666;
-  margin-top: -20px;
-  margin-bottom: 40px;
-  font-size: 0.9rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
 }
 
-.memberGrid {
+.quickScoreLink:hover {
+  background-color: #e0f5e9;
+}
+
+/* プレイヤー周り */
+.playerWrapper {
+  width: 100%;
+  max-width: 560px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.playerTitle {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 12px;
+  font-size: 15px;
+  color: #666;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 4px;
+  text-align: center;
+}
+
+.playerControls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.playerControl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.playerControl:hover {
+  background-color: #45a049;
+}
+
+/* メニューボタン一覧 */
+.menuList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.menuTitle {
+  grid-column: 1 / -1;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #555;
+  border-left: 4px solid #4caf50;
+  padding-left: 10px;
+}
+
+.menuButton {
+  display: block;
+  padding: 16px 10px;
+  text-align: center;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 10px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.1s, background 0.3s;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: bold;
+}
+
+.menuButton:active {
+  transform: scale(0.96);
+}
+
+/* 背景アイコンの再現 */
+.menuButton::after {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.score::after { content: '🎼'; }
+.event::after { content: '🎺'; }
+.assign::after { content: '🎵'; }
+.call::after { content: '🎶'; }
+.vote::after { content: '📊'; }
+.collect::after { content: '💰'; }
+.studio::after { content: '📍'; }
+.user::after { content: '👥'; }
+.notice::after { content: '📣'; }
+.blueNote::after { content: '🎧'; }
+.media::after { content: '🎬'; }
+.board::after { content: '📋'; }
+.live::after { content: '🎷'; }
+.ticket::after { content: '🎫'; }
+
+/* バッジアニメーション */
+.badgeInline {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: #ff3b30;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  animation: pulse 1.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+/* メディアセクション */
+.contentList {
   display: flex;
   flex-direction: column;
   gap: 40px;
-  margin-top: 40px;
+  margin-top: 20px;
 }
 
-.memberCard {
-  position: relative;
-  display: flex;
-  align-items: center;
+.contentItem {
   width: 100%;
-  min-height: 200px;
-  background: #000;
-  overflow: hidden;
-  border-bottom: 1px solid #1a1a1a;
 }
 
-.memberImgWrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 70%;
-  height: 100%;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.memberImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: contrast(1.1);
-  transition: 0.8s ease;
-  transform-origin: left center;
-}
-
-.memberImgWrapper::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to right, transparent 0%, #000 100%);
-  z-index: 2;
-}
-
-.memberInfoContent {
-  position: relative;
-  z-index: 3;
-  margin-left: auto;
-  width: 60%;
-  padding: 20px 20px 20px 0;
-  text-align: right;
-}
-
-.memberRole {
-  font-family: 'Impact', sans-serif;
-  color: #e7211a;
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.contentItem h4 {
+  font-weight: bold;
+  text-align: center;
+  font-size: 18px;
+  color: #444;
   margin-bottom: 5px;
 }
 
-.memberName {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #fff;
-  margin-bottom: 4px;
-  letter-spacing: 0.05em;
-  line-height: 1.2;
-}
-
-.memberOrigin {
-  font-size: 0.75rem;
-  color: #888;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.memberCard:hover .memberImg {
-  filter: grayscale(0%) contrast(1);
-  transform: scale(1.05);
-}
-
-/* --- SNS Section --- */
-.snsContainer {
-  text-align: center;
-  padding: 10px 0;
-}
-.snsDesc {
-  margin-bottom: 20px;
-  font-size: 0.9rem;
-  color: #ccc;
-}
-.snsLinks {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  align-items: center;
-}
-
-.snsBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 300px;
-  padding: 12px 20px;
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: opacity 0.3s;
-  color: #fff;
-}
-
-.lineBtn {
-  background-color: #06c755;
-}
-.instaBtn {
-  background: linear-gradient(
-    45deg,
-    #f09433 0%,
-    #e6683c 25%,
-    #dc2743 50%,
-    #cc2366 75%,
-    #bc1888 100%
-  );
-}
-
-@media (min-width: 600px) {
-  .snsLinks {
-    flex-direction: row;
-    justify-content: center;
-  }
-}
-
-/* --- Goods --- */
-.goodsDesc {
-  font-size: 0.9rem;
-  margin-bottom: 20px;
-  color: #ccc;
-}
-.horizontalScroll {
-  display: flex;
-  gap: 15px;
-  overflow-x: auto;
-  padding-bottom: 15px;
-  scroll-snap-type: x mandatory;
-}
-.horizontalScroll::-webkit-scrollbar {
-  height: 4px;
-}
-.horizontalScroll::-webkit-scrollbar-thumb {
-  background: #e7211a;
-}
-
-.squareImg {
-  width: 200px;
-  height: 200px;
-  object-fit: cover;
-  flex-shrink: 0;
-  scroll-snap-align: start;
-  border: 1px solid #333;
-}
-
-.btnArea {
-  margin-top: 20px;
-  text-align: center;
-}
-.btnLink {
-  display: inline-block;
-  padding: 12px 25px;
-  text-decoration: none;
-  font-weight: bold;
-  border-radius: 4px;
-  border: 1px solid #e7211a;
-  color: #e7211a;
-  transition: 0.3s;
-}
-.btnLink:hover {
-  background: #e7211a;
-  color: #fff;
-}
-
-.coffeeCard {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  background: #111;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.portraitImg {
-  width: 100%;
-  max-width: 300px;
-  height: auto;
-  margin: 0 auto;
-}
-
-/* --- Media/History --- */
-.mediaGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 80px;
-}
-.mediaCard {
-  max-width: 540px;
-  margin: 0 auto;
-  width: 100%;
-}
-.mediaInfo {
-  margin-bottom: 20px;
-  text-align: center;
-}
 .mediaDate {
-  font-family: 'Impact', sans-serif;
-  color: #e7211a;
-  font-size: 1.2rem;
-  display: block;
-}
-.mediaTitle {
-  font-size: 1.1rem;
-  margin: 8px 0;
-  color: #fff;
-  font-weight: bold;
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 15px;
 }
 
-@media (min-width: 768px) {
-  .memberCard {
-    min-height: 250px;
-  }
-  .memberName {
-    font-size: 2rem;
-  }
-  .memberImgWrapper {
-    width: 60%;
-  }
+/* YouTube/Instagram等の共通スタイル */
+.contentItem :global(.youtube-embed-wrapper),
+.contentItem :global(.instagram-embed),
+.contentItem :global(.drive-embed-wrapper) {
+  margin-bottom: 10px;
+}
+
+.contentItem iframe {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
