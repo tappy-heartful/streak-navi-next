@@ -1,74 +1,145 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useAuth } from "@/src/contexts/AuthContext";
-import { globalAuthServerRender, showSpinner, hideSpinner } from "@/src/lib/functions";
+import { 
+  getSession, 
+  clearAllAppSession, 
+  globalLineDefaultImage, 
+  isTest 
+} from "@/src/lib/functions";
 
 export default function Header() {
+  const router = useRouter();
   const pathname = usePathname();
-  const { user, userData, loading } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userData, setUserData] = useState({
+    displayName: "",
+    pictureUrl: "",
+    uid: ""
+  });
 
-  const isSelected = (path: string) => (pathname === path ? "selected" : "");
+  // セッション情報の取得
+  useEffect(() => {
+    setUserData({
+      displayName: getSession("displayName") || "ゲスト",
+      pictureUrl: getSession("pictureUrl") || globalLineDefaultImage,
+      uid: getSession("uid") || ""
+    });
+  }, [pathname]); // 画面遷移のたびに最新情報を確認
 
-  /**
-   * ログイン/マイページ クリック時のハンドリング
-   */
-  const handleProfileClick = async (e: React.MouseEvent) => {
-    // 未ログイン時のみログイン処理を実行
-    if (!user) {
-      e.preventDefault(); // 通常のLink遷移をキャンセル
-      
-      try {
-        showSpinner();
-        // 現在のページをリダイレクト先に指定（ログイン後にここに戻るため）
-        const currentUrl = window.location.href;
-        const fetchUrl = `${globalAuthServerRender}/get-line-login-url?redirectAfterLogin=${encodeURIComponent(currentUrl)}`;
+  // メニュー制御
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const closeMenu = () => setIsMenuOpen(false);
 
-        const res = await fetch(fetchUrl);
-        const { loginUrl } = await res.json();
-
-        if (loginUrl) {
-          window.location.href = loginUrl;
-        } else {
-          throw new Error("ログインURLの取得に失敗しました");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("ログイン処理中にエラーが発生しました。");
-        hideSpinner();
-      }
-    }
-    // ログイン済みの場合は、Linkタグの本来の挙動で /mypage へ遷移する
+  // ログアウト
+  const handleLogout = () => {
+    clearAllAppSession();
+    router.push("/login");
   };
 
-  return (
-    <header className="main-header">
-      <nav className="nav-container">
-        <Link href="/" className={`nav-item ${isSelected("/")}`}>
-          Home
-        </Link>
+  // シェア機能
+  const handleShare = () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: document.title,
+        url: url,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        alert("URLをコピーしました");
+      });
+    }
+  };
 
-        {!loading && (
-          <Link
-            href="/mypage"
-            onClick={handleProfileClick}
-            className={`nav-item profile-nav ${isSelected("/mypage")}`}
-          >
-            <span className="nav-text">{user ? "MyPage" : "Login"}</span>
-            <div className="header-user-icon">
-              <img
-                src={
-                  userData?.pictureUrl ||
-                  "https://tappy-heartful.github.io/streak-images/navi/line-profile-unset.png"
-                }
-                alt="icon"
-                id="header-icon-img"
-              />
-            </div>
-          </Link>
+  // リンク付きメニュー項目のレンダリング用
+  const menuLink = (href: string, label: string, icon?: string) => (
+    <Link href={href} onClick={closeMenu}>
+      {icon && <i className={icon}></i>} {label}
+    </Link>
+  );
+
+  return (
+    <>
+      <header className="site-header">
+        <div className="header-left">
+          <div className="logo-text" onClick={() => router.push("/home")}>
+            Streak <span className="logo-n">{isTest ? "T" : "N"}</span>avi
+          </div>
+        </div>
+
+        <div className="header-right" onClick={toggleMenu}>
+          <img 
+            src={userData.pictureUrl} 
+            alt="LINE" 
+            className="line-icon" 
+          />
+          <div className="hamburger-menu">
+            <i className="fa-solid fa-bars"></i>
+          </div>
+        </div>
+
+        {/* Overlay */}
+        {isMenuOpen && (
+          <div className="menu-overlay" onClick={closeMenu}></div>
         )}
-      </nav>
-    </header>
+
+        {/* Slide Menu */}
+        <div className={`slide-menu ${isMenuOpen ? "open" : ""}`}>
+          <div className="menu-header">
+            <img src={userData.pictureUrl} className="menu-user-icon" alt="user" />
+            <div 
+              className="menu-user-name" 
+              onClick={() => {
+                router.push(`/user-confirm?uid=${userData.uid}`);
+                closeMenu();
+              }}
+            >
+              {userData.displayName}
+            </div>
+            <div className="close-menu" onClick={closeMenu}>
+              <i className="fa-solid fa-xmark"></i>
+            </div>
+          </div>
+
+          <div className="slide-menu-section">
+            {menuLink("/home", " ホーム", "fa fa-home")}
+            {menuLink("/score-list", "譜面")}
+            {menuLink("/event-list", "イベント")}
+            {menuLink("/assign-list", "譜割り")}
+            {menuLink("/call-list", "曲募集")}
+            {menuLink("/vote-list", "投票")}
+            {menuLink("/collect-list", "集金")}
+            {menuLink("/studio-list", "スタジオ")}
+            {menuLink("/user-list", "ユーザ")}
+            {menuLink("/notice-list", "通知設定")}
+            {menuLink("/blue-note-edit", "今日の一曲")}
+            {menuLink("/board-list", "掲示板")}
+            {menuLink("/live-list", "ライブ")}
+            {menuLink("/ticket-list", "予約者一覧")}
+            {menuLink("/media-list", "メディア")}
+          </div>
+
+          <div className="slide-menu-section menu-bottom">
+            <a onClick={() => {
+              router.push(`/user-confirm?uid=${userData.uid}`);
+              closeMenu();
+            }}>ユーザ情報</a>
+            <a onClick={handleLogout} className="logout-text">ログアウト</a>
+          </div>
+        </div>
+      </header>
+
+      <div className="breadcrumb-bar">
+        <div id="breadcrumb-container">
+          {/* パンくずリストのロジックは各ページまたは共通コンポーネントで実装 */}
+        </div>
+        <button className="share-button" onClick={handleShare}>
+          <i className="fas fa-share-alt"></i>
+        </button>
+      </div>
+    </>
   );
 }

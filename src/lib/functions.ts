@@ -28,6 +28,7 @@ export const globalClientId = '2007808275';
 export const globalAuthServerRender = 'https://streak-navi-auth-server-kz3v.onrender.com';
 export const globalGetLineLoginUrl = globalAuthServerRender + '/get-line-login-url?appType=next-navi';
 export const globalLineLoginUrl = globalAuthServerRender + '/line-login?appType=next-navi';
+export const globalLineDefaultImage = 'https://tappy-heartful.github.io/streak-images/navi/line-profile-unset.png';
 
 // --- セッション管理 (localStorage/sessionStorage) ---
 const getStorageKey = (key: string) => `${globalAppName}.${key}`;
