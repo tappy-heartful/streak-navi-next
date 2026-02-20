@@ -1,82 +1,45 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import * as utils from "@/src/lib/functions";
-import styles from "./home.module.css"; // CSSは後ほど作成
-
+import styles from "./home.module.css";
 
 // --- 型定義 ---
-interface Announcement {
-  type: "pending" | "item" | "empty";
-  message?: string;
-  link?: string;
-  label?: string;
-}
-
-interface Score {
-  id: string;
-  title: string;
-  referenceTrack?: string;
-  youtubeId?: string;
-  isDispTop?: boolean;
-}
-
-interface BlueNote {
-  id: string;
-  title?: string;
-  [key: string]: any;
-}
-
-interface Media {
+interface Announcement { type: "pending" | "item" | "empty"; message?: string; link?: string; label?: string; }
+interface Score { id: string; title: string; referenceTrack?: string; youtubeId?: string; isDispTop?: boolean; }
+interface BlueNote { id: string; title?: string; [key: string]: any; }
+interface Media { id: string; title: string; date: string; instagramUrl?: string; youtubeUrl?: string; driveUrl?: string; isDispTop?: boolean; }
+// 追加: イベント用の型定義
+interface EventItem {
   id: string;
   title: string;
   date: string;
-  instagramUrl?: string;
-  youtubeUrl?: string;
-  driveUrl?: string;
-  isDispTop?: boolean;
+  attendanceType: string;
+  allowAssign?: boolean;
+  isUnanswered: boolean;
+  diffDays: number;
 }
 
 export default function HomePage() {
-  const router = useRouter();
-
-  // --- State ---
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [quickScores, setQuickScores] = useState<Score[]>([]);
-  const [allScoreWatchIds, setAllScoreWatchIds] = useState("");
-  
-  // 譜面プレイヤー
   const [scores, setScores] = useState<Score[]>([]);
   const [currentScoreIdx, setCurrentScoreIdx] = useState(0);
-
-  // 今日の一曲プレイヤー
   const [blueNotes, setBlueNotes] = useState<BlueNote[]>([]);
   const [currentBNIdx, setCurrentBNIdx] = useState(0);
-
-  // メディア
   const [medias, setMedias] = useState<Media[]>([]);
 
-  // --- 初期化 ---
+  const uid = utils.getSession("uid");
+
   useEffect(() => {
     const init = async () => {
       utils.showSpinner();
       try {
-        await Promise.all([
-          loadAnnouncements(),
-          loadQuickScoresAndPlayer(),
-          loadBlueNotes(),
-          loadMedias(),
-        ]);
+        await Promise.all([loadAnnouncements(), loadScores(), loadBlueNotes(), loadMedias()]);
       } catch (e: any) {
         console.error(e);
-        await utils.writeLog({
-          dataId: "none",
-          action: "ホーム初期表示",
-          status: "error",
-          errorDetail: { message: e.message, stack: e.stack },
-        });
+        utils.writeLog({ dataId: "none", action: "ホーム初期表示", status: "error", errorDetail: { message: e.message, stack: e.stack } });
       } finally {
         utils.hideSpinner();
       }
@@ -84,344 +47,201 @@ export default function HomePage() {
     init();
   }, []);
 
-  // Instagram埋め込みの再処理
   useEffect(() => {
-    if ((window as any).instgrm) {
-      (window as any).instgrm.Embeds.process();
-    }
+    if ((window as any).instgrm) (window as any).instgrm.Embeds.process();
   }, [medias]);
 
-  // --- 1. お知らせ (Pending Announcements) ---
+  // --- 1. お知らせ取得 ---
   const loadAnnouncements = async () => {
-    const uid = utils.getSession("uid");
     const items: Announcement[] = [];
-    let hasAny = false;
-
-    // 投票
-    const votesSnap = await utils.getDocs(
-      utils.query(utils.collection(utils.db, "votes"), utils.orderBy("createdAt", "desc"))
-    );
-    let voteHeader = false;
-    for (const doc of votesSnap.docs) {
-      const d = doc.data();
-      if (utils.isInTerm(d.acceptStartDate, d.acceptEndDate)) {
-        if (!voteHeader) {
-          items.push({ type: "pending", message: "📌投票、受付中です！" });
-          voteHeader = true;
-          hasAny = true;
-        }
-        items.push({ type: "item", label: `📝${d.name}`, link: `/vote-confirm?voteId=${doc.id}` });
-      }
-    }
-
-    // 曲募集
-    const callsSnap = await utils.getDocs(
-      utils.query(utils.collection(utils.db, "calls"), utils.orderBy("createdAt", "desc"))
-    );
-    let callHeader = false;
-    for (const doc of callsSnap.docs) {
-      const d = doc.data();
-      if (utils.isInTerm(d.acceptStartDate, d.acceptEndDate)) {
-        if (!callHeader) {
-          items.push({ type: "pending", message: "📌候補曲、募集中です！" });
-          callHeader = true;
-          hasAny = true;
-        }
-        items.push({ type: "item", label: `🎶${d.title}`, link: `/call-confirm?callId=${doc.id}` });
-      }
-    }
-
-    // 集金
-    const collectsSnap = await utils.getDocs(utils.collection(utils.db, "collects"));
-    let collectHeader = false;
-    for (const doc of collectsSnap.docs) {
-      const d = doc.data();
-      if (!utils.isInTerm(d.acceptStartDate, d.acceptEndDate)) continue;
-      if (!(d.participants || []).includes(uid)) continue;
-      if (d.upfrontPayer === uid || d.managerName === uid) continue;
-
-      const resSnap = await utils.getDoc(utils.doc(utils.db, "collects", doc.id, "responses", uid || ""));
-      if (!resSnap.exists()) {
-        if (!collectHeader) {
-          items.push({ type: "pending", message: "📌集金、受付中です！" });
-          collectHeader = true;
-          hasAny = true;
-        }
-        items.push({ type: "item", label: `💰${d.title}`, link: `/collect-confirm?collectId=${doc.id}` });
-      }
-    }
-
-    // イベント
-    const eventsSnap = await utils.getDocs(
-      utils.query(utils.collection(utils.db, "events"), utils.orderBy("date", "asc"))
-    );
     const todayStr = utils.format(new Date(), "yyyy.MM.dd");
-    
-    const eventResults = await Promise.all(eventsSnap.docs.map(async (doc) => {
+
+    const [votes, calls, collects, events] = await Promise.all([
+      utils.getDocs(utils.query(utils.collection(utils.db, "votes"), utils.orderBy("createdAt", "desc"))),
+      utils.getDocs(utils.query(utils.collection(utils.db, "calls"), utils.orderBy("createdAt", "desc"))),
+      utils.getDocs(utils.collection(utils.db, "collects")),
+      utils.getDocs(utils.query(utils.collection(utils.db, "events"), utils.orderBy("date", "asc")))
+    ]);
+
+    // 共通セクション追加ロジック
+    const addSection = (msg: string, docs: any[], labelKey: string, linkBase: string) => {
+      let headerAdded = false;
+      docs.forEach((doc) => {
+        const d = doc.data();
+        if (utils.isInTerm(d.acceptStartDate, d.acceptEndDate)) {
+          if (!headerAdded) { items.push({ type: "pending", message: msg }); headerAdded = true; }
+          items.push({ type: "item", label: d[labelKey], link: `${linkBase}${doc.id}` });
+        }
+      });
+    };
+
+    addSection("📌投票、受付中です！", votes.docs, "name", "/vote-confirm?voteId=");
+    addSection("📌候補曲、募集中です！", calls.docs, "title", "/call-confirm?callId=");
+
+    let collectHeader = false;
+    for (const doc of collects.docs) {
       const d = doc.data();
-      const id = doc.id;
-      const res = { id, title: d.title, date: d.date, isPast: d.date < todayStr, 
-                    isSchedule: d.attendanceType === "schedule", isAttendance: d.attendanceType === "attendance",
-                    isAssignPending: d.allowAssign, isUnanswered: false, diffDays: 0 };
-      
+      if (utils.isInTerm(d.acceptStartDate, d.acceptEndDate) && (d.participants || []).includes(uid) && d.upfrontPayer !== uid && d.managerName !== uid) {
+        const res = await utils.getDoc(utils.doc(utils.db, "collects", doc.id, "responses", uid || ""));
+        if (!res.exists()) {
+          if (!collectHeader) { items.push({ type: "pending", message: "📌集金、受付中です！" }); collectHeader = true; }
+          items.push({ type: "item", label: `💰${d.title}`, link: `/collect-confirm?collectId=${doc.id}` });
+        }
+      }
+    }
+
+// --- イベント処理 (ここを修正) ---
+    const eventResults = await Promise.all(events.docs.map(async (doc): Promise<EventItem | null> => {
+      const d = doc.data() as any; // 一旦 any で受け取る
+      if (d.date < todayStr) return null;
+
+      let isUnanswered = false;
       if (utils.isInTerm(d.acceptStartDate, d.acceptEndDate) && uid) {
-        const coll = res.isSchedule ? "eventAdjustAnswers" : "eventAttendanceAnswers";
-        const ans = await utils.getDoc(utils.doc(utils.db, coll, `${id}_${uid}`));
-        res.isUnanswered = !ans.exists();
+        const coll = d.attendanceType === "schedule" ? "eventAdjustAnswers" : "eventAttendanceAnswers";
+        const ans = await utils.getDoc(utils.doc(utils.db, coll, `${doc.id}_${uid}`));
+        isUnanswered = !ans.exists();
       }
-      if (d.date) {
-        const eventDate = new Date(d.date.replace(/\./g, "/"));
-        const today = new Date(new Date().setHours(0,0,0,0));
-        res.diffDays = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      }
-      return res;
+      const diffDays = d.date ? Math.ceil((new Date(d.date.replace(/\./g, "/")).getTime() - new Date().setHours(0,0,0,0)) / 86400000) : 0;
+      
+      return { 
+        id: doc.id, 
+        title: d.title || "", 
+        date: d.date || "", 
+        attendanceType: d.attendanceType || "", 
+        allowAssign: d.allowAssign || false,
+        isUnanswered, 
+        diffDays 
+      };
     }));
 
-    const upcoming = eventResults.filter(e => !e.isPast);
+    // TypeScriptにnullでないことを保証させる(型ガード)
+    const upcoming = eventResults.filter((e): e is NonNullable<typeof e> => e !== null);
 
-    // 日程調整
-    const schPending = upcoming.filter(e => e.isSchedule && e.isUnanswered);
-    if (schPending.length > 0) {
+    const schPending = upcoming.filter(e => e.attendanceType === "schedule" && e.isUnanswered);
+    if (schPending.length) {
       items.push({ type: "pending", message: "📌日程調整、受付中です！" });
       schPending.forEach(e => items.push({ type: "item", label: `🗓️ ${e.title}`, link: `/event-confirm?eventId=${e.id}` }));
-      hasAny = true;
     }
 
-    // 直近イベント
-    let target = upcoming.find(e => e.isAttendance && e.isUnanswered) || upcoming.find(e => e.date);
+    const target = upcoming.find(e => e.attendanceType === "attendance" && e.isUnanswered) || upcoming.find(e => e.date);
     if (target) {
-      let header = target.isUnanswered ? "📌出欠確認、受付中です！" : `📌次のイベントまで、あと${target.diffDays}日！`;
-      if (target.diffDays === 0) header = "📌今日はイベント当日です！";
-      items.push({ type: "pending", message: header });
-      items.push({ type: "item", label: `📅${target.date} ${target.title}`, link: `/event-confirm?eventId=${target.id}` });
-      hasAny = true;
+      const header = target.isUnanswered ? "📌出欠確認、受付中です！" : target.diffDays === 0 ? "📌今日はイベント当日です！" : `📌次のイベントまで、あと${target.diffDays}日！`;
+      items.push({ type: "pending", message: header }, { type: "item", label: `📅${target.date} ${target.title}`, link: `/event-confirm?eventId=${target.id}` });
     }
 
-    // 譜割り
-    const assPending = upcoming.filter(e => e.isAssignPending);
-    if (assPending.length > 0) {
+    const assignPending = upcoming.filter(e => e.allowAssign);
+    if (assignPending.length) {
       items.push({ type: "pending", message: "📌譜割り、受付中です！" });
-      assPending.forEach(e => items.push({ type: "item", label: `🎵${e.date} ${e.title}`, link: `/assign-confirm?eventId=${e.id}` }));
-      hasAny = true;
+      assignPending.forEach(e => items.push({ type: "item", label: `🎵${e.date} ${e.title}`, link: `/assign-confirm?eventId=${e.id}` }));
     }
 
-    if (!hasAny) items.push({ type: "empty", message: "お知らせはありません🍀" });
-    setAnnouncements(items);
+    setAnnouncements(items.length ? items : [{ type: "empty", message: "お知らせはありません🍀" }]);
   };
 
-  // --- 2. 譜面 (Quick Scores & Player) ---
-  const loadQuickScoresAndPlayer = async () => {
-    const snap = await utils.getDocs(
-      utils.query(utils.collection(utils.db, "scores"), utils.orderBy("createdAt", "desc"))
-    );
-    const allScores: Score[] = snap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data() as any,
-      youtubeId: utils.extractYouTubeId(doc.data().referenceTrack)
-    }));
-
-    const topScores = allScores.filter(s => s.isDispTop);
-    
-    // クイックリンク(最新4件)
-    setQuickScores(topScores.slice(0, 4));
-
-    // プレイリストリンク
-    const ids = topScores.map(s => s.youtubeId).filter(id => !!id).join(",");
-    setAllScoreWatchIds(ids);
-
-    // プレイヤー用
-    const playerScores = topScores.filter(s => !!s.youtubeId);
-    setScores(playerScores);
-    if (playerScores.length > 0) {
-      setCurrentScoreIdx(Math.floor(Math.random() * Math.min(playerScores.length, 4)));
-    }
+  // --- 譜面 / 今日の一曲 / メディア (最適化済み) ---
+  const loadScores = async () => {
+    const snap = await utils.getDocs(utils.query(utils.collection(utils.db, "scores"), utils.orderBy("createdAt", "desc")));
+    const all = snap.docs.map(doc => ({ id: doc.id, ...doc.data() as any, youtubeId: utils.extractYouTubeId(doc.data().referenceTrack) }));
+    const top = all.filter(s => s.isDispTop);
+    setQuickScores(top.slice(0, 4));
+    const players = top.filter(s => !!s.youtubeId);
+    setScores(players);
+    if (players.length) setCurrentScoreIdx(Math.floor(Math.random() * Math.min(players.length, 4)));
   };
 
-  // --- 3. 今日の一曲 ---
   const loadBlueNotes = async () => {
     const snap = await utils.getDocs(utils.collection(utils.db, "blueNotes"));
     const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     setBlueNotes(list);
-
-    if (list.length > 0) {
-      const today = new Date();
-      const todayId = String(today.getMonth() + 1).padStart(2, "0") + String(today.getDate()).padStart(2, "0");
+    if (list.length) {
+      const todayId = utils.format(new Date(), "MMdd");
       const idx = list.findIndex(n => n.id === todayId);
       setCurrentBNIdx(idx !== -1 ? idx : Math.floor(Math.random() * list.length));
     }
   };
 
-  // --- 4. メディア ---
   const loadMedias = async () => {
-    const snap = await utils.getDocs(
-      utils.query(utils.collection(utils.db, "medias"), utils.orderBy("date", "desc"), utils.limit(10)) // limitは少し多めに取ってフィルタ
-    );
-    const list = snap.docs
-      .map(doc => ({ id: doc.id, ...doc.data() } as Media))
-      .filter(m => m.isDispTop)
-      .slice(0, 4);
-    setMedias(list);
+    const snap = await utils.getDocs(utils.query(utils.collection(utils.db, "medias"), utils.orderBy("date", "desc"), utils.limit(10)));
+    setMedias(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Media)).filter(m => m.isDispTop).slice(0, 4));
   };
 
-  // --- プレイヤー操作 ---
-  const scoreRandom = () => {
-    if (scores.length <= 1) return;
-    let next;
-    do { next = Math.floor(Math.random() * scores.length); } while (next === currentScoreIdx);
-    setCurrentScoreIdx(next);
-  };
-
-  const bnRandom = () => {
-    if (blueNotes.length <= 1) return;
-    setCurrentBNIdx(utils.getRandomIndex(currentBNIdx, blueNotes.length));
-  };
+  const scorePlaylistIds = useMemo(() => scores.map(s => s.youtubeId).filter(Boolean).join(","), [scores]);
+  const bnPlaylistIds = useMemo(() => utils.getWatchVideosOrder(currentBNIdx, blueNotes)?.join(","), [currentBNIdx, blueNotes]);
 
   return (
     <div className={styles.homeContainer}>
-      <div className="page-header">
-        <h1><i className="fa fa-home"></i> ホーム</h1>
-      </div>
-
-      {/* お知らせ */}
+      <div className="page-header"><h1><i className="fa fa-home"></i> ホーム</h1></div>
       <main className="container">
         <section className={styles.announcementContainer}>
           <div className={styles.announcementHeader}><h3>お知らせ</h3></div>
           <ul className={styles.notificationList}>
             {announcements.map((a, i) => (
-              <li key={i} className={a.type === "pending" ? styles.pendingMessage : a.type === "empty" ? styles.emptyMessage : ""}>
-                {a.type === "item" ? (
-                  <Link href={a.link || "#"} className={styles.notificationLink}>{a.label}</Link>
-                ) : (
-                  <div className={styles.notificationLink}>{a.message}</div>
-                )}
+              <li key={i} className={styles[a.type === "pending" ? "pendingMessage" : a.type === "empty" ? "emptyMessage" : ""]}>
+                {a.type === "item" ? <Link href={a.link || "#"} className={styles.notificationLink}>{a.label}</Link> : <div className={styles.notificationLink}>{a.message}</div>}
               </li>
             ))}
           </ul>
         </section>
       </main>
 
-      {/* 新着譜面 */}
       <main className="container">
-        <div className={styles.scoreHeader}>
-          <h3>新着譜面</h3>
-          {allScoreWatchIds && (
-            <a href={`https://www.youtube.com/watch_videos?video_ids=${allScoreWatchIds}`} 
-               target="_blank" className={styles.playlistButton}>
-              <i className="fa-brands fa-youtube"></i> プレイリスト
-            </a>
-          )}
-        </div>
-
-        <div className={styles.scoreList}>
-          {quickScores.length === 0 ? (
-            <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>
-          ) : (
-            <div className={styles.quickScoreGrid}>
-              {quickScores.map(s => (
-                <Link key={s.id} href={`/score-confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>
-                  🎼 {s.title}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 譜面プレイヤー */}
-        {scores.length > 0 && (
-          <div className={styles.playerWrapper}>
-            <h2 className={styles.playerTitle}>{scores[currentScoreIdx]?.title || "参考演奏"}</h2>
-            <div dangerouslySetInnerHTML={{ 
-              __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(currentScoreIdx, scores)) 
-            }} />
-            <div className={styles.playerControls}>
-              <button onClick={() => setCurrentScoreIdx((currentScoreIdx - 1 + scores.length) % scores.length)} className={styles.playerControl}>
-                <i className="fa-solid fa-backward-step"></i>
-              </button>
-              <button onClick={scoreRandom} className={styles.playerControl}>
-                ランダム <i className="fa-solid fa-arrows-rotate"></i>
-              </button>
-              <button onClick={() => setCurrentScoreIdx((currentScoreIdx + 1) % scores.length)} className={styles.playerControl}>
-                <i className="fa-solid fa-forward-step"></i>
-              </button>
-            </div>
-          </div>
-        )}
-        <div style={{ textAlign: "center" }}>
-          <Link href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link>
-        </div>
-      </main>
-
-      {/* メニュー一覧 */}
-      <main className="container">
-        <h3>メニュー</h3>
-        <div className={styles.menuList}>
-          <h2 className={styles.menuTitle}>演奏メニュー</h2>
-          <Link href="/score" className={`${styles.menuButton} ${styles.score}`}>🎼 譜面</Link>
-          <Link href="/event" className={`${styles.menuButton} ${styles.event}`}>🎺 イベント</Link>
-          <Link href="/assign" className={`${styles.menuButton} ${styles.assign}`}>🎵 譜割り</Link>
-          
-          <h2 className={styles.menuTitle}>活動メニュー</h2>
-          <Link href="/call" className={`${styles.menuButton} ${styles.call}`}>🎶 曲募集</Link>
-          <Link href="/vote" className={`${styles.menuButton} ${styles.vote}`}>📊 投票</Link>
-          <Link href="/collect" className={`${styles.menuButton} ${styles.collect}`}>💰 集金</Link>
-          <Link href="/studio" className={`${styles.menuButton} ${styles.studio}`}>📍 スタジオ</Link>
-          
-          <h2 className={styles.menuTitle}>アプリメニュー</h2>
-          <Link href="/user" className={`${styles.menuButton} ${styles.user}`}>👥 ユーザ</Link>
-          <Link href="/notice" className={`${styles.menuButton} ${styles.notice}`}>📣 通知設定</Link>
-          <Link href="/blue-note" className={`${styles.menuButton} ${styles.blueNote} ${styles.badgeInline}`}>
-            🎧 今日の一曲 <span className={styles.badge}>募集中</span>
-          </Link>
-          <Link href="/board" className={`${styles.menuButton} ${styles.board}`}>📋 掲示板</Link>
-          
-          <h2 className={styles.menuTitle}>ホームページ連携</h2>
-          <Link href="/live" className={`${styles.menuButton} ${styles.live}`}>🎷 ライブ</Link>
-          <Link href="/ticket" className={`${styles.menuButton} ${styles.ticket}`}>🎫 予約者一覧</Link>
-          <Link href="/media" className={`${styles.menuButton} ${styles.media}`}>🎬 メディア</Link>
-        </div>
-      </main>
-
-      {/* 今日の一曲プレイヤー */}
-      {blueNotes.length > 0 && (
-        <main className="container">
           <div className={styles.scoreHeader}>
-            <h3>今日の一曲</h3>
-            <a href={`https://www.youtube.com/watch_videos?video_ids=${utils.getWatchVideosOrder(currentBNIdx, blueNotes)?.join(",")}`} 
-               target="_blank" className={styles.playlistButton}>
-              <i className="fa-brands fa-youtube"></i> プレイリスト
-            </a>
+            <h3>新着譜面</h3>
+            {scorePlaylistIds && <a href={`https://www.youtube.com/watch_videos?video_ids=${scorePlaylistIds}`} target="_blank" className={styles.playlistButton}><i className="fa-brands fa-youtube"></i> プレイリスト</a>}
           </div>
-          <div className={styles.playerWrapper}>
-            <h2 className={styles.playerTitle}>{blueNotes[currentBNIdx]?.title}</h2>
-            <div dangerouslySetInnerHTML={{ 
-              __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(currentBNIdx, blueNotes)) 
-            }} />
-            <div className={styles.playerControls}>
-              <button onClick={() => setCurrentBNIdx((currentBNIdx - 1 + blueNotes.length) % blueNotes.length)} className={styles.playerControl}>
-                <i className="fa-solid fa-backward-step"></i>
-              </button>
-              <button onClick={bnRandom} className={styles.playerControl}>
-                ランダム <i className="fa-solid fa-arrows-rotate"></i>
-              </button>
-              <button onClick={() => setCurrentBNIdx((currentBNIdx + 1) % blueNotes.length)} className={styles.playerControl}>
-                <i className="fa-solid fa-forward-step"></i>
-              </button>
-            </div>
+          <div className={styles.scoreList}>
+            {quickScores.length ? (
+              <div className={styles.quickScoreGrid}>
+                {quickScores.map(s => <Link key={s.id} href={`/score-confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
+              </div>
+            ) : <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>}
           </div>
-          <div style={{ textAlign: "center" }}>
-            <Link href="/blue-note" style={{ fontWeight: "bold" }}>もっと見る</Link>
-          </div>
-        </main>
-      )}
+          {scores.length > 0 && (
+            <Player 
+              title={scores[currentScoreIdx]?.title || "参考演奏"} 
+              data={scores} 
+              idx={currentScoreIdx} 
+              setIdx={setCurrentScoreIdx} 
+              onRandom={() => setCurrentScoreIdx(utils.getRandomIndex(currentScoreIdx, scores.length))}
+            />
+          )}
+          <div style={{ textAlign: "center", marginTop: "10px" }}><Link href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
+        
+      </main>
 
-      {/* メディアセクション */}
       <main className="container">
-        <h3>メディア</h3>
-        <div className={styles.contentList}>
-          {medias.length === 0 ? (
-            <div className={styles.contentItem}>メディアはまだ登録されていません🍀</div>
-          ) : (
-            medias.map(m => (
+          <h3>メニュー</h3>
+          <div className={styles.menuList}>
+            <MenuSection title="演奏メニュー" items={[{h: "/score", l: "🎼 譜面", c: "score"}, {h: "/event", l: "🎺 イベント", c: "event"}, {h: "/assign", l: "🎵 譜割り", c: "assign"}]} />
+            <MenuSection title="活動メニュー" items={[{h: "/call", l: "🎶 曲募集", c: "call"}, {h: "/vote", l: "📊 投票", c: "vote"}, {h: "/collect", l: "💰 集金", c: "collect"}, {h: "/studio", l: "📍 スタジオ", c: "studio"}]} />
+            <MenuSection title="アプリメニュー" items={[{h: "/user", l: "👥 ユーザ", c: "user"}, {h: "/notice", l: "📣 通知設定", c: "notice"}, {h: "/blue-note", l: "🎧 今日の一曲", c: "blueNote", b: "募集中"}, {h: "/board", l: "📋 掲示板", c: "board"}]} />
+            <MenuSection title="ホームページ連携" items={[{h: "/live", l: "🎷 ライブ", c: "live"}, {h: "/ticket", l: "🎫 予約者一覧", c: "ticket"}, {h: "/media", l: "🎬 メディア", c: "media"}]} />
+          </div>
+      </main>
+
+      <main className="container">
+        {blueNotes.length > 0 && (
+          <>
+            <div className={styles.scoreHeader}>
+              <h3>今日の一曲</h3>
+              <a href={`https://www.youtube.com/watch_videos?video_ids=${bnPlaylistIds}`} target="_blank" className={styles.playlistButton}><i className="fa-brands fa-youtube"></i> プレイリスト</a>
+            </div>
+            <Player 
+              title={blueNotes[currentBNIdx]?.title} 
+              data={blueNotes} 
+              idx={currentBNIdx} 
+              setIdx={setCurrentBNIdx} 
+              onRandom={() => setCurrentBNIdx(utils.getRandomIndex(currentBNIdx, blueNotes.length))}
+            />
+            <div style={{ textAlign: "center", marginTop: "10px" }}><Link href="/blue-note" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
+          </>
+        )}
+      </main>
+
+      <main className="container">
+          <h3>メディア</h3>
+          <div className={styles.contentList}>
+            {medias.length ? medias.map(m => (
               <div key={m.id} className={styles.contentItem}>
                 <h4>{m.title}</h4>
                 <div className={styles.mediaDate}>{m.date}</div>
@@ -429,10 +249,34 @@ export default function HomePage() {
                 {m.youtubeUrl && <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(m.youtubeUrl, true) }} />}
                 {m.driveUrl && <div dangerouslySetInnerHTML={{ __html: utils.buildGoogleDriveHtml(m.driveUrl, true) }} />}
               </div>
-            ))
-          )}
-        </div>
+            )) : <div className={styles.contentItem}>メディアはまだ登録されていません🍀</div>}
+          </div>
+        
       </main>
     </div>
   );
 }
+
+// 内部コンポーネント
+const Player = ({ title, data, idx, setIdx, onRandom }: any) => (
+  <div className={styles.playerWrapper}>
+    <h2 className={styles.playerTitle}>{title}</h2>
+    <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(idx, data)) }} />
+    <div className={styles.playerControls}>
+      <button onClick={() => setIdx((idx - 1 + data.length) % data.length)} className={styles.playerControl}><i className="fa-solid fa-backward-step"></i></button>
+      <button onClick={onRandom} className={styles.playerControl}>ランダム <i className="fa-solid fa-arrows-rotate"></i></button>
+      <button onClick={() => setIdx((idx + 1) % data.length)} className={styles.playerControl}><i className="fa-solid fa-forward-step"></i></button>
+    </div>
+  </div>
+);
+
+const MenuSection = ({ title, items }: any) => (
+  <>
+    <h2 className={styles.menuTitle}>{title}</h2>
+    {items.map((item: any) => (
+      <Link key={item.h} href={item.h} className={`${styles.menuButton} ${styles[item.c]} ${item.b ? styles.badgeInline : ""}`}>
+        {item.l} {item.b && <span className={styles.badge}>{item.b}</span>}
+      </Link>
+    ))}
+  </>
+);
