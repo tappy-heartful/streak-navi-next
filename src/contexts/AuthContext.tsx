@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Firestoreから最新データを取得する共通関数
   const fetchUserData = async (uid: string) => {
-    const userRef = doc(db, "connectUsers", uid);
+    const userRef = doc(db, "users", uid);
     const snap = await getDoc(userRef);
     if (snap.exists()) {
       const data = snap.data();
