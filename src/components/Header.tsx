@@ -120,7 +120,7 @@ export default function Header() {
             {menuLink("/studio", "スタジオ")}
             {menuLink("/user", "ユーザ")}
             {menuLink("/notice", "通知設定")}
-            {menuLink("/blue-note-edit", "今日の一曲")}
+            {menuLink("/blue-note", "今日の一曲")}
             {menuLink("/board", "掲示板")}
             {menuLink("/live", "ライブ")}
             {menuLink("/ticket", "予約者一覧")}

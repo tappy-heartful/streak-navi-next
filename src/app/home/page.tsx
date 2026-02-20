@@ -370,7 +370,7 @@ export default function HomePage() {
           <h2 className={styles.menuTitle}>アプリメニュー</h2>
           <Link href="/user" className={`${styles.menuButton} ${styles.user}`}>👥 ユーザ</Link>
           <Link href="/notice" className={`${styles.menuButton} ${styles.notice}`}>📣 通知設定</Link>
-          <Link href="/blue-note-edit" className={`${styles.menuButton} ${styles.blueNote} ${styles.badgeInline}`}>
+          <Link href="/blue-note" className={`${styles.menuButton} ${styles.blueNote} ${styles.badgeInline}`}>
             🎧 今日の一曲 <span className={styles.badge}>募集中</span>
           </Link>
           <Link href="/board" className={`${styles.menuButton} ${styles.board}`}>📋 掲示板</Link>
@@ -410,7 +410,7 @@ export default function HomePage() {
             </div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <Link href="/blue-note-edit" style={{ fontWeight: "bold" }}>もっと見る</Link>
+            <Link href="/blue-note" style={{ fontWeight: "bold" }}>もっと見る</Link>
           </div>
         </main>
       )}

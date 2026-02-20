@@ -27,7 +27,7 @@ export default function AgreementPage() {
     
     // 既存：ユーザ編集画面へ（isInit=trueを付与）
     // Next.jsではクエリパラメータとして渡す
-    router.push(`/user-edit?isInit=true&uid=${uid}`);
+    router.push(`/user?isInit=true&uid=${uid}`);
   };
 
   return (
