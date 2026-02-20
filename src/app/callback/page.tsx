@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { auth, db } from "@/src/lib/firebase";
 import { signInWithCustomToken } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { showSpinner, hideSpinner, globalLineLoginUrl, setSession } from "@/src/lib/functions";
+import { showSpinner, hideSpinner, setSession } from "@/src/lib/functions";
 
 function CallbackContent() {
   const router = useRouter();
@@ -31,17 +31,16 @@ function CallbackContent() {
 
   async function handleLogin(code: string, state: string) {
     try {
-      showSpinner();
-      // LINEの登録URLと完全一致させるため、クエリパラメータを除いた現在のURLを作成
-      const redirectUri = window.location.origin + window.location.pathname;
+    showSpinner();
+    const redirectUri = window.location.origin + window.location.pathname;
 
-      // 1. 自前サーバーで認証
-      const res = await fetch(globalLineLoginUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, state, redirectUri }),
-      });
-      const data = await res.json();
+    // 自身のサーバーの API を叩く
+    const res = await fetch('/api/line/login', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, state, redirectUri }),
+    });
+    const data = await res.json();
 
       if (data.error) throw new Error(data.error);
 

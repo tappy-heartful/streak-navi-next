@@ -87,12 +87,12 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setIsLoggingIn(true);
     try {
-      const fetchUrl = `${utils.globalGetLineLoginUrl}`;
-      const res = await fetch(fetchUrl);
+      // 自身のサーバーの API を叩く
+      const res = await fetch('/api/line/get-url'); 
       const { loginUrl } = await res.json();
       window.location.href = loginUrl;
     } catch (err: any) {
-      alert('ログインURL取得失敗: ' + err.message);
+      alert('ログインURL取得失敗');
       setIsLoggingIn(false);
     }
   };
