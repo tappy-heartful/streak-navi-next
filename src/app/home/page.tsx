@@ -259,7 +259,7 @@ export default function HomePage() {
 
 // 内部コンポーネント
 const Player = ({ title, data, idx, setIdx, onRandom }: any) => (
-  <div className={styles.playerWrapper}>
+  <div>
     <h2 className={styles.playerTitle}>{title}</h2>
     <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(idx, data)) }} />
     <div className={styles.playerControls}>
