@@ -1,0 +1,115 @@
+/* about.module.css */
+.container {
+  padding-bottom: 2rem;
+}
+
+.title {
+  color: #4caf50;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.3rem;
+  margin-bottom: 1.5rem;
+}
+
+.accentTitle {
+  color: #4caf50;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.3rem;
+  margin-top: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-bottom: 2px solid #ccc;
+  margin-bottom: 1rem;
+}
+
+.tab {
+  flex: 1 1 auto;
+  text-align: center;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  background: #e5def0;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 120px;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  background: #dcd2eb;
+}
+
+.tab.active {
+  background: #ffffff;
+  font-weight: bold;
+  border-bottom: 2px solid #ffffff;
+  /* アクティブ時は影を消す、または調整してタブらしさを出す */
+  box-shadow: none;
+}
+
+.tabContent {
+  display: none;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tabContent.active {
+  display: block;
+}
+
+.tabContent p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.tabContent ul {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.tabContent li {
+  margin-bottom: 0.5rem;
+}
+
+.link {
+  color: #4caf50;
+  word-break: break-word;
+  text-decoration: underline;
+}
+
+.footerActions {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.backLink {
+  color: #4caf50;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+@media screen and (max-width: 600px) {
+  .tab {
+    flex: 1 1 100%;
+    font-size: 1rem;
+    border-radius: 8px; /* モバイル時は独立したボタンのように */
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .accentTitle {
+    font-size: 1.1rem;
+  }
+
+  .tabContent p {
+    font-size: 0.95rem;
+  }
+}

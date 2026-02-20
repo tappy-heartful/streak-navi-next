@@ -1,0 +1,288 @@
+/* home.module.css */
+
+.homeContainer {
+  padding-bottom: 40px;
+}
+
+/* お知らせセクション */
+.announcementContainer {
+  margin-bottom: 20px;
+}
+
+.announcementHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.notificationList {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.notificationList li {
+  margin-bottom: 10px;
+}
+
+.notificationLink {
+  display: block;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: background 0.3s ease;
+  font-size: 16px;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  position: relative;
+  text-decoration: none;
+}
+
+/* 矢印アイコン (itemのみ) */
+.notificationLink:not(div)::after {
+  content: '›';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #999;
+  transition: transform 0.2s ease;
+}
+
+.notificationLink:hover {
+  background-color: #e0f5e9;
+}
+
+.pendingMessage {
+  font-weight: bold;
+  color: #ffae9c;
+  padding-left: 10px;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  list-style: none;
+}
+
+.emptyMessage {
+  text-align: center;
+  color: #777;
+  font-size: 14px;
+  padding: 12px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+
+/* 新着譜面セクション */
+.scoreHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.playlistButton {
+  background-color: #ff0000;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  text-decoration: none;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.2s;
+}
+
+.playlistButton:hover {
+  opacity: 0.8;
+}
+
+.quickScoreGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.quickScoreLink {
+  display: block;
+  padding: 12px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
+}
+
+.quickScoreLink:hover {
+  background-color: #e0f5e9;
+}
+
+.playerTitle {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 12px;
+  font-size: 15px;
+  color: #666;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 4px;
+  text-align: center;
+}
+
+.playerControls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.playerControl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.playerControl:hover {
+  background-color: #45a049;
+}
+
+/* メニューボタン一覧 */
+.menuList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.menuTitle {
+  grid-column: 1 / -1;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #555;
+  border-left: 4px solid #4caf50;
+  padding-left: 10px;
+}
+
+.menuButton {
+  display: block;
+  padding: 16px 10px;
+  text-align: center;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 10px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.1s, background 0.3s;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: bold;
+}
+
+.menuButton:active {
+  transform: scale(0.96);
+}
+
+/* 背景アイコンの再現 */
+.menuButton::after {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.score::after { content: '🎼'; }
+.event::after { content: '🎺'; }
+.assign::after { content: '🎵'; }
+.call::after { content: '🎶'; }
+.vote::after { content: '📊'; }
+.collect::after { content: '💰'; }
+.studio::after { content: '📍'; }
+.user::after { content: '👥'; }
+.notice::after { content: '📣'; }
+.blueNote::after { content: '🎧'; }
+.media::after { content: '🎬'; }
+.board::after { content: '📋'; }
+.live::after { content: '🎷'; }
+.ticket::after { content: '🎫'; }
+
+/* バッジアニメーション */
+.badgeInline {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: #ff3b30;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  animation: pulse 1.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+/* メディアセクション */
+.contentList {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.contentItem {
+  width: 100%;
+}
+
+.contentItem h4 {
+  font-weight: bold;
+  text-align: center;
+  font-size: 18px;
+  color: #444;
+  margin-bottom: 5px;
+}
+
+.mediaDate {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 15px;
+}
+
+/* YouTube/Instagram等の共通スタイル */
+.contentItem :global(.youtube-embed-wrapper),
+.contentItem :global(.instagram-embed),
+.contentItem :global(.drive-embed-wrapper) {
+  margin-bottom: 10px;
+}
+
+.contentItem iframe {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
