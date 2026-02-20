@@ -8,42 +8,48 @@ import { usePathname } from "next/navigation";
 export default function Footer() {
   const pathname = usePathname();
   if (["/login", "/callback", "/agreement", "/about"].includes(pathname)) return null;
+
   const [showOverlay, setShowOverlay] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [userData, setUserData] = useState({
-    name: "",
-    icon: ""
-  });
+  const [userData, setUserData] = useState({ name: "", icon: "" });
 
   useEffect(() => {
-    // ログイン成功時にCallbackページでセットした "fromLogin" フラグを確認
     const fromLogin = getSession("fromLogin");
 
     if (fromLogin === "true") {
-      const name = getSession("displayName") || "ゲスト";
-      const icon = getSession("pictureUrl") || globalLineDefaultImage;
-      
-      setUserData({ name, icon });
+      // 1. データをセット
+      setUserData({
+        name: getSession("displayName") || "ゲスト",
+        icon: getSession("pictureUrl") || globalLineDefaultImage,
+      });
+
+      // 2. DOMに出現させる
       setShowOverlay(true);
       
-      // クラスベースのアニメーション（opacity 1）を開始
-      setTimeout(() => setIsAnimating(true), 100);
-
-      // 3秒後に自動で閉じる
-      const timer = setTimeout(() => {
-        handleCloseOverlay();
-      }, 3000);
-
-      // 一度表示したらフラグを消す
+      // 3. セッションを消す（二重表示防止）
       removeSession("fromLogin");
 
-      return () => clearTimeout(timer);
-    }
-  }, []);
+      // 4. アニメーション開始 (少し遅らせて transition を効かせる)
+      const showTimer = setTimeout(() => setIsAnimating(true), 100);
 
-  const handleCloseOverlay = () => {
+      // 5. 3秒間表示して、その後フェードアウト開始
+      const hideTimer = setTimeout(() => {
+        setIsAnimating(false);
+        // フェードアウト(0.5s)が終わってからDOMから消す
+        setTimeout(() => setShowOverlay(false), 500);
+      }, 3500);
+
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, [pathname]); // パスが変わったタイミングでもチェックするようにする
+
+  // 手動で閉じたい場合の関数
+  const manualClose = () => {
     setIsAnimating(false);
-    setTimeout(() => setShowOverlay(false), 500); // Transition時間待ってから消去
+    setTimeout(() => setShowOverlay(false), 500);
   };
 
   return (
@@ -52,23 +58,17 @@ export default function Footer() {
         <div>&copy; 2025, 2026 Swing Streak Jazz Orchestra</div>
         <div className="developed-by">Developed by Takumi Fujimoto</div>
         <div className="footer-actions">
-          {/* 外部サイトや静的ファイルの場合は target="_blank" */}
           <Link href="/about" target="_blank">サイト情報</Link>
         </div>
       </footer>
 
-      {/* 初回ログインオーバーレイ */}
       {showOverlay && (
         <div 
           className={`first-login-overlay ${isAnimating ? "show" : ""}`}
-          onClick={handleCloseOverlay}
+          onClick={manualClose}
         >
           <div className="first-login-content">
-            <img 
-              className="line-icon" 
-              src={userData.icon} 
-              alt="LINEアイコン" 
-            />
+            <img className="line-icon" src={userData.icon} alt="LINE" />
             <p className="welcome-message">
               ようこそ！<br />
               <span>{userData.name}</span>さん
