@@ -18,15 +18,14 @@ interface Announcement {
 interface Score {
   id: string;
   title: string;
-  title_decoded?: string;
-  referenceTrack_decoded?: string;
-  youtubeId_decoded?: string;
+  referenceTrack?: string;
+  youtubeId?: string;
   isDispTop?: boolean;
 }
 
 interface BlueNote {
   id: string;
-  title_decoded?: string;
+  title?: string;
   [key: string]: any;
 }
 
@@ -218,7 +217,7 @@ export default function HomePage() {
     const allScores: Score[] = snap.docs.map(doc => ({
       id: doc.id,
       ...doc.data() as any,
-      youtubeId_decoded: utils.extractYouTubeId(doc.data().referenceTrack_decoded)
+      youtubeId: utils.extractYouTubeId(doc.data().referenceTrack)
     }));
 
     const topScores = allScores.filter(s => s.isDispTop);
@@ -227,11 +226,11 @@ export default function HomePage() {
     setQuickScores(topScores.slice(0, 4));
 
     // プレイリストリンク
-    const ids = topScores.map(s => s.youtubeId_decoded).filter(id => !!id).join(",");
+    const ids = topScores.map(s => s.youtubeId).filter(id => !!id).join(",");
     setAllScoreWatchIds(ids);
 
     // プレイヤー用
-    const playerScores = topScores.filter(s => !!s.youtubeId_decoded);
+    const playerScores = topScores.filter(s => !!s.youtubeId);
     setScores(playerScores);
     if (playerScores.length > 0) {
       setCurrentScoreIdx(Math.floor(Math.random() * Math.min(playerScores.length, 4)));
@@ -330,9 +329,9 @@ export default function HomePage() {
         {/* 譜面プレイヤー */}
         {scores.length > 0 && (
           <div className={styles.playerWrapper}>
-            <h2 className={styles.playerTitle}>{scores[currentScoreIdx]?.title_decoded || "参考演奏"}</h2>
+            <h2 className={styles.playerTitle}>{scores[currentScoreIdx]?.title || "参考演奏"}</h2>
             <div dangerouslySetInnerHTML={{ 
-              __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(currentScoreIdx, scores), true) 
+              __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(currentScoreIdx, scores)) 
             }} />
             <div className={styles.playerControls}>
               <button onClick={() => setCurrentScoreIdx((currentScoreIdx - 1 + scores.length) % scores.length)} className={styles.playerControl}>
@@ -393,9 +392,9 @@ export default function HomePage() {
             </a>
           </div>
           <div className={styles.playerWrapper}>
-            <h2 className={styles.playerTitle}>{blueNotes[currentBNIdx]?.title_decoded}</h2>
+            <h2 className={styles.playerTitle}>{blueNotes[currentBNIdx]?.title}</h2>
             <div dangerouslySetInnerHTML={{ 
-              __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(currentBNIdx, blueNotes), true) 
+              __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(currentBNIdx, blueNotes)) 
             }} />
             <div className={styles.playerControls}>
               <button onClick={() => setCurrentBNIdx((currentBNIdx - 1 + blueNotes.length) % blueNotes.length)} className={styles.playerControl}>

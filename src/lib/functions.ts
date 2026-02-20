@@ -260,7 +260,7 @@ export function buildGoogleDriveHtml(driveUrl: string, showNotice = false): stri
 // --- プレイヤー補助ロジック ---
 
 export function getWatchVideosOrder(currentIndex: number, items: any[]): string[] {
-  const ids = items.map(n => n.youtubeId_decoded || extractYouTubeId(n.referenceTrack_decoded));
+  const ids = items.map(n => n.youtubeId || extractYouTubeId(n.referenceTrack));
   return [...ids.slice(currentIndex), ...ids.slice(0, currentIndex)];
 }
 
