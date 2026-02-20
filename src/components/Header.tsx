@@ -3,11 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { auth } from "@/src/lib/firebase"; // Firebase Authをインポート
 import { 
   getSession, 
   clearAllAppSession, 
   globalLineDefaultImage, 
-  isTest 
+  isTest,
+  showSpinner, // 演出用にスピナー関数があれば追加
+  hideSpinner 
 } from "@/src/lib/functions";
 
 export default function Header() {
@@ -20,7 +23,6 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userData, setUserData] = useState({
     displayName: "",
-    // 初期値を空文字ではなく null にするか、デフォルト画像にする
     pictureUrl: null as string | null, 
     uid: ""
   });
@@ -37,9 +39,26 @@ export default function Header() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
-  const handleLogout = () => {
-    clearAllAppSession();
-    router.push("/login");
+  // ログアウト処理の修正
+  const handleLogout = async () => {
+    try {
+      showSpinner(); // 処理中スピナー表示
+
+      // 1. Firebaseのサインアウト
+      await auth.signOut();
+
+      // 2. ブラウザのセッションストレージ等をクリア
+      clearAllAppSession();
+
+      // 3. ログイン画面へリダイレクト
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout Error:", error);
+      alert("ログアウトに失敗しました");
+    } finally {
+      hideSpinner();
+      closeMenu();
+    }
   };
 
   const handleShare = () => {
