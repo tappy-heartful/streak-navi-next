@@ -111,20 +111,20 @@ export default function Header() {
 
           <div className="slide-menu-section">
             {menuLink("/home", " ホーム", "fa fa-home")}
-            {menuLink("/score-list", "譜面")}
-            {menuLink("/event-list", "イベント")}
-            {menuLink("/assign-list", "譜割り")}
-            {menuLink("/call-list", "曲募集")}
-            {menuLink("/vote-list", "投票")}
-            {menuLink("/collect-list", "集金")}
-            {menuLink("/studio-list", "スタジオ")}
-            {menuLink("/user-list", "ユーザ")}
-            {menuLink("/notice-list", "通知設定")}
+            {menuLink("/score", "譜面")}
+            {menuLink("/event", "イベント")}
+            {menuLink("/assign", "譜割り")}
+            {menuLink("/call", "曲募集")}
+            {menuLink("/vote", "投票")}
+            {menuLink("/collect", "集金")}
+            {menuLink("/studio", "スタジオ")}
+            {menuLink("/user", "ユーザ")}
+            {menuLink("/notice", "通知設定")}
             {menuLink("/blue-note-edit", "今日の一曲")}
-            {menuLink("/board-list", "掲示板")}
-            {menuLink("/live-list", "ライブ")}
-            {menuLink("/ticket-list", "予約者一覧")}
-            {menuLink("/media-list", "メディア")}
+            {menuLink("/board", "掲示板")}
+            {menuLink("/live", "ライブ")}
+            {menuLink("/ticket", "予約者一覧")}
+            {menuLink("/media", "メディア")}
           </div>
 
           <div className="slide-menu-section menu-bottom">

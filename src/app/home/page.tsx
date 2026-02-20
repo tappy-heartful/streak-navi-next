@@ -348,7 +348,7 @@ export default function HomePage() {
           </div>
         )}
         <div style={{ textAlign: "center" }}>
-          <Link href="/score-list" style={{ fontWeight: "bold" }}>もっと見る</Link>
+          <Link href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link>
         </div>
       </main>
 
@@ -357,28 +357,28 @@ export default function HomePage() {
         <h3>メニュー</h3>
         <div className={styles.menuList}>
           <h2 className={styles.menuTitle}>演奏メニュー</h2>
-          <Link href="/score-list" className={`${styles.menuButton} ${styles.score}`}>🎼 譜面</Link>
-          <Link href="/event-list" className={`${styles.menuButton} ${styles.event}`}>🎺 イベント</Link>
-          <Link href="/assign-list" className={`${styles.menuButton} ${styles.assign}`}>🎵 譜割り</Link>
+          <Link href="/score" className={`${styles.menuButton} ${styles.score}`}>🎼 譜面</Link>
+          <Link href="/event" className={`${styles.menuButton} ${styles.event}`}>🎺 イベント</Link>
+          <Link href="/assign" className={`${styles.menuButton} ${styles.assign}`}>🎵 譜割り</Link>
           
           <h2 className={styles.menuTitle}>活動メニュー</h2>
-          <Link href="/call-list" className={`${styles.menuButton} ${styles.call}`}>🎶 曲募集</Link>
-          <Link href="/vote-list" className={`${styles.menuButton} ${styles.vote}`}>📊 投票</Link>
-          <Link href="/collect-list" className={`${styles.menuButton} ${styles.collect}`}>💰 集金</Link>
-          <Link href="/studio-list" className={`${styles.menuButton} ${styles.studio}`}>📍 スタジオ</Link>
+          <Link href="/call" className={`${styles.menuButton} ${styles.call}`}>🎶 曲募集</Link>
+          <Link href="/vote" className={`${styles.menuButton} ${styles.vote}`}>📊 投票</Link>
+          <Link href="/collect" className={`${styles.menuButton} ${styles.collect}`}>💰 集金</Link>
+          <Link href="/studio" className={`${styles.menuButton} ${styles.studio}`}>📍 スタジオ</Link>
           
           <h2 className={styles.menuTitle}>アプリメニュー</h2>
-          <Link href="/user-list" className={`${styles.menuButton} ${styles.user}`}>👥 ユーザ</Link>
-          <Link href="/notice-list" className={`${styles.menuButton} ${styles.notice}`}>📣 通知設定</Link>
+          <Link href="/user" className={`${styles.menuButton} ${styles.user}`}>👥 ユーザ</Link>
+          <Link href="/notice" className={`${styles.menuButton} ${styles.notice}`}>📣 通知設定</Link>
           <Link href="/blue-note-edit" className={`${styles.menuButton} ${styles.blueNote} ${styles.badgeInline}`}>
             🎧 今日の一曲 <span className={styles.badge}>募集中</span>
           </Link>
-          <Link href="/board-list" className={`${styles.menuButton} ${styles.board}`}>📋 掲示板</Link>
+          <Link href="/board" className={`${styles.menuButton} ${styles.board}`}>📋 掲示板</Link>
           
           <h2 className={styles.menuTitle}>ホームページ連携</h2>
-          <Link href="/live-list" className={`${styles.menuButton} ${styles.live}`}>🎷 ライブ</Link>
-          <Link href="/ticket-list" className={`${styles.menuButton} ${styles.ticket}`}>🎫 予約者一覧</Link>
-          <Link href="/media-list" className={`${styles.menuButton} ${styles.media}`}>🎬 メディア</Link>
+          <Link href="/live" className={`${styles.menuButton} ${styles.live}`}>🎷 ライブ</Link>
+          <Link href="/ticket" className={`${styles.menuButton} ${styles.ticket}`}>🎫 予約者一覧</Link>
+          <Link href="/media" className={`${styles.menuButton} ${styles.media}`}>🎬 メディア</Link>
         </div>
       </main>
 
