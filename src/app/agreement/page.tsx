@@ -1,34 +1,91 @@
-// app/agreement/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getSession } from '@/src/lib/functions';
+import { useAuth } from "@/src/contexts/AuthContext"; // AuthContextをインポート
+import { db } from "@/src/lib/firebase";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { 
+  showSpinner, 
+  hideSpinner, 
+  getSession, 
+  removeSession, 
+  writeLog, 
+  setSession 
+} from '@/src/lib/functions';
 import styles from './agreement.module.css';
 
 export default function AgreementPage() {
   const router = useRouter();
   const [isAgreed, setIsAgreed] = useState(false);
-  const [uid, setUid] = useState<string | null>(null);
+  
+  // AuthContextから情報を取得
+  const { user, loading, refreshUserData } = useAuth();
 
   useEffect(() => {
-    // セッションからUIDを取得（なければログインへ戻す）
-    const storedUid = getSession('uid');
-    if (!storedUid) {
-      router.push('/login');
-    } else {
-      setUid(storedUid);
-    }
-  }, [router]);
-
-  const handleAgree = () => {
-    if (!isAgreed || !uid) return;
+    document.title = "ご利用規約 | Streak Navi";
     
-    // 既存：ユーザ編集画面へ（isInit=trueを付与）
-    // Next.jsではクエリパラメータとして渡す
-    router.push(`/user?isInit=true&uid=${uid}`);
+    // Authの状態が確定し、かつログインしていない場合は戻す
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  const handleAgree = async () => {
+    if (!isAgreed || !user) return;
+
+    showSpinner();
+    try {
+      // 1. Firestoreのユーザーデータを更新
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        agreedAt: serverTimestamp(),
+      });
+
+      // 2. ContextのuserDataを最新にする
+      await refreshUserData();
+
+      // 3. ログ記録
+      await writeLog({
+        dataId: user.uid,
+        action: '利用規約同意',
+        status: 'success',
+      });
+
+      // 4. セッション管理とリダイレクト
+      // ログイン時に保存した「本来行きたかった場所」を取得
+      const target = getSession("redirectAfterLogin") || "/home";
+      removeSession("redirectAfterLogin");
+      
+      // ログイン成功フラグ（演出用）
+      setSession("fromLogin", "true");
+
+      // 初回登録時はユーザー編集画面へ飛ばす元のロジックを優先する場合
+      router.push(`/user?isInit=true`);
+      
+    } catch (e: any) {
+      console.error("Agreement update error:", e);
+      await writeLog({
+        dataId: user?.uid || 'unknown',
+        action: '利用規約同意失敗',
+        status: 'error',
+        errorDetail: { message: e.message },
+      });
+      alert("同意処理の保存に失敗しました。通信環境を確認してください。");
+    } finally {
+      hideSpinner();
+    }
   };
+
+  // 認証チェック中
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingText}>認証情報を確認中...</div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -41,7 +98,7 @@ export default function AgreementPage() {
           本Webアプリ「Streak Navi」は、Swing Streak Jazz Orchestraのメンバー専用の非公開ツールです。
         </p>
 
-        <section>
+        <section className={styles.agreementContent}>
           <h3 className={styles.sectionTitle}>LINE情報の取得について</h3>
           <p>
             本人確認およびログイン管理のため、LINEアカウントから以下の情報を取得します：
@@ -79,7 +136,7 @@ export default function AgreementPage() {
           </ul>
         </section>
 
-        <p>本アプリの円滑な運営のため、上記ルールを守ってご利用ください。</p>
+        <p className={styles.footerText}>本アプリの円滑な運営のため、上記ルールを守ってご利用ください。</p>
 
         <div className={styles.checkboxContainer}>
           <label className={styles.label}>
@@ -95,8 +152,8 @@ export default function AgreementPage() {
 
         <div className={styles.buttonContainer}>
           <button 
-            className={styles.agreeButton} 
-            disabled={!isAgreed}
+            className={`${styles.agreeButton} ${isAgreed && user ? styles.active : ''}`} 
+            disabled={!isAgreed || !user}
             onClick={handleAgree}
           >
             同意して進む
