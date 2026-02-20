@@ -246,7 +246,7 @@ export default function HomePage() {
                 <h4>{m.title}</h4>
                 <div className={styles.mediaDate}>{m.date}</div>
                 {m.instagramUrl && <div dangerouslySetInnerHTML={{ __html: utils.buildInstagramHtml(m.instagramUrl) }} />}
-                {m.youtubeUrl && <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(m.youtubeUrl, true) }} />}
+                {m.youtubeUrl && <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(m.youtubeUrl, true, true) }} />}
                 {m.driveUrl && <div dangerouslySetInnerHTML={{ __html: utils.buildGoogleDriveHtml(m.driveUrl, true) }} />}
               </div>
             )) : <div className={styles.contentItem}>メディアはまだ登録されていません🍀</div>}
@@ -261,7 +261,7 @@ export default function HomePage() {
 const Player = ({ title, data, idx, setIdx, onRandom }: any) => (
   <div>
     <h2 className={styles.playerTitle}>{title}</h2>
-    <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(idx, data)) }} />
+    <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(idx, data), false) }} />
     <div className={styles.playerControls}>
       <button onClick={() => setIdx((idx - 1 + data.length) % data.length)} className={styles.playerControl}><i className="fa-solid fa-backward-step"></i></button>
       <button onClick={onRandom} className={styles.playerControl}>ランダム <i className="fa-solid fa-arrows-rotate"></i></button>

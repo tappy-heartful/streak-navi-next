@@ -102,7 +102,8 @@ export function extractYouTubeId(input: string): string {
 
 export function buildYouTubeHtml(
   youtubeInput: string | string[], 
-  showNotice = false
+  showLink = true,
+  showNotice = false,
 ): string {
   // 入力自体がない場合は空文字を返す
   if (!youtubeInput) return '';
@@ -133,7 +134,7 @@ export function buildYouTubeHtml(
       <div class="youtube-link-container">
         ${showNotice ? `<span class="youtube-notice">🔒限定公開</span>` : ''}
         <a href="${youtubeLink}" target="_blank" rel="noopener noreferrer">
-          ${videoIds.length > 1 ? 'プレイリストを聴く' : 'YouTubeでみる'}
+          ${!showLink ? '' : videoIds.length > 1 ? 'プレイリストを聴く' : 'YouTubeでみる'}
         </a>
       </div>
     </div>`;
