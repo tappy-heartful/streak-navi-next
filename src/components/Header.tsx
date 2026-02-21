@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/src/lib/firebase";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { 
   clearAllAppSession, 
   globalLineDefaultImage, 
@@ -12,6 +13,7 @@ import {
   showSpinner, 
   hideSpinner 
 } from "@/src/lib/functions";
+import React from "react";
 
 export default function Header() {
   const router = useRouter();
@@ -19,6 +21,7 @@ export default function Header() {
   const { user, userData, loading } = useAuth(); // userDataを取得
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { items } = useBreadcrumb(); // Contextからアイテムを取得
 
   // メニューを表示しないページ
   if (["/login", "/callback", "/agreement", "/about"].includes(pathname)) return null;
@@ -143,8 +146,21 @@ export default function Header() {
         </div>
       </header>
 
-      <div className="breadcrumb-bar">
-        <div id="breadcrumb-container"></div>
+<div className="breadcrumb-bar">
+        <div id="breadcrumb-container">
+          {/* パンくずの描画 */}
+          <Link href="/home" className="breadcrumb-item">ホーム</Link>
+          {items.map((item, index) => (
+            <React.Fragment key={index}>
+              <span className="breadcrumb-separator"> &gt; </span>
+              {item.href ? (
+                <Link href={item.href} className="breadcrumb-item">{item.title}</Link>
+              ) : (
+                <span className="breadcrumb-current">{item.title}</span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
         <button className="share-button" onClick={handleShare}>
           <i className="fas fa-share-alt"></i>
         </button>

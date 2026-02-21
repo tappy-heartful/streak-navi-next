@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import styles from "./score-list.module.css";
+import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 
 export default function ScoreListClient({ initialData }: any) {
   const [search, setSearch] = useState("");
@@ -10,6 +11,14 @@ export default function ScoreListClient({ initialData }: any) {
   // 【修正1】初期表示で直近のイベント（配列の最初）を選択状態にする
   const [eventId, setEventId] = useState(initialData.events[0]?.id || "");
   const [sort, setSort] = useState("createdAt-desc");
+  const { setBreadcrumbs } = useBreadcrumb();
+
+  useEffect(() => {
+    // ページマウント時にパンくずを更新
+    setBreadcrumbs([{ title: "譜面一覧" }]);
+    // アンマウント時に空にする（任意）
+    return () => setBreadcrumbs([]);
+  }, [setBreadcrumbs]);
 
   // フィルタリングとソートのロジック
   const filteredScores = useMemo(() => {

@@ -3,6 +3,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/src/contexts/AuthContext";
+import { BreadcrumbProvider } from "@/src/contexts/BreadcrumbContext"; // 追加
 import { useEffect } from "react";
 import "./globals.css";
 import Header from "../components/Header";
@@ -46,16 +47,22 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <AuthProvider>
-      <AuthGuard>
-        {!isNoLayout && <Header />}
-        {children}
-        {!isNoLayout && <Footer />}
-      </AuthGuard>
-      <Script 
-        src="https://www.instagram.com/embed.js" 
-        strategy="afterInteractive" 
-      />
-      <CommonDialog />
+      {/* BreadcrumbProvider をここに配置することで、
+        AuthGuard 内の各ページからも、Header からもパンくずを操作可能にします。
+      */}
+      <BreadcrumbProvider>
+        <AuthGuard>
+          {!isNoLayout && <Header />}
+          {children}
+          {!isNoLayout && <Footer />}
+        </AuthGuard>
+        
+        <Script 
+          src="https://www.instagram.com/embed.js" 
+          strategy="afterInteractive" 
+        />
+        <CommonDialog />
+      </BreadcrumbProvider>
     </AuthProvider>
   );
 }
