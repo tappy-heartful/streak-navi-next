@@ -33,11 +33,11 @@ export default function Footer() {
       // 3. アニメーション開始
       const showTimer = setTimeout(() => setIsAnimating(true), 100);
 
-      // 4. 3秒間表示して、その後フェードアウト開始
+      // 4. 1.5秒間表示して、その後フェードアウト開始
       const hideTimer = setTimeout(() => {
         setIsAnimating(false);
         setTimeout(() => setShowOverlay(false), 500);
-      }, 3500);
+      }, 1500);
 
       return () => {
         clearTimeout(showTimer);
