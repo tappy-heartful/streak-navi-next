@@ -15,7 +15,7 @@ export async function getUpcomingEventsWithSetlistServer() {
     const scoreIds = (data.setlist || []).flatMap((item: any) => item.songIds || []);
     return {
       id: doc.id,
-      title: data.title_decoded || data.title,
+      title: data.title,
       date: data.date,
       scoreIdsInSetlist: scoreIds,
     };
