@@ -148,20 +148,23 @@ export default function Header() {
 
 <div className="breadcrumb-bar">
         <div id="breadcrumb-container">
-          {/* パンくずの描画 */}
-          <Link href="/home" className="breadcrumb-item">ホーム</Link>
-          {items.map((item, index) => (
-            <React.Fragment key={index}>
-              <span className="breadcrumb-separator"> &gt; </span>
-              {item.href ? (
-                <Link href={item.href} className="breadcrumb-item">{item.title}</Link>
-              ) : (
-                <span className="breadcrumb-current">{item.title}</span>
-              )}
-            </React.Fragment>
-          ))}
+          <nav className="breadcrumb">
+            <Link href="/home">
+              <i className="fa fa-home"></i> ホーム
+            </Link>
+            {items.map((item, index) => (
+              <React.Fragment key={index}>
+                <span className="separator">›</span>
+                {item.href ? (
+                  <Link href={item.href}>{item.title}</Link>
+                ) : (
+                  <span className="current">{item.title}</span>
+                )}
+              </React.Fragment>
+            ))}
+          </nav>
         </div>
-        <button className="share-button" onClick={handleShare}>
+        <button id="share-button" className="share-button" onClick={handleShare}>
           <i className="fas fa-share-alt"></i>
         </button>
       </div>
