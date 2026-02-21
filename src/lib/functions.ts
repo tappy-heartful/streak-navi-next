@@ -293,7 +293,6 @@ export {
   getDocs,
   setDoc,
   updateDoc,
-  deleteDoc,
   collection,
   query,
   where,

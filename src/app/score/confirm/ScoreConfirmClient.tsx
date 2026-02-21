@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { showDialog } from "@/src/components/CommonDialog";
-import { db } from "@/src/lib/firebase";
-import { doc, deleteDoc } from "firebase/firestore"; // archiveAndDeleteDocの代替
+import { archiveAndDeleteDoc } from "@/src/lib/functions";
 
 export default function ScoreConfirmClient({ scoreData, allGenres, scoreId }: any) {
   const router = useRouter();
@@ -37,7 +36,7 @@ export default function ScoreConfirmClient({ scoreData, allGenres, scoreId }: an
 
     try {
       // 本来は archiveAndDeleteDoc などの共通関数を呼ぶ
-      await deleteDoc(doc(db, "scores", scoreId));
+      await archiveAndDeleteDoc("scores", scoreId);
       await showDialog("削除しました", true);
       router.push("/score");
     } catch (e: any) {
