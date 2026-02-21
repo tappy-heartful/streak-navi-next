@@ -2,24 +2,23 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // 修正：next/navigationからインポート
 import styles from "./score-list.module.css";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { useAuth } from "@/src/contexts/AuthContext";
-import router from "next/router";
 
 export default function ScoreListClient({ initialData }: any) {
+  const router = useRouter(); // 修正：フックとして呼び出し
+  const { isScoreAdmin } = useAuth(); // 修正：共通化したisScoreAdminを使用
+  const { setBreadcrumbs } = useBreadcrumb();
+
   const [search, setSearch] = useState("");
   const [genre, setGenre] = useState("");
-  // 【修正1】初期表示で直近のイベント（配列の最初）を選択状態にする
   const [eventId, setEventId] = useState(initialData.events[0]?.id || "");
   const [sort, setSort] = useState("createdAt-desc");
-  const { setBreadcrumbs } = useBreadcrumb();
-  const { isScoreAdmin } = useAuth();
 
   useEffect(() => {
-    // ページマウント時にパンくずを更新
     setBreadcrumbs([{ title: "譜面一覧" }]);
-    // アンマウント時に空にする（任意）
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs]);
 
@@ -119,7 +118,6 @@ export default function ScoreListClient({ initialData }: any) {
                   <td className="text-center">
                     {s.referenceTrack ? <a href={s.referenceTrack} target="_blank" rel="noreferrer"><i className="fab fa-youtube"></i> 音源</a> : "-"}
                   </td>
-                  {/* 【修正2】ジャンルを改行区切りで表示。CSSで white-space: pre-wrap; が当たっている前提 */}
                   <td className={styles.genreCell}>
                     {s.genres?.map((gid: string) => initialData.genres.find((g: any) => g.id === gid)?.name).filter(Boolean).join("\n") || "-"}
                   </td>
@@ -130,11 +128,12 @@ export default function ScoreListClient({ initialData }: any) {
             </tbody>
           </table>
         </div>
+
         {/* 管理者ならボタンを表示 */}
         {isScoreAdmin && (
-            <button className="list-add-button" onClick={() => router.push("/score-edit?mode=new")}>
+          <button className="list-add-button" onClick={() => router.push("/score-edit?mode=new")}>
             ＋ 新規作成
-            </button>
+          </button>
         )}
       </div>
 
