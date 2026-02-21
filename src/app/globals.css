@@ -122,6 +122,10 @@ body.fixed {
   overflow-y: auto;
 }
 
+.slide-menu-section a {
+  text-decoration: none;
+}
+
 .slide-menu.open {
   right: 0;
 }
