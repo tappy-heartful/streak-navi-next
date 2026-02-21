@@ -3,7 +3,6 @@ import { getAnnouncementsServer, getScoresServer, getBlueNotesServer, getMediasS
 import * as utils from "@/src/lib/functions";
 
 export default async function HomePage() {
-  const uid = utils.getSession("uid");
 
   const [
     announcements,
@@ -11,7 +10,7 @@ export default async function HomePage() {
     blueNotes,
     allMedias
   ] = await Promise.all([
-    getAnnouncementsServer(uid),
+    getAnnouncementsServer(),
     getScoresServer(),
     getBlueNotesServer(),
     getMediasServer(10)

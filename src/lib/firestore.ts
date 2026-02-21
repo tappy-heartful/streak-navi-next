@@ -10,7 +10,7 @@ export interface Media { id: string; title: string; date: string; instagramUrl?:
 /**
  * お知らせ取得（サーバーサイド専用）
  */
-export async function getAnnouncementsServer(uid: string | null) {
+export async function getAnnouncementsServer() {
   const items: Announcement[] = [];
   const todayStr = utils.format(new Date(), "yyyy.MM.dd");
 
@@ -35,17 +35,13 @@ export async function getAnnouncementsServer(uid: string | null) {
   checkTerm(votes, "📌投票、受付中です！", "name", "/vote-confirm?voteId=");
   checkTerm(calls, "📌候補曲、募集中です！", "title", "/call-confirm?callId=");
 
-  if (uid) {
-    let collectHeader = false;
-    for (const cDoc of collects.docs) {
-      const d = cDoc.data();
-      if (utils.isInTerm(d.acceptStartDate, d.acceptEndDate) && (d.participants || []).includes(uid) && d.upfrontPayer !== uid && d.managerName !== uid) {
-        const res = await adminDb.collection("collects").doc(cDoc.id).collection("responses").doc(uid).get();
-        if (!res.exists) {
-          if (!collectHeader) { items.push({ type: "pending", message: "📌集金、受付中です！" }); collectHeader = true; }
-          items.push({ type: "item", label: `💰${d.title}`, link: `/collect-confirm?collectId=${cDoc.id}` });
-        }
-      }
+  // TODO: collects と events は uid を考慮したロジックにする必要がありますが、現状は全ユーザー共通のお知らせとして表示する形にしています。
+  let collectHeader = false;
+  for (const cDoc of collects.docs) {
+    const d = cDoc.data();
+    if (utils.isInTerm(d.acceptStartDate, d.acceptEndDate)) {
+      if (!collectHeader) { items.push({ type: "pending", message: "📌集金、受付中です！" }); collectHeader = true; }
+      items.push({ type: "item", label: `💰${d.title}`, link: `/collect-confirm?collectId=${cDoc.id}` });
     }
   }
 
@@ -53,11 +49,11 @@ export async function getAnnouncementsServer(uid: string | null) {
     const d = eDoc.data();
     if (d.date < todayStr) return null;
     let isUnanswered = false;
-    if (utils.isInTerm(d.acceptStartDate, d.acceptEndDate) && uid) {
-      const coll = d.attendanceType === "schedule" ? "eventAdjustAnswers" : "eventAttendanceAnswers";
-      const ans = await adminDb.collection(coll).doc(`${eDoc.id}_${uid}`).get();
-      isUnanswered = !ans.exists;
-    }
+    // if (utils.isInTerm(d.acceptStartDate, d.acceptEndDate) && uid) {
+    //   const coll = d.attendanceType === "schedule" ? "eventAdjustAnswers" : "eventAttendanceAnswers";
+    //   const ans = await adminDb.collection(coll).doc(`${eDoc.id}_${uid}`).get();
+    //   isUnanswered = !ans.exists;
+    // }
     const diffDays = d.date ? Math.ceil((new Date(d.date.replace(/\./g, "/")).getTime() - new Date().setHours(0,0,0,0)) / 86400000) : 0;
     return { id: eDoc.id, title: d.title, date: d.date, attendanceType: d.attendanceType, allowAssign: d.allowAssign, isUnanswered, diffDays };
   }));
