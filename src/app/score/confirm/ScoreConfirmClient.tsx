@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { showDialog } from "@/src/components/CommonDialog";
-import { archiveAndDeleteDoc } from "@/src/lib/functions";
+import { archiveAndDeleteDoc, buildYouTubeHtml } from "@/src/lib/functions";
 
 export default function ScoreConfirmClient({ scoreData, allGenres, scoreId }: any) {
   const router = useRouter();
@@ -20,13 +20,6 @@ export default function ScoreConfirmClient({ scoreData, allGenres, scoreId }: an
     ]);
   }, [setBreadcrumbs]);
 
-  // YouTubeの埋め込みURL生成
-  const getYouTubeEmbedUrl = (url: string) => {
-    if (!url) return null;
-    const v = url.split("v=")[1]?.split("&")[0] || url.split("/").pop();
-    return `https://www.youtube.com/embed/${v}`;
-  };
-
   // 削除処理
   const handleDelete = async () => {
     const confirmed = await showDialog(
@@ -35,7 +28,6 @@ export default function ScoreConfirmClient({ scoreData, allGenres, scoreId }: an
     if (!confirmed) return;
 
     try {
-      // 本来は archiveAndDeleteDoc などの共通関数を呼ぶ
       await archiveAndDeleteDoc("scores", scoreId);
       await showDialog("削除しました", true);
       router.push("/score");
@@ -61,7 +53,7 @@ export default function ScoreConfirmClient({ scoreData, allGenres, scoreId }: an
           <label className="label-title">譜面</label>
           <div className="label-value">
             {scoreData.scoreUrl ? (
-              <a href={scoreData.scoreUrl} target="_blank" rel="noreferrer">
+              <a href={scoreData.scoreUrl} target="_blank" rel="noopener noreferrer">
                 譜面をみる <i className="fas fa-arrow-up-right-from-square"></i>
               </a>
             ) : (
@@ -74,15 +66,13 @@ export default function ScoreConfirmClient({ scoreData, allGenres, scoreId }: an
           <label className="label-title">参考音源</label>
           <div id="reference-track">
             {scoreData.referenceTrack ? (
-              <div className="youtube-container" style={{ marginTop: "10px" }}>
-                <iframe
-                  width="100%"
-                  height="315"
-                  src={getYouTubeEmbedUrl(scoreData.referenceTrack) || ""}
-                  frameBorder="0"
-                  allowFullScreen
-                ></iframe>
-              </div>
+              /* buildYouTubeHtml を使用してHTMLを埋め込む */
+              <div 
+                className="youtube-display-area"
+                dangerouslySetInnerHTML={{ 
+                  __html: buildYouTubeHtml(scoreData.referenceTrack) 
+                }} 
+              />
             ) : (
               "未設定"
             )}
