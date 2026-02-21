@@ -96,7 +96,7 @@ export default function Header() {
               onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
             />
             <div className="menu-user-info">
-              <span 
+              <a 
                 className="menu-user-name" 
                 onClick={() => {
                   if (uid) {
@@ -106,7 +106,7 @@ export default function Header() {
                 }}
               >
                 {displayName}
-              </span>
+              </a>
             </div>
             <div className="close-menu" onClick={closeMenu}>
               <i className="fa-solid fa-xmark"></i>
