@@ -9,7 +9,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 
 export default function ScoreListClient({ initialData }: any) {
   const router = useRouter(); // 修正：フックとして呼び出し
-  const { isScoreAdmin } = useAuth(); // 修正：共通化したisScoreAdminを使用
+  const { isAdmin } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
 
   const [search, setSearch] = useState("");
@@ -130,7 +130,7 @@ export default function ScoreListClient({ initialData }: any) {
         </div>
 
         {/* 管理者ならボタンを表示 */}
-        {isScoreAdmin && (
+        {isAdmin("Score") && (
           <button className="list-add-button" onClick={() => router.push("/score-edit?mode=new")}>
             ＋ 新規作成
           </button>
