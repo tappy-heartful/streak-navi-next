@@ -114,7 +114,7 @@ export default function Header() {
             {userData.pictureUrl && (
               <img src={userData.pictureUrl} className="menu-user-icon" alt="user" />
             )}
-            <div 
+            <a 
               className="menu-user-name" 
               onClick={() => {
                 router.push(`/user-confirm?uid=${userData.uid}`);
@@ -122,7 +122,7 @@ export default function Header() {
               }}
             >
               {userData.displayName}
-            </div>
+            </a>
             <div className="close-menu" onClick={closeMenu}>
               <i className="fa-solid fa-xmark"></i>
             </div>
