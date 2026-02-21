@@ -13,3 +13,9 @@ export async function getScoresServer() {
     };
   }) as unknown as Score[];
 }
+
+// src/lib/firestore/scores.ts に追加
+export async function getGenresServer() {
+  const snap = await adminDb.collection("genres").get();
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
