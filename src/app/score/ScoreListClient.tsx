@@ -4,6 +4,8 @@ import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import styles from "./score-list.module.css";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
+import { useAuth } from "@/src/contexts/AuthContext";
+import router from "next/router";
 
 export default function ScoreListClient({ initialData }: any) {
   const [search, setSearch] = useState("");
@@ -12,6 +14,7 @@ export default function ScoreListClient({ initialData }: any) {
   const [eventId, setEventId] = useState(initialData.events[0]?.id || "");
   const [sort, setSort] = useState("createdAt-desc");
   const { setBreadcrumbs } = useBreadcrumb();
+  const { isScoreAdmin } = useAuth();
 
   useEffect(() => {
     // ページマウント時にパンくずを更新
@@ -127,6 +130,12 @@ export default function ScoreListClient({ initialData }: any) {
             </tbody>
           </table>
         </div>
+        {/* 管理者ならボタンを表示 */}
+        {isScoreAdmin && (
+            <button className="list-add-button" onClick={() => router.push("/score-edit?mode=new")}>
+            ＋ 新規作成
+            </button>
+        )}
       </div>
 
       <div className="page-footer">
