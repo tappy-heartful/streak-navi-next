@@ -10,6 +10,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Script from "next/script";
 import CommonDialog from "@/src/components/CommonDialog";
+import CommonModal from "@/src/components/CommonModal";
 
 // --- 認証ガード用コンポーネント ---
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -62,6 +63,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           strategy="afterInteractive" 
         />
         <CommonDialog />
+        <CommonModal />
       </BreadcrumbProvider>
     </AuthProvider>
   );
