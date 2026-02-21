@@ -2,13 +2,13 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // 修正：next/navigationからインポート
+import { useRouter } from "next/navigation";
 import styles from "./score-list.module.css";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { useAuth } from "@/src/contexts/AuthContext";
 
 export default function ScoreListClient({ initialData }: any) {
-  const router = useRouter(); // 修正：フックとして呼び出し
+  const router = useRouter();
   const { isAdmin } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
 
@@ -22,7 +22,7 @@ export default function ScoreListClient({ initialData }: any) {
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs]);
 
-  // フィルタリングとソートのロジック
+  // フィルタリングとソートのロジック（変更なし）
   const filteredScores = useMemo(() => {
     let result = initialData.scores.filter((s: any) => {
       const matchTitle = s.title?.toLowerCase().includes(search.toLowerCase());
@@ -110,7 +110,10 @@ export default function ScoreListClient({ initialData }: any) {
               {filteredScores.length > 0 ? filteredScores.map((s: any) => (
                 <tr key={s.id}>
                   <td className="list-table-row-header">
-                    <Link href={`/score/confirm?scoreId=${s.id}`}>{s.title}</Link>
+                    {/* 修正：prefetch={true} を追加して即時読み込みを有効化 */}
+                    <Link href={`/score/confirm?scoreId=${s.id}`} prefetch={true}>
+                      {s.title}
+                    </Link>
                   </td>
                   <td className="text-center">
                     {s.scoreUrl ? <a href={s.scoreUrl} target="_blank" rel="noreferrer"><i className="fa-solid fa-file-pdf"></i> 譜面</a> : "-"}
@@ -131,14 +134,20 @@ export default function ScoreListClient({ initialData }: any) {
 
         {/* 管理者ならボタンを表示 */}
         {isAdmin("Score") && (
-          <button className="list-add-button" onClick={() => router.push("/score-edit?mode=new")}>
+          <button 
+            className="list-add-button" 
+            onClick={() => router.push("/score/edit?mode=new")}
+            /* マウスが乗った瞬間にプリフェッチを開始して遷移速度を上げる */
+            onMouseEnter={() => router.prefetch("/score/edit?mode=new")}
+          >
             ＋ 新規作成
           </button>
         )}
       </div>
 
       <div className="page-footer">
-        <Link href="/home" className="back-link">← ホームに戻る</Link>
+        {/* ホームへの戻りも高速化 */}
+        <Link href="/home" className="back-link" prefetch={true}>← ホームに戻る</Link>
       </div>
     </main>
   );
