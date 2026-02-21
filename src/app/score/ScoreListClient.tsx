@@ -110,7 +110,7 @@ export default function ScoreListClient({ initialData }: any) {
               {filteredScores.length > 0 ? filteredScores.map((s: any) => (
                 <tr key={s.id}>
                   <td className="list-table-row-header">
-                    <Link href={`/score-confirm?scoreId=${s.id}`}>{s.title}</Link>
+                    <Link href={`/score/confirm?scoreId=${s.id}`}>{s.title}</Link>
                   </td>
                   <td className="text-center">
                     {s.scoreUrl ? <a href={s.scoreUrl} target="_blank" rel="noreferrer"><i className="fa-solid fa-file-pdf"></i> 譜面</a> : "-"}
