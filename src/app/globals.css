@@ -916,6 +916,7 @@ button {
 }
 
 .back-link {
+  text-decoration: none;
   color: #4CAF50;
   font-weight: bold;
   border: 2px solid #4CAF50;
@@ -938,7 +939,11 @@ button {
 /* リンクの色指定 */
 a {
   color: #4caf50;
-  text-decoration: underline;
+  text-decoration:none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
 
 /* スピナー表示 */
