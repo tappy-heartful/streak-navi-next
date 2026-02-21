@@ -110,7 +110,7 @@ body.fixed {
   right: -100%; /* 初期は隠す */
   width: 75%;
   max-width: 320px;
-  height: 100vh;
+  height: 100dvh;
   background: white;
   box-shadow: -3px 0 10px rgba(0,0,0,0.2);
   z-index: 1000;
@@ -120,6 +120,10 @@ body.fixed {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+}
+
+.slide-menu-section a {
+  text-decoration: none;
 }
 
 .slide-menu.open {
@@ -866,6 +870,7 @@ button {
 /* リンクの色指定 */
 a {
   color: #4caf50;
+  text-decoration: underline;
 }
 
 /* スピナー表示 */

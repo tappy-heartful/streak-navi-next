@@ -41,19 +41,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user) await fetchUserData(user.uid);
   };
 
+// 修正箇所を抜粋
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
+      setLoading(true); // 開始時に必ずtrue
       if (firebaseUser) {
         setUser(firebaseUser);
         setSession("uid", firebaseUser.uid);
-        await fetchUserData(firebaseUser.uid); // 初回読み込み
+        // Firestoreからの取得が終わるまで待つ
+        await fetchUserData(firebaseUser.uid);
       } else {
         setUser(null);
         setUserData(null);
         clearAllAppSession();
       }
-      setLoading(false);
+      setLoading(false); // すべて終わってからfalseにする
     });
     return () => unsubscribe();
   }, []);

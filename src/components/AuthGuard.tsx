@@ -17,10 +17,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   // ローディング中や未認証時は何も表示しない（またはスピナーを表示）
   if (loading || !user) {
+    // lib/functions.ts の showSpinner が作る構造と同じものを返す
     return (
-      <div className="loading-container">
-        <p>Loading...</p> 
-        {/* ここに既存のスピナーなどがあれば配置 */}
+      <div id="spinner-overlay">
+        <div className="spinner"></div>
       </div>
     );
   }
