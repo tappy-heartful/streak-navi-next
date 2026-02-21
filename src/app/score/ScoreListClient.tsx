@@ -102,10 +102,10 @@ export default function ScoreListClient({ initialData }: any) {
                     <Link href={`/score-confirm?scoreId=${s.id}`}>{s.title}</Link>
                   </td>
                   <td className="text-center">
-                    {(s.scoreUrl_decoded || s.scoreUrl) ? <a href={s.scoreUrl_decoded || s.scoreUrl} target="_blank" rel="noreferrer"><i className="fa-solid fa-file-pdf"></i></a> : "-"}
+                    {(s.scoreUrl || s.scoreUrl) ? <a href={s.scoreUrl || s.scoreUrl} target="_blank" rel="noreferrer"><i className="fa-solid fa-file-pdf"></i> 譜面</a> : "-"}
                   </td>
                   <td className="text-center">
-                    {(s.referenceTrack_decoded || s.referenceTrack) ? <a href={s.referenceTrack_decoded || s.referenceTrack} target="_blank" rel="noreferrer"><i className="fab fa-youtube"></i></a> : "-"}
+                    {(s.referenceTrack || s.referenceTrack) ? <a href={s.referenceTrack || s.referenceTrack} target="_blank" rel="noreferrer"><i className="fab fa-youtube"></i> 音源</a> : "-"}
                   </td>
                   <td className={styles.genreCell}>
                     {s.genres?.map((gid: string) => initialData.genres.find((g: any) => g.id === gid)?.name).filter(Boolean).join(", ") || "-"}
