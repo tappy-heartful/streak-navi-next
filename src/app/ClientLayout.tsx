@@ -28,12 +28,10 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   if (isPublicPath) return <>{children}</>;
 
   if (loading || !user) {
+    // lib/functions.ts の showSpinner が作る構造と同じものを返す
     return (
-      <div style={{ 
-        display: "flex", justifyContent: "center", alignItems: "center", 
-        height: "100vh", backgroundColor: "#000", color: "#fff" 
-      }}>
-        Loading...
+      <div id="spinner-overlay">
+        <div className="spinner"></div>
       </div>
     );
   }
