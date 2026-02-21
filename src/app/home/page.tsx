@@ -1,12 +1,8 @@
 import HomePageClient from "./HomePageClient";
 import { getAnnouncementsServer, getScoresServer, getBlueNotesServer, getMediasServer } from "@/src/lib/firestore";
-import { cookies } from "next/headers";
 import * as utils from "@/src/lib/functions";
 
 export default async function HomePage() {
-  // サーバーサイドでのuid取得（Cookie等から取得する場合の例）
-  const cookieStore = cookies();
-  // const uid = cookieStore.get("uid")?.value || null;
   const uid = utils.getSession("uid");
 
   const [
