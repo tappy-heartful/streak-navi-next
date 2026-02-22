@@ -22,6 +22,8 @@ export default function Header() {
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { items } = useBreadcrumb(); // Contextからアイテムを取得
+  const noLayoutPaths = ["/home", "/login", "/callback", "/agreement"];
+  const isNoHome = noLayoutPaths.includes(pathname);
 
   // メニューを表示しないページ
   if (["/login", "/callback", "/agreement", "/about"].includes(pathname)) return null;
@@ -146,12 +148,14 @@ export default function Header() {
         </div>
       </header>
 
-<div className="breadcrumb-bar">
+      <div className="breadcrumb-bar">
         <div id="breadcrumb-container">
           <nav className="breadcrumb">
-            <Link prefetch={true} href="/home">
-              <i className="fa fa-home"></i> ホーム
-            </Link>
+            {!isNoHome && (
+              <Link prefetch={true} href="/home">
+                <i className="fa fa-home"></i> ホーム
+              </Link>
+            )}
             {items.map((item, index) => (
               <React.Fragment key={index}>
                 <span className="separator">›</span>

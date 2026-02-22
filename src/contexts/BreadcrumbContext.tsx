@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface BreadcrumbItem {
@@ -15,6 +16,9 @@ interface BreadcrumbContextType {
 const BreadcrumbContext = createContext<BreadcrumbContextType | undefined>(undefined);
 
 export function BreadcrumbProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const noLayoutPaths = ["/home", "/login", "/callback", "/agreement", "/about"];
+  const isNoBreadcrumb = noLayoutPaths.includes(pathname);
   const [items, setItems] = useState<BreadcrumbItem[]>([]);
 
   return (
