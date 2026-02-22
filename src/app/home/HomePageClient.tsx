@@ -14,7 +14,7 @@ const AnnouncementSection = memo(({ data }: { data: any[] }) => (
       <ul className={styles.notificationList}>
         {data.map((a, i) => (
           <li key={i} className={styles[a.type === "pending" ? "pendingMessage" : a.type === "empty" ? "emptyMessage" : ""]}>
-            {a.type === "item" ? <Link href={a.link || "#"} className={styles.notificationLink}>{a.label}</Link> : <div className={styles.notificationLink}>{a.message}</div>}
+            {a.type === "item" ? <Link prefetch={true} href={a.link || "#"} className={styles.notificationLink}>{a.label}</Link> : <div className={styles.notificationLink}>{a.message}</div>}
           </li>
         ))}
       </ul>
@@ -93,7 +93,7 @@ export default function HomePageClient({ initialData }: any) {
         <div className={styles.scoreList}>
           {initialData.quickScores.length ? (
             <div className={styles.quickScoreGrid}>
-              {initialData.quickScores.map((s: any) => <Link key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
+              {initialData.quickScores.map((s: any) => <Link prefetch={true} key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
             </div>
           ) : <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>}
         </div>
@@ -106,7 +106,7 @@ export default function HomePageClient({ initialData }: any) {
             onRandom={() => setCurrentScoreIdx(utils.getRandomIndex(currentScoreIdx, initialData.scores.length))}
           />
         )}
-        <div style={{ textAlign: "center", marginTop: "10px" }}><Link href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
+        <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
       </main>
 
       <MenuSectionList />
@@ -125,7 +125,7 @@ export default function HomePageClient({ initialData }: any) {
               setIdx={setCurrentBNIdx} 
               onRandom={() => setCurrentBNIdx(utils.getRandomIndex(currentBNIdx, initialData.blueNotes.length))}
             />
-            <div style={{ textAlign: "center", marginTop: "10px" }}><Link href="/blue-note" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
+            <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/blue-note" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
           </>
         )}
       </main>
@@ -154,7 +154,7 @@ const MenuSection = ({ title, items }: any) => (
   <>
     <h2 className={styles.menuTitle}>{title}</h2>
     {items.map((item: any) => (
-      <Link key={item.h} href={item.h} className={`${styles.menuButton} ${styles[item.c]} ${item.b ? styles.badgeInline : ""}`}>
+      <Link prefetch={true} key={item.h} href={item.h} className={`${styles.menuButton} ${styles[item.c]} ${item.b ? styles.badgeInline : ""}`}>
         {item.l} {item.b && <span className={styles.badge}>{item.b}</span>}
       </Link>
     ))}

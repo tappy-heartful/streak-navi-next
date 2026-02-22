@@ -133,7 +133,7 @@ export default function ScoreConfirmClient({ scoreData, allGenres, scoreId }: an
       </div>
 
       <div className="page-footer">
-        <Link href="/score" className="back-link">
+        <Link prefetch={true} href="/score" className="back-link">
           ← 譜面一覧に戻る
         </Link>
       </div>

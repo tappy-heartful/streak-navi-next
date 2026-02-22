@@ -111,7 +111,7 @@ export default function ScoreListClient({ initialData }: any) {
                 <tr key={s.id}>
                   <td className="list-table-row-header">
                     {/* 修正：prefetch={true} を追加して即時読み込みを有効化 */}
-                    <Link href={`/score/confirm?scoreId=${s.id}`} prefetch={true}>
+                    <Link prefetch={true} href={`/score/confirm?scoreId=${s.id}`}>
                       {s.title}
                     </Link>
                   </td>
@@ -147,7 +147,7 @@ export default function ScoreListClient({ initialData }: any) {
 
       <div className="page-footer">
         {/* ホームへの戻りも高速化 */}
-        <Link href="/home" className="back-link" prefetch={true}>← ホームに戻る</Link>
+        <Link prefetch={true} href="/home" className="back-link">← ホームに戻る</Link>
       </div>
     </main>
   );

@@ -59,7 +59,7 @@ export default function Header() {
   };
 
   const menuLink = (href: string, label: string) => (
-    <Link href={href} onClick={closeMenu}>
+    <Link prefetch={true} href={href} onClick={closeMenu}>
       {label}
     </Link>
   );
@@ -149,14 +149,14 @@ export default function Header() {
 <div className="breadcrumb-bar">
         <div id="breadcrumb-container">
           <nav className="breadcrumb">
-            <Link href="/home">
+            <Link prefetch={true} href="/home">
               <i className="fa fa-home"></i> ホーム
             </Link>
             {items.map((item, index) => (
               <React.Fragment key={index}>
                 <span className="separator">›</span>
                 {item.href ? (
-                  <Link href={item.href}>{item.title}</Link>
+                  <Link prefetch={true} href={item.href}>{item.title}</Link>
                 ) : (
                   <span className="current">{item.title}</span>
                 )}
