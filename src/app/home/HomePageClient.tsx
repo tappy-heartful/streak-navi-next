@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, memo } from "react"; // memoを追加
 import Link from "next/link";
+import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import * as utils from "@/src/lib/functions";
 import styles from "./home.module.css";
 
@@ -59,6 +60,12 @@ MediaSection.displayName = "MediaSection";
 export default function HomePageClient({ initialData }: any) {
   const [currentScoreIdx, setCurrentScoreIdx] = useState(0);
   const [currentBNIdx, setCurrentBNIdx] = useState(0);
+  const { setBreadcrumbs } = useBreadcrumb();
+
+  useEffect(() => {
+    // ホームに来たらパンくずを空にする
+    setBreadcrumbs([]);
+  }, [setBreadcrumbs]);
 
   useEffect(() => {
     if (initialData.scores.length) {
