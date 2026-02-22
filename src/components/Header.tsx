@@ -18,21 +18,21 @@ import React from "react";
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, userData, loading } = useAuth(); // userDataを取得
+  const { user, userData, loading } = useAuth();
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { items } = useBreadcrumb(); // Contextからアイテムを取得
+  const { items } = useBreadcrumb();
   const noLayoutPaths = ["/home", "/login", "/callback", "/agreement"];
   const isNoHome = noLayoutPaths.includes(pathname);
 
   // メニューを表示しないページ
   if (["/login", "/callback", "/agreement", "/about"].includes(pathname)) return null;
 
-  // 重要：Firestoreのデータ(userData)があればそれを、なければAuth(user)を、最後はデフォルトを使う
   const displayName = userData?.displayName || "ゲスト";
   const pictureUrl = userData?.pictureUrl || globalLineDefaultImage;
   const uid = user?.uid || "";
 
+  // メニュー操作用
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -60,9 +60,10 @@ export default function Header() {
     }
   };
 
-  const menuLink = (href: string, label: string) => (
+  // メニュー用リンクコンポーネント
+  const menuLink = (href: string, label: string, icon?: string) => (
     <Link prefetch={true} href={href} onClick={closeMenu}>
-      {label}
+      {icon && <i className={icon}></i>} {label}
     </Link>
   );
 
@@ -76,7 +77,6 @@ export default function Header() {
         </div>
 
         <div className="header-right" onClick={toggleMenu}>
-          {/* ローディング中は画像を出さないか、仮のものを出す */}
           {!loading && (
             <img
               src={pictureUrl}
@@ -90,8 +90,16 @@ export default function Header() {
           </div>
         </div>
 
-        {isMenuOpen && <div className="menu-overlay" onClick={closeMenu}></div>}
+        {/* ✅ 背景を暗くするオーバーレイ: 表示中のみレンダリング & クリックで閉じる */}
+        {isMenuOpen && (
+          <div 
+            className="menu-overlay" 
+            style={{ display: "block", opacity: 1 }} // jQueryのfadeIn相当
+            onClick={closeMenu} 
+          />
+        )}
 
+        {/* ✅ スライドメニュー: isMenuOpen に応じて open クラスを付与 */}
         <div className={`slide-menu ${isMenuOpen ? "open" : ""}`}>
           <div className="menu-header">
             <img 
@@ -119,7 +127,7 @@ export default function Header() {
           </div>
 
           <div className="slide-menu-section">
-            {menuLink("/home", " ホーム")}
+            {menuLink("/home", " ホーム", "fa fa-home")}
             {menuLink("/score", "譜面")}
             {menuLink("/event", "イベント")}
             {menuLink("/assign", "譜割り")}
@@ -148,6 +156,7 @@ export default function Header() {
         </div>
       </header>
 
+      {/* パンくずリスト */}
       <div className="breadcrumb-bar">
         <div id="breadcrumb-container">
           <nav className="breadcrumb">
