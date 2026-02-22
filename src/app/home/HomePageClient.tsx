@@ -93,7 +93,7 @@ export default function HomePageClient({ initialData }: any) {
         <div className={styles.scoreList}>
           {initialData.quickScores.length ? (
             <div className={styles.quickScoreGrid}>
-              {initialData.quickScores.map((s: any) => <Link key={s.id} href={`/score-confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
+              {initialData.quickScores.map((s: any) => <Link key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
             </div>
           ) : <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>}
         </div>
