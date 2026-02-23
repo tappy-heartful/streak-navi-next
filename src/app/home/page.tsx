@@ -1,5 +1,5 @@
 import { HomePageClient } from "@/src/features/home/components/HomePageClient";
-import { getAnnouncementsServer, getScoresServer, getBlueNotesServer, getMediasServer } from "@/src/lib/firestore";
+import { getAnnouncementsServer, getScoresServer, getBlueNotesServer, getMediasServer } from "@/src/features/home/api/home-service";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

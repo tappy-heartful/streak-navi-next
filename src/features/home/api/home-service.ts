@@ -1,6 +1,7 @@
 import { adminDb } from "@/src/lib/firebase-admin";
 import * as utils from "@/src/lib/functions";
-import { Announcement } from "@/src/lib/firestore/types";
+import { Announcement, BlueNote, Media, Score } from "@/src/lib/firestore/types";
+import { toPlainObject } from "@/src/lib/firestore/utils";
 
 /**
  * ホーム画面用のお知らせ一覧を取得（サーバーサイド専用）
@@ -73,4 +74,29 @@ export async function getAnnouncementsServer() {
   }
 
   return (items.length ? items : [{ type: "empty", message: "お知らせはありません🍀" }]) as Announcement[];
+}
+
+
+/**
+ * 全譜面データを取得
+ */
+export async function getScoresServer() {
+  const snap = await adminDb.collection("scores").orderBy("createdAt", "desc").get();
+  return snap.docs.map(doc => {
+    const data = toPlainObject(doc);
+    return {
+      ...data,
+      youtubeId: utils.extractYouTubeId(data.referenceTrack)
+    };
+  }) as unknown as Score[];
+}
+
+export async function getBlueNotesServer() {
+  const snap = await adminDb.collection("blueNotes").get();
+  return snap.docs.map(toPlainObject) as unknown as BlueNote[];
+}
+
+export async function getMediasServer(count = 10) {
+  const snap = await adminDb.collection("medias").orderBy("date", "desc").limit(count).get();
+  return snap.docs.map(toPlainObject) as unknown as Media[];
 }
