@@ -1,6 +1,12 @@
 import HomePageClient from "./HomePageClient";
 import { getAnnouncementsServer, getScoresServer, getBlueNotesServer, getMediasServer } from "@/src/lib/firestore";
-import * as utils from "@/src/lib/functions";
+import type { Metadata } from "next";
+
+// Metadataはサーバーコンポーネントでしか動かないのでここに置く
+export const metadata: Metadata = {
+  title: "Home",
+};
+
 
 export default async function HomePage() {
 
