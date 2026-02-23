@@ -1,9 +1,8 @@
-import { getScoresServer, getGenresServer } from "@/src/lib/firestore/scores";
-import { getUpcomingEventsWithSetlistServer } from "@/src/lib/firestore/events";
-import ScoreListClient from "./ScoreListClient";
+import { getScoresServer, getGenresServer } from "@/src/features/scores/api/score-service";
+import { getUpcomingEventsWithSetlistServer } from "@/src/features/scores/api/score-service";
+import { ScoreListClient } from "@/src/features/scores/components/ScoreListClient";
 import type { Metadata } from "next";
 
-// Metadataはサーバーコンポーネントでしか動かないのでここに置く
 export const metadata: Metadata = {
   title: "譜面一覧",
 };

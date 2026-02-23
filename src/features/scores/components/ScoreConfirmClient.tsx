@@ -8,7 +8,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { showDialog } from "@/src/components/CommonDialog";
 import { archiveAndDeleteDoc, buildYouTubeHtml } from "@/src/lib/functions";
 
-export default function ScoreConfirmClient({ scoreData, allGenres, scoreId }: any) {
+export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: any) {
   const router = useRouter();
   const { setBreadcrumbs } = useBreadcrumb();
   const { isAdmin } = useAuth();
@@ -66,7 +66,6 @@ export default function ScoreConfirmClient({ scoreData, allGenres, scoreId }: an
           <label className="label-title">参考音源</label>
           <div id="reference-track">
             {scoreData.referenceTrack ? (
-              /* buildYouTubeHtml を使用してHTMLを埋め込む */
               <div 
                 className="youtube-display-area"
                 dangerouslySetInnerHTML={{ 

@@ -1,5 +1,5 @@
-import { getScoreServer, getGenresServer } from "@/src/lib/firestore/scores";
-import ScoreConfirmClient from "./ScoreConfirmClient";
+import { getScoreServer, getGenresServer } from "@/src/features/scores/api/score-service";
+import { ScoreConfirmClient } from "@/src/features/scores/components/ScoreConfirmClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -8,7 +8,7 @@ type Props = {
 };
 
 /**
- * 動的メタデータ生成: タブのタイトルに曲名を表示
+ * 動적メタデータ生成: タブのタイトルに曲名を表示
  */
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const resolvedParams = await searchParams;
@@ -27,13 +27,12 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
  * 譜面確認ページ（サーバーコンポーネント）
  */
 export default async function ScoreConfirmPage({ searchParams }: Props) {
-  // 1. searchParams を await して中身を取り出す
   const resolvedParams = await searchParams;
   const scoreId = resolvedParams.scoreId;
 
   if (!scoreId) notFound();
 
-  // 2. サーバーサイドでデータ取得
+  // サーバーサイドでデータ取得
   const [scoreData, allGenres] = await Promise.all([
     getScoreServer(scoreId),
     getGenresServer(),

@@ -7,7 +7,7 @@ import styles from "./score-list.module.css";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { useAuth } from "@/src/contexts/AuthContext";
 
-export default function ScoreListClient({ initialData }: any) {
+export function ScoreListClient({ initialData }: any) {
   const router = useRouter();
   const { isAdmin } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
@@ -22,7 +22,6 @@ export default function ScoreListClient({ initialData }: any) {
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs]);
 
-  // フィルタリングとソートのロジック（変更なし）
   const filteredScores = useMemo(() => {
     let result = initialData.scores.filter((s: any) => {
       const matchTitle = s.title?.toLowerCase().includes(search.toLowerCase());
@@ -110,7 +109,6 @@ export default function ScoreListClient({ initialData }: any) {
               {filteredScores.length > 0 ? filteredScores.map((s: any) => (
                 <tr key={s.id}>
                   <td className="list-table-row-header">
-                    {/* 修正：prefetch={true} を追加して即時読み込みを有効化 */}
                     <Link prefetch={true} href={`/score/confirm?scoreId=${s.id}`}>
                       {s.title}
                     </Link>
@@ -132,21 +130,19 @@ export default function ScoreListClient({ initialData }: any) {
           </table>
         </div>
 
-        {/* 管理者ならボタンを表示 */}
         {isAdmin("Score") && (
-          <button 
+          <Link 
+            href="/score/edit?mode=new" 
             className="list-add-button" 
-            onClick={() => router.push("/score/edit?mode=new")}
-            /* マウスが乗った瞬間にプリフェッチを開始して遷移速度を上げる */
-            onMouseEnter={() => router.prefetch("/score/edit?mode=new")}
+            prefetch={true}
+            style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
           >
             ＋ 新規作成
-          </button>
+          </Link>
         )}
       </div>
 
       <div className="page-footer">
-        {/* ホームへの戻りも高速化 */}
         <Link prefetch={true} href="/home" className="back-link">← ホームに戻る</Link>
       </div>
     </main>
