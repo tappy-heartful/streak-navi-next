@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, memo } from "react"; // memoを追加
+import React, { useState, useEffect, useMemo, memo } from "react";
 import Link from "next/link";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import * as utils from "@/src/lib/functions";
@@ -23,6 +23,17 @@ const AnnouncementSection = memo(({ data }: { data: any[] }) => (
   </main>
 ));
 AnnouncementSection.displayName = "AnnouncementSection";
+
+const MenuSection = ({ title, items }: any) => (
+  <>
+    <h2 className={styles.menuTitle}>{title}</h2>
+    {items.map((item: any) => (
+      <Link prefetch={true} key={item.h} href={item.h} className={`${styles.menuButton} ${styles[item.c]} ${item.b ? styles.badgeInline : ""}`}>
+        {item.l} {item.b && <span className={styles.badge}>{item.b}</span>}
+      </Link>
+    ))}
+  </>
+);
 
 const MenuSectionList = memo(() => (
   <main className="container">
@@ -55,9 +66,22 @@ const MediaSection = memo(({ data }: { data: any[] }) => (
 ));
 MediaSection.displayName = "MediaSection";
 
+const Player = memo(({ title, data, idx, setIdx, onRandom }: any) => (
+  <div>
+    <h2 className={styles.playerTitle}>{title}</h2>
+    <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(idx, data), false) }} />
+    <div className={styles.playerControls}>
+      <button onClick={() => setIdx((idx - 1 + data.length) % data.length)} className={styles.playerControl}><i className="fa-solid fa-backward-step"></i></button>
+      <button onClick={onRandom} className={styles.playerControl}>ランダム <i className="fa-solid fa-arrows-rotate"></i></button>
+      <button onClick={() => setIdx((idx + 1) % data.length)} className={styles.playerControl}><i className="fa-solid fa-forward-step"></i></button>
+    </div>
+  </div>
+));
+Player.displayName = "Player";
+
 // --- メインコンポーネント ---
 
-export default function HomePageClient({ initialData }: any) {
+export function HomePageClient({ initialData }: any) {
   const [currentScoreIdx, setCurrentScoreIdx] = useState(0);
   const [currentBNIdx, setCurrentBNIdx] = useState(0);
   const { setBreadcrumbs } = useBreadcrumb();
@@ -89,7 +113,6 @@ export default function HomePageClient({ initialData }: any) {
     <div className={styles.homeContainer}>
       <div className="page-header"><h1><i className="fa fa-home"></i> ホーム</h1></div>
       
-      {/* メモ化したのでStateが変わっても再描画されない */}
       <AnnouncementSection data={initialData.announcements} />
 
       <main className="container">
@@ -137,33 +160,7 @@ export default function HomePageClient({ initialData }: any) {
         )}
       </main>
 
-      {/* ここもメモ化 */}
       <MediaSection data={initialData.medias} />
     </div>
   );
 }
-
-// Playerコンポーネントも memo化して、自分の管理するState以外では動かないようにする
-const Player = memo(({ title, data, idx, setIdx, onRandom }: any) => (
-  <div>
-    <h2 className={styles.playerTitle}>{title}</h2>
-    <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(idx, data), false) }} />
-    <div className={styles.playerControls}>
-      <button onClick={() => setIdx((idx - 1 + data.length) % data.length)} className={styles.playerControl}><i className="fa-solid fa-backward-step"></i></button>
-      <button onClick={onRandom} className={styles.playerControl}>ランダム <i className="fa-solid fa-arrows-rotate"></i></button>
-      <button onClick={() => setIdx((idx + 1) % data.length)} className={styles.playerControl}><i className="fa-solid fa-forward-step"></i></button>
-    </div>
-  </div>
-));
-Player.displayName = "Player";
-
-const MenuSection = ({ title, items }: any) => (
-  <>
-    <h2 className={styles.menuTitle}>{title}</h2>
-    {items.map((item: any) => (
-      <Link prefetch={true} key={item.h} href={item.h} className={`${styles.menuButton} ${styles[item.c]} ${item.b ? styles.badgeInline : ""}`}>
-        {item.l} {item.b && <span className={styles.badge}>{item.b}</span>}
-      </Link>
-    ))}
-  </>
-);
