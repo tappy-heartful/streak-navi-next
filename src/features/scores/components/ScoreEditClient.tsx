@@ -149,7 +149,16 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
         </div>
 
         <div className="confirm-buttons">
-          <button className="clear-button" onClick={() => router.refresh()}>クリア</button>
+            <button 
+            className="clear-button" 
+            onClick={() => {
+                if (confirm("入力内容をクリアしてもよろしいですか？")) {
+                window.location.reload();
+                }
+            }}
+            >
+            クリア
+            </button>
           <button className="save-button" onClick={handleSave}>{mode === "edit" ? "更新" : "登録"}</button>
         </div>
       </div>
