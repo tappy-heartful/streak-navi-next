@@ -7,7 +7,7 @@ import { showDialog } from "@/src/components/CommonDialog";
 import { FormField } from "@/src/components/Form/FormField";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
-import { GenreInput } from "./GenreInput";
+import { GenreInput } from "../../components/GenreInput";
 import { useEditPageBreadcrumbs } from "@/src/hooks/useEditPageBreadcrumbs";
 import { saveScore } from "@/src/features/scores/api/score-client-service";
 import * as validation from "@/src/lib/validation";

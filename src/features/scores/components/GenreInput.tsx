@@ -1,4 +1,4 @@
-import styles from "./score-edit.module.css";
+import styles from "./genre.module.css";
 
 type Props = {
   genres: string[];

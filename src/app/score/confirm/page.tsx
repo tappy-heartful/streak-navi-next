@@ -1,5 +1,5 @@
 import { getScoreServer, getGenresServer } from "@/src/features/scores/api/score-server-actions";
-import { ScoreConfirmClient } from "@/src/features/scores/components/ScoreConfirmClient";
+import { ScoreConfirmClient } from "@/src/features/scores/views/confirm/ScoreConfirmClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
