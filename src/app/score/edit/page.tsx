@@ -7,10 +7,21 @@ type Props = {
   searchParams: Promise<{ mode?: string; scoreId?: string }>;
 };
 
+/**
+ * 動的メタデータ生成: タブのタイトルに曲名を表示
+ */
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { mode } = await searchParams;
+  const resolvedParams = await searchParams;
+  const scoreId = resolvedParams.scoreId;
+  const mode = resolvedParams.mode;
+
+  if (!mode || mode === "new" || !scoreId) {
+    return { title: mode === "edit" ? "譜面編集" : "譜面新規作成" };
+  }
+
+  const scoreData = await getScoreServer(scoreId);
   return {
-    title: mode === "edit" ? "譜面編集" : "譜面新規作成",
+    title: scoreData ? `${scoreData.title} | 譜面編集` : "譜面編集",
   };
 }
 
