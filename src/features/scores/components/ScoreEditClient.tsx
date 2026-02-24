@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { showDialog } from "@/src/components/CommonDialog";
 import { FormField } from "@/src/components/Form/FormField";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
+import { GenreInput } from "./GenreInput";
+import { useEditPageBreadcrumbs } from "@/src/hooks/useEditPageBreadcrumbs";
 import { saveScore } from "@/src/features/scores/api/score-client-service";
 import * as validation from "@/src/lib/validation";
-import styles from "./score-edit.module.css";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -22,7 +22,9 @@ type Props = {
 export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Props) {
   const router = useRouter();
   const { user } = useAuth();
-  const { setBreadcrumbs } = useBreadcrumb();
+
+  // パンくずの共通化
+  useEditPageBreadcrumbs("譜面", "/score", mode, scoreId);
 
   const [formData, setFormData] = useState({
     title: (mode === "copy" ? `${initialScore?.title}（コピー）` : initialScore?.title) || "",
@@ -35,21 +37,6 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  useEffect(() => {
-    const crumbs = [
-      { title: "譜面一覧", href: "/score" },
-      ...(mode !== "new" ? [{ title: "譜面確認", href: `/score/confirm?scoreId=${scoreId}` }] : []),
-      { title: mode === "edit" ? "譜面編集" : "譜面新規作成", href: "" }
-    ];
-    setBreadcrumbs(crumbs);
-  }, [mode, scoreId, setBreadcrumbs]);
-
-  const updateGenre = (index: number, value: string) => {
-    const newGenres = [...formData.genres];
-    newGenres[index] = value;
-    setFormData({ ...formData, genres: newGenres });
-  };
 
   const validate = () => {
     const e: { [key: string]: string } = {};
@@ -67,19 +54,16 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
     if (!validation.isRequired(formData.abbreviation)) {
       e.abbreviation = "必須項目です";
     } else if (!validation.isMaxLength(formData.abbreviation, 8)) {
-      e.abbreviation = "略称は8文字以内で入力してください";
+      e.abbreviation = "略称は8文字以内です";
     }
-    if (!formData.genres[0]) e.genres = "最低1つは選択してください";
+    if (!formData.genres[0]) e.genres = "最低1つ選択してください";
 
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const handleSave = async () => {
-    if (!validate()) {
-      await showDialog("入力内容を確認してください", true);
-      return;
-    }
+    if (!validate()) return showDialog("入力内容を確認してください", true);
     if (!(await showDialog(`${mode === "edit" ? "更新" : "登録"}しますか？`))) return;
 
     try {
@@ -88,7 +72,7 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
       router.push(`/score/confirm?scoreId=${finalId}`);
     } catch (error) {
       console.error(error);
-      await showDialog("保存中にエラーが発生しました", true);
+      await showDialog("保存に失敗しました", true);
     }
   };
 
@@ -117,21 +101,11 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
         </FormField>
 
         <FormField label="ジャンル" required error={errors.genres}>
-          {formData.genres.map((selectedId: string, idx: number) => (
-            <div key={idx} className={styles.genreSelectWrapper}>
-              <select className={styles.scoreGenre} value={selectedId} onChange={(e) => updateGenre(idx, e.target.value)}>
-                <option value="">選択してください</option>
-                {allGenres.map((g: any) => <option key={g.id} value={g.id}>{g.name}</option>)}
-              </select>
-              {formData.genres.length > 1 && (
-                <button type="button" className={styles.removeGenre} onClick={() => {
-                  const newGenres = formData.genres.filter((_, i) => i !== idx);
-                  setFormData({ ...formData, genres: newGenres });
-                }}>×</button>
-              )}
-            </div>
-          ))}
-          <button type="button" className={styles.addGenre} onClick={() => setFormData({ ...formData, genres: [...formData.genres, ""] })}>＋ ジャンルを追加</button>
+          <GenreInput 
+            genres={formData.genres} 
+            allGenres={allGenres} 
+            onChange={(newGenres) => setFormData({ ...formData, genres: newGenres })} 
+          />
         </FormField>
 
         <FormField label="略称(譜割用)" required error={errors.abbreviation}>
