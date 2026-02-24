@@ -1,5 +1,4 @@
-import { getScoresServer, getGenresServer } from "@/src/features/scores/api/score-service";
-import { getUpcomingEventsWithSetlistServer } from "@/src/features/scores/api/score-service";
+import { getScoresServer, getGenresServer, getUpcomingEventsWithSetlistServer } from "@/src/features/scores/api/score-server-actions";
 import { ScoreListClient } from "@/src/features/scores/components/ScoreListClient";
 import type { Metadata } from "next";
 

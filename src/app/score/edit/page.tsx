@@ -1,4 +1,4 @@
-import { getScoreServer, getGenresServer } from "@/src/features/scores/api/score-service";
+import { getScoreServer, getGenresServer } from "@/src/features/scores/api/score-server-actions";
 import { ScoreEditClient } from "@/src/features/scores/components/ScoreEditClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";

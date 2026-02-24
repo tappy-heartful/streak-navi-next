@@ -1,3 +1,4 @@
+import 'server-only';
 import { adminDb } from "@/src/lib/firebase-admin";
 import * as utils from "@/src/lib/functions";
 import { Score } from "@/src/lib/firestore/types";
@@ -21,13 +22,10 @@ export async function getScoresServer() {
  * 特定の譜面データをIDで取得（サーバーサイド専用）
  */
 export async function getScoreServer(scoreId: string) {
-  const doc = await adminDb.collection("scores").doc(scoreId).get();
-  
-  if (!doc.exists) {
-    return null;
-  }
+  const docSnap = await adminDb.collection("scores").doc(scoreId).get();
+  if (!docSnap.exists) return null;
 
-  const data = toPlainObject(doc);
+  const data = toPlainObject(docSnap);
   return {
     ...data,
     youtubeId: utils.extractYouTubeId(data.referenceTrack)
@@ -38,13 +36,16 @@ export async function getScoreServer(scoreId: string) {
  * ジャンル一覧を取得（サーバーサイド専用）
  */
 export async function getGenresServer() {
-  const snap = await adminDb.collection("genres").get();
+  const snap = await adminDb.collection("genres").orderBy("name", "asc").get();
   return snap.docs.map(doc => ({ 
     id: doc.id, 
     ...doc.data() 
   }));
 }
 
+/**
+ * セットリストが存在する今後のイベントを取得（サーバーサイド専用）
+ */
 export async function getUpcomingEventsWithSetlistServer() {
   const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
   const snap = await adminDb.collection("events")
@@ -54,7 +55,6 @@ export async function getUpcomingEventsWithSetlistServer() {
 
   return snap.docs.map(doc => {
     const data = doc.data();
-    // セットリストから曲IDを抽出
     const scoreIds = (data.setlist || []).flatMap((item: any) => item.songIds || []);
     return {
       id: doc.id,
