@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { showDialog } from "@/src/components/CommonDialog";
 import { FormField } from "@/src/components/Form/FormField";
-import { saveScore } from "../api/score-client-service.ts ";
+import { FormButtons } from "@/src/components/Form/FormButtons";
+import { FormFooter } from "@/src/components/Form/FormFooter";
+import { saveScore } from "@/src/features/scores/api/score-client-service";
 import * as validation from "@/src/lib/validation";
 import styles from "./score-edit.module.css";
 
@@ -39,7 +40,7 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
     const crumbs = [
       { title: "譜面一覧", href: "/score" },
       ...(mode !== "new" ? [{ title: "譜面確認", href: `/score/confirm?scoreId=${scoreId}` }] : []),
-      { title: mode === "edit" ? "譜面編集" : "譜面新規作成", href: "" } // hrefを空文字で指定し型エラーを回避
+      { title: mode === "edit" ? "譜面編集" : "譜面新規作成", href: "" }
     ];
     setBreadcrumbs(crumbs);
   }, [mode, scoreId, setBreadcrumbs]);
@@ -121,7 +122,7 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
               </select>
               {formData.genres.length > 1 && (
                 <button type="button" className={styles.removeGenre} onClick={() => {
-                  const newGenres = formData.genres.filter((_, i: number) => i !== idx);
+                  const newGenres = formData.genres.filter((_, i) => i !== idx);
                   setFormData({ ...formData, genres: newGenres });
                 }}>×</button>
               )}
@@ -148,25 +149,13 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
           </label>
         </div>
 
-        <div className="confirm-buttons">
-            <button 
-            className="clear-button" 
-            onClick={() => {
-                if (confirm("入力内容をクリアしてもよろしいですか？")) {
-                window.location.reload();
-                }
-            }}
-            >
-            クリア
-            </button>
-          <button className="save-button" onClick={handleSave}>{mode === "edit" ? "更新" : "登録"}</button>
-        </div>
+        <FormButtons mode={mode} onSave={handleSave} />
       </div>
-      <div className="page-footer">
-        <Link href={mode === "new" ? "/score" : `/score/confirm?scoreId=${scoreId}`} className="back-link">
-          ← {mode === "new" ? "譜面一覧" : "譜面確認"}に戻る
-        </Link>
-      </div>
+
+      <FormFooter 
+        backHref={mode === "new" ? "/score" : `/score/confirm?scoreId=${scoreId}`}
+        backText={mode === "new" ? "譜面一覧" : "譜面確認"}
+      />
     </main>
   );
 }
