@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { showDialog } from "../CommonDialog";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -15,22 +15,18 @@ export const FormButtons = ({ mode, onSave, confirmMessage = "入力内容をク
     setCurrentUrl(window.location.pathname + window.location.search);
   }, []);
 
-  const handleClearClick = (e: React.MouseEvent) => {
-    if (!confirm(confirmMessage)) {
-      e.preventDefault();
-    }
-  };
-
   return (
     <div className="confirm-buttons">
-      <Link 
-        href={currentUrl} 
-        className="clear-button" 
-        prefetch={false}
-        onClick={handleClearClick}
+      <button 
+      className="clear-button" 
+      onClick={async () => {
+          if (await showDialog(confirmMessage)) {
+            window.location.reload();
+          }
+      }}
       >
-        クリア
-      </Link>
+      クリア
+      </button>
       <button type="button" className="save-button" onClick={onSave}>
         {mode === "edit" ? "更新" : "登録"}
       </button>

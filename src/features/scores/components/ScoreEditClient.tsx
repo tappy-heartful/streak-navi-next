@@ -6,8 +6,8 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { showDialog } from "@/src/components/CommonDialog";
 import { FormField } from "@/src/components/Form/FormField";
-import { FormButtons } from "@/src/components/Form/FormButtons";
-import { FormFooter } from "@/src/components/Form/FormFooter";
+import { BaseLayout } from "@/src/components/Layout/BaseLayout";
+import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { saveScore } from "@/src/features/scores/api/score-client-service";
 import * as validation from "@/src/lib/validation";
 import styles from "./score-edit.module.css";
@@ -93,11 +93,14 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
   };
 
   return (
-    <main>
-      <div className="page-header">
-        <h1>{mode === "edit" ? "譜面編集" : "譜面新規作成"}</h1>
-      </div>
-      <div className="container">
+    <BaseLayout>
+      <EditFormLayout
+        title={mode === "edit" ? "譜面編集" : "譜面新規作成"}
+        mode={mode}
+        onSave={handleSave}
+        backHref={mode === "new" ? "/score" : `/score/confirm?scoreId=${scoreId}`}
+        backText={mode === "new" ? "譜面一覧" : "譜面確認"}
+      >
         <FormField label="タイトル" required error={errors.title}>
           <input type="text" className="form-control" value={formData.title} 
             onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
@@ -148,14 +151,7 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
             ホームに表示
           </label>
         </div>
-
-        <FormButtons mode={mode} onSave={handleSave} />
-      </div>
-
-      <FormFooter 
-        backHref={mode === "new" ? "/score" : `/score/confirm?scoreId=${scoreId}`}
-        backText={mode === "new" ? "譜面一覧" : "譜面確認"}
-      />
-    </main>
+      </EditFormLayout>
+    </BaseLayout>
   );
 }
