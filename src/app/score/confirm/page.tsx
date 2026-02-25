@@ -2,13 +2,14 @@ import { getScoreServer, getGenresServer } from "@/src/features/scores/api/score
 import { ScoreConfirmClient } from "@/src/features/scores/views/confirm/ScoreConfirmClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { Genre, Score } from "@/src/lib/firestore/types"; // 型をインポート
 
 type Props = {
   searchParams: Promise<{ scoreId?: string }>;
 };
 
 /**
- * 動적メタデータ生成: タブのタイトルに曲名を表示
+ * 動的メタデータ生成
  */
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const resolvedParams = await searchParams;
@@ -16,7 +17,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 
   if (!scoreId) return { title: "譜面確認" };
 
-  const scoreData = await getScoreServer(scoreId);
+  const scoreData = await getScoreServer(scoreId) as Score | null;
 
   return {
     title: scoreData ? `${scoreData.title} | 譜面確認` : "譜面確認",
@@ -32,10 +33,10 @@ export default async function ScoreConfirmPage({ searchParams }: Props) {
 
   if (!scoreId) notFound();
 
-  // サーバーサイドでデータ取得
+  // サーバーサイドでデータ取得。型を明示的に指定する
   const [scoreData, allGenres] = await Promise.all([
-    getScoreServer(scoreId),
-    getGenresServer(),
+    getScoreServer(scoreId) as Promise<Score | null>,
+    getGenresServer() as Promise<Genre[]>,
   ]);
 
   if (!scoreData) notFound();
