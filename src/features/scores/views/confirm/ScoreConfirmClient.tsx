@@ -19,9 +19,6 @@ type Props = {
 export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: Props) {
   const router = useRouter();
 
-  // パンくず設定
-  useConfirmPageBreadcrumbs("譜面", "/score");
-
   // 削除処理
   const handleDelete = async () => {
     const confirmed = await showDialog("この譜面を削除しますか？\nこの操作は元に戻せません。");

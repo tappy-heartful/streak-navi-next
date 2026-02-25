@@ -4,6 +4,7 @@ import React from "react";
 import { FormFooter } from "../Form/FormFooter";
 import { DetailActionButtons } from "../Form/DetailActionButtons";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { useConfirmPageBreadcrumbs } from "@/src/hooks/useConfirmPageBreadcrumbs";
 
 type Props = {
   name: string;
@@ -25,6 +26,8 @@ export const ConfirmLayout = ({
 }: Props) => {
 
   const { isAdmin } = useAuth();
+  useConfirmPageBreadcrumbs(name, backHref);
+
   return (
     <>
       <div className="page-header">
