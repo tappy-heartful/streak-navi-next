@@ -77,6 +77,7 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
     <BaseLayout>
       <EditFormLayout
         featureName="譜面"
+        featureIdKey="scoreId" // ← ここを追加
         basePath="/score"
         dataId={scoreId}
         mode={mode}

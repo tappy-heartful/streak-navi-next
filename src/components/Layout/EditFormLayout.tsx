@@ -9,9 +9,10 @@ import { showDialog } from "@/src/components/CommonDialog";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 
 type Props = {
-  featureName: string; // "譜面", "イベント" など
-  basePath: string;    // "/score", "/event" など
-  dataId?: string;     // 編集・コピー時に使用
+  featureName: string;   // "譜面", "イベント" など
+  featureIdKey: string;  // "scoreId", "eventId" など (URLパラメータ用)
+  basePath: string;      // "/score", "/event" など
+  dataId?: string;       // 編集・コピー時に使用
   mode: "new" | "edit" | "copy";
   onSave: () => void;
   children: React.ReactNode;
@@ -23,6 +24,7 @@ type Props = {
  */
 export const EditFormLayout = ({ 
   featureName,
+  featureIdKey,
   basePath,
   dataId,
   mode, 
@@ -37,7 +39,11 @@ export const EditFormLayout = ({
   // モードに基づいたテキストとパスの判定
   const isNew = mode === "new";
   const displayTitle = isNew ? `${featureName}新規作成` : `${featureName}編集`;
-  const backHref = isNew ? basePath : `${basePath}/confirm?scoreId=${dataId}`;
+  
+  // URLパラメータを動的に構築 (例: /score/confirm?scoreId=xxx)
+  const confirmPath = `${basePath}/confirm?${featureIdKey}=${dataId}`;
+  
+  const backHref = isNew ? basePath : confirmPath;
   const backText = isNew ? `${featureName}一覧` : `${featureName}確認`;
 
   // 権限チェック
@@ -60,11 +66,11 @@ export const EditFormLayout = ({
 
     const crumbs = [
       { title: `${featureName}一覧`, href: basePath },
-      ...(!isNew ? [{ title: `${featureName}確認`, href: `${basePath}/confirm?scoreId=${dataId}` }] : []),
+      ...(!isNew ? [{ title: `${featureName}確認`, href: confirmPath }] : []),
       { title: displayTitle, href: "" }
     ];
     setBreadcrumbs(crumbs);
-  }, [isAuthorized, featureName, basePath, dataId, mode, setBreadcrumbs, isNew, displayTitle]);
+  }, [isAuthorized, featureName, basePath, dataId, mode, setBreadcrumbs, isNew, displayTitle, confirmPath]);
 
   if (loading || !isAuthorized) {
     return (
