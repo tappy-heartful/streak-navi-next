@@ -7,7 +7,6 @@ import { archiveAndDeleteDoc, buildYouTubeHtml } from "@/src/lib/functions";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
-import { useConfirmPageBreadcrumbs } from "@/src/hooks/useConfirmPageBreadcrumbs";
 import { Genre, Score } from "@/src/lib/firestore/types";
 
 type Props = {
