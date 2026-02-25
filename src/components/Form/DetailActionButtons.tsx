@@ -11,16 +11,20 @@ export const DetailActionButtons = ({ onEdit, onCopy, onDelete, show }: Props) =
   if (!show) return null;
 
   return (
-    <div className="confirm-buttons">
-      <button type="button" className="edit-button" onClick={onEdit}>
-        編集
-      </button>
-      <button type="button" className="copy-button" onClick={onCopy}>
-        コピー
-      </button>
-      <button type="button" className="delete-button" onClick={onDelete}>
-        削除
-      </button>
-    </div>
+    
+      <div className="menu-section">
+        <h2 className="menu-title">管理メニュー</h2>
+        <div className="confirm-buttons">
+          <button type="button" className="edit-button" onClick={onEdit}>
+            編集
+          </button>
+          <button type="button" className="copy-button" onClick={onCopy}>
+            コピー
+          </button>
+          <button type="button" className="delete-button" onClick={onDelete}>
+            削除
+          </button>
+        </div>
+      </div>
   );
 };
