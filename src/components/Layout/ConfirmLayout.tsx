@@ -3,6 +3,7 @@
 import React from "react";
 import { FormFooter } from "../Form/FormFooter";
 import { DetailActionButtons } from "../Form/DetailActionButtons";
+import { useAuth } from "@/src/contexts/AuthContext";
 
 type Props = {
   title: string;
@@ -20,12 +21,13 @@ export const ConfirmLayout = ({
   title, 
   backHref, 
   backText, 
-  showButtons = false,
   onEdit,
   onCopy,
   onDelete,
   children 
 }: Props) => {
+
+  const { isAdmin } = useAuth();
   return (
     <>
       <div className="page-header">
@@ -36,9 +38,9 @@ export const ConfirmLayout = ({
         {children}
         
         {/* ボタンの表示ロジックを共通レイアウト側に集約 */}
-        {showButtons && onEdit && onCopy && onDelete && (
+        {isAdmin && onEdit && onCopy && onDelete && (
           <DetailActionButtons 
-            show={showButtons}
+            show={isAdmin}
             onEdit={onEdit}
             onCopy={onCopy}
             onDelete={onDelete}

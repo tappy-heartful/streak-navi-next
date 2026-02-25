@@ -130,7 +130,7 @@ export function ScoreListClient({ initialData }: any) {
           </table>
         </div>
 
-        {isAdmin("Score") && (
+        {isAdmin && (
           <Link 
             href="/score/edit?mode=new" 
             className="list-add-button" 

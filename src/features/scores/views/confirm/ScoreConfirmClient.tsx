@@ -18,7 +18,6 @@ type Props = {
 
 export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: Props) {
   const router = useRouter();
-  const { isAdmin } = useAuth();
 
   // パンくず設定
   useConfirmPageBreadcrumbs("譜面", "/score");
@@ -50,8 +49,6 @@ export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: Props) {
         title="譜面確認"
         backHref="/score"
         backText="譜面一覧"
-        // ボタンの制御をLayoutに委ねる
-        showButtons={isAdmin("Score")}
         onEdit={() => router.push(`/score/edit?mode=edit&scoreId=${scoreId}`)}
         onCopy={() => router.push(`/score/edit?mode=copy&scoreId=${scoreId}`)}
         onDelete={handleDelete}

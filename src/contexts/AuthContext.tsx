@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import { auth, db } from "@/src/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -11,13 +12,30 @@ export type AdminModule =
   | "Score" | "Event" | "Call" | "Vote" | "Collect" | "Studio" 
   | "User" | "Notice" | "BlueNote" | "Board" | "Live" | "Ticket" | "Media";
 
+// パスセグメントとモジュールのマッピング
+const PATH_TO_MODULE: Record<string, AdminModule> = {
+  score: "Score",
+  event: "Event",
+  call: "Call",
+  vote: "Vote",
+  collect: "Collect",
+  studio: "Studio",
+  user: "User",
+  notice: "Notice",
+  bluenote: "BlueNote",
+  board: "Board",
+  live: "Live",
+  ticket: "Ticket",
+  media: "Media",
+};
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   userData: any | null;
   refreshUserData: () => Promise<void>;
-  // 権限チェック関数
-  isAdmin: (module?: AdminModule) => boolean;
+  /** 現在表示中のページ（URL）に対する管理者権限があるかどうか */
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
 
   const fetchUserData = async (uid: string) => {
     try {
@@ -36,20 +55,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserData(data);
         Object.entries(data).forEach(([k, v]) => setSession(k, v));
       }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  // 権限判定ロジックを1つに集約
-  const isAdmin = useCallback((module?: AdminModule): boolean => {
-    if (!userData) return false;
-    // システム管理者は全権限OK
-    if (userData.isSystemAdmin === true) return true;
-    // モジュール指定がない場合は、何らかの管理者であればOKとするならここ
-    if (!module) return false;
+  /**
+   * 特定のモジュールの権限を判定する内部ロジック
+   */
+  const checkAdmin = useCallback(
+    (module: AdminModule): boolean => {
+      if (!userData) return false;
+      if (userData.isSystemAdmin === true) return true;
+      return userData[`is${module}Admin`] === true;
+    },
+    [userData]
+  );
 
-    // 例: isAdmin("Score") なら userData.isScoreAdmin を見る
-    return userData[`is${module}Admin`] === true;
-  }, [userData]);
+  /**
+   * 現在のパスに基づいた isAdmin (boolean) を計算
+   * URLが /score/edit なら "Score" の権限を確認する
+   */
+  const isAdmin = useMemo(() => {
+    if (!pathname) return false;
+    const firstSegment = pathname.split("/")[1]; // "/score/edit" -> "score"
+    const currentModule = PATH_TO_MODULE[firstSegment];
+    
+    if (!currentModule) return false;
+    return checkAdmin(currentModule);
+  }, [pathname, checkAdmin]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
@@ -69,10 +103,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ 
-      user, loading, userData, isAdmin,
-      refreshUserData: async () => { if (user) await fetchUserData(user.uid); } 
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        userData,
+        isAdmin, // 現在のページの権限
+        refreshUserData: async () => {
+          if (user) await fetchUserData(user.uid);
+        },
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
