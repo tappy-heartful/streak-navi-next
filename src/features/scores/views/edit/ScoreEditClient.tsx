@@ -8,23 +8,20 @@ import { FormField } from "@/src/components/Form/FormField";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { GenreInput } from "../../components/GenreInput";
-import { useEditPageBreadcrumbs } from "@/src/hooks/useEditPageBreadcrumbs";
 import { saveScore } from "@/src/features/scores/api/score-client-service";
 import * as validation from "@/src/lib/validation";
+import { Genre, Score } from "@/src/lib/firestore/types";
 
 type Props = {
   mode: "new" | "edit" | "copy";
   scoreId?: string;
-  initialScore: any;
-  allGenres: any[];
+  initialScore: Score | null;
+  allGenres: Genre[];
 };
 
 export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Props) {
   const router = useRouter();
   const { user } = useAuth();
-
-  // パンくずの共通化
-  useEditPageBreadcrumbs("譜面", "/score", mode, scoreId);
 
   const [formData, setFormData] = useState({
     title: (mode === "copy" ? `${initialScore?.title}（コピー）` : initialScore?.title) || "",
@@ -79,11 +76,11 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
   return (
     <BaseLayout>
       <EditFormLayout
-        title={mode === "edit" ? "譜面編集" : "譜面新規作成"}
+        featureName="譜面"
+        basePath="/score"
+        dataId={scoreId}
         mode={mode}
         onSave={handleSave}
-        backHref={mode === "new" ? "/score" : `/score/confirm?scoreId=${scoreId}`}
-        backText={mode === "new" ? "譜面一覧" : "譜面確認"}
       >
         <FormField label="タイトル" required error={errors.title}>
           <input type="text" className="form-control" value={formData.title} 
