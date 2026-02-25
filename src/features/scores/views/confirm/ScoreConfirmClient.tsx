@@ -46,9 +46,8 @@ export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: Props) {
   return (
     <BaseLayout>
       <ConfirmLayout
-        title="譜面確認"
+        name="譜面"
         backHref="/score"
-        backText="譜面一覧"
         onEdit={() => router.push(`/score/edit?mode=edit&scoreId=${scoreId}`)}
         onCopy={() => router.push(`/score/edit?mode=copy&scoreId=${scoreId}`)}
         onDelete={handleDelete}

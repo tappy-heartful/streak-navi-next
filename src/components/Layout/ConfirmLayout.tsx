@@ -6,10 +6,8 @@ import { DetailActionButtons } from "../Form/DetailActionButtons";
 import { useAuth } from "@/src/contexts/AuthContext";
 
 type Props = {
-  title: string;
+  name: string;
   backHref: string;
-  backText: string;
-  // ボタン関連のプロップスを追加
   showButtons?: boolean;
   onEdit?: () => void;
   onCopy?: () => void;
@@ -18,9 +16,8 @@ type Props = {
 };
 
 export const ConfirmLayout = ({ 
-  title, 
+  name, 
   backHref, 
-  backText, 
   onEdit,
   onCopy,
   onDelete,
@@ -31,7 +28,7 @@ export const ConfirmLayout = ({
   return (
     <>
       <div className="page-header">
-        <h1>{title}</h1>
+        <h1>{name + '確認'}</h1>
       </div>
 
       <div className="container">
@@ -48,7 +45,7 @@ export const ConfirmLayout = ({
         )}
       </div>
 
-      <FormFooter backHref={backHref} backText={backText} />
+      <FormFooter backHref={backHref} backText={name + '一覧'} />
     </>
   );
 };
