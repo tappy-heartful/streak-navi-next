@@ -4,12 +4,12 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { SearchableListReturn } from "@/src/hooks/useSearchableList";
+import { useAuth } from "@/src/contexts/AuthContext";
 
 type Props<T extends Record<string, any>, F extends Record<string, any>> = {
   title: string;
   icon?: string;
   basePath: string;
-  isAdmin: boolean;
   list: SearchableListReturn<T, F>; // フックの結果を丸ごと受け取る
   searchFields: React.ReactNode;
   extraHeaderContent?: React.ReactNode;
@@ -18,9 +18,10 @@ type Props<T extends Record<string, any>, F extends Record<string, any>> = {
 };
 
 export const SearchableListLayout = <T extends Record<string, any>, F extends Record<string, any>>({
-  title, icon, basePath, isAdmin, list, searchFields, extraHeaderContent, tableHeaders, children
+  title, icon, basePath, list, searchFields, extraHeaderContent, tableHeaders, children
 }: Props<T, F>) => {
   const { setBreadcrumbs } = useBreadcrumb();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     setBreadcrumbs([{ title: `${title}一覧` }]);

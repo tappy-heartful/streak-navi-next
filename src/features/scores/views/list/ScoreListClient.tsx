@@ -16,8 +16,6 @@ type Props = {
 };
 
 export function ScoreListClient({ initialData }: Props) {
-  const { isAdmin } = useAuth();
-
   // 1. ロジックの設定
   const list = useSearchableList<Score, { search: string; genre: string; eventId: string; sort: string }>(
     initialData.scores,
@@ -52,7 +50,7 @@ export function ScoreListClient({ initialData }: Props) {
 
   return (
     <SearchableListLayout
-      title="譜面" icon="fa fa-music" basePath="/score" isAdmin={isAdmin}
+      title="譜面" icon="fa fa-music" basePath="/score"
       list={list} // まるごと渡す
       tableHeaders={["タイトル", "譜面", "音源", "ジャンル"]}
       searchFields={
