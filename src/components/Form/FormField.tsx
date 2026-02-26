@@ -17,7 +17,7 @@ export const FormField = ({ label, required, error, children }: Props) => {
         {label} {required && <span className="required">*</span>}
       </label>
       {children}
-      {error && <div className="error-text">{error}</div>}
+      {error && <div className="error-message">{error}</div>}
     </div>
   );
 };
