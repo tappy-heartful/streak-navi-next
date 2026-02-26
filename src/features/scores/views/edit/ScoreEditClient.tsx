@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { FormField } from "@/src/components/Form/FormField";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { GenreInput } from "../../components/GenreInput";
 import { saveScore } from "@/src/features/scores/api/score-client-service";
-import * as validation from "@/src/lib/validation";
+import { rules } from "@/src/lib/validation";
 import { Genre, Score } from "@/src/lib/firestore/types";
+import { useAppForm } from "@/src/hooks/useAppForm";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -19,95 +19,69 @@ type Props = {
 
 export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Props) {
   const { user } = useAuth();
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [formData, setFormData] = useState({
-    title: (mode === "copy" ? `${initialScore?.title}（コピー）` : initialScore?.title) || "",
-    scoreUrl: initialScore?.scoreUrl || "",
-    referenceTrack: initialScore?.referenceTrack || "",
-    genres: (initialScore?.genres as string[]) || [""],
-    abbreviation: initialScore?.abbreviation || "",
-    note: initialScore?.note || "",
-    isDispTop: mode === "new" ? true : (initialScore?.isDispTop ?? false),
-  });
 
-  // バリデーションルールのみ定義
-  const handleValidate = () => {
-    const e: { [key: string]: string } = {};
-    if (!validation.isRequired(formData.title)) e.title = "必須項目です";
-    if (!validation.isRequired(formData.scoreUrl)) {
-      e.scoreUrl = "必須項目です";
-    } else if (!validation.isValidGoogleDriveUrl(formData.scoreUrl)) {
-      e.scoreUrl = "Google DriveのURL形式が不正です";
+  // 1. フォームの状態とバリデーションルールを「定義」するだけ
+  const { formData, errors, updateField, validate } = useAppForm(
+    {
+      title: (mode === "copy" ? `${initialScore?.title}（コピー）` : initialScore?.title) || "",
+      scoreUrl: initialScore?.scoreUrl || "",
+      referenceTrack: initialScore?.referenceTrack || "",
+      genres: (initialScore?.genres as string[]) || [""],
+      abbreviation: initialScore?.abbreviation || "",
+      note: initialScore?.note || "",
+      isDispTop: mode === "new" ? true : (initialScore?.isDispTop ?? false),
+    },
+    {
+      title: [rules.required],
+      scoreUrl: [rules.required, rules.googleDrive],
+      referenceTrack: [rules.required, rules.youtube],
+      abbreviation: [rules.required, rules.max8],
+      genres: [(v) => (v[0] ? true : "最低1つ選択してください")],
     }
-    if (!validation.isRequired(formData.referenceTrack)) {
-      e.referenceTrack = "必須項目です";
-    } else if (!validation.isValidYouTubeUrl(formData.referenceTrack)) {
-      e.referenceTrack = "YouTubeのURL形式が不正です";
-    }
-    if (!validation.isRequired(formData.abbreviation)) {
-      e.abbreviation = "必須項目です";
-    } else if (!validation.isMaxLength(formData.abbreviation, 8)) {
-      e.abbreviation = "略称は8文字以内です";
-    }
-    if (!formData.genres[0]) e.genres = "最低1つ選択してください";
-
-    setErrors(e);
-    return e;
-  };
-
-  // 保存用API呼び出しのみ定義
-  const handleSaveApi = () => {
-    return saveScore(mode, formData, scoreId, user?.displayName || undefined);
-  };
+  );
 
   return (
     <BaseLayout>
       <EditFormLayout
-        featureName="譜面"
-        featureIdKey="scoreId"
-        basePath="/score"
-        dataId={scoreId}
-        mode={mode}
-        onValidate={handleValidate}
-        onSaveApi={handleSaveApi}
+        featureName="譜面" featureIdKey="scoreId" basePath="/score"
+        dataId={scoreId} mode={mode}
+        onValidate={validate} // フックのvalidateを渡すだけ
+        onSaveApi={() => saveScore(mode, formData, scoreId, user?.displayName || undefined)}
       >
         <FormField label="タイトル" required error={errors.title}>
           <input type="text" className="form-control" value={formData.title} 
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
+            onChange={(e) => updateField("title", e.target.value)} />
         </FormField>
 
         <FormField label="譜面（Google Drive URL）" required error={errors.scoreUrl}>
           <input type="text" className="form-control" value={formData.scoreUrl} 
-            onChange={(e) => setFormData({ ...formData, scoreUrl: e.target.value })} />
+            onChange={(e) => updateField("scoreUrl", e.target.value)} />
         </FormField>
 
         <FormField label="参考音源（YouTube URL）" required error={errors.referenceTrack}>
           <input type="text" className="form-control" value={formData.referenceTrack} 
-            onChange={(e) => setFormData({ ...formData, referenceTrack: e.target.value })} />
+            onChange={(e) => updateField("referenceTrack", e.target.value)} />
         </FormField>
 
         <FormField label="ジャンル" required error={errors.genres}>
-          <GenreInput 
-            genres={formData.genres} 
-            allGenres={allGenres} 
-            onChange={(newGenres) => setFormData({ ...formData, genres: newGenres })} 
-          />
+          <GenreInput genres={formData.genres} allGenres={allGenres} 
+            onChange={(val) => updateField("genres", val)} />
         </FormField>
 
         <FormField label="略称(譜割用)" required error={errors.abbreviation}>
           <input type="text" className="form-control" value={formData.abbreviation} 
-            onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value })} />
+            onChange={(e) => updateField("abbreviation", e.target.value)} />
         </FormField>
 
         <FormField label="備考">
           <input type="text" className="form-control" value={formData.note} 
-            onChange={(e) => setFormData({ ...formData, note: e.target.value })} />
+            onChange={(e) => updateField("note", e.target.value)} />
         </FormField>
 
         <div className="form-group checkbox-group">
           <label>
             <input type="checkbox" checked={formData.isDispTop} 
-              onChange={(e) => setFormData({ ...formData, isDispTop: e.target.checked })} />
+              onChange={(e) => updateField("isDispTop", e.target.checked)} />
             ホームに表示
           </label>
         </div>
