@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { showDialog } from "@/src/components/CommonDialog";
 import { FormField } from "@/src/components/Form/FormField";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
@@ -20,9 +18,8 @@ type Props = {
 };
 
 export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Props) {
-  const router = useRouter();
   const { user } = useAuth();
-
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [formData, setFormData] = useState({
     title: (mode === "copy" ? `${initialScore?.title}（コピー）` : initialScore?.title) || "",
     scoreUrl: initialScore?.scoreUrl || "",
@@ -33,9 +30,8 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
     isDispTop: mode === "new" ? true : (initialScore?.isDispTop ?? false),
   });
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  const validate = () => {
+  // バリデーションルールのみ定義
+  const handleValidate = () => {
     const e: { [key: string]: string } = {};
     if (!validation.isRequired(formData.title)) e.title = "必須項目です";
     if (!validation.isRequired(formData.scoreUrl)) {
@@ -56,32 +52,24 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
     if (!formData.genres[0]) e.genres = "最低1つ選択してください";
 
     setErrors(e);
-    return Object.keys(e).length === 0;
+    return e;
   };
 
-  const handleSave = async () => {
-    if (!validate()) return showDialog("入力内容を確認してください", true);
-    if (!(await showDialog(`${mode === "edit" ? "更新" : "登録"}しますか？`))) return;
-
-    try {
-      const finalId = await saveScore(mode, formData, scoreId, user?.displayName || undefined);
-      await showDialog("保存しました", true);
-      router.push(`/score/confirm?scoreId=${finalId}`);
-    } catch (error) {
-      console.error(error);
-      await showDialog("保存に失敗しました", true);
-    }
+  // 保存用API呼び出しのみ定義
+  const handleSaveApi = () => {
+    return saveScore(mode, formData, scoreId, user?.displayName || undefined);
   };
 
   return (
     <BaseLayout>
       <EditFormLayout
         featureName="譜面"
-        featureIdKey="scoreId" // ← ここを追加
+        featureIdKey="scoreId"
         basePath="/score"
         dataId={scoreId}
         mode={mode}
-        onSave={handleSave}
+        onValidate={handleValidate}
+        onSaveApi={handleSaveApi}
       >
         <FormField label="タイトル" required error={errors.title}>
           <input type="text" className="form-control" value={formData.title} 
