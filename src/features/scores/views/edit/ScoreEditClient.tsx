@@ -5,6 +5,7 @@ import { FormField } from "@/src/components/Form/FormField";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { GenreInput } from "../../components/GenreInput";
+import { AppInput } from "@/src/components/Form/AppInput"; // 新設
 import { saveScore } from "@/src/features/scores/api/score-client-service";
 import { rules } from "@/src/lib/validation";
 import { Genre, Score } from "@/src/lib/firestore/types";
@@ -20,7 +21,6 @@ type Props = {
 export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Props) {
   const { user } = useAuth();
 
-  // 1. フォームの状態とバリデーションルールを「定義」するだけ
   const { formData, errors, updateField, validate } = useAppForm(
     {
       title: (mode === "copy" ? `${initialScore?.title}（コピー）` : initialScore?.title) || "",
@@ -40,51 +40,33 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
     }
   );
 
+  // AppInputに渡す共通プロップスをまとめておくとさらに楽
+  const inputProps = (field: keyof typeof formData) => ({
+    field,
+    value: formData[field],
+    error: errors[field],
+    updateField,
+  });
+
   return (
     <BaseLayout>
       <EditFormLayout
         featureName="譜面" featureIdKey="scoreId" basePath="/score"
-        dataId={scoreId} mode={mode}
-        onValidate={validate} // フックのvalidateを渡すだけ
+        dataId={scoreId} mode={mode} onValidate={validate}
         onSaveApi={() => saveScore(mode, formData, scoreId, user?.displayName || undefined)}
       >
-        <FormField label="タイトル" required error={errors.title}>
-          <input type="text" className="form-control" value={formData.title} 
-            onChange={(e) => updateField("title", e.target.value)} />
-        </FormField>
-
-        <FormField label="譜面（Google Drive URL）" required error={errors.scoreUrl}>
-          <input type="text" className="form-control" value={formData.scoreUrl} 
-            onChange={(e) => updateField("scoreUrl", e.target.value)} />
-        </FormField>
-
-        <FormField label="参考音源（YouTube URL）" required error={errors.referenceTrack}>
-          <input type="text" className="form-control" value={formData.referenceTrack} 
-            onChange={(e) => updateField("referenceTrack", e.target.value)} />
-        </FormField>
+        <AppInput label="タイトル" required {...inputProps("title")} />
+        <AppInput label="譜面（Google Drive URL）" required {...inputProps("scoreUrl")} />
+        <AppInput label="参考音源（YouTube URL）" required {...inputProps("referenceTrack")} />
 
         <FormField label="ジャンル" required error={errors.genres}>
           <GenreInput genres={formData.genres} allGenres={allGenres} 
             onChange={(val) => updateField("genres", val)} />
         </FormField>
 
-        <FormField label="略称(譜割用)" required error={errors.abbreviation}>
-          <input type="text" className="form-control" value={formData.abbreviation} 
-            onChange={(e) => updateField("abbreviation", e.target.value)} />
-        </FormField>
-
-        <FormField label="備考">
-          <input type="text" className="form-control" value={formData.note} 
-            onChange={(e) => updateField("note", e.target.value)} />
-        </FormField>
-
-        <div className="form-group checkbox-group">
-          <label>
-            <input type="checkbox" checked={formData.isDispTop} 
-              onChange={(e) => updateField("isDispTop", e.target.checked)} />
-            ホームに表示
-          </label>
-        </div>
+        <AppInput label="略称(譜割用)" required {...inputProps("abbreviation")} />
+        <AppInput label="備考" {...inputProps("note")} />
+        <AppInput label="ホームに表示" type="checkbox" {...inputProps("isDispTop")} />
       </EditFormLayout>
     </BaseLayout>
   );
