@@ -15,9 +15,9 @@ type Props = {
   dataId?: string;
   mode: "new" | "edit" | "copy";
   children: React.ReactNode;
-  // 共通化のための追加プロップス
-  onValidate: () => { [key: string]: string }; // エラーオブジェクトを返す関数
-  onSaveApi: () => Promise<string | undefined>; // API実行してIDを返す関数
+  onValidate: () => { [key: string]: string }; 
+  onSaveApi: () => Promise<string | undefined>;
+  onClear: () => void; // ★ 追加
 };
 
 export const EditFormLayout = ({ 
@@ -28,7 +28,8 @@ export const EditFormLayout = ({
   mode, 
   children,
   onValidate,
-  onSaveApi
+  onSaveApi,
+  onClear // ★ 追加
 }: Props) => {
   const router = useRouter();
   const { isAdmin, loading } = useAuth();
@@ -41,7 +42,6 @@ export const EditFormLayout = ({
   const backHref = isNew ? basePath : confirmPath;
   const backText = isNew ? `${featureName}一覧` : `${featureName}確認`;
 
-  // 権限チェック
   useEffect(() => {
     if (loading) return;
     if (!isAdmin) {
@@ -54,7 +54,6 @@ export const EditFormLayout = ({
     }
   }, [isAdmin, loading, router, basePath]);
 
-  // パンくず設定
   useEffect(() => {
     if (!isAuthorized) return;
     const crumbs = [
@@ -65,26 +64,18 @@ export const EditFormLayout = ({
     setBreadcrumbs(crumbs);
   }, [isAuthorized, featureName, basePath, dataId, mode, setBreadcrumbs, isNew, displayTitle, confirmPath]);
 
-  /**
-   * 共通保存ハンドラ
-   */
   const handleSave = async () => {
-    // 1. バリデーション実行
     const errors = onValidate();
     if (Object.keys(errors).length > 0) {
       return showDialog("入力内容を確認してください", true);
     }
 
-    // 2. 確認ダイアログ
     const ok = await showDialog(`${mode === "edit" ? "更新" : "登録"}しますか？`);
     if (!ok) return;
 
     try {
-      // 3. API実行
       const finalId = await onSaveApi();
       await showDialog("保存しました", true);
-
-      // 4. 保存後の遷移
       router.push(`${basePath}/confirm?${featureIdKey}=${finalId}`);
     } catch (error) {
       console.error(error);
@@ -103,7 +94,8 @@ export const EditFormLayout = ({
       </div>
       <div className="container">
         {children}
-        <FormButtons mode={mode} onSave={handleSave} />
+        {/* ★ onClear を渡す */}
+        <FormButtons mode={mode} onSave={handleSave} onClear={onClear} />
       </div>
       <FormFooter backHref={backHref} backText={backText} />
     </>

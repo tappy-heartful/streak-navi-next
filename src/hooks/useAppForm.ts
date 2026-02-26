@@ -29,5 +29,11 @@ export function useAppForm<T extends Record<string, any>>(
     return newErrors;
   }, [formData, validationSchema]);
 
-  return { formData, errors, updateField, validate };
+  // ★ 追加：リセット関数
+  const resetForm = useCallback(() => {
+    setFormData(initialValues);
+    setErrors({});
+  }, [initialValues]);
+
+  return { formData, errors, updateField, validate, resetForm };
 }

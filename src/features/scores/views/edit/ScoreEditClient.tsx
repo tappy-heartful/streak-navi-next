@@ -5,7 +5,7 @@ import { FormField } from "@/src/components/Form/FormField";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { GenreInput } from "../../components/GenreInput";
-import { AppInput } from "@/src/components/Form/AppInput"; // 新設
+import { AppInput } from "@/src/components/Form/AppInput";
 import { saveScore } from "@/src/features/scores/api/score-client-service";
 import { rules } from "@/src/lib/validation";
 import { Genre, Score } from "@/src/lib/firestore/types";
@@ -21,7 +21,7 @@ type Props = {
 export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Props) {
   const { user } = useAuth();
 
-  const { formData, errors, updateField, validate } = useAppForm(
+  const { formData, errors, updateField, validate, resetForm } = useAppForm(
     {
       title: (mode === "copy" ? `${initialScore?.title}（コピー）` : initialScore?.title) || "",
       scoreUrl: initialScore?.scoreUrl || "",
@@ -40,7 +40,6 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
     }
   );
 
-  // AppInputに渡す共通プロップスをまとめておくとさらに楽
   const inputProps = (field: keyof typeof formData) => ({
     field,
     value: formData[field],
@@ -52,8 +51,10 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
     <BaseLayout>
       <EditFormLayout
         featureName="譜面" featureIdKey="scoreId" basePath="/score"
-        dataId={scoreId} mode={mode} onValidate={validate}
+        dataId={scoreId} mode={mode}
+        onValidate={validate}
         onSaveApi={() => saveScore(mode, formData, scoreId, user?.displayName || undefined)}
+        onClear={resetForm} // ★ 追加：リセット関数を渡す
       >
         <AppInput label="タイトル" required {...inputProps("title")} />
         <AppInput label="譜面（Google Drive URL）" required {...inputProps("scoreUrl")} />
