@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import * as utils from "@/src/lib/functions";
 import styles from "./home.module.css";
+import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 
 // --- 再描画させないためのメモ化コンポーネント群 ---
 
@@ -110,57 +111,59 @@ export function HomePageClient({ initialData }: any) {
   const bnPlaylistIds = useMemo(() => utils.getWatchVideosOrder(currentBNIdx, initialData.blueNotes)?.join(","), [currentBNIdx, initialData.blueNotes]);
 
   return (
-    <div className={styles.homeContainer}>
-      <div className="page-header"><h1><i className="fa fa-home"></i> ホーム</h1></div>
-      
-      <AnnouncementSection data={initialData.announcements} />
+    <BaseLayout>
+      <div className={styles.homeContainer}>
+        <div className="page-header"><h1><i className="fa fa-home"></i> ホーム</h1></div>
+        
+        <AnnouncementSection data={initialData.announcements} />
 
-      <main className="container">
-        <div className={styles.scoreHeader}>
-          <h3>新着譜面</h3>
-          {scorePlaylistIds && <a href={`https://www.youtube.com/watch_videos?video_ids=${scorePlaylistIds}`} target="_blank" className={styles.playlistButton} rel="noreferrer"><i className="fa-brands fa-youtube"></i> プレイリスト</a>}
-        </div>
-        <div className={styles.scoreList}>
-          {initialData.quickScores.length ? (
-            <div className={styles.quickScoreGrid}>
-              {initialData.quickScores.map((s: any) => <Link prefetch={true} key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
-            </div>
-          ) : <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>}
-        </div>
-        {initialData.scores.length > 0 && (
-          <Player 
-            title={initialData.scores[currentScoreIdx]?.title || "参考演奏"} 
-            data={initialData.scores} 
-            idx={currentScoreIdx} 
-            setIdx={setCurrentScoreIdx} 
-            onRandom={() => setCurrentScoreIdx(utils.getRandomIndex(currentScoreIdx, initialData.scores.length))}
-          />
-        )}
-        <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
-      </main>
-
-      <MenuSectionList />
-
-      <main className="container">
-        {initialData.blueNotes.length > 0 && (
-          <>
-            <div className={styles.scoreHeader}>
-              <h3>今日の一曲</h3>
-              <a href={`https://www.youtube.com/watch_videos?video_ids=${bnPlaylistIds}`} target="_blank" className={styles.playlistButton} rel="noreferrer"><i className="fa-brands fa-youtube"></i> プレイリスト</a>
-            </div>
+        <main className="container">
+          <div className={styles.scoreHeader}>
+            <h3>新着譜面</h3>
+            {scorePlaylistIds && <a href={`https://www.youtube.com/watch_videos?video_ids=${scorePlaylistIds}`} target="_blank" className={styles.playlistButton} rel="noreferrer"><i className="fa-brands fa-youtube"></i> プレイリスト</a>}
+          </div>
+          <div className={styles.scoreList}>
+            {initialData.quickScores.length ? (
+              <div className={styles.quickScoreGrid}>
+                {initialData.quickScores.map((s: any) => <Link prefetch={true} key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
+              </div>
+            ) : <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>}
+          </div>
+          {initialData.scores.length > 0 && (
             <Player 
-              title={initialData.blueNotes[currentBNIdx]?.title} 
-              data={initialData.blueNotes} 
-              idx={currentBNIdx} 
-              setIdx={setCurrentBNIdx} 
-              onRandom={() => setCurrentBNIdx(utils.getRandomIndex(currentBNIdx, initialData.blueNotes.length))}
+              title={initialData.scores[currentScoreIdx]?.title || "参考演奏"} 
+              data={initialData.scores} 
+              idx={currentScoreIdx} 
+              setIdx={setCurrentScoreIdx} 
+              onRandom={() => setCurrentScoreIdx(utils.getRandomIndex(currentScoreIdx, initialData.scores.length))}
             />
-            <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/blue-note" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
-          </>
-        )}
-      </main>
+          )}
+          <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
+        </main>
 
-      <MediaSection data={initialData.medias} />
-    </div>
+        <MenuSectionList />
+
+        <main className="container">
+          {initialData.blueNotes.length > 0 && (
+            <>
+              <div className={styles.scoreHeader}>
+                <h3>今日の一曲</h3>
+                <a href={`https://www.youtube.com/watch_videos?video_ids=${bnPlaylistIds}`} target="_blank" className={styles.playlistButton} rel="noreferrer"><i className="fa-brands fa-youtube"></i> プレイリスト</a>
+              </div>
+              <Player 
+                title={initialData.blueNotes[currentBNIdx]?.title} 
+                data={initialData.blueNotes} 
+                idx={currentBNIdx} 
+                setIdx={setCurrentBNIdx} 
+                onRandom={() => setCurrentBNIdx(utils.getRandomIndex(currentBNIdx, initialData.blueNotes.length))}
+              />
+              <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/blue-note" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
+            </>
+          )}
+        </main>
+
+        <MediaSection data={initialData.medias} />
+      </div>
+    </BaseLayout>
   );
 }
