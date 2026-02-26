@@ -3,24 +3,23 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
+import { SearchableListReturn } from "@/src/hooks/useSearchableList";
 
-type Props = {
+type Props<T extends Record<string, any>, F extends Record<string, any>> = {
   title: string;
   icon?: string;
   basePath: string;
-  count: number;
   isAdmin: boolean;
+  list: SearchableListReturn<T, F>; // フックの結果を丸ごと受け取る
   searchFields: React.ReactNode;
   extraHeaderContent?: React.ReactNode;
-  onClear: () => void;
-  onSearch?: () => void; // 検索ボタン用（自動フィルタなら空でもOK）
   tableHeaders: string[];
-  children: React.ReactNode;
+  children: React.ReactNode; // <tr> の中身（データがある場合）
 };
 
-export const SearchableListLayout = ({
-  title, icon, basePath, count, isAdmin, searchFields, extraHeaderContent, onClear, onSearch, tableHeaders, children
-}: Props) => {
+export const SearchableListLayout = <T extends Record<string, any>, F extends Record<string, any>>({
+  title, icon, basePath, isAdmin, list, searchFields, extraHeaderContent, tableHeaders, children
+}: Props<T, F>) => {
   const { setBreadcrumbs } = useBreadcrumb();
 
   useEffect(() => {
@@ -36,15 +35,16 @@ export const SearchableListLayout = ({
       <div className="container">
         <h3>検索</h3>
         {searchFields}
+        {/* ユーザー指定のボタン構造をここに集約 */}
         <div className="confirm-buttons">
-          <button className="clear-button" onClick={onClear}>クリア</button>
-          <button className="save-button" onClick={onSearch}>検索</button>
+          <button className="clear-button" onClick={list.resetFilters}>クリア</button>
+          <button className="save-button">検索</button> {/* フィルタは自動で走る想定 */}
         </div>
       </div>
 
       <div className="container">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-          <h3 style={{ margin: 0 }}>{title} ({count}件)</h3>
+          <h3 style={{ margin: 0 }}>{title} ({list.filteredData.length}件)</h3>
           {extraHeaderContent}
         </div>
 
@@ -55,7 +55,17 @@ export const SearchableListLayout = ({
                 {tableHeaders.map((header, i) => <th key={i}>{header}</th>)}
               </tr>
             </thead>
-            <tbody>{children}</tbody>
+            <tbody>
+              {list.filteredData.length > 0 ? (
+                children
+              ) : (
+                <tr>
+                  <td colSpan={tableHeaders.length} className="text-center">
+                    該当の{title}はありません🍀
+                  </td>
+                </tr>
+              )}
+            </tbody>
           </table>
         </div>
 

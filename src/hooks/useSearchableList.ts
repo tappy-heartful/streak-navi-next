@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 
-export function useSearchableList<T, F extends Record<string, any>>(
+export function useSearchableList<T extends Record<string, any>, F extends Record<string, any>>(
   data: T[],
   initialFilters: F,
   filterFn: (item: T, filters: F) => boolean,
@@ -16,6 +16,7 @@ export function useSearchableList<T, F extends Record<string, any>>(
     setFilters(initialFilters);
   }, [initialFilters]);
 
+  // フィルタリング結果
   const filteredData = useMemo(() => {
     let result = data.filter((item) => filterFn(item, filters));
     if (sortFn) {
@@ -24,5 +25,12 @@ export function useSearchableList<T, F extends Record<string, any>>(
     return result;
   }, [data, filters, filterFn, sortFn]);
 
-  return { filters, setFilters, updateFilter, resetFilters, filteredData };
+  return { filters, updateFilter, resetFilters, filteredData };
 }
+
+// レイアウト側で受け取るための型
+// T と F にも本体と同じ制約を付け加えます
+export type SearchableListReturn<
+  T extends Record<string, any>, 
+  F extends Record<string, any>
+> = ReturnType<typeof useSearchableList<T, F>>;
