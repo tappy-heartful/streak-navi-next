@@ -1,9 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/src/contexts/AuthContext";
-import { showDialog } from "@/src/components/CommonDialog";
-import { archiveAndDeleteDoc, buildYouTubeHtml } from "@/src/lib/functions";
+import { buildYouTubeHtml } from "@/src/lib/functions";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
@@ -16,26 +13,9 @@ type Props = {
 };
 
 export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: Props) {
-  const router = useRouter();
-
-  // 削除処理
-  const handleDelete = async () => {
-    const confirmed = await showDialog("この譜面を削除しますか？\nこの操作は元に戻せません。");
-    if (!confirmed) return;
-
-    try {
-      await archiveAndDeleteDoc("scores", scoreId);
-      await showDialog("削除しました", true);
-      router.push("/score");
-    } catch (e) {
-      console.error(e);
-      await showDialog("削除に失敗しました", true);
-    }
-  };
-
-  // ジャンル名の解決
+  // ジャンル名の解決ロジック
   const genreNames = scoreData.genres
-    ?.map((gid: string) => allGenres.find((g) => g.id === gid)?.name)
+    ?.map((gid) => allGenres.find((g) => g.id === gid)?.name)
     .filter(Boolean)
     .join("、");
 
@@ -43,10 +23,9 @@ export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: Props) {
     <BaseLayout>
       <ConfirmLayout
         name="譜面"
-        backHref="/score"
-        onEdit={() => router.push(`/score/edit?mode=edit&scoreId=${scoreId}`)}
-        onCopy={() => router.push(`/score/edit?mode=copy&scoreId=${scoreId}`)}
-        onDelete={handleDelete}
+        basePath="/score"
+        dataId={scoreId}
+        collectionName="scores"
       >
         <DisplayField label="タイトル">
           {scoreData.title}
@@ -60,19 +39,16 @@ export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: Props) {
           )}
         </DisplayField>
 
-        <div className="form-group">
-          <label className="label-title">参考音源</label>
-          <div id="reference-track">
-            {scoreData.referenceTrack ? (
-              <div 
-                className="youtube-display-area"
-                dangerouslySetInnerHTML={{ 
-                  __html: buildYouTubeHtml(scoreData.referenceTrack) 
-                }} 
-              />
-            ) : "未設定"}
-          </div>
-        </div>
+        <DisplayField label="参考音源">
+          {scoreData.referenceTrack ? (
+            <div 
+              className="youtube-display-area"
+              dangerouslySetInnerHTML={{ 
+                __html: buildYouTubeHtml(scoreData.referenceTrack) 
+              }} 
+            />
+          ) : "未設定"}
+        </DisplayField>
 
         <DisplayField label="ジャンル">
           {genreNames}
