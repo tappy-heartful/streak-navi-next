@@ -21,7 +21,8 @@ type Props = {
 export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Props) {
   const { user } = useAuth();
 
-  const { formData, errors, updateField, validate, resetForm } = useAppForm(
+  // 1. 設定：初期値とバリデーション
+  const form = useAppForm(
     {
       title: (mode === "copy" ? `${initialScore?.title}（コピー）` : initialScore?.title) || "",
       scoreUrl: initialScore?.scoreUrl || "",
@@ -40,11 +41,12 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
     }
   );
 
-  const inputProps = (field: keyof typeof formData) => ({
+  // 2. 設定：各部品への流し込み用ヘルパー
+  const inputProps = (field: keyof typeof form.formData) => ({
     field,
-    value: formData[field],
-    error: errors[field],
-    updateField,
+    value: form.formData[field],
+    error: form.errors[field],
+    updateField: form.updateField,
   });
 
   return (
@@ -52,17 +54,16 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
       <EditFormLayout
         featureName="譜面" featureIdKey="scoreId" basePath="/score"
         dataId={scoreId} mode={mode}
-        onValidate={validate}
-        onSaveApi={() => saveScore(mode, formData, scoreId, user?.displayName || undefined)}
-        onClear={resetForm} // ★ 追加：リセット関数を渡す
+        form={form} // フックの結果をまるごと渡す！
+        onSaveApi={(data) => saveScore(mode, data, scoreId, user?.displayName || undefined)}
       >
         <AppInput label="タイトル" required {...inputProps("title")} />
         <AppInput label="譜面（Google Drive URL）" required {...inputProps("scoreUrl")} />
         <AppInput label="参考音源（YouTube URL）" required {...inputProps("referenceTrack")} />
 
-        <FormField label="ジャンル" required error={errors.genres}>
-          <GenreInput genres={formData.genres} allGenres={allGenres} 
-            onChange={(val) => updateField("genres", val)} />
+        <FormField label="ジャンル" required error={form.errors.genres}>
+          <GenreInput genres={form.formData.genres} allGenres={allGenres} 
+            onChange={(val) => form.updateField("genres", val)} />
         </FormField>
 
         <AppInput label="略称(譜割用)" required {...inputProps("abbreviation")} />
