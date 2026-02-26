@@ -2,6 +2,7 @@ import { getScoreServer, getGenresServer } from "@/src/features/scores/api/score
 import { ScoreEditClient } from "@/src/features/scores/views/edit/ScoreEditClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { Genre } from "@/src/lib/firestore";
 
 type Props = {
   searchParams: Promise<{ mode?: string; scoreId?: string }>;
@@ -28,15 +29,16 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function ScoreEditPage({ searchParams }: Props) {
   const { mode, scoreId } = await searchParams;
 
-  // モードチェック
   const validModes = ["new", "edit", "copy"];
   if (!mode || !validModes.includes(mode)) notFound();
 
-  // 編集・コピー時はデータ取得
-  const [initialScore, allGenres] = await Promise.all([
+  const [initialScore, allGenresData] = await Promise.all([
     scoreId ? getScoreServer(scoreId) : null,
     getGenresServer(),
   ]);
+
+  // 取得したデータを Genre[] として扱う
+  const allGenres = allGenresData as Genre[];
 
   if ((mode === "edit" || mode === "copy") && !initialScore) {
     notFound();

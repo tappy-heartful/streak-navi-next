@@ -1,7 +1,7 @@
 import 'server-only';
 import { adminDb } from "@/src/lib/firebase-admin";
 import * as utils from "@/src/lib/functions";
-import { Score } from "@/src/lib/firestore/types";
+import { Genre, Score } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 
 /**
@@ -35,12 +35,12 @@ export async function getScoreServer(scoreId: string) {
 /**
  * ジャンル一覧を取得（サーバーサイド専用）
  */
-export async function getGenresServer() {
-  const snap = await adminDb.collection("genres").orderBy("name", "asc").get();
-  return snap.docs.map(doc => ({ 
-    id: doc.id, 
-    ...doc.data() 
-  }));
+export async function getGenresServer(): Promise<Genre[]> {
+  const snapshot = await adminDb.collection("genres").get();
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Genre[]; // ここで型を確定させる
 }
 
 /**
