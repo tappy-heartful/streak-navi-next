@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import styles from "./score-list.module.css";
-import { useAuth } from "@/src/contexts/AuthContext";
 import { useSearchableList } from "@/src/hooks/useSearchableList";
 import { SearchableListLayout } from "@/src/components/Layout/SearchableListLayout";
 import { Score, Genre } from "@/src/lib/firestore/types";
+import { scoreFilterFn, scoreSortFn, ScoreFilters } from "@/src/features/scores/lib/score-search-engine"; // 知能をインポート
 
 type Props = {
   initialData: {
@@ -16,33 +16,13 @@ type Props = {
 };
 
 export function ScoreListClient({ initialData }: Props) {
-  // 1. ロジックの設定
-  const list = useSearchableList<Score, { search: string; genre: string; eventId: string; sort: string }>(
+
+  // 1. ロジックの設定（Engineを呼び出すだけ）
+  const list = useSearchableList<Score, ScoreFilters>(
     initialData.scores,
     { search: "", genre: "", eventId: initialData.events[0]?.id || "", sort: "createdAt-desc" },
-    (s, f) => {
-      const matchTitle = s.title?.toLowerCase().includes(f.search.toLowerCase());
-      const matchGenre = !f.genre || s.genres?.includes(f.genre);
-      let matchEvent = true;
-      if (f.eventId) {
-        const event = initialData.events.find((e: any) => e.id === f.eventId);
-        matchEvent = event?.scoreIdsInSetlist?.includes(s.id);
-      }
-      return !!(matchTitle && matchGenre && matchEvent);
-    },
-    (a, b, f) => {
-      if (f.eventId) {
-        const event = initialData.events.find((e: any) => e.id === f.eventId);
-        const orderedIds = event?.scoreIdsInSetlist || [];
-        return orderedIds.indexOf(a.id) - orderedIds.indexOf(b.id);
-      }
-      const [key, order] = f.sort.split("-");
-      const isAsc = order === "asc";
-      if (key === "title") {
-        return isAsc ? (a.title || "").localeCompare(b.title || "", "ja") : (b.title || "").localeCompare(a.title || "", "ja");
-      }
-      return isAsc ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0);
-    }
+    (s, f) => scoreFilterFn(s, f, initialData.events),
+    (a, b, f) => scoreSortFn(a, b, f, initialData.events)
   );
 
   // 2. YouTubeプレイリストURLの計算
@@ -51,7 +31,7 @@ export function ScoreListClient({ initialData }: Props) {
   return (
     <SearchableListLayout
       title="譜面" icon="fa fa-music" basePath="/score"
-      list={list} // まるごと渡す
+      list={list}
       tableHeaders={["タイトル", "譜面", "音源", "ジャンル"]}
       searchFields={
         <>
@@ -83,7 +63,6 @@ export function ScoreListClient({ initialData }: Props) {
         </a>
       )}
     >
-      {/* 3. データがある場合の1行分の表示だけ書く */}
       {list.filteredData.map((s) => (
         <tr key={s.id}>
           <td className="list-table-row-header">
