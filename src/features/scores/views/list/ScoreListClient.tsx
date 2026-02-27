@@ -4,9 +4,9 @@ import { useSearchableList } from "@/src/hooks/useSearchableList";
 import { SearchableListLayout } from "@/src/components/Layout/SearchableListLayout";
 import { Score } from "@/src/lib/firestore/types";
 import { scoreFilterFn, scoreSortFn, ScoreFilters } from "@/src/features/scores/lib/score-search-engine";
-import { 
-  ListFilterGrid, FilterInput, FilterSelect, 
-  ListRow, ListCellHeader, ListCellLink, ListCellSmall 
+import {
+  ListFilterGrid, FilterInput, FilterSelect,
+  ListRow, ListCellHeader, ListCellLink, ListCellSmall
 } from "@/src/components/List/ListParts";
 
 type Props = {
@@ -34,34 +34,34 @@ export function ScoreListClient({ initialData }: Props) {
       tableHeaders={["タイトル", "譜面", "音源", "ジャンル"]}
       searchFields={
         <ListFilterGrid>
-          <FilterInput 
-            placeholder="タイトルで検索..." 
-            value={list.filters.search} 
-            onChange={(v) => list.updateFilter("search", v)} 
+          <FilterInput
+            placeholder="タイトルで検索..."
+            value={list.filters.search}
+            onChange={(v) => list.updateFilter("search", v)}
           />
-          <FilterSelect 
-            label="ジャンルを選択" 
-            options={initialData.genres} 
-            value={list.filters.genre} 
-            onChange={(v) => list.updateFilter("genre", v)} 
+          <FilterSelect
+            label="ジャンルを選択"
+            options={initialData.genres}
+            value={list.filters.genre}
+            onChange={(v) => list.updateFilter("genre", v)}
           />
-          <FilterSelect 
-            label="イベントを選択" 
-            options={initialData.events.map(e => ({ id: e.id, name: `${e.date} ${e.title}` }))} 
-            value={list.filters.eventId} 
-            onChange={(v) => list.updateFilter("eventId", v)} 
+          <FilterSelect
+            label="イベントを選択"
+            options={initialData.events.map(e => ({ id: e.id, name: `${e.date} ${e.title}` }))}
+            value={list.filters.eventId}
+            onChange={(v) => list.updateFilter("eventId", v)}
           />
           {!list.filters.eventId && (
-            <FilterSelect 
-              label="並び替え" 
+            <FilterSelect
+              label="並び替え"
               options={[
                 { id: "createdAt-desc", name: "新着順" },
                 { id: "createdAt-asc", name: "古い順" },
                 { id: "title-asc", name: "タイトル昇順" },
                 { id: "title-desc", name: "タイトル降順" },
-              ]} 
-              value={list.filters.sort} 
-              onChange={(v) => list.updateFilter("sort", v)} 
+              ]}
+              value={list.filters.sort}
+              onChange={(v) => list.updateFilter("sort", v)}
             />
           )}
         </ListFilterGrid>
@@ -79,7 +79,7 @@ export function ScoreListClient({ initialData }: Props) {
           </ListCellHeader>
 
           <ListCellLink href={s.scoreUrl} icon="fa-solid fa-file-pdf" label="譜面" />
-          
+
           <ListCellLink href={s.referenceTrack} icon="fab fa-youtube" label="音源" />
 
           <ListCellSmall>
