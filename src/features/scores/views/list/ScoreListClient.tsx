@@ -2,15 +2,17 @@
 
 import { useSearchableList } from "@/src/hooks/useSearchableList";
 import { SearchableListLayout } from "@/src/components/Layout/SearchableListLayout";
-import { Score, Genre } from "@/src/lib/firestore/types";
+import { Score } from "@/src/lib/firestore/types";
 import { scoreFilterFn, scoreSortFn, ScoreFilters } from "@/src/features/scores/lib/score-search-engine";
-// 共通パーツをインポート
-import { ListFilterGrid, ListRow, ListCellHeader, ListCellCenter, ListCellSmall } from "@/src/components/List/ListParts";
+import { 
+  ListFilterGrid, FilterInput, FilterSelect, 
+  ListRow, ListCellHeader, ListCellLink, ListCellSmall 
+} from "@/src/components/List/ListParts";
 
 type Props = {
   initialData: {
     scores: Score[];
-    genres: Genre[];
+    genres: any[];
     events: any[];
   };
 };
@@ -32,26 +34,35 @@ export function ScoreListClient({ initialData }: Props) {
       tableHeaders={["タイトル", "譜面", "音源", "ジャンル"]}
       searchFields={
         <ListFilterGrid>
-          <input type="text" className="form-control" placeholder="タイトルで検索..." 
-            value={list.filters.search} onChange={(e) => list.updateFilter("search", e.target.value)} />
-          
-          <select value={list.filters.genre} onChange={(e) => list.updateFilter("genre", e.target.value)}>
-            <option value="">ジャンルを選択</option>
-            {initialData.genres.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-          </select>
-
-          <select value={list.filters.eventId} onChange={(e) => list.updateFilter("eventId", e.target.value)}>
-            <option value="">イベントを選択</option>
-            {initialData.events.map((e) => <option key={e.id} value={e.id}>{e.date} {e.title}</option>)}
-          </select>
-
+          <FilterInput 
+            placeholder="タイトルで検索..." 
+            value={list.filters.search} 
+            onChange={(v) => list.updateFilter("search", v)} 
+          />
+          <FilterSelect 
+            label="ジャンルを選択" 
+            options={initialData.genres} 
+            value={list.filters.genre} 
+            onChange={(v) => list.updateFilter("genre", v)} 
+          />
+          <FilterSelect 
+            label="イベントを選択" 
+            options={initialData.events.map(e => ({ id: e.id, name: `${e.date} ${e.title}` }))} 
+            value={list.filters.eventId} 
+            onChange={(v) => list.updateFilter("eventId", v)} 
+          />
           {!list.filters.eventId && (
-            <select value={list.filters.sort} onChange={(e) => list.updateFilter("sort", e.target.value)}>
-              <option value="createdAt-desc">新着順</option>
-              <option value="createdAt-asc">古い順</option>
-              <option value="title-asc">タイトル昇順</option>
-              <option value="title-desc">タイトル降順</option>
-            </select>
+            <FilterSelect 
+              label="並び替え" 
+              options={[
+                { id: "createdAt-desc", name: "新着順" },
+                { id: "createdAt-asc", name: "古い順" },
+                { id: "title-asc", name: "タイトル昇順" },
+                { id: "title-desc", name: "タイトル降順" },
+              ]} 
+              value={list.filters.sort} 
+              onChange={(v) => list.updateFilter("sort", v)} 
+            />
           )}
         </ListFilterGrid>
       }
@@ -67,16 +78,12 @@ export function ScoreListClient({ initialData }: Props) {
             {s.title}
           </ListCellHeader>
 
-          <ListCellCenter>
-            {s.scoreUrl && <a href={s.scoreUrl} target="_blank" rel="noreferrer"><i className="fa-solid fa-file-pdf"></i> 譜面</a>}
-          </ListCellCenter>
-
-          <ListCellCenter>
-            {s.referenceTrack && <a href={s.referenceTrack} target="_blank" rel="noreferrer"><i className="fab fa-youtube"></i> 音源</a>}
-          </ListCellCenter>
+          <ListCellLink href={s.scoreUrl} icon="fa-solid fa-file-pdf" label="譜面" />
+          
+          <ListCellLink href={s.referenceTrack} icon="fab fa-youtube" label="音源" />
 
           <ListCellSmall>
-            {s.genres?.map((gid) => initialData.genres.find((g) => g.id === gid)?.name).filter(Boolean).join("\n")}
+            {s.genres?.map((gid: string) => initialData.genres.find((g) => g.id === gid)?.name).filter(Boolean).join("\n")}
           </ListCellSmall>
         </ListRow>
       ))}
