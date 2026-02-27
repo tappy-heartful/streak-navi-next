@@ -33,28 +33,26 @@ export function ScoreListClient({ initialData }: Props) {
       tableHeaders={["タイトル", "譜面", "音源", "ジャンル"]}
       // ★ onSearch を渡さないことで、検索ボタン非表示 ＆ 即時フィルタリングモードになる
       searchFields={
-        <>
-          <input type="text" className="form-control" placeholder="タイトルで検索..." 
-            value={list.filters.search} onChange={(e) => list.updateFilter("search", e.target.value)} />
-          <div className={styles.filterGrid}>
-            <select value={list.filters.genre} onChange={(e) => list.updateFilter("genre", e.target.value)}>
-              <option value="">ジャンルを選択</option>
-              {initialData.genres.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+        <div className={styles.filterGrid}>
+        <input type="text" className="form-control" placeholder="タイトルで検索..." 
+          value={list.filters.search} onChange={(e) => list.updateFilter("search", e.target.value)} />
+          <select value={list.filters.genre} onChange={(e) => list.updateFilter("genre", e.target.value)}>
+            <option value="">ジャンルを選択</option>
+            {initialData.genres.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+          </select>
+          <select value={list.filters.eventId} onChange={(e) => list.updateFilter("eventId", e.target.value)}>
+            <option value="">イベントを選択</option>
+            {initialData.events.map((e) => <option key={e.id} value={e.id}>{e.date} {e.title}</option>)}
+          </select>
+          {!list.filters.eventId && (
+            <select value={list.filters.sort} onChange={(e) => list.updateFilter("sort", e.target.value)}>
+              <option value="createdAt-desc">新着順</option>
+              <option value="createdAt-asc">古い順</option>
+              <option value="title-asc">タイトル昇順</option>
+              <option value="title-desc">タイトル降順</option>
             </select>
-            <select value={list.filters.eventId} onChange={(e) => list.updateFilter("eventId", e.target.value)}>
-              <option value="">イベントを選択</option>
-              {initialData.events.map((e) => <option key={e.id} value={e.id}>{e.date} {e.title}</option>)}
-            </select>
-            {!list.filters.eventId && (
-              <select value={list.filters.sort} onChange={(e) => list.updateFilter("sort", e.target.value)}>
-                <option value="createdAt-desc">新着順</option>
-                <option value="createdAt-asc">古い順</option>
-                <option value="title-asc">タイトル昇順</option>
-                <option value="title-desc">タイトル降順</option>
-              </select>
-            )}
-          </div>
-        </>
+          )}
+        </div>
       }
       extraHeaderContent={playlistIds && (
         <a href={`https://www.youtube.com/watch_videos?video_ids=${playlistIds}`} target="_blank" rel="noreferrer" className={styles.playlistButton}>
