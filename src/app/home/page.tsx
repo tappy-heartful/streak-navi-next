@@ -1,9 +1,12 @@
-import HomePageClient from "./HomePageClient";
-import { getAnnouncementsServer, getScoresServer, getBlueNotesServer, getMediasServer } from "@/src/lib/firestore";
-import * as utils from "@/src/lib/functions";
+import { HomePageClient } from "@/src/features/home/components/HomePageClient";
+import { getAnnouncementsServer, getScoresServer, getBlueNotesServer, getMediasServer } from "@/src/features/home/api/home-service";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Home",
+};
 
 export default async function HomePage() {
-
   const [
     announcements,
     allScores,

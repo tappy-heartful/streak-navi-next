@@ -4,7 +4,10 @@ import ClientLayout from "./ClientLayout"; // 後で作るファイル
 
 // Metadataはサーバーコンポーネントでしか動かないのでここに置く
 export const metadata: Metadata = {
-  title: "Streak Navi",
+  title: {
+    template: "%s | Streak Navi", // %s に各ページのタイトルが入る
+    default: "Streak Navi",       // タイトル未設定時のデフォルト
+  },
   description: "Swing Streak Jazz Orchestraの公式ナビゲーションサイトです。",
   icons: {
     icon: "https://tappy-heartful.github.io/streak-images/navi/favicon.png",

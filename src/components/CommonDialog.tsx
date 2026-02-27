@@ -1,15 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 export interface DialogOptions {
   message: string;
   isOKOnly?: boolean;
   resolve: (value: boolean) => void;
 }
 
-// グローバルに呼び出すためのイベントリスナー用
-let setter: (options: any) => void;
+// グローバルに呼び出すためのsetterを保持
+let setter: (options: DialogOptions | null) => void;
 
+/**
+ * プロミスを返すダイアログ表示関数
+ * @param message 表示するテキスト
+ * @param isOKOnly OKボタンのみにするかどうか
+ */
 export const showDialog = (message: string, isOKOnly = false): Promise<boolean> => {
   return new Promise((resolve) => {
     if (setter) {
@@ -25,6 +31,7 @@ export default function CommonDialog() {
     setter = setOptions;
   }, []);
 
+  // オプションがない（ダイアログを閉じている）ときは何も描画しない
   if (!options) return null;
 
   const handleClose = (result: boolean) => {
@@ -37,37 +44,69 @@ export default function CommonDialog() {
       <style jsx>{`
         .dialog-overlay {
           position: fixed;
-          top: 0; left: 0; width: 100%; height: 100%;
-          background-color: rgba(0, 0, 0, 0.85);
-          display: flex; align-items: center; justify-content: center;
-          z-index: 10001;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10000; /* ヘッダーより上に表示 */
         }
+
         .dialog-box {
-          background: #111;
-          padding: 30px 20px;
-          border-radius: 16px;
-          width: 90%; max-width: 400px;
+          background: white;
+          padding: 24px;
+          border-radius: 8px;
+          width: 90%;
+          max-width: 350px;
+          min-width: 280px;
           text-align: center;
-          box-shadow: 0 0 20px rgba(231, 33, 26, 0.3);
-          border: 1px solid #333;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
+
         #dialog-message {
-          font-size: 1.1rem; line-height: 1.6;
-          margin-bottom: 25px; color: #fff; font-weight: bold;
-          white-space: pre-wrap; /* 改行を有効にする */
+          font-size: 16px;
+          line-height: 1.6;
+          margin-bottom: 24px;
+          color: #333;
+          white-space: pre-wrap;
+          word-break: break-all;
         }
-        .dialog-buttons { display: flex; justify-content: center; gap: 15px; }
-        button {
-          padding: 10px 30px; font-size: 0.95rem; font-weight: bold;
-          cursor: pointer; border-radius: 4px; transition: all 0.3s ease;
-          min-width: 100px; font-family: 'Impact', sans-serif;
-          letter-spacing: 0.1em; text-transform: uppercase;
+
+        .dialog-buttons {
+          display: flex;
+          justify-content: center;
+          gap: 12px;
         }
-        .dialog-ok { background-color: #e7211a; color: #fff; border: none; }
-        .dialog-ok:hover { opacity: 0.8; box-shadow: 0 0 10px rgba(231, 33, 26, 0.5); }
-        .dialog-cancel { background-color: transparent; color: #888; border: 1px solid #444; }
-        .dialog-cancel:hover { background: rgba(255, 255, 255, 0.05); color: #fff; border-color: #888; }
+
+        .dialog-buttons button {
+          padding: 12px 24px;
+          font-size: 16px;
+          font-weight: bold;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          min-width: 100px;
+          transition: opacity 0.2s;
+        }
+
+        .dialog-buttons button:active {
+          opacity: 0.7;
+        }
+
+        .dialog-ok {
+          background-color: #4CAF50;
+          color: #fff;
+        }
+
+        .dialog-cancel {
+          background-color: #ccc;
+          color: #000;
+        }
       `}</style>
+
       <div className="dialog-box">
         <p id="dialog-message">{options.message}</p>
         <div className="dialog-buttons">

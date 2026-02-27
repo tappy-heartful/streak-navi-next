@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/src/lib/firebase";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { 
   clearAllAppSession, 
   globalLineDefaultImage, 
@@ -12,22 +13,26 @@ import {
   showSpinner, 
   hideSpinner 
 } from "@/src/lib/functions";
+import React from "react";
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, userData, loading } = useAuth(); // userDataを取得
+  const { user, userData, loading } = useAuth();
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { items } = useBreadcrumb();
+  const noLayoutPaths = ["/home", "/login", "/callback", "/agreement"];
+  const isNoHome = noLayoutPaths.includes(pathname);
 
   // メニューを表示しないページ
   if (["/login", "/callback", "/agreement", "/about"].includes(pathname)) return null;
 
-  // 重要：Firestoreのデータ(userData)があればそれを、なければAuth(user)を、最後はデフォルトを使う
   const displayName = userData?.displayName || "ゲスト";
   const pictureUrl = userData?.pictureUrl || globalLineDefaultImage;
   const uid = user?.uid || "";
 
+  // メニュー操作用
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -55,9 +60,10 @@ export default function Header() {
     }
   };
 
-  const menuLink = (href: string, label: string) => (
-    <Link href={href} onClick={closeMenu}>
-      {label}
+  // メニュー用リンクコンポーネント
+  const menuLink = (href: string, label: string, icon?: string) => (
+    <Link prefetch={true} href={href} onClick={closeMenu}>
+      {icon && <i className={icon}></i>} {label}
     </Link>
   );
 
@@ -71,7 +77,6 @@ export default function Header() {
         </div>
 
         <div className="header-right" onClick={toggleMenu}>
-          {/* ローディング中は画像を出さないか、仮のものを出す */}
           {!loading && (
             <img
               src={pictureUrl}
@@ -85,8 +90,16 @@ export default function Header() {
           </div>
         </div>
 
-        {isMenuOpen && <div className="menu-overlay" onClick={closeMenu}></div>}
+        {/* ✅ 背景を暗くするオーバーレイ: 表示中のみレンダリング & クリックで閉じる */}
+        {isMenuOpen && (
+          <div 
+            className="menu-overlay" 
+            style={{ display: "block", opacity: 1 }} // jQueryのfadeIn相当
+            onClick={closeMenu} 
+          />
+        )}
 
+        {/* ✅ スライドメニュー: isMenuOpen に応じて open クラスを付与 */}
         <div className={`slide-menu ${isMenuOpen ? "open" : ""}`}>
           <div className="menu-header">
             <img 
@@ -114,7 +127,7 @@ export default function Header() {
           </div>
 
           <div className="slide-menu-section">
-            {menuLink("/home", " ホーム")}
+            {menuLink("/home", " ホーム", "fa fa-home")}
             {menuLink("/score", "譜面")}
             {menuLink("/event", "イベント")}
             {menuLink("/assign", "譜割り")}
@@ -143,9 +156,28 @@ export default function Header() {
         </div>
       </header>
 
+      {/* パンくずリスト */}
       <div className="breadcrumb-bar">
-        <div id="breadcrumb-container"></div>
-        <button className="share-button" onClick={handleShare}>
+        <div id="breadcrumb-container">
+          <nav className="breadcrumb">
+            {!isNoHome && (
+              <Link prefetch={true} href="/home">
+                <i className="fa fa-home"></i> ホーム
+              </Link>
+            )}
+            {items.map((item, index) => (
+              <React.Fragment key={index}>
+                <span className="separator">›</span>
+                {item.href ? (
+                  <Link prefetch={true} href={item.href}>{item.title}</Link>
+                ) : (
+                  <span className="current">{item.title}</span>
+                )}
+              </React.Fragment>
+            ))}
+          </nav>
+        </div>
+        <button id="share-button" className="share-button" onClick={handleShare}>
           <i className="fas fa-share-alt"></i>
         </button>
       </div>

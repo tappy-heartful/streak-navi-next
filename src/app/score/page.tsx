@@ -1,6 +1,10 @@
-import { getScoresServer, getGenresServer } from "@/src/lib/firestore/scores";
-import { getUpcomingEventsWithSetlistServer } from "@/src/lib/firestore/events";
-import ScoreListClient from "./ScoreListClient";
+import { getScoresServer, getGenresServer, getUpcomingEventsWithSetlistServer } from "@/src/features/scores/api/score-server-actions";
+import { ScoreListClient } from "@/src/features/scores/views/list/ScoreListClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "譜面一覧",
+};
 
 export default async function ScoreListPage() {
   // データを並列で取得
