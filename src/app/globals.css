@@ -471,6 +471,43 @@ h3 {
   text-align: left;
 }
 
+/* 検索フィルターのグリッド */
+.list-filter-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+.list-filter-grid select, 
+.list-filter-grid input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+}
+
+/* ジャンル等の複数行セル */
+.list-text-small {
+  font-size: 11px;
+  color: #666;
+  white-space: pre-wrap;
+}
+
+/* YouTube等のバッジボタン */
+.list-badge-button {
+  background-color: #ff0000;
+  color: white !important;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  text-decoration: none;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
 /* 一覧画面テーブル */
 
 /* テーブルレスポンシブ対応 */
