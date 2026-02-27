@@ -10,15 +10,16 @@ type Props<T extends Record<string, any>, F extends Record<string, any>> = {
   title: string;
   icon?: string;
   basePath: string;
-  list: SearchableListReturn<T, F>; // フックの結果を丸ごと受け取る
+  list: SearchableListReturn<T, F>;
   searchFields: React.ReactNode;
   extraHeaderContent?: React.ReactNode;
   tableHeaders: string[];
-  children: React.ReactNode; // <tr> の中身（データがある場合）
+  onSearch?: (filters: F) => void; // ★ これがある場合はボタンを表示し、手動実行モードになる
+  children: React.ReactNode;
 };
 
 export const SearchableListLayout = <T extends Record<string, any>, F extends Record<string, any>>({
-  title, icon, basePath, list, searchFields, extraHeaderContent, tableHeaders, children
+  title, icon, basePath, list, searchFields, extraHeaderContent, tableHeaders, onSearch, children
 }: Props<T, F>) => {
   const { setBreadcrumbs } = useBreadcrumb();
   const { isAdmin } = useAuth();
@@ -36,10 +37,17 @@ export const SearchableListLayout = <T extends Record<string, any>, F extends Re
       <div className="container">
         <h3>検索</h3>
         {searchFields}
-        {/* ユーザー指定のボタン構造をここに集約 */}
         <div className="confirm-buttons">
           <button className="clear-button" onClick={list.resetFilters}>クリア</button>
-          <button className="save-button">検索</button> {/* フィルタは自動で走る想定 */}
+          {/* ★ onSearch が渡されている時だけ「検索」ボタンを表示 */}
+          {onSearch && (
+            <button 
+              className="save-button" 
+              onClick={() => onSearch(list.filters)}
+            >
+              検索
+            </button>
+          )}
         </div>
       </div>
 

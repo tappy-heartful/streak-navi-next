@@ -5,7 +5,7 @@ import styles from "./score-list.module.css";
 import { useSearchableList } from "@/src/hooks/useSearchableList";
 import { SearchableListLayout } from "@/src/components/Layout/SearchableListLayout";
 import { Score, Genre } from "@/src/lib/firestore/types";
-import { scoreFilterFn, scoreSortFn, ScoreFilters } from "@/src/features/scores/lib/score-search-engine"; // 知能をインポート
+import { scoreFilterFn, scoreSortFn, ScoreFilters } from "@/src/features/scores/lib/score-search-engine";
 
 type Props = {
   initialData: {
@@ -16,8 +16,7 @@ type Props = {
 };
 
 export function ScoreListClient({ initialData }: Props) {
-
-  // 1. ロジックの設定（Engineを呼び出すだけ）
+  // 1. ロジックの設定（クライアントサイドで完結する知能を渡す）
   const list = useSearchableList<Score, ScoreFilters>(
     initialData.scores,
     { search: "", genre: "", eventId: initialData.events[0]?.id || "", sort: "createdAt-desc" },
@@ -25,7 +24,6 @@ export function ScoreListClient({ initialData }: Props) {
     (a, b, f) => scoreSortFn(a, b, f, initialData.events)
   );
 
-  // 2. YouTubeプレイリストURLの計算
   const playlistIds = list.filteredData.map((s) => s.youtubeId).filter(Boolean).join(",");
 
   return (
@@ -33,6 +31,7 @@ export function ScoreListClient({ initialData }: Props) {
       title="譜面" icon="fa fa-music" basePath="/score"
       list={list}
       tableHeaders={["タイトル", "譜面", "音源", "ジャンル"]}
+      // ★ onSearch を渡さないことで、検索ボタン非表示 ＆ 即時フィルタリングモードになる
       searchFields={
         <>
           <input type="text" className="form-control" placeholder="タイトルで検索..." 
@@ -40,11 +39,11 @@ export function ScoreListClient({ initialData }: Props) {
           <div className={styles.filterGrid}>
             <select value={list.filters.genre} onChange={(e) => list.updateFilter("genre", e.target.value)}>
               <option value="">ジャンルを選択</option>
-              {initialData.genres.map((g: any) => <option key={g.id} value={g.id}>{g.name}</option>)}
+              {initialData.genres.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
             </select>
             <select value={list.filters.eventId} onChange={(e) => list.updateFilter("eventId", e.target.value)}>
               <option value="">イベントを選択</option>
-              {initialData.events.map((e: any) => <option key={e.id} value={e.id}>{e.date} {e.title}</option>)}
+              {initialData.events.map((e) => <option key={e.id} value={e.id}>{e.date} {e.title}</option>)}
             </select>
             {!list.filters.eventId && (
               <select value={list.filters.sort} onChange={(e) => list.updateFilter("sort", e.target.value)}>
@@ -75,7 +74,7 @@ export function ScoreListClient({ initialData }: Props) {
             {s.referenceTrack ? <a href={s.referenceTrack} target="_blank" rel="noreferrer"><i className="fab fa-youtube"></i> 音源</a> : "-"}
           </td>
           <td className={styles.genreCell}>
-            {s.genres?.map((gid: string) => initialData.genres.find((g: any) => g.id === gid)?.name).filter(Boolean).join("\n") || "-"}
+            {s.genres?.map((gid) => initialData.genres.find((g) => g.id === gid)?.name).filter(Boolean).join("\n") || "-"}
           </td>
         </tr>
       ))}
