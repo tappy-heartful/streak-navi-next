@@ -75,6 +75,7 @@ export function UserListClient({ initialData }: Props) {
       icon="fa-solid fa-users"
       basePath="/user"
       count={users.length}
+      hideAddButton={true}
     >
       {/* 登録されているセクション順に表示 */}
       {sections.map(section => {
