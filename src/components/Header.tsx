@@ -113,7 +113,7 @@ export default function Header() {
                 className="menu-user-name" 
                 onClick={() => {
                   if (uid) {
-                    router.push(`/user-confirm?uid=${uid}`);
+                    router.push(`/user/confirm?uid=${uid}`);
                     closeMenu();
                   }
                 }}
@@ -147,7 +147,7 @@ export default function Header() {
           <div className="slide-menu-section menu-bottom">
             <a onClick={() => {
               if (uid) {
-                router.push(`/user-confirm?uid=${uid}`);
+                router.push(`/user/confirm?uid=${uid}`);
                 closeMenu();
               }
             }}>ユーザ情報</a>

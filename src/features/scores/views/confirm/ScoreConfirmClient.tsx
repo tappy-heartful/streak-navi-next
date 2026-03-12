@@ -25,6 +25,7 @@ export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: Props) {
         name="譜面"
         basePath="/score"
         dataId={scoreId}
+        featureIdKey="scoreId"
         collectionName="scores"
       >
         <DisplayField label="タイトル">

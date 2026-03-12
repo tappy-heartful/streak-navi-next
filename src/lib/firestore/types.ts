@@ -43,3 +43,43 @@ export type Genre = {
   id: string;
   name: string;
 };
+
+export interface User {
+  id: string;
+  displayName?: string;
+  pictureUrl?: string;
+  sectionId?: string;
+  roleId?: string;
+  instrumentIds?: string[];
+  abbreviation?: string;
+  paypayId?: string;
+  agreedAt?: number;
+  lastLoginAt?: number;
+  createdAt?: number;
+  updatedAt?: number;
+  isSystemAdmin?: boolean;
+  [key: string]: any; // 動的フラグ (e.g. isScoreAdmin)
+}
+
+export interface Section {
+  id: string;
+  name: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+}
+
+export interface Instrument {
+  id: string;
+  name: string;
+  sectionId: string;
+}
+
+export interface SecretWord {
+  id: string;
+  label: string;
+  roleField: string;
+  word?: string;
+}

@@ -13,6 +13,7 @@ type Props = {
   name: string;        // "譜面"
   basePath: string;    // "/score"
   dataId: string;
+  featureIdKey: string; // "scoreId", "uid" など
   collectionName: string; // "scores"
   children: React.ReactNode;
 };
@@ -21,6 +22,7 @@ export const ConfirmLayout = ({
   name, 
   basePath, 
   dataId,
+  featureIdKey,
   collectionName,
   children 
 }: Props) => {
@@ -36,8 +38,8 @@ export const ConfirmLayout = ({
   }, [setBreadcrumbs, name, basePath]);
 
   // 編集・コピーの遷移をパターン化
-  const onEdit = () => router.push(`${basePath}/edit?mode=edit&scoreId=${dataId}`);
-  const onCopy = () => router.push(`${basePath}/edit?mode=copy&scoreId=${dataId}`);
+  const onEdit = () => router.push(`${basePath}/edit?mode=edit&${featureIdKey}=${dataId}`);
+  const onCopy = () => router.push(`${basePath}/edit?mode=copy&${featureIdKey}=${dataId}`);
 
   // 削除ロジックを共通化
   const onDelete = async () => {

@@ -1,0 +1,52 @@
+.instrumentContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+
+.checkboxText {
+  font-size: 0.95rem;
+}
+
+.othersContainer {
+  margin-top: 0.5rem;
+}
+
+.othersDivider {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.toggleButton {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  color: #333;
+  cursor: pointer;
+  font-size: 0.9rem;
+  width: 100%;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.toggleButton:hover {
+  background-color: #f5f5f5;
+}
