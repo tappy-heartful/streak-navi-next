@@ -15,6 +15,8 @@ type Props = {
   dataId: string;
   featureIdKey: string; // "scoreId", "uid" など
   collectionName: string; // "scores"
+  overrideAdmin?: boolean; // 権限を強制的に付与する場合（自分自身のページなど）
+  hideCopy?: boolean; // コピーボタンを非表示にするフラグ
   children: React.ReactNode;
 };
 
@@ -24,11 +26,15 @@ export const ConfirmLayout = ({
   dataId,
   featureIdKey,
   collectionName,
+  overrideAdmin,
+  hideCopy,
   children 
 }: Props) => {
   const router = useRouter();
   const { isAdmin } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
+
+  const effectiveIsAdmin = overrideAdmin ?? isAdmin;
 
   useEffect(() => {
     setBreadcrumbs([
@@ -65,12 +71,13 @@ export const ConfirmLayout = ({
       <div className="container">
         {children}
         
-        {isAdmin && (
+        {effectiveIsAdmin && (
           <DetailActionButtons 
-            show={isAdmin}
+            show={effectiveIsAdmin}
             onEdit={onEdit}
             onCopy={onCopy}
             onDelete={onDelete}
+            hideCopy={hideCopy}
           />
         )}
       </div>

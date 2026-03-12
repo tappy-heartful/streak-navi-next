@@ -5,6 +5,7 @@ import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { User, Section, Role, Instrument, SecretWord } from "@/src/lib/firestore/types";
 import { globalLineDefaultImage, format } from "@/src/lib/functions";
+import { useAuth } from "@/src/contexts/AuthContext";
 
 type Props = {
   uid: string;
@@ -16,6 +17,8 @@ type Props = {
 };
 
 export function UserConfirmClient({ uid, userData, sections, roles, instruments, secretWords }: Props) {
+  const { user, isAdmin } = useAuth();
+
   // マスタデータ名の解決
   const sectionName = sections.find(s => s.id === userData.sectionId)?.name || "未設定";
   const roleName = roles.find(r => r.id === userData.roleId)?.name || "未設定";
@@ -30,6 +33,10 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
     .map(sw => sw.label)
     .join("、");
 
+  const isSelf = user?.uid === uid;
+  const isSystemAdmin = userData.isSystemAdmin || isAdmin;
+  const showEditButtons = isSelf || isSystemAdmin;
+
   return (
     <BaseLayout>
       <ConfirmLayout
@@ -38,6 +45,8 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
         dataId={uid}
         featureIdKey="uid"
         collectionName="users"
+        overrideAdmin={showEditButtons}
+        hideCopy={true} // ユーザのコピー機能は不要
       >
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem", padding: "1rem", backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
           <img 

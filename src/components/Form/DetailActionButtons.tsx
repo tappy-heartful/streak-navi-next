@@ -5,9 +5,10 @@ type Props = {
   onCopy: () => void;
   onDelete: () => void;
   show: boolean; // 権限チェックの結果を渡す
+  hideCopy?: boolean; // コピーボタンを非表示にするフラグ
 };
 
-export const DetailActionButtons = ({ onEdit, onCopy, onDelete, show }: Props) => {
+export const DetailActionButtons = ({ onEdit, onCopy, onDelete, show, hideCopy }: Props) => {
   if (!show) return null;
 
   return (
@@ -18,9 +19,11 @@ export const DetailActionButtons = ({ onEdit, onCopy, onDelete, show }: Props) =
           <button type="button" className="edit-button" onClick={onEdit}>
             編集
           </button>
-          <button type="button" className="copy-button" onClick={onCopy}>
-            コピー
-          </button>
+          {!hideCopy && (
+            <button type="button" className="copy-button" onClick={onCopy}>
+              コピー
+            </button>
+          )}
           <button type="button" className="delete-button" onClick={onDelete}>
             削除
           </button>

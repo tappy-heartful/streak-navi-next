@@ -9,6 +9,7 @@ import { InstrumentInput } from "@/src/features/users/components/InstrumentInput
 import { FormField } from "@/src/components/Form/FormField";
 import { globalLineDefaultImage } from "@/src/lib/functions";
 import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/src/contexts/AuthContext";
 
 type Props = {
   uid: string;
@@ -30,8 +31,13 @@ type UserFormData = {
 };
 
 export function UserEditClient({ uid, userData, sections, roles, instruments, secretWords, mode }: Props) {
+  const { user, isAdmin } = useAuth();
   const searchParams = useSearchParams();
   const isInit = searchParams.get("isInit") === "true";
+
+  const isSelf = user?.uid === uid;
+  const isSystemAdmin = userData.isSystemAdmin || isAdmin;
+  const canEdit = isSelf || isSystemAdmin;
 
   // Formの初期値マッピング
   const initialValues: UserFormData = {
@@ -87,6 +93,7 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, se
       mode={mode}
       form={form}
       onSaveApi={handleSave}
+      overrideAdmin={canEdit}
     >
       {isInit && (
         <div style={{ marginBottom: "1.5rem", padding: "1rem", backgroundColor: "#fff3cd", color: "#856404", borderRadius: "8px" }}>
