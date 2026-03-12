@@ -2,7 +2,7 @@ import { UserListClient } from "@/src/features/users/views/list/UserListClient";
 import { getUsersServer, getSectionsServer, getRolesServer, getInstrumentsServer, getSecretWordsServer } from "@/src/features/users/api/user-server-actions";
 
 export const metadata = {
-  title: "ユーザ一覧 | streak connect",
+  title: "ユーザ一覧",
 };
 
 export default async function UserListPage() {
@@ -15,10 +15,10 @@ export default async function UserListPage() {
   ]);
 
   return (
-    <UserListClient 
+    <UserListClient
       initialData={{
         users, sections, roles, instruments, secretWords
-      }} 
+      }}
     />
   );
 }

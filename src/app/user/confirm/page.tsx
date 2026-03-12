@@ -8,10 +8,10 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props) {
   const resolvedParams = await searchParams;
-  if (!resolvedParams.uid) return { title: "ユーザ確認 | streak connect" };
+  if (!resolvedParams.uid) return { title: "ユーザ確認" };
   const user = await getUserServer(resolvedParams.uid);
   return {
-    title: user?.displayName ? `${user.displayName} | streak connect` : "ユーザ確認 | streak connect",
+    title: user?.displayName ? `${user.displayName}` : "ユーザ確認",
   };
 }
 
@@ -34,7 +34,7 @@ export default async function UserConfirmPage({ searchParams }: Props) {
   }
 
   return (
-    <UserConfirmClient 
+    <UserConfirmClient
       uid={resolvedParams.uid}
       userData={userData}
       sections={sections}

@@ -9,12 +9,12 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props) {
   const resolvedParams = await searchParams;
-  if (resolvedParams.isInit === "true") return { title: "ユーザ登録 | streak connect" };
-  if (!resolvedParams.uid) return { title: "ユーザ編集 | streak connect" };
-  
+  if (resolvedParams.isInit === "true") return { title: "ユーザ登録" };
+  if (!resolvedParams.uid) return { title: "ユーザ編集" };
+
   const user = await getUserServer(resolvedParams.uid);
   return {
-    title: user?.displayName ? `${user.displayName}の編集 | streak connect` : "ユーザ編集 | streak connect",
+    title: user?.displayName ? `${user.displayName}の編集` : "ユーザ編集",
   };
 }
 
@@ -45,7 +45,7 @@ export default async function UserEditPage({ searchParams }: Props) {
   };
 
   return (
-    <UserEditClient 
+    <UserEditClient
       uid={resolvedParams.uid}
       userData={userToEdit}
       sections={sections}
