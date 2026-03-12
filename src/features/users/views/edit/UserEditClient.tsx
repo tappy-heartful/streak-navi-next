@@ -7,7 +7,7 @@ import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { saveUser } from "@/src/features/users/api/user-client-service";
 import { InstrumentInput } from "@/src/features/users/components/InstrumentInput";
 import { FormField } from "@/src/components/Form/FormField";
-import { globalLineDefaultImage } from "@/src/lib/functions";
+import { globalLineDefaultImage, setSession } from "@/src/lib/functions";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/src/contexts/AuthContext";
 
@@ -47,7 +47,7 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, se
     instrumentIds: userData.instrumentIds || [],
     paypayId: userData.paypayId || "",
   };
-  
+
   // 管理者権限を初期値にマージ
   secretWords.forEach(sw => {
     initialValues[sw.roleField] = userData[sw.roleField] || false;
@@ -72,11 +72,11 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, se
 
   const handleSave = async (data: UserFormData) => {
     await saveUser(uid, data);
-    
+
     // 初回登録時の特殊処理（バニラ実装のリダイレクトに相当）
     if (isInit) {
       // isInit状態をセッションに保持
-      sessionStorage.setItem("streakConnect.isInit", "true");
+      setSession("isInit", "true");
       // 実際のリダイレクト処理は EditFormLayout の後続処理に任せるか、
       // 呼び出し元で制御するべきですが、ここでは onSuccess などのコールバックがないため、
       // 便宜上リターンで id を返します。
@@ -102,9 +102,9 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, se
       )}
 
       <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
-        <img 
-          src={userData.pictureUrl || globalLineDefaultImage} 
-          alt="icon" 
+        <img
+          src={userData.pictureUrl || globalLineDefaultImage}
+          alt="icon"
           style={{ width: "64px", height: "64px", borderRadius: "50%", objectFit: "cover" }}
           onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
         />
