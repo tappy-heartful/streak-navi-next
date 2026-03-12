@@ -36,8 +36,7 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, se
   const isInit = searchParams.get("isInit") === "true";
 
   const isSelf = user?.uid === uid;
-  const isSystemAdmin = userData.isSystemAdmin || isAdmin;
-  const canEdit = isSelf || isSystemAdmin;
+  const canEdit = isSelf;
 
   // Formの初期値マッピング
   const initialValues: UserFormData = {

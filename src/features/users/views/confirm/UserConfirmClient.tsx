@@ -34,8 +34,7 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
     .join("、");
 
   const isSelf = user?.uid === uid;
-  const isSystemAdmin = userData.isSystemAdmin || isAdmin;
-  const showEditButtons = isSelf || isSystemAdmin;
+  const showEditButtons = isSelf;
 
   return (
     <BaseLayout>
