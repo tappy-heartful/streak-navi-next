@@ -90,3 +90,27 @@ export interface EventWithSetlist {
   date: string;
   scoreIdsInSetlist: string[];
 }
+
+export interface Prefecture {
+  id: string;
+  name: string;
+  order?: number;
+}
+
+export interface Studio {
+  id: string;
+  prefecture?: string;
+  name: string;
+  hp?: string;
+  map?: string;
+  availabilityInfo?: string;
+  fee?: string;
+  rooms?: string[];
+  roomsUrl?: string;
+  tel?: string;
+  reserve?: string;
+  access?: string;
+  note?: string;
+  createdAt?: number;
+  updatedAt?: number;
+}
