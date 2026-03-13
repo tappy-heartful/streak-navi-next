@@ -2,7 +2,7 @@
 
 import { useSearchableList } from "@/src/hooks/useSearchableList";
 import { SearchableListLayout } from "@/src/components/Layout/SearchableListLayout";
-import { Score } from "@/src/lib/firestore/types";
+import { Score, Genre, EventWithSetlist } from "@/src/lib/firestore/types";
 import { scoreFilterFn, scoreSortFn, ScoreFilters } from "@/src/features/scores/lib/score-search-engine";
 import {
   ListFilterGrid, FilterInput, FilterSelect,
@@ -12,8 +12,8 @@ import {
 type Props = {
   initialData: {
     scores: Score[];
-    genres: any[];
-    events: any[];
+    genres: Genre[];
+    events: EventWithSetlist[];
   };
 };
 

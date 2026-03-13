@@ -1,7 +1,7 @@
 import 'server-only';
 import { adminDb } from "@/src/lib/firebase-admin";
 import * as utils from "@/src/lib/functions";
-import { Genre, Score } from "@/src/lib/firestore/types";
+import { Genre, Score, EventWithSetlist } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 
 /**
@@ -15,7 +15,7 @@ export async function getScoresServer() {
       ...data,
       youtubeId: utils.extractYouTubeId(data.referenceTrack)
     };
-  }) as unknown as Score[];
+  }) as Score[];
 }
 
 /**
@@ -29,7 +29,7 @@ export async function getScoreServer(scoreId: string) {
   return {
     ...data,
     youtubeId: utils.extractYouTubeId(data.referenceTrack)
-  } as unknown as Score;
+  } as Score;
 }
 
 /**
@@ -46,7 +46,7 @@ export async function getGenresServer(): Promise<Genre[]> {
 /**
  * セットリストが存在する今後のイベントを取得（サーバーサイド専用）
  */
-export async function getUpcomingEventsWithSetlistServer() {
+export async function getUpcomingEventsWithSetlistServer(): Promise<EventWithSetlist[]> {
   const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
   const snap = await adminDb.collection("events")
     .where("date", ">=", today)
@@ -55,7 +55,7 @@ export async function getUpcomingEventsWithSetlistServer() {
 
   return snap.docs.map(doc => {
     const data = doc.data();
-    const scoreIds = (data.setlist || []).flatMap((item: any) => item.songIds || []);
+    const scoreIds = (data.setlist || []).flatMap((item: { songIds?: string[] }) => item.songIds || []);
     return {
       id: doc.id,
       title: data.title,

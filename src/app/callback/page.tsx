@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { auth, db } from "@/src/lib/firebase";
 import { signInWithCustomToken } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { showSpinner, hideSpinner, setSession } from "@/src/lib/functions";
+import { showSpinner, hideSpinner, setSession, showDialog } from "@/src/lib/functions";
 
 function CallbackContent() {
   const router = useRouter();
@@ -18,7 +18,6 @@ function CallbackContent() {
     const error = searchParams.get("error");
 
     if (error) {
-      alert("LINEログインをキャンセルしました");
       router.push("/login");
       return;
     }
@@ -88,7 +87,7 @@ function CallbackContent() {
       }
     } catch (e: any) {
       console.error(e);
-      alert("ログインに失敗しました: " + e.message);
+      await showDialog("ログインに失敗しました。通信環境を確認してください。", true);
       router.push("/login"); // 失敗時はログインへ戻す
     } finally {
       hideSpinner();

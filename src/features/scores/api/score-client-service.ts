@@ -1,13 +1,23 @@
 import { db } from "@/src/lib/firebase"; // クライアント用SDK
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 
+export type ScoreFormData = {
+  title: string;
+  scoreUrl: string;
+  referenceTrack: string;
+  genres: string[];
+  abbreviation: string;
+  note: string;
+  isDispTop: boolean;
+};
+
 /**
  * 譜面データの保存（登録・更新・コピー）
  * クライアントサイドのFirebase SDKを使用して書き込みを行う
  */
 export const saveScore = async (
   mode: "new" | "edit" | "copy",
-  data: any,
+  data: ScoreFormData,
   scoreId?: string,
   userDisplayName?: string
 ) => {

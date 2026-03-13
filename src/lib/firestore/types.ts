@@ -83,3 +83,10 @@ export interface SecretWord {
   roleField: string;
   word?: string;
 }
+
+export interface EventWithSetlist {
+  id: string;
+  title: string;
+  date: string;
+  scoreIdsInSetlist: string[];
+}
