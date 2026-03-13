@@ -7,7 +7,7 @@ type AppInputProps = {
   value: any;
   error?: string;
   required?: boolean;
-  type?: "text" | "checkbox";
+  type?: "text" | "checkbox" | "date";
   updateField: (field: any, value: any) => void;
 };
 
