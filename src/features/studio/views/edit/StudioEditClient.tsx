@@ -85,12 +85,6 @@ export function StudioEditClient({ mode, studioId, initialStudio, prefectures }:
         <AppInput label="地図 URL" {...inputProps("map")} />
         <AppInput label="空き情報 URL" {...inputProps("availabilityInfo")} />
         <AppInput label="利用料 URL" {...inputProps("fee")} />
-        <AppInput label="部屋一覧 URL" {...inputProps("roomsUrl")} />
-        <AppInput label="電話番号" {...inputProps("tel")} />
-        <AppInput label="予約方法 URL" {...inputProps("reserve")} />
-        <AppInput label="アクセス URL" {...inputProps("access")} />
-        <AppInput label="備考" {...inputProps("note")} />
-
         <FormField label="部屋一覧">
           <div id="rooms-container">
             {form.formData.rooms.map((room, i) => (
@@ -116,6 +110,12 @@ export function StudioEditClient({ mode, studioId, initialStudio, prefectures }:
             <i className="fas fa-plus"></i> 部屋を追加
           </button>
         </FormField>
+        <AppInput label="部屋一覧 URL" {...inputProps("roomsUrl")} />
+        <AppInput label="電話番号" {...inputProps("tel")} />
+        <AppInput label="予約方法 URL" {...inputProps("reserve")} />
+        <AppInput label="アクセス URL" {...inputProps("access")} />
+        <AppInput label="備考" {...inputProps("note")} />
+
       </EditFormLayout>
     </BaseLayout>
   );
