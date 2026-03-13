@@ -6,13 +6,11 @@ import Link from 'next/link';
 import { useAuth } from "@/src/contexts/AuthContext"; // AuthContextをインポート
 import { db } from "@/src/lib/firebase";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { 
-  showSpinner, 
-  hideSpinner, 
-  getSession, 
-  removeSession, 
-  writeLog, 
-  setSession 
+import {
+  showSpinner,
+  hideSpinner,
+  writeLog,
+  setSession
 } from '@/src/lib/functions';
 import styles from './agreement.module.css';
 
@@ -53,11 +51,6 @@ export default function AgreementPage() {
         status: 'success',
       });
 
-      // 4. セッション管理とリダイレクト
-      // ログイン時に保存した「本来行きたかった場所」を取得
-      const target = getSession("redirectAfterLogin") || "/home";
-      removeSession("redirectAfterLogin");
-      
       // ログイン成功フラグ（演出用）
       setSession("fromLogin", "true");
 

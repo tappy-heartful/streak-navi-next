@@ -35,7 +35,7 @@ export const ListBaseLayout = ({ title, icon, basePath, count, hideAddButton, ch
         {children}
 
         {isAdmin && !hideAddButton && (
-          <Link href={`${basePath}/edit?isInit=true`} className="list-add-button" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: "2rem" }}>
+          <Link href={`${basePath}/edit?mode=new`} className="list-add-button" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: "2rem" }}>
             ＋ 新規{title}作成
           </Link>
         )}
