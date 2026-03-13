@@ -83,9 +83,40 @@ export function UserListClient({ initialData }: Props) {
         if (!sectionUsers || sectionUsers.length === 0) return null;
 
         return (
-          <ListGroupContainer key={section.id} title={section.name}>
+          <div key={section.id} className="container">
+            <ListGroupContainer title={section.name}>
+              <SimpleTable headers={["氏名", "略称", "楽器", "役職", "権限"]} hasData={true}>
+                {sectionUsers.map(u => (
+                  <tr key={u.id}>
+                    <td className="list-table-row-header">
+                      <Link href={`/user/confirm?uid=${u.id}`} className={styles.userLink}>
+                        <img 
+                          src={u.pictureUrl || globalLineDefaultImage} 
+                          alt="icon" 
+                          className={styles.userThumb}
+                          onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
+                        />
+                        <span className={styles.userNameText}>{u.displayName || "名無し"}</span>
+                      </Link>
+                    </td>
+                    <td>{u.abbreviation || "-"}</td>
+                    <td className={styles.textSmall}>{getInstrumentNames(u.instrumentIds)}</td>
+                    <td>{getRoleName(u.roleId)}</td>
+                    <td className={styles.textSmall}>{getAdminRoles(u)}</td>
+                  </tr>
+                ))}
+              </SimpleTable>
+            </ListGroupContainer>
+          </div>
+        );
+      })}
+
+      {/* パート未設定ユーザー */}
+      {usersBySection.unknownUsers.length > 0 && (
+        <div className="container">
+          <ListGroupContainer title="❓未設定" titleStyle={{ borderColor: "#ff9800" }}>
             <SimpleTable headers={["氏名", "略称", "楽器", "役職", "権限"]} hasData={true}>
-              {sectionUsers.map(u => (
+              {usersBySection.unknownUsers.map(u => (
                 <tr key={u.id}>
                   <td className="list-table-row-header">
                     <Link href={`/user/confirm?uid=${u.id}`} className={styles.userLink}>
@@ -106,34 +137,7 @@ export function UserListClient({ initialData }: Props) {
               ))}
             </SimpleTable>
           </ListGroupContainer>
-        );
-      })}
-
-      {/* パート未設定ユーザー */}
-      {usersBySection.unknownUsers.length > 0 && (
-        <ListGroupContainer title="❓未設定" titleStyle={{ borderColor: "#ff9800" }}>
-          <SimpleTable headers={["氏名", "略称", "楽器", "役職", "権限"]} hasData={true}>
-            {usersBySection.unknownUsers.map(u => (
-              <tr key={u.id}>
-                <td className="list-table-row-header">
-                  <Link href={`/user/confirm?uid=${u.id}`} className={styles.userLink}>
-                    <img 
-                      src={u.pictureUrl || globalLineDefaultImage} 
-                      alt="icon" 
-                      className={styles.userThumb}
-                      onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
-                    />
-                    <span className={styles.userNameText}>{u.displayName || "名無し"}</span>
-                  </Link>
-                </td>
-                <td>{u.abbreviation || "-"}</td>
-                <td className={styles.textSmall}>{getInstrumentNames(u.instrumentIds)}</td>
-                <td>{getRoleName(u.roleId)}</td>
-                <td className={styles.textSmall}>{getAdminRoles(u)}</td>
-              </tr>
-            ))}
-          </SimpleTable>
-        </ListGroupContainer>
+        </div>
       )}
     </ListBaseLayout>
   );

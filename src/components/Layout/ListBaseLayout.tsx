@@ -31,7 +31,7 @@ export const ListBaseLayout = ({ title, icon, basePath, count, hideAddButton, ch
         <h1>{icon && <i className={icon}></i>} {title}一覧 {count !== undefined && `(${count}件)`}</h1>
       </div>
 
-      <div className="container" id={`${btoa(basePath)}-list-container`}>
+      <div id={`${btoa(basePath)}-list-container`}>
         {children}
 
         {isAdmin && !hideAddButton && (
