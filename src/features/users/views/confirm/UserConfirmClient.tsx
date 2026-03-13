@@ -46,6 +46,7 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
         collectionName="users"
         overrideAdmin={showEditButtons}
         hideCopy={true} // ユーザのコピー機能は不要
+        afterDeletePath="/login"
       >
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem", padding: "1rem", backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
           <img 

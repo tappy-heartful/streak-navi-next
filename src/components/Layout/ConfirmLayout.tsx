@@ -17,6 +17,7 @@ type Props = {
   collectionName: string; // "scores"
   overrideAdmin?: boolean; // 権限を強制的に付与する場合（自分自身のページなど）
   hideCopy?: boolean; // コピーボタンを非表示にするフラグ
+  afterDeletePath?: string; // 削除後の遷移先（デフォルトは basePath）
   children: React.ReactNode;
 };
 
@@ -28,6 +29,7 @@ export const ConfirmLayout = ({
   collectionName,
   overrideAdmin,
   hideCopy,
+  afterDeletePath,
   children 
 }: Props) => {
   const router = useRouter();
@@ -55,7 +57,7 @@ export const ConfirmLayout = ({
     try {
       await archiveAndDeleteDoc(collectionName, dataId);
       await showDialog("削除しました", true);
-      router.push(basePath);
+      router.push(afterDeletePath ?? basePath);
     } catch (e) {
       console.error(e);
       await showDialog("削除に失敗しました", true);
