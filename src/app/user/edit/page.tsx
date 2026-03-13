@@ -4,12 +4,11 @@ import { notFound } from "next/navigation";
 import { User } from "@/src/lib/firestore/types";
 
 type Props = {
-  searchParams: Promise<{ uid?: string, mode?: string, isInit?: string }>;
+  searchParams: Promise<{ uid?: string }>;
 };
 
 export async function generateMetadata({ searchParams }: Props) {
   const resolvedParams = await searchParams;
-  if (resolvedParams.isInit === "true") return { title: "ユーザ登録" };
   if (!resolvedParams.uid) return { title: "ユーザ編集" };
 
   const user = await getUserServer(resolvedParams.uid);
@@ -24,9 +23,6 @@ export default async function UserEditPage({ searchParams }: Props) {
     notFound();
   }
 
-  const isInit = resolvedParams.isInit === "true";
-  const mode = isInit ? "new" : "edit";
-
   const [userData, sections, roles, instruments] = await Promise.all([
     getUserServer(resolvedParams.uid),
     getSectionsServer(),
@@ -34,8 +30,6 @@ export default async function UserEditPage({ searchParams }: Props) {
     getInstrumentsServer(),
   ]);
 
-  // 新規登録の場合、DBにまだレコードがなくてもFirebase Auth由来のセッションからuidが得られる前提。
-  // まだusersコレクションに存在しない場合は空のUserオブジェクトを渡す
   const userToEdit: User = userData || {
     id: resolvedParams.uid,
     displayName: "",
@@ -50,7 +44,6 @@ export default async function UserEditPage({ searchParams }: Props) {
       sections={sections}
       roles={roles}
       instruments={instruments}
-      mode={mode as "new" | "edit"}
     />
   );
 }

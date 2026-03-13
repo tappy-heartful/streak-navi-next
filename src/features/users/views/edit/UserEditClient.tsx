@@ -7,8 +7,7 @@ import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { saveUser } from "@/src/features/users/api/user-client-service";
 import { InstrumentInput } from "@/src/features/users/components/InstrumentInput";
 import { FormField } from "@/src/components/Form/FormField";
-import { globalLineDefaultImage, setSession } from "@/src/lib/functions";
-import { useSearchParams } from "next/navigation";
+import { globalLineDefaultImage } from "@/src/lib/functions";
 import { useAuth } from "@/src/contexts/AuthContext";
 
 type Props = {
@@ -17,7 +16,6 @@ type Props = {
   sections: Section[];
   roles: Role[];
   instruments: Instrument[];
-  mode: "new" | "edit";
 };
 
 type UserFormData = {
@@ -28,15 +26,12 @@ type UserFormData = {
   paypayId: string;
 };
 
-export function UserEditClient({ uid, userData, sections, roles, instruments, mode }: Props) {
+export function UserEditClient({ uid, userData, sections, roles, instruments }: Props) {
   const { user } = useAuth();
-  const searchParams = useSearchParams();
-  const isInit = searchParams.get("isInit") === "true";
 
   const isSelf = user?.uid === uid;
   const canEdit = isSelf;
 
-  // Formの初期値マッピング
   const initialValues: UserFormData = {
     sectionId: userData.sectionId || "",
     roleId: userData.roleId || "",
@@ -53,7 +48,6 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, mo
       (v) => v.length <= 2 ? true : "略称は2文字以下で入力してください"
     ],
     instrumentIds: [(v) => v && v.length > 0 ? true : "演奏する楽器を一つ以上選択してください"],
-    // サックスパートの場合はPayPayID必須
     paypayId: [(v) => {
       if (form.formData.sectionId === "1" && !v) {
         return "PayPay IDを入力してください（サックスパート必須）";
@@ -64,35 +58,20 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, mo
 
   const handleSave = async (data: UserFormData) => {
     await saveUser(uid, data);
-
-    // 初回登録時の特殊処理（バニラ実装のリダイレクトに相当）
-    if (isInit) {
-      // isInit状態をセッションに保持
-      setSession("isInit", "true");
-      // 実際のリダイレクト処理は EditFormLayout の後続処理に任せるか、
-      // 呼び出し元で制御するべきですが、ここでは onSuccess などのコールバックがないため、
-      // 便宜上リターンで id を返します。
-    }
     return uid;
   };
 
   return (
     <EditFormLayout
-      featureName={isInit ? "ユーザ登録" : "ユーザ"}
+      featureName="ユーザ"
       featureIdKey="uid"
       basePath="/user"
       dataId={uid}
-      mode={mode}
+      mode="edit"
       form={form}
       onSaveApi={handleSave}
       overrideAdmin={canEdit}
     >
-      {isInit && (
-        <div style={{ marginBottom: "1.5rem", padding: "1rem", backgroundColor: "#fff3cd", color: "#856404", borderRadius: "8px" }}>
-          ユーザを登録してください
-        </div>
-      )}
-
       <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
         <img
           src={userData.pictureUrl || globalLineDefaultImage}
@@ -107,10 +86,7 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, mo
         <select
           className="form-control"
           value={form.formData.sectionId}
-          onChange={(e) => {
-            form.updateField("sectionId", e.target.value);
-            // パート変更時にPayPayIDのエラーをクリアしたいが、簡便のためそのまま
-          }}
+          onChange={(e) => form.updateField("sectionId", e.target.value)}
         >
           <option value="">--- 選択してください ---</option>
           {sections.map(s => (

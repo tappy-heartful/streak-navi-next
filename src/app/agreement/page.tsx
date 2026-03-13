@@ -61,8 +61,7 @@ export default function AgreementPage() {
       // ログイン成功フラグ（演出用）
       setSession("fromLogin", "true");
 
-      // 初回登録時はユーザー編集画面へ飛ばす元のロジックを優先する場合
-      router.push(`/user?isInit=true`);
+      router.push(`/user/edit?uid=${user.uid}`);
       
     } catch (e: any) {
       console.error("Agreement update error:", e);
