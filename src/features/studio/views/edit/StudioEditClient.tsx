@@ -88,7 +88,7 @@ export function StudioEditClient({ mode, studioId, initialStudio, prefectures }:
         <FormField label="部屋一覧">
           <div id="rooms-container">
             {form.formData.rooms.map((room, i) => (
-              <div key={i} className="room-item" style={{ display: "flex", gap: "8px", marginBottom: "6px" }}>
+              <div key={i} className="room-item">
                 <input
                   type="text"
                   className="form-control"
@@ -110,6 +110,7 @@ export function StudioEditClient({ mode, studioId, initialStudio, prefectures }:
             <i className="fas fa-plus"></i> 部屋を追加
           </button>
         </FormField>
+
         <AppInput label="部屋一覧 URL" {...inputProps("roomsUrl")} />
         <AppInput label="電話番号" {...inputProps("tel")} />
         <AppInput label="予約方法 URL" {...inputProps("reserve")} />

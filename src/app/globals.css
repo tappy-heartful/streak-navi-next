@@ -1168,3 +1168,49 @@ a:hover {
     object-fit: contain; /* アスペクト比を維持して収める */
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
+
+/* 部屋一覧の入力行 */
+.room-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.room-item input {
+  flex-grow: 1;
+}
+
+.remove-room-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-room-button:hover {
+  background-color: #d32f2f;
+}
+
+.add-room-button {
+  background-color: #03a9f4;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.add-room-button:hover {
+  background-color: #0288d1;
+}
