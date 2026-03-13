@@ -1,5 +1,5 @@
 import { UserEditClient } from "@/src/features/users/views/edit/UserEditClient";
-import { getUserServer, getSectionsServer, getRolesServer, getInstrumentsServer, getSecretWordsServer } from "@/src/features/users/api/user-server-actions";
+import { getUserServer, getSectionsServer, getRolesServer, getInstrumentsServer } from "@/src/features/users/api/user-server-actions";
 import { notFound } from "next/navigation";
 import { User } from "@/src/lib/firestore/types";
 
@@ -27,12 +27,11 @@ export default async function UserEditPage({ searchParams }: Props) {
   const isInit = resolvedParams.isInit === "true";
   const mode = isInit ? "new" : "edit";
 
-  const [userData, sections, roles, instruments, secretWords] = await Promise.all([
+  const [userData, sections, roles, instruments] = await Promise.all([
     getUserServer(resolvedParams.uid),
     getSectionsServer(),
     getRolesServer(),
     getInstrumentsServer(),
-    getSecretWordsServer(),
   ]);
 
   // 新規登録の場合、DBにまだレコードがなくてもFirebase Auth由来のセッションからuidが得られる前提。
@@ -51,7 +50,6 @@ export default async function UserEditPage({ searchParams }: Props) {
       sections={sections}
       roles={roles}
       instruments={instruments}
-      secretWords={secretWords}
       mode={mode as "new" | "edit"}
     />
   );

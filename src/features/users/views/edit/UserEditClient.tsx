@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppForm } from "@/src/hooks/useAppForm";
-import { User, Section, Role, Instrument, SecretWord } from "@/src/lib/firestore/types";
+import { User, Section, Role, Instrument } from "@/src/lib/firestore/types";
 import { AppInput } from "@/src/components/Form/AppInput";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { saveUser } from "@/src/features/users/api/user-client-service";
@@ -17,7 +17,6 @@ type Props = {
   sections: Section[];
   roles: Role[];
   instruments: Instrument[];
-  secretWords: SecretWord[];
   mode: "new" | "edit";
 };
 
@@ -27,11 +26,10 @@ type UserFormData = {
   abbreviation: string;
   instrumentIds: string[];
   paypayId: string;
-  [key: string]: any; // isAdminフラグのため
 };
 
-export function UserEditClient({ uid, userData, sections, roles, instruments, secretWords, mode }: Props) {
-  const { user, isAdmin } = useAuth();
+export function UserEditClient({ uid, userData, sections, roles, instruments, mode }: Props) {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const isInit = searchParams.get("isInit") === "true";
 
@@ -46,11 +44,6 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, se
     instrumentIds: userData.instrumentIds || [],
     paypayId: userData.paypayId || "",
   };
-
-  // 管理者権限を初期値にマージ
-  secretWords.forEach(sw => {
-    initialValues[sw.roleField] = userData[sw.roleField] || false;
-  });
 
   const form = useAppForm<UserFormData>(initialValues, {
     sectionId: [(v) => v ? true : "パートを選択してください"],
