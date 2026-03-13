@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { buildInstagramHtml, buildYouTubeHtml, buildGoogleDriveHtml } from "@/src/lib/functions";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
@@ -12,6 +13,12 @@ type Props = {
 };
 
 export function MediaConfirmClient({ mediaData, mediaId }: Props) {
+  useEffect(() => {
+    if (mediaData.instagramUrl && (window as any).instgrm) {
+      (window as any).instgrm.Embeds.process();
+    }
+  }, [mediaData.instagramUrl]);
+
   return (
     <BaseLayout>
       <ConfirmLayout
