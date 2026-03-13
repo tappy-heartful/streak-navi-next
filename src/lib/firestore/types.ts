@@ -114,3 +114,15 @@ export interface Studio {
   createdAt?: number;
   updatedAt?: number;
 }
+
+export interface Board {
+  id: string;
+  title: string;
+  content: string;
+  sectionId: string | null;
+  files?: { name: string; url: string; path: string }[];
+  createdBy?: string;
+  createdByName?: string;
+  createdAt?: any; // Firestore Timestamp or number
+  updatedAt?: any;
+}
