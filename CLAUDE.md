@@ -23,6 +23,11 @@
 2. **動作確認**: `npm run dev` でローカル起動し、修正に関連する画面・機能を手動で操作して確認する
 3. **テストシナリオ**: 修正箇所に応じた操作を行い、想定通りの挙動であることを確認する
 
+動作確認やテストはlocalhost:3000や3001でやって？LINEログインできないから
+localhostを立ち上げるとoriginのパスではログイン画面が表示される。
+ページ下部のLINEでログインボタンを押し、
+tappynanakoro@gmail.comとパスワード：Kodakku216を入力して？
+
 ---
 
 ## コードレビューチェックリスト
@@ -30,24 +35,28 @@
 機能を追加・修正する際に確認すべき項目。実装後はこのリストに従ってセルフレビューを行うこと。
 
 ### 🔐 セキュリティ・権限
+
 - Firestoreに書き込むデータに「管理者フラグ」が含まれていないか
 - `updateDoc` で送るフィールドは画面で編集したフィールドのみか（余計なフィールドを含めていないか）
 - `isAdmin` / `overrideAdmin` の権限チェックが抜けていないか（`EditFormLayout` / `ConfirmLayout` 使用で自動担保）
 - `dangerouslySetInnerHTML` を使う場合、XSSリスクが軽減されているか（YouTube埋め込みなど信頼済みソースのみ）
 
 ### 🏗️ アーキテクチャ
+
 - **サーバー/クライアント分離**: Firestoreの読み込みはサーバーコンポーネント（`*-server-actions.ts`）で行っているか
 - **クライアント書き込み**: 更新処理はクライアントサービス（`*-client-service.ts`）で行っているか
 - `"use client"` / `import 'server-only'` が適切についているか
 - 新機能は `src/features/<feature>/` 配下に配置しているか（`api/`, `lib/`, `components/`, `views/`）
 
 ### 📝 TypeScript 型
+
 - `any` 型を使っていないか（特に Props、API戻り値、Firestoreデータ）
 - Firestoreコレクションの型は `src/lib/firestore/types.ts` に定義されているか
 - `_decoded` サフィックスのフィールドを型定義・使用していないか（上記「リファクタリング方針」参照）
 - `as unknown as SomeType` のような型アサーションで型チェックを回避していないか
 
 ### 🎨 UI/UX 一貫性
+
 - エラー表示は `alert()` ではなく `showDialog()` を使っているか（`src/lib/functions.ts` からインポート）
 - ローディングはスピナー（`showSpinner` / `hideSpinner`）を使っているか
 - フォームは `useAppForm` hook + `EditFormLayout` を使っているか
@@ -56,11 +65,13 @@
 - パンくずは各ページの `useEffect` 内で `setBreadcrumbs` を呼んでいるか
 
 ### 🔗 ルーティング・URL
+
 - 新規作成URLは `?mode=new`（`?isInit=true` は廃止）
 - 編集URLは `?mode=edit&<featureIdKey>=<id>`
 - コピーURLは `?mode=copy&<featureIdKey>=<id>`
 - 詳細URLは `confirm?<featureIdKey>=<id>`
 
 ### 📋 バリデーション
+
 - 必須項目のバリデーションは `useAppForm` の第2引数に定義されているか
 - バリデーション関数は `(v) => true | "エラーメッセージ"` 形式か

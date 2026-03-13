@@ -110,11 +110,14 @@ export function BoardEditClient({ mode, boardId, initialBoard, sections, userSec
             onChange={(e) => form.updateField("sectionId", e.target.value === "all" ? null : e.target.value)}
           >
             <option value="all">全体向け</option>
-            {sections.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}専用
-              </option>
-            ))}
+            {sections
+              .filter((s) => !userSectionId || s.id === userSectionId)
+              .map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}専用
+                </option>
+              ))}
+
           </select>
         </FormField>
 
