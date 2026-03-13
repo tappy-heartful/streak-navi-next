@@ -15,6 +15,58 @@
 
 ---
 
+## Next.js App Router 開発の重要ポイント
+
+### サーバーコンポーネント vs クライアントコンポーネント
+
+- App Router では**デフォルトがサーバーコンポーネント**。`"use client"` は本当に必要な場合のみ付ける
+- クライアントコンポーネントが必要なケース：`useState` / `useEffect` / イベントハンドラ / ブラウザAPI
+- サーバーコンポーネントでは `useState` / `useEffect` / `useContext` は使えない（ビルドエラーになる）
+- `"use client"` を付けたファイルからは `import 'server-only'` なモジュールをインポートしてはいけない
+
+### データ取得
+
+- サーバーコンポーネントでは `async/await` でそのままデータ取得できる
+- 複数データの並列取得は `Promise.all` を使う（直列は避ける）
+- `generateMetadata` でデータ取得した場合、ページコンポーネントで**再取得**になる（Admin SDKはキャッシュされない）。データ量が多い場合は注意
+
+### searchParams / params の扱い（App Router の重要な変更点）
+
+- App Router では `searchParams` と `params` は **Promise** として渡される — 必ず `await` する
+  ```typescript
+  // ✅ 正しい
+  const { studioId } = await searchParams;
+  // ❌ 誤り（型エラー、または undefined になる）
+  const { studioId } = searchParams;
+  ```
+- `generateMetadata` と `page` コンポーネントの両方で `searchParams` を受け取る場合、それぞれで `await` が必要
+
+### ナビゲーション
+
+- **内部リンクは必ず `<Link>` を使う**（`next/link`）— クライアントサイドルーティングになる
+- 外部リンク（別ドメイン）は通常の `<a target="_blank" rel="noopener noreferrer">` を使う
+- プログラム的な遷移は `useRouter()` の `router.push()` を使う（クライアントコンポーネント内のみ）
+- `notFound()` / `redirect()` は `next/navigation` からインポートする
+
+### 静的・動的レンダリング
+
+- `searchParams` を使うページは自動的に動的レンダリング（`ƒ`）になる
+- `searchParams` を使わないページは静的生成（`○`）になりビルド時に生成される
+- `export const dynamic = 'force-dynamic'` で強制的に動的にできるが、通常は不要
+
+### 環境変数
+
+- クライアント側で使う変数は必ず **`NEXT_PUBLIC_` プレフィックス**をつける
+- プレフィックスなしの変数はサーバー側のみで参照可能（ブラウザには公開されない）
+- `.env.local` は git 管理しない
+
+### メタデータ
+
+- 静的タイトルは `export const metadata: Metadata = { title: "..." }` で定義
+- 動的タイトル（IDからデータ取得して生成）は `generateMetadata` を使う
+
+---
+
 ## 修正後の確認手順
 
 コードを修正したら必ず以下の順で確認すること：
