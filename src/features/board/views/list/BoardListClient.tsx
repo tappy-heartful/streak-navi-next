@@ -53,61 +53,64 @@ export function BoardListClient({ boards, sections }: Props) {
 
   return (
     <ListBaseLayout title="掲示板" icon="fas fa-clipboard-list" basePath="/board" hideAddButton={true}>
-      {userSectionId && (
-        <>
-          <ListGroupContainer title={`${sectionName}向け`}>
-            <SimpleTable
-              headers={["タイトル", "内容", "作成者"]}
-              hasData={sectionBoards.length > 0}
-              emptyMessage={`${sectionName}向けの投稿はありません🍀`}
-            >
-              {formatRows(sectionBoards).map((row) => (
-                <tr key={row.id}>
-                  <td className="list-table-row-header">{row.title}</td>
-                  <td>{row.content}</td>
-                  <td className="board-author">{row.createdByName}</td>
-                </tr>
-              ))}
-            </SimpleTable>
-          </ListGroupContainer>
-          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-            <Link
-              href={`/board/edit?mode=new&sectionId=${userSectionId}`}
-              className="list-add-button"
-              style={{ textDecoration: "none" }}
-            >
-              ＋ セクション向けに新規投稿
-            </Link>
-          </div>
-        </>
-      )}
+      <div className="container">
+        {userSectionId && (
+          <>
+            <ListGroupContainer title={`${sectionName}専用`} icon="fas fa-users">
+              <SimpleTable
+                headers={["タイトル", "内容", "作成者"]}
+                hasData={sectionBoards.length > 0}
+                emptyMessage={`${sectionName}向けの投稿はありません🍀`}
+              >
+                {formatRows(sectionBoards).map((row) => (
+                  <tr key={row.id}>
+                    <td className="list-table-row-header">{row.title}</td>
+                    <td>{row.content}</td>
+                    <td className="board-author">{row.createdByName}</td>
+                  </tr>
+                ))}
+              </SimpleTable>
+            </ListGroupContainer>
+            <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+              <Link
+                href={`/board/edit?mode=new&sectionId=${userSectionId}`}
+                className="list-add-button"
+                style={{ textDecoration: "none" }}
+              >
+                ＋ 新規投稿
+              </Link>
+            </div>
+          </>
+        )}
+      </div>
+      <div className="container">
+        <ListGroupContainer title="全体向け" icon="fas fa-globe">
+          <SimpleTable
+            headers={["タイトル", "内容", "作成者"]}
+            hasData={allBoards.length > 0}
+            emptyMessage="全体向けの投稿はありません🍀"
+          >
+            {formatRows(allBoards).map((row) => (
+              <tr key={row.id}>
+                <td className="list-table-row-header">{row.title}</td>
+                <td>{row.content}</td>
+                <td className="board-author">{row.createdByName}</td>
+              </tr>
+            ))}
+          </SimpleTable>
+        </ListGroupContainer>
 
-      <ListGroupContainer title="全体向け">
-        <SimpleTable
-          headers={["タイトル", "内容", "作成者"]}
-          hasData={allBoards.length > 0}
-          emptyMessage="全体向けの投稿はありません🍀"
-        >
-          {formatRows(allBoards).map((row) => (
-            <tr key={row.id}>
-              <td className="list-table-row-header">{row.title}</td>
-              <td>{row.content}</td>
-              <td className="board-author">{row.createdByName}</td>
-            </tr>
-          ))}
-        </SimpleTable>
-      </ListGroupContainer>
-
-
-      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-        <Link
-          href="/board/edit?mode=new"
-          className="list-add-button"
-          style={{ textDecoration: "none" }}
-        >
-          ＋ 全体向けに新規投稿
-        </Link>
+        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+          <Link
+            href="/board/edit?mode=new"
+            className="list-add-button"
+            style={{ textDecoration: "none" }}
+          >
+            ＋ 全体向けに新規投稿
+          </Link>
+        </div>
       </div>
     </ListBaseLayout>
+
   );
 }
