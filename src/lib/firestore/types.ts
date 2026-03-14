@@ -293,8 +293,31 @@ export interface Live {
 export interface LiveCheckIn {
   id: string;
   liveId: string;
-  type: string; // "door" = 当日受付, その他 = 予約来場
+  ticketId: string | null;
+  reservationNo?: string;
+  name?: string;
+  type?: string; // "door" = 当日受付, undefined = 予約来場
   createdAt?: number;
+}
+
+// ===== チケット・予約 =====
+
+export interface TicketGroup {
+  groupName: string;
+  companions: string[];
+}
+
+export interface Ticket {
+  id: string;
+  liveId: string;
+  uid?: string;
+  reservationNo: string;
+  resType?: "invite" | string; // "invite" = 招待, その他 = 一般
+  representativeName?: string;
+  companions?: string[];        // 一般予約の同行者
+  groups?: TicketGroup[];       // 招待予約のグループ
+  createdAt?: number;
+  updatedAt?: number;
 }
 
 export interface EnqueteQuestion {
