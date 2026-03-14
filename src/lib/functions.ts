@@ -238,8 +238,8 @@ export function parseDate(dateString: string): Date | null {
  */
 export function isInTerm(startDateStr: string, endDateStr: string): boolean {
   const now = Date.now();
-  const start = startDateStr ? new Date(startDateStr.replace(/\./g, '/') + 'T00:00:00').getTime() : 0;
-  const end = endDateStr ? new Date(endDateStr.replace(/\./g, '/') + 'T23:59:59').getTime() : Infinity;
+  const start = startDateStr ? new Date(startDateStr.replace(/\./g, '/') + ' 00:00:00').getTime() : 0;
+  const end = endDateStr ? new Date(endDateStr.replace(/\./g, '/') + ' 23:59:59').getTime() : Infinity;
   return now >= start && now <= end;
 }
 
