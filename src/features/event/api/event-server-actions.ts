@@ -80,7 +80,7 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
     adjustStatusesSnap,
     recordingsSnap,
   ] = await Promise.all([
-    adminDb.collection(answerCollection).get(),
+    adminDb.collection(answerCollection).where("eventId", "==", eventId).get(),
     adminDb.collection("users").get(),
     adminDb.collection("sections").get(),
     adminDb.collection("scores").get(),

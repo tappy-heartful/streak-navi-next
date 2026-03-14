@@ -12,13 +12,16 @@ export default async function EventEditPage({
 }) {
   const { mode = "new", eventId, type } = await searchParams;
 
-  let initialEvent = null;
-  if ((mode === "edit" || mode === "copy") && eventId) {
-    initialEvent = await fetchEvent(eventId);
-    if (!initialEvent) notFound();
+  const [initialEvent, editData] = await Promise.all([
+    (mode === "edit" || mode === "copy") && eventId ? fetchEvent(eventId) : Promise.resolve(null),
+    fetchEventEditData()
+  ]);
+
+  if ((mode === "edit" || mode === "copy") && eventId && !initialEvent) {
+    notFound();
   }
 
-  const { scores, sections } = await fetchEventEditData();
+  const { scores, sections } = editData;
 
   return (
     <EventEditClient

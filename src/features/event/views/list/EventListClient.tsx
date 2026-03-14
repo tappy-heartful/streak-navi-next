@@ -101,9 +101,11 @@ export function EventListClient({ events }: Props) {
             </table>
           </div>
           {isAdmin && (
-            <Link href="/event/edit?mode=new&type=schedule" className="list-add-button">
-              ＋ 新規作成
-            </Link>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: "1rem" }}>
+              <Link href="/event/edit?mode=new&type=schedule" className="list-add-button" style={{ width: "fit-content", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                ＋ 新規作成
+              </Link>
+            </div>
           )}
         </div>
       )}
@@ -148,9 +150,11 @@ export function EventListClient({ events }: Props) {
           </table>
         </div>
         {isAdmin && (
-          <Link href="/event/edit?mode=new&type=attendance" className="list-add-button">
-            ＋ 新規作成
-          </Link>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: "1rem" }}>
+            <Link href="/event/edit?mode=new&type=attendance" className="list-add-button" style={{ width: "fit-content", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              ＋ 新規作成
+            </Link>
+          </div>
         )}
       </div>
 

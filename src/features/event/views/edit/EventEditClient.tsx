@@ -46,7 +46,7 @@ function defaultDates() {
 
 export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections }: Props) {
   const router = useRouter();
-  const { isAdmin, loading } = useAuth();
+  const { userData, isAdmin, loading } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
 
   const isEdit = mode === "edit";
@@ -211,6 +211,21 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       await showDialog("受付期間は必須です", true);
       return;
     }
+    const s = new Date(acceptStartDate).getTime();
+    const e = new Date(acceptEndDate).getTime();
+    if (s > e) {
+      await showDialog("受付終了日は開始日以降にしてください", true);
+      return;
+    }
+    if (mode === "new" || mode === "copy") {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      if (s < tomorrow.getTime()) {
+        await showDialog("受付開始日は明日以降にしてください", true);
+        return;
+      }
+    }
 
     const confirmed = await showDialog(`イベントを${isEdit ? "更新" : "登録"}しますか？`);
     if (!confirmed) return;
@@ -248,6 +263,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       allowAssign,
       setlist,
       instrumentConfig: instrConfig,
+      createdBy: initialEvent?.createdBy || userData?.displayName || "",
     };
 
     showSpinner();
