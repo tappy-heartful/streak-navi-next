@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, ReactNode } from "react";
 import { Live, Ticket, LiveCheckIn } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
@@ -326,32 +326,32 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
 
   // --- データ取得 ---
   const loadData = useCallback(async () => {
+    if (!selectedLiveId) { setTickets([]); setCheckIns([]); return; }
     setLoading(true);
     try {
-      const [t, c] = await Promise.all([fetchTickets(), fetchCheckIns()]);
+      const [t, c] = await Promise.all([fetchTickets(selectedLiveId), fetchCheckIns(selectedLiveId)]);
       setTickets(t);
       setCheckIns(c);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedLiveId]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
   // --- フィルター済みデータ ---
-  const checkedNames = checkIns.map((c) => c.name).filter(Boolean) as string[];
+  const checkedNameSet = new Set<string>(
+    checkIns.map((c) => c.name).filter((n): n is string => !!n)
+  );
 
   const filteredTickets = tickets.filter((t) => {
     const matchResNo = !searchResNo || (t.reservationNo?.includes(searchResNo) ?? false);
     const matchName = !searchName ||
       (t.representativeName?.toLowerCase().includes(searchName.toLowerCase()) ?? false);
-    const matchLive = !selectedLiveId || t.liveId === selectedLiveId;
-    return matchResNo && matchName && matchLive;
+    return matchResNo && matchName;
   });
 
-  const doorCheckIns = checkIns.filter(
-    (c) => c.type === "door" && (!selectedLiveId || c.liveId === selectedLiveId)
-  );
+  const doorCheckIns = checkIns.filter((c) => c.type === "door");
 
   // --- チェックインモーダルを開く ---
   const openCheckInModal = async (fullId: string) => {
@@ -510,7 +510,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
 
   // --- 行レンダリング ---
   const renderName = (name: string) => {
-    if (checkedNames.includes(name)) {
+    if (checkedNameSet.has(name)) {
       return <span style={{ color: "#28a745" }}>✅ {name} 様</span>;
     }
     return <span>{name} 様</span>;
@@ -518,7 +518,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
 
   const renderTicketRows = () => {
     let lastUid: string | undefined;
-    const rows: React.ReactNode[] = [];
+    const rows: ReactNode[] = [];
 
     filteredTickets.forEach((t) => {
       const isNewUser = lastUid !== undefined && lastUid !== t.uid;

@@ -22,7 +22,8 @@
       "Bash(find c:UserstappyDocumentsreposstreak-navi -type d -name *vanilla* -o -name *original* -o -name *reference*)",
       "Bash(grep -E \"\\\\.tsx$\")",
       "Bash(find c:UserstappyDocumentsreposstreak-navi -type f \\\\\\(-name *.html -o -name *.htm \\\\\\))",
-      "WebFetch(domain:streak-navi.web.app)"
+      "WebFetch(domain:streak-navi.web.app)",
+      "Bash(grep -v \"node_modules\\\\|\\\\.d\\\\.ts\\\\|//.*any\")"
     ]
   }
 }

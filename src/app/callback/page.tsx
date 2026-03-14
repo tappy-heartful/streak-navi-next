@@ -85,7 +85,7 @@ function CallbackContent() {
         setSession("fromLogin", "true");
         router.push(redirectAfterLogin);
       }
-    } catch (e: any) {
+    } catch (e) {
       console.error(e);
       await showDialog("ログインに失敗しました。通信環境を確認してください。", true);
       router.push("/login"); // 失敗時はログインへ戻す

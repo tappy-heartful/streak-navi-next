@@ -1,4 +1,3 @@
-import React from "react";
 import { getBoard } from "@/src/features/board/api/board-server-actions";
 import { getSectionsServer } from "@/src/features/users/api/user-server-actions";
 import { BoardEditClient } from "@/src/features/board/views/edit/BoardEditClient";
@@ -18,7 +17,7 @@ export default async function BoardEditPage({ searchParams }: Props) {
 
   return (
     <BoardEditClient
-      mode={(mode as any) || "new"}
+      mode={(mode as "new" | "edit" | "copy") || "new"}
       boardId={boardId}
       initialBoard={initialBoard}
       sections={sections}

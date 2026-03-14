@@ -4,11 +4,12 @@ import { FormField } from "./FormField";
 type AppInputProps = {
   label: string;
   field: string;
-  value: any;
+  value: unknown;
   error?: string;
   required?: boolean;
   type?: "text" | "checkbox" | "date" | "time" | "url" | "number" | "textarea";
-  updateField: (field: any, value: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateField: (field: string, value: any) => void;
 };
 
 export const AppInput = ({ label, field, value, error, required, type = "text", updateField }: AppInputProps) => {
@@ -23,12 +24,14 @@ export const AppInput = ({ label, field, value, error, required, type = "text", 
     );
   }
 
+  const strValue = typeof value === "string" ? value : "";
+
   if (type === "textarea") {
     return (
       <FormField label={label} required={required} error={error}>
         <textarea
           className="form-control"
-          value={value}
+          value={strValue}
           rows={4}
           onChange={(e) => updateField(field, e.target.value)}
         />
@@ -41,7 +44,7 @@ export const AppInput = ({ label, field, value, error, required, type = "text", 
       <input
         type={type}
         className="form-control"
-        value={value}
+        value={strValue}
         onChange={(e) => updateField(field, e.target.value)}
       />
     </FormField>

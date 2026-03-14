@@ -6,16 +6,16 @@ import {
 } from "firebase/firestore";
 import { Ticket, LiveCheckIn } from "@/src/lib/firestore/types";
 
-export async function fetchTickets(): Promise<Ticket[]> {
+export async function fetchTickets(liveId: string): Promise<Ticket[]> {
   const snap = await getDocs(
-    query(collection(db, "tickets"), orderBy("reservationNo", "asc"))
+    query(collection(db, "tickets"), where("liveId", "==", liveId), orderBy("reservationNo", "asc"))
   );
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Ticket));
 }
 
-export async function fetchCheckIns(): Promise<LiveCheckIn[]> {
+export async function fetchCheckIns(liveId: string): Promise<LiveCheckIn[]> {
   const snap = await getDocs(
-    query(collection(db, "checkIns"), orderBy("reservationNo", "asc"))
+    query(collection(db, "checkIns"), where("liveId", "==", liveId))
   );
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as LiveCheckIn));
 }
