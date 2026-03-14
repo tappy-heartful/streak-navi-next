@@ -140,7 +140,7 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                       )}
                       {(songs as CallAnswerSong[]).map((song, j) => {
                         const scoreName = song.scorestatus ? scoreStatusMap[song.scorestatus] : "";
-                        const isYouTube = song.url && (song.url.includes("youtube.com/watch") || song.url.includes("youtu.be"));
+                        const youtubeHtml = song.url ? buildYouTubeHtml(song.url, true, false) : "";
 
                         return (
                           <div key={j} className="song-item" style={{ marginBottom: j < songs.length - 1 ? "12px" : "0", borderLeft: "3px solid #4CAF50", backgroundColor: "#fafafa", padding: "12px", borderRadius: "0 6px 6px 0" }}>
@@ -148,11 +148,11 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                             {song.url && (
                               <div style={{ marginBottom: "6px" }}>
                                 <span style={{ fontSize: "0.85em", color: "#666" }}>参考音源: </span>
-                                {isYouTube ? (
+                                {youtubeHtml ? (
                                   <div
                                     className="youtube-display-area"
-                                    style={{ marginTop: "4px", maxWidth: "480px" }}
-                                    dangerouslySetInnerHTML={{ __html: buildYouTubeHtml(song.url, true, false) }}
+                                    style={{ marginTop: "4px" }}
+                                    dangerouslySetInnerHTML={{ __html: youtubeHtml }}
                                   />
                                 ) : (
                                   <a href={song.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.9em", color: "#1a73e8" }}>
