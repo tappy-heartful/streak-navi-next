@@ -24,7 +24,7 @@ export const AppInput = ({ label, field, value, error, required, type = "text", 
     );
   }
 
-  const strValue = typeof value === "string" ? value : "";
+  const strValue = (value !== undefined && value !== null) ? String(value) : "";
 
   if (type === "textarea") {
     return (

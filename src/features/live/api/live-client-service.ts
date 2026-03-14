@@ -29,7 +29,11 @@ export const saveLive = async (
   data: LiveFormData,
   liveId?: string
 ): Promise<string> => {
-  const toNum = (v: string) => (v !== "" ? Number(v) : undefined);
+  const toNum = (v: string) => {
+    if (!v) return undefined;
+    const num = Number(v.replace(/,/g, ""));
+    return isNaN(num) ? v : num;
+  };
 
   // Filter out empty group titles and empty songs like EventEditClient does
   const setlist = data.setlist

@@ -233,8 +233,11 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
     return `${dateStr} (${day})`;
   };
 
-  const formatPrice = (price?: number) =>
-    price != null ? `¥${price.toLocaleString()}` : "未設定";
+  const formatPrice = (price?: number | string) => {
+    if (price == null || price === "") return "未設定";
+    const n = Number(String(price).replace(/,/g, ""));
+    return isNaN(n) ? String(price) : `¥${n.toLocaleString()}`;
+  };
 
   return (
     <BaseLayout>

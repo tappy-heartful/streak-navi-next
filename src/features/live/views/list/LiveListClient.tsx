@@ -15,9 +15,10 @@ function formatDate(dateStr: string) {
   return `${dateStr} (${day})`;
 }
 
-function formatPrice(price?: number) {
-  if (price == null) return "-";
-  return `¥${price.toLocaleString()}`;
+function formatPrice(price?: number | string) {
+  if (price == null || price === "") return "-";
+  const n = Number(String(price).replace(/,/g, ""));
+  return isNaN(n) ? String(price) : `¥${n.toLocaleString()}`;
 }
 
 function LiveTable({ lives, showMap = false }: { lives: Live[]; showMap?: boolean }) {
