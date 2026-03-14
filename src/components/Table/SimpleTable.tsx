@@ -14,23 +14,25 @@ type Props = {
  */
 export const SimpleTable = ({ headers, emptyMessage = "データがありません", hasData, children }: Props) => {
   return (
-    <table className="list-table">
-      <thead>
-        <tr>
-          {headers.map((header, i) => <th key={i}>{header}</th>)}
-        </tr>
-      </thead>
-      <tbody>
-        {hasData ? (
-          children
-        ) : (
+    <div className="table-wrapper">
+      <table className="list-table">
+        <thead>
           <tr>
-            <td colSpan={headers.length} className="text-center">
-              {emptyMessage}
-            </td>
+            {headers.map((header, i) => <th key={i}>{header}</th>)}
           </tr>
-        )}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {hasData ? (
+            children
+          ) : (
+            <tr>
+              <td colSpan={headers.length} className="text-center">
+                {emptyMessage}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 };

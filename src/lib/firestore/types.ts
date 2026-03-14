@@ -115,6 +115,38 @@ export interface Studio {
   updatedAt?: number;
 }
 
+export interface Call {
+  id: string;
+  title: string;
+  description?: string;
+  acceptStartDate: string;  // "yyyy.MM.dd"
+  acceptEndDate: string;    // "yyyy.MM.dd"
+  items: string[];          // 募集ジャンル一覧
+  isAnonymous?: boolean;
+  createdBy?: string;
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+export type CallAnswerSong = {
+  title: string;
+  url?: string;
+  scorestatus?: string;
+  purchase?: string;
+  note?: string;
+};
+
+export interface CallAnswer {
+  id: string;
+  uid: string;
+  answers: { [genre: string]: CallAnswerSong[] };
+}
+
+export interface ScoreStatus {
+  id: string;
+  name: string;
+}
+
 export interface Board {
   id: string;
   title: string;

@@ -59,7 +59,12 @@ export const EditFormLayout = <T extends Record<string, any>>({
       await showDialog("保存しました", true);
       router.push(`${basePath}/confirm?${featureIdKey}=${finalId}`);
     } catch (error) {
-      await showDialog("保存に失敗しました", true);
+      const msg = error instanceof Error ? error.message : "";
+      if (msg.startsWith("validation:")) {
+        await showDialog(msg.slice("validation:".length), true);
+      } else {
+        await showDialog("保存に失敗しました", true);
+      }
     }
   };
 
