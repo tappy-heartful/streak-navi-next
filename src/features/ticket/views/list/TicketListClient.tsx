@@ -74,7 +74,11 @@ function CheckInModal({
 
   const isInvite = state.ticket.resType === "invite";
   const unitPrice = (state.live?.feeAdvance ?? 0);
-  const totalPrice = checkedNames.size * unitPrice;
+  
+  // 表示されている対象者のみをカウントして計算する
+  const targetNames = new Set(state.targets.map(t => t.name));
+  const visibleCheckedCount = Array.from(checkedNames).filter(name => targetNames.has(name)).length;
+  const totalPrice = visibleCheckedCount * unitPrice;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -96,7 +100,7 @@ function CheckInModal({
           )}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "12px" }}>
             <span style={{ fontSize: "1.2em", fontWeight: "bold", color: "#e91e63" }}>
-              {checkedNames.size} 名 / ¥{totalPrice.toLocaleString()}
+              {visibleCheckedCount} 名 / ¥{totalPrice.toLocaleString()}
             </span>
             <span style={{ fontSize: "0.85em", color: "#888" }}>
               予約番号: {state.displayNo}
@@ -150,9 +154,11 @@ function CheckInModal({
 function DoorCheckInModal({
   onClose,
   onSave,
+  feeDoor,
 }: {
   onClose: () => void;
   onSave: (count: number) => Promise<void>;
+  feeDoor: number;
 }) {
   const [count, setCount] = useState(1);
   const [saving, setSaving] = useState(false);
@@ -173,12 +179,18 @@ function DoorCheckInModal({
         </div>
         <div className="modal-body">
           <p style={{ marginBottom: "12px" }}>当日受付の人数を入力してください。</p>
+          <div style={{ textAlign: "center", marginBottom: "20px" }}>
+            <span style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#4caf50" }}>
+              ¥{ (count * feeDoor).toLocaleString() }
+            </span>
+            <div style={{ fontSize: "0.85em", color: "#888" }}>({count}名分)</div>
+          </div>
           <input
             type="number"
             className="form-control"
             value={count}
             min={1}
-            onChange={(e) => setCount(parseInt(e.target.value) || 1)}
+            onChange={(e) => setCount(Math.max(1, parseInt(e.target.value) || 1))}
             style={{ fontSize: "1.2em", textAlign: "center" }}
           />
         </div>
@@ -858,6 +870,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
         <DoorCheckInModal
           onClose={() => setDoorModalOpen(false)}
           onSave={handleDoorCheckIn}
+          feeDoor={feeDoor}
         />
       )}
       {qrModalOpen && (
