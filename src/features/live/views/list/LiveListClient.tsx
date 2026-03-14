@@ -96,13 +96,15 @@ export function LiveListClient({ initialData }: Props) {
 
   return (
     <ListBaseLayout title="ライブ" icon="fa fa-music" basePath="/live" count={initialData.lives.length}>
-      <div className="container">
+      <div className="container" style={{ marginBottom: "24px" }}>
         <section>
           <h3>✅ 今後のライブ予定</h3>
           <LiveTable lives={upcoming} showMap />
         </section>
+      </div>
 
-        <section style={{ marginTop: "24px" }}>
+      <div className="container">
+        <section>
           <h3>🔚 終了したライブ</h3>
           <LiveTable lives={closed} />
         </section>
