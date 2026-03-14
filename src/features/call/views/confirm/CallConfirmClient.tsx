@@ -114,7 +114,10 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
         <DisplayField label="作成者">{callData.createdBy}</DisplayField>
 
         {/* 募集ジャンルごとの回答 */}
-        <div id="call-items" style={{ marginTop: "1.5rem" }}>
+        <div id="call-items" style={{ marginTop: "2rem" }}>
+          <h3 style={{ fontSize: "1.2rem", borderBottom: "2px solid #4CAF50", paddingBottom: "8px", marginBottom: "16px" }}>
+            <i className="fas fa-music"></i> 募集ジャンルと回答
+          </h3>
           {(callData.items || []).map(genre => {
             const genreAnswers = callAnswers.flatMap(ans => {
               const songs = ans.answers?.[genre] || [];
@@ -123,16 +126,16 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
             });
 
             return (
-              <div key={genre} className="genre-block" style={{ marginBottom: "1.5rem" }}>
-                <div className="genre-title" style={{ fontWeight: "bold", marginBottom: "8px" }}>
+              <div key={genre} className="genre-block" style={{ marginBottom: "2rem", backgroundColor: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", overflow: "hidden" }}>
+                <div className="genre-title" style={{ fontWeight: "bold", padding: "12px 16px", backgroundColor: "#f4f4f4", borderBottom: "1px solid #ddd", fontSize: "1.1rem" }}>
                   🎵 {genre}
                 </div>
-                <div className="genre-answers">
+                <div className="genre-answers" style={{ padding: "16px" }}>
                   {genreAnswers.length > 0 ? genreAnswers.map(({ uid: ansUid, songs }, i) => (
-                    <div key={i}>
+                    <div key={i} style={{ marginBottom: i < genreAnswers.length - 1 ? "24px" : "0", borderBottom: i < genreAnswers.length - 1 ? "1px dashed #ccc" : "none", paddingBottom: i < genreAnswers.length - 1 ? "16px" : "0" }}>
                       {!callData.isAnonymous && (
-                        <div className="answer-user" style={{ color: "#666", fontSize: "0.9em" }}>
-                          回答者: {usersMap[ansUid] || "(不明)"}
+                        <div className="answer-user" style={{ color: "#4CAF50", fontSize: "0.95em", fontWeight: "bold", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                           <i className="fas fa-user-circle"></i> {usersMap[ansUid] || "(不明)"}
                         </div>
                       )}
                       {(songs as CallAnswerSong[]).map((song, j) => {
@@ -140,39 +143,45 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                         const isYouTube = song.url && (song.url.includes("youtube.com/watch") || song.url.includes("youtu.be"));
 
                         return (
-                          <div key={j} className="song-item" style={{ marginBottom: "12px", paddingLeft: "1rem", borderLeft: "2px solid #ddd" }}>
-                            <div><strong>{song.title}</strong></div>
+                          <div key={j} className="song-item" style={{ marginBottom: j < songs.length - 1 ? "12px" : "0", borderLeft: "3px solid #4CAF50", backgroundColor: "#fafafa", padding: "12px", borderRadius: "0 6px 6px 0" }}>
+                            <div style={{ fontSize: "1.1em", marginBottom: "8px" }}><strong>{song.title}</strong></div>
                             {song.url && (
-                              <div>
-                                参考音源:{" "}
+                              <div style={{ marginBottom: "6px" }}>
+                                <span style={{ fontSize: "0.85em", color: "#666" }}>参考音源: </span>
                                 {isYouTube ? (
                                   <div
                                     className="youtube-display-area"
+                                    style={{ marginTop: "4px", maxWidth: "480px" }}
                                     dangerouslySetInnerHTML={{ __html: buildYouTubeHtml(song.url, true, false) }}
                                   />
                                 ) : (
-                                  <a href={song.url} target="_blank" rel="noopener noreferrer">
+                                  <a href={song.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.9em", color: "#1a73e8" }}>
                                     リンクを開く <i className="fas fa-arrow-up-right-from-square"></i>
                                   </a>
                                 )}
                               </div>
                             )}
-                            {scoreName && <div>譜面: {scoreName}</div>}
+                            {scoreName && <div style={{ marginBottom: "6px", fontSize: "0.9em" }}><span style={{ color: "#666" }}>譜面: </span>{scoreName}</div>}
                             {song.purchase && (
-                              <div>
-                                購入先:{" "}
-                                <a href={song.purchase} target="_blank" rel="noopener noreferrer">
+                              <div style={{ marginBottom: "6px", fontSize: "0.9em" }}>
+                                <span style={{ color: "#666" }}>購入先: </span>
+                                <a href={song.purchase} target="_blank" rel="noopener noreferrer" style={{ color: "#1a73e8" }}>
                                   リンクを開く <i className="fas fa-arrow-up-right-from-square"></i>
                                 </a>
                               </div>
                             )}
-                            {song.note && <div>備考: {song.note}</div>}
+                            {song.note && (
+                              <div style={{ fontSize: "0.9em", marginTop: "8px", padding: "8px", backgroundColor: "#fff", border: "1px solid #eee", borderRadius: "4px", whiteSpace: "pre-wrap" }}>
+                                <span style={{ color: "#666", display: "block", marginBottom: "2px", fontSize: "0.85em", fontWeight: "bold" }}>備考:</span>
+                                {song.note}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
                     </div>
                   )) : (
-                    <div className="no-answer" style={{ color: "#aaa" }}>（回答なし）</div>
+                    <div className="no-answer" style={{ color: "#aaa", textAlign: "center", padding: "16px 0" }}>このジャンルへの回答はまだありません</div>
                   )}
                 </div>
               </div>

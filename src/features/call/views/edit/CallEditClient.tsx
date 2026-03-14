@@ -112,7 +112,7 @@ export function CallEditClient({ mode, callId, initialCall }: Props) {
         <FormField label="募集ジャンル" required error={form.errors.items as string}>
           <div id="call-items-container">
             {form.formData.items.map((item, i) => (
-              <div key={i} className="call-item" style={{ display: "flex", gap: "8px", marginBottom: "6px" }}>
+              <div key={i} className="room-item">
                 <input
                   type="text"
                   className="form-control"
@@ -120,13 +120,13 @@ export function CallEditClient({ mode, callId, initialCall }: Props) {
                   placeholder="募集ジャンルを入力..."
                   onChange={(e) => updateItem(i, e.target.value)}
                 />
-                <button type="button" className="remove-item" onClick={() => removeItem(i)}>
-                  × 項目を削除
+                <button type="button" className="remove-room-button" onClick={() => removeItem(i)}>
+                  削除
                 </button>
               </div>
             ))}
           </div>
-          <button type="button" id="add-item" onClick={addItem}>
+          <button type="button" className="add-room-button" onClick={addItem}>
             ＋ 項目を追加
           </button>
         </FormField>
