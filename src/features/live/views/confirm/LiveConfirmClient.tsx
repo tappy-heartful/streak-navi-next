@@ -19,33 +19,63 @@ type Props = {
 // ===== 動員分析セクション =====
 
 type AnalysisStats = {
-  totalEntry: number;
-  reserveCount: number;
-  doorCount: number;
-  checkInRate: number;
+  expectedPeople: number;     // 予約総数
+  expectedRevenue: number;    // 見込売上
+  reserveCheckInPeople: number; // 予約来場者数
+  reserveRevenue: number;     // 予約売上実績
+  doorCheckInPeople: number;    // 当日来場者数
+  doorRevenue: number;        // 当日売上実績
+  totalPeople: number;        // 総来場者数
+  totalRevenue: number;       // 総売上実績
+  checkInRate: number;        // 予約来場率
 };
 
 function AnalysisSection({ stats }: { stats: AnalysisStats | null }) {
   if (!stats) return null;
   return (
-    <div className="form-group">
-      <label className="label-title">📊 ライブ動員分析</label>
-      <div className="analysis-stats">
-        <div className="stat-item">
-          <span className="stat-label">総入場者数</span>
-          <span className="stat-value">{stats.totalEntry} 名</span>
+    <div className="form-group" style={{ marginTop: "2rem" }}>
+      <label className="label-title" style={{ fontSize: "1.2em", marginBottom: "1rem" }}>📊 ライブ収支・動員レポート</label>
+      
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+        gap: "16px"
+      }}>
+        {/* 1. 予約状況（見込） */}
+        <div style={{ background: "#f0f7ff", padding: "16px", borderRadius: "12px", border: "1px solid #d1e3ff" }}>
+          <div style={{ fontSize: "0.9em", color: "#5a7fad", fontWeight: "bold", marginBottom: "8px" }}>予約状況（見込）</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: "1.4em", fontWeight: "bold" }}>{stats.expectedPeople} <small style={{ fontSize: "0.6em" }}>名</small></span>
+            <span style={{ fontSize: "1.1em", color: "#456990" }}>¥{stats.expectedRevenue.toLocaleString()}</span>
+          </div>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">予約チェックイン</span>
-          <span className="stat-value">{stats.reserveCount} 名</span>
+
+        {/* 2. 予約来場（実績） */}
+        <div style={{ background: "#f0fff4", padding: "16px", borderRadius: "12px", border: "1px solid #c6f6d5" }}>
+          <div style={{ fontSize: "0.9em", color: "#2f855a", fontWeight: "bold", marginBottom: "8px" }}>予約来場（実績）</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: "1.4em", fontWeight: "bold" }}>{stats.reserveCheckInPeople} <small style={{ fontSize: "0.6em" }}>名</small></span>
+            <span style={{ fontSize: "1.1em", color: "#276749" }}>¥{stats.reserveRevenue.toLocaleString()}</span>
+          </div>
+          <div style={{ fontSize: "0.8em", color: "#38a169", marginTop: "4px" }}>来場率: {stats.checkInRate}%</div>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">当日受付</span>
-          <span className="stat-value">{stats.doorCount} 名</span>
+
+        {/* 3. 当日受付（実績） */}
+        <div style={{ background: "#fffaf0", padding: "16px", borderRadius: "12px", border: "1px solid #feebc8" }}>
+          <div style={{ fontSize: "0.9em", color: "#c05621", fontWeight: "bold", marginBottom: "8px" }}>当日受付（実績）</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: "1.4em", fontWeight: "bold" }}>{stats.doorCheckInPeople} <small style={{ fontSize: "0.6em" }}>名</small></span>
+            <span style={{ fontSize: "1.1em", color: "#9c4221" }}>¥{stats.doorRevenue.toLocaleString()}</span>
+          </div>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">予約来場率</span>
-          <span className="stat-value">{stats.checkInRate} %</span>
+
+        {/* 4. 総来場 / 合計売上 */}
+        <div style={{ background: "#fff5f5", padding: "16px", borderRadius: "12px", border: "2px solid #feb2b2" }}>
+          <div style={{ fontSize: "0.9em", color: "#c53030", fontWeight: "bold", marginBottom: "8px" }}>総括：合計</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: "1.6em", fontWeight: "bold", color: "#c53030" }}>{stats.totalPeople} <small style={{ fontSize: "0.6em" }}>名</small></span>
+            <span style={{ fontSize: "1.3em", fontWeight: "bold", color: "#c53030" }}>¥{stats.totalRevenue.toLocaleString()}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -176,13 +206,27 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
         );
         const all: LiveCheckIn[] = snap.docs.map((d) => ({ id: d.id, ...d.data() } as LiveCheckIn));
         const doorCount = all.filter((c) => c.type === "door").length;
-        const reserveCount = all.filter((c) => c.type !== "door").length;
+        const reserveCheckInPeople = all.filter((c) => c.type !== "door").length;
         const totalReserved = liveData.totalReserved ?? 0;
-        const checkInRate = totalReserved > 0 ? Math.round((reserveCount / totalReserved) * 100) : 0;
+        const checkInRate = totalReserved > 0 ? Math.round((reserveCheckInPeople / totalReserved) * 100) : 0;
+        
+        const feeAdvance = Number(liveData.feeAdvance || 0);
+        const feeDoor = Number(liveData.feeDoor || 0);
+        
+        const expectedRevenue = totalReserved * feeAdvance;
+        const reserveRevenue = reserveCheckInPeople * feeAdvance;
+        const doorRevenue = doorCount * feeDoor;
+        const totalRevenue = reserveRevenue + doorRevenue;
+
         setAnalysisStats({
-          totalEntry: all.length,
-          reserveCount,
-          doorCount,
+          expectedPeople: totalReserved,
+          expectedRevenue,
+          reserveCheckInPeople,
+          reserveRevenue,
+          doorCheckInPeople: doorCount,
+          doorRevenue,
+          totalPeople: reserveCheckInPeople + doorCount,
+          totalRevenue,
           checkInRate,
         });
       } catch (e) {
@@ -222,7 +266,7 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
     fetchAnalysis();
     fetchEnquete();
     fetchScores();
-  }, [liveId, liveData.totalReserved]);
+  }, [liveId, liveData.totalReserved, liveData.feeAdvance, liveData.feeDoor]);
 
   const inTerm = liveData.isAcceptReserve
     ? isInTerm(liveData.acceptStartDate ?? "", liveData.acceptEndDate ?? "")
@@ -286,7 +330,8 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
         </DisplayField>
 
         <DisplayField label="料金">
-          前売 {formatPrice(liveData.advance)} / 当日 {formatPrice(liveData.door)}
+          前売 {formatPrice(liveData.advance)} {liveData.feeAdvance != null && <span style={{ color: "#888", fontSize: "0.9em" }}>(集計: ¥{Number(liveData.feeAdvance).toLocaleString()})</span>} / 
+          当日 {formatPrice(liveData.door)} {liveData.feeDoor != null && <span style={{ color: "#888", fontSize: "0.9em" }}>(集計: ¥{Number(liveData.feeDoor).toLocaleString()})</span>}
         </DisplayField>
 
         <DisplayField label="チケット予約">

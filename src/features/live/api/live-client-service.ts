@@ -14,6 +14,8 @@ export type LiveFormData = {
   venueGoogleMap: string;
   advance: string;
   door: string;
+  feeAdvance: string;
+  feeDoor: string;
   flyerUrl: string;
   isAcceptReserve: boolean;
   acceptStartDate: string;
@@ -50,6 +52,8 @@ export const saveLive = async (
     venueGoogleMap: data.venueGoogleMap || "",
     advance: toNum(data.advance),
     door: toNum(data.door),
+    feeAdvance: data.feeAdvance ? Number(data.feeAdvance.replace(/,/g, "")) : 0,
+    feeDoor: data.feeDoor ? Number(data.feeDoor.replace(/,/g, "")) : 0,
     flyerUrl: data.flyerUrl || "",
     isAcceptReserve: data.isAcceptReserve,
     acceptStartDate: data.acceptStartDate ? data.acceptStartDate.replace(/-/g, ".") : "",

@@ -277,7 +277,9 @@ export interface Live {
   venueUrl?: string;
   venueGoogleMap?: string;
   advance?: number | string;  // 前売料金
-  door?: number | string;     // 当日料金
+  door?: number | string;     // 当日料金（HP表示用）
+  feeAdvance?: number;        // 前売料金（集計用数値）
+  feeDoor?: number;           // 当日料金（集計用数値）
   flyerUrl?: string;
   isAcceptReserve?: boolean;
   acceptStartDate?: string;  // "yyyy.MM.dd"

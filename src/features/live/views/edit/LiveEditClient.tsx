@@ -30,6 +30,8 @@ export function LiveEditClient({ mode, liveId, initialLive, scores }: Props) {
       venueGoogleMap: initialLive?.venueGoogleMap ?? "",
       advance: initialLive?.advance != null ? String(initialLive.advance) : "",
       door: initialLive?.door != null ? String(initialLive.door) : "",
+      feeAdvance: initialLive?.feeAdvance != null ? String(initialLive.feeAdvance) : "",
+      feeDoor: initialLive?.feeDoor != null ? String(initialLive.feeDoor) : "",
       flyerUrl: initialLive?.flyerUrl ?? "",
       isAcceptReserve: isNewOrCopy ? false : (initialLive?.isAcceptReserve ?? false),
       acceptStartDate: (initialLive?.acceptStartDate ?? "").replace(/\./g, "-"),
@@ -68,8 +70,10 @@ export function LiveEditClient({ mode, liveId, initialLive, scores }: Props) {
         <AppInput label="会場名" required {...inputProps("venue")} />
         <AppInput label="会場公式サイトURL" type="url" {...inputProps("venueUrl")} />
         <AppInput label="Google Map URL" type="url" {...inputProps("venueGoogleMap")} />
-        <AppInput label="前売料金（円）" {...inputProps("advance")} />
-        <AppInput label="当日料金（円）" {...inputProps("door")} />
+        <AppInput label="前売料金（表示用）" placeholder="例: ¥2,500 / 1ドリンク別" {...inputProps("advance")} />
+        <AppInput label="当日料金（表示用）" placeholder="例: ¥3,000" {...inputProps("door")} />
+        <AppInput label="前売料金（集計用数値）" type="number" placeholder="例: 2500" {...inputProps("feeAdvance")} />
+        <AppInput label="当日料金（集計用数値）" type="number" placeholder="例: 3000" {...inputProps("feeDoor")} />
         <AppInput label="フライヤーURL（画像リンク）" type="url" {...inputProps("flyerUrl")} />
 
         {/* セットリスト */}

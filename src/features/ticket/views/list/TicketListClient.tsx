@@ -29,6 +29,7 @@ type CheckInTarget = { name: string; type: string };
 
 type CheckInModalState = {
   ticket: Ticket;
+  live: Live | undefined;
   groupSuffix: string | null;
   displayNo: string;
   targets: CheckInTarget[];
@@ -72,6 +73,8 @@ function CheckInModal({
   };
 
   const isInvite = state.ticket.resType === "invite";
+  const unitPrice = (state.live?.feeAdvance ?? 0);
+  const totalPrice = checkedNames.size * unitPrice;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -91,9 +94,14 @@ function CheckInModal({
               )}
             </div>
           )}
-          <p style={{ textAlign: "right", fontSize: "0.85em", color: "#888", marginBottom: "12px" }}>
-            予約番号: {state.displayNo}
-          </p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "12px" }}>
+            <span style={{ fontSize: "1.2em", fontWeight: "bold", color: "#e91e63" }}>
+              {checkedNames.size} 名 / ¥{totalPrice.toLocaleString()}
+            </span>
+            <span style={{ fontSize: "0.85em", color: "#888" }}>
+              予約番号: {state.displayNo}
+            </span>
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {state.targets.map((target, i) => {
               const isChecked = checkedNames.has(target.name);
@@ -415,7 +423,14 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
       }
 
       hideSpinner();
-      setCheckInModalState({ ticket, groupSuffix, displayNo, targets, currentCheckedMap });
+      setCheckInModalState({
+        ticket,
+        live: initialLives.find(l => l.id === selectedLiveId),
+        groupSuffix,
+        displayNo,
+        targets,
+        currentCheckedMap,
+      });
     } catch {
       hideSpinner();
       await showDialog("チケット情報の取得に失敗しました", true);
@@ -503,6 +518,41 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
   };
 
   // --- 集計 ---
+  const currentLive = initialLives.find(l => l.id === selectedLiveId);
+  const feeAdvance = Number(currentLive?.feeAdvance ?? 0);
+  const feeDoor = Number(currentLive?.feeDoor ?? 0);
+
+  const stats = (() => {
+    let expectedPeople = 0;
+    let expectedRevenue = 0;
+    tickets.forEach(t => {
+      let pCount = 0;
+      if (t.resType === "invite" && t.groups) {
+        t.groups.forEach(g => pCount += g.companions.filter(c => c !== "").length);
+      } else {
+        pCount = 1 + (t.companions?.filter(c => c !== "").length ?? 0);
+      }
+      expectedPeople += pCount;
+      expectedRevenue += pCount * feeAdvance;
+    });
+
+    let resCheckInCount = 0;
+    let doorCheckInCount = 0;
+    let actualRevenue = 0;
+
+    checkIns.forEach(c => {
+      if (c.type === "door") {
+        doorCheckInCount++;
+        actualRevenue += feeDoor;
+      } else {
+        resCheckInCount++;
+        actualRevenue += feeAdvance;
+      }
+    });
+
+    return { expectedPeople, expectedRevenue, resCheckInCount, doorCheckInCount, actualPeople: resCheckInCount + doorCheckInCount, actualRevenue };
+  })();
+
   const { totalRows, totalSum } = (() => {
     let rows = 0, sum = 0;
     filteredTickets.forEach((t) => {
@@ -698,6 +748,31 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
             <i className="fas fa-search" /> 検索
           </button>
         </div>
+
+        {/* 集計レポート */}
+        {selectedLiveId && (
+          <div className="stats-report" style={{
+            marginTop: "16px", padding: "12px", background: "#f8f9fa", borderRadius: "8px",
+            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "10px"
+          }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "0.8em", color: "#666" }}>総予約（見込）</div>
+              <div style={{ fontWeight: "bold", fontSize: "1.1em" }}>{stats.expectedPeople} 名</div>
+              <div style={{ fontSize: "0.85em", color: "#888" }}>¥{stats.expectedRevenue.toLocaleString()}</div>
+            </div>
+            <div style={{ textAlign: "center", borderLeft: "1px solid #ddd" }}>
+              <div style={{ fontSize: "0.8em", color: "#666" }}>総来場者数</div>
+              <div style={{ fontWeight: "bold", fontSize: "1.1em", color: "#2E7D32" }}>{stats.actualPeople} 名</div>
+              <div style={{ fontSize: "0.85em", color: "#888" }}>¥{stats.actualRevenue.toLocaleString()}</div>
+            </div>
+            <div style={{ textAlign: "center", borderLeft: "1px solid #ddd" }}>
+              <div style={{ fontSize: "0.8em", color: "#666" }}>来場内訳</div>
+              <div style={{ fontSize: "0.9em" }}>
+                予約: {stats.resCheckInCount} / 当日: {stats.doorCheckInCount}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 予約テーブル */}
