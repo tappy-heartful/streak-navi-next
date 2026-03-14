@@ -10,7 +10,7 @@ import { AppInput } from "@/src/components/Form/AppInput";
 import { FormField } from "@/src/components/Form/FormField";
 import { FormButtons } from "@/src/components/Form/FormButtons";
 import { FormFooter } from "@/src/components/Form/FormFooter";
-import { Vote, Call, VoteItem, VoteChoice } from "@/src/lib/firestore/types";
+import { Vote, Call, VoteItem, VoteChoice, CallAnswerSong } from "@/src/lib/firestore/types";
 import { addVote, updateVote } from "@/src/features/vote/api/vote-client-service";
 import { showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
 
@@ -21,7 +21,7 @@ type Props = {
   voteId?: string;
   initialVote?: Vote | null;
   callData?: Call | null;
-  callAnswers?: any[];
+  callAnswers?: Array<Record<string, CallAnswerSong[]>>;
 };
 
 export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswers }: Props) {
@@ -175,6 +175,15 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       if (s > e) {
         await showDialog("終了日は開始日以降にしてください", true);
         valid = false;
+      }
+      if (mode !== "edit") {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        if (s < tomorrow.getTime()) {
+          await showDialog("開始日は明日以降にしてください", true);
+          valid = false;
+        }
       }
     }
 

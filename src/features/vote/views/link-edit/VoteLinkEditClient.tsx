@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Vote, VoteItem } from "@/src/lib/firestore/types";
+import { Vote, VoteItem, VoteChoice } from "@/src/lib/firestore/types";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { FormButtons } from "@/src/components/Form/FormButtons";
@@ -61,7 +61,7 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
 
     items.forEach(item => {
       if (item.link && !urlPattern.test(item.link)) isValid = false;
-      item.choices.forEach((choice: any) => {
+      item.choices.forEach((choice: VoteChoice) => {
         if (choice.link && !urlPattern.test(choice.link)) isValid = false;
       });
     });
@@ -124,7 +124,7 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
               </div>
 
               <div style={{ marginLeft: "16px" }}>
-                {item.choices.map((choice: any, j: number) => (
+                {item.choices.map((choice: VoteChoice, j: number) => (
                   <div key={choice.name} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
                     <span style={{ marginRight: "8px", width: "120px" }}>・{choice.name}</span>
                     <div style={{ flex: 1 }}>

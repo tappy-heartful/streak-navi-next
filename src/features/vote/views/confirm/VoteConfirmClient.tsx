@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { AnswerConfirmLayout } from "@/src/components/Layout/AnswerConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
@@ -16,7 +15,7 @@ type Props = {
   voteData: Vote;
   voteId: string;
   voteAnswers: VoteAnswer[];
-  usersMap: Record<string, {name: string; pictureUrl: string}>;
+  usersMap: Record<string, { name: string; pictureUrl: string }>;
 };
 
 export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: Props) {
@@ -47,7 +46,6 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
       await deleteVoteWithAnswers(voteId);
       hideSpinner();
       await showDialog("削除しました", true);
-
       showSpinner();
       router.push("/vote");
     } catch {
@@ -66,9 +64,8 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
       await deleteMyVoteAnswer(voteId, uid);
       hideSpinner();
       await showDialog("回答を取り消しました", true);
-
       showSpinner();
-      router.refresh(); 
+      router.refresh();
     } catch {
       hideSpinner();
       await showDialog("削除に失敗しました", true);
@@ -76,41 +73,59 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
   };
 
   const handleVoterModal = (itemTitle: string, choiceName: string) => {
-    // 該当する回答者の UID を探す
     const voterUids = voteAnswers
       .filter(ans => ans.answers[itemTitle] === choiceName)
       .map(ans => ans.uid);
 
-    const votersHtml = voterUids.map(uid => {
-      const user = usersMap[uid];
+    const votersContent = voterUids.map(vid => {
+      const user = usersMap[vid];
       const name = user ? user.name : "退会済みユーザ";
       const pic = user?.pictureUrl || globalLineDefaultImage;
-
       return (
-        <div key={uid} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-          <img src={pic} alt={name} style={{ width: "32px", height: "32px", borderRadius: "50%", marginRight: "8px" }} onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }} />
+        <div key={vid} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+          <img src={pic} alt={name} style={{ width: "32px", height: "32px", borderRadius: "50%", marginRight: "8px" }}
+            onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }} />
           <span>{name}</span>
         </div>
       );
     });
 
     setModalTitle(`${choiceName} に投票した人`);
-    setModalContent(<div>{votersHtml}</div>);
+    setModalContent(<div>{votersContent}</div>);
     setModalOpen(true);
   };
 
   const handleYoutubeModal = (url: string, title: string) => {
-    const html = buildYouTubeHtml(url, true, false);
     setModalTitle(title);
-    setModalContent(<div dangerouslySetInnerHTML={{ __html: html }} />);
+    setModalContent(<div dangerouslySetInnerHTML={{ __html: buildYouTubeHtml(url, true, false) }} />);
     setModalOpen(true);
+  };
+
+  // リンク表示ヘルパー（YouTube はモーダル、その他は新規タブ）
+  const renderLink = (linkUrl: string | undefined, text: string) => {
+    if (!linkUrl) return <>{text}</>;
+    try {
+      const u = new URL(linkUrl);
+      if (u.hostname.includes("youtube.com") || u.hostname.includes("youtu.be")) {
+        return (
+          <a href="#" onClick={(e) => { e.preventDefault(); handleYoutubeModal(linkUrl, text); }}>
+            {text}
+          </a>
+        );
+      }
+    } catch {}
+    return <a href={linkUrl} target="_blank" rel="noopener noreferrer">{text}</a>;
   };
 
   const answerMenuSlot = (
     <>
-      <Link href={`/vote/answer?voteId=${voteId}`} className="edit-button" style={{ textDecoration: "none", display: "inline-block" }}>
+      <button
+        type="button"
+        className="save-button"
+        onClick={() => { showSpinner(); router.push(`/vote/answer?voteId=${voteId}`); }}
+      >
         {hasAnswered ? "回答を修正する" : "回答する"}
-      </Link>
+      </button>
       {hasAnswered && (
         <button type="button" className="delete-button" onClick={handleDeleteMyAnswer}>
           回答を取り消す
@@ -119,43 +134,23 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
     </>
   );
 
+  // 「編集」「コピー」「削除」は AnswerConfirmLayout の DetailActionButtons が担当
+  // adminExtraSlot には投票固有の追加操作のみ
   const adminExtraSlot = (
-    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
-      <Link href={`/vote/edit?voteId=${voteId}&mode=edit`} className="edit-button" style={{ textDecoration: "none" }}>
-        編集する
-      </Link>
-      <Link href={`/vote/edit?voteId=${voteId}&mode=copy`} className="edit-button" style={{ textDecoration: "none", backgroundColor: "#ff9800" }}>
-        コピーして作成
-      </Link>
-      <button
-        type="button"
-        className="edit-button"
-        onClick={() => {
-          showSpinner();
-          router.push(`/vote/link-edit?voteId=${voteId}`);
-        }}
-        style={{ backgroundColor: "#9c27b0" }}
-      >
-        投票リンク設定
-      </button>
-    </div>
+    <button
+      type="button"
+      className="edit-button"
+      onClick={() => { showSpinner(); router.push(`/vote/link-edit?voteId=${voteId}`); }}
+    >
+      投票リンク設定
+    </button>
   );
 
-  // Link helper
-  const renderLink = (linkUrl: string | undefined, text: string) => {
-    if (!linkUrl) return <>{text}</>;
-    try {
-      const u = new URL(linkUrl);
-      if (u.hostname.includes("youtube.com") || u.hostname.includes("youtu.be")) {
-        return (
-          <a href="#" onClick={(e) => { e.preventDefault(); handleYoutubeModal(linkUrl, text); }} style={{ color: "blue", textDecoration: "underline" }}>
-            {text}
-          </a>
-        );
-      }
-    } catch (e) {}
-    return <a href={linkUrl} target="_blank" rel="noopener noreferrer" style={{ color: "blue", textDecoration: "underline" }}>{text}</a>;
-  };
+  const myPic = usersMap[uid || ""]?.pictureUrl || globalLineDefaultImage;
+  // isAdmin は結果・票数常時表示、hideVotes 時は一般には非表示
+  const canViewResults = isAdmin || !voteData.hideVotes;
+  // isAnonymous 時は投票者一覧非表示
+  const showVoterLink = canViewResults && !voteData.isAnonymous;
 
   return (
     <BaseLayout>
@@ -184,67 +179,60 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
         </DisplayField>
 
         {isAdmin && voteData.hideVotes && (
-          <div style={{ color: "#d32f2f", fontSize: "0.9em", marginTop: "1rem" }}>
-            ※「票数を非公開」のため投票結果は一般メンバーには見えていません
-          </div>
+          <p className="vote-msg">※「票数を非公開」のため投票結果は一般メンバーには見えていません</p>
         )}
 
-        {/* 投票結果表示 */}
-        <div id="vote-items" style={{ marginTop: "2rem" }}>
-          <h3 style={{ fontSize: "1.2rem", borderBottom: "2px solid #4CAF50", paddingBottom: "8px", marginBottom: "16px" }}>
-            <i className="fas fa-poll"></i> 投票結果
-          </h3>
+        {/* 投票結果 */}
+        <div id="vote-items-container" style={{ marginTop: "1.5rem" }}>
           {(voteData.items || []).map(item => {
-            // Count votes for this item
             const results: Record<string, number> = {};
-            item.choices.forEach(c => results[c.name] = 0);
+            item.choices.forEach(c => { results[c.name] = 0; });
             voteAnswers.forEach(ans => {
               const choiceName = ans.answers[item.name];
-              if (choiceName && results[choiceName] !== undefined) {
-                results[choiceName] += 1;
-              }
+              if (choiceName && results[choiceName] !== undefined) results[choiceName]++;
             });
-
             const maxVotes = Math.max(...Object.values(results), 1);
 
             return (
-              <div key={item.name} className="genre-block" style={{ marginBottom: "2rem", backgroundColor: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", overflow: "hidden" }}>
-                <div className="genre-title" style={{ fontWeight: "bold", padding: "12px 16px", backgroundColor: "#f4f4f4", borderBottom: "1px solid #ddd", fontSize: "1.1rem" }}>
+              <div key={item.name} className="vote-item">
+                <div className="vote-item-title">
                   {renderLink(item.link, item.name)}
                 </div>
-                <div style={{ padding: "16px" }}>
+                <div className="vote-results">
                   {item.choices.map(choice => {
                     const count = results[choice.name] || 0;
-                    const percent = (count / maxVotes) * 100;
+                    const percent = canViewResults ? (count / maxVotes) * 100 : 0;
                     const isMyChoice = myAnswer[item.name] === choice.name;
-                    const myPic = usersMap[uid || ""]?.pictureUrl || globalLineDefaultImage;
-
-                    const canViewResults = isAdmin || !voteData.hideVotes;
-                    const canViewVoters = canViewResults && !voteData.isAnonymous && count > 0;
+                    const canVoterLink = showVoterLink && count > 0;
 
                     return (
-                      <div key={choice.name} style={{ marginBottom: "16px" }}>
-                        <div style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
-                          <span style={{ fontWeight: isMyChoice ? "bold" : "normal" }}>
-                            {isMyChoice && <img src={myPic} alt="my choice" style={{ width: "20px", height: "20px", borderRadius: "50%", marginRight: "8px", verticalAlign: "middle" }} onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }} />}
-                            {renderLink(choice.link, choice.name)}
-                          </span>
+                      <div key={choice.name} className={`result-bar${isMyChoice ? " my-choice" : ""}`}>
+                        <div className="label" style={!canViewResults ? { width: "100%" } : undefined}>
+                          {isMyChoice && (
+                            <img
+                              src={myPic}
+                              alt="あなたの選択"
+                              className="my-choice-icon"
+                              onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }}
+                            />
+                          )}
+                          {renderLink(choice.link, choice.name)}
                         </div>
                         {canViewResults && (
-                          <div style={{ display: "flex", alignItems: "center" }}>
-                            <div style={{ flex: 1, backgroundColor: "#e0e0e0", height: "auto", borderRadius: "4px", overflow: "hidden" }}>
-                              <div style={{ width: `${percent}%`, backgroundColor: isMyChoice ? "#4CAF50" : "#2196F3", height: "16px" }} />
+                          <>
+                            <div className="bar-container">
+                              <div className="bar" style={{ width: `${percent}%` }} />
                             </div>
-                            <div style={{ marginLeft: "12px", minWidth: "40px", textAlign: "right", fontSize: "0.9em" }}>
-                              {canViewVoters ? (
-                                <a href="#" onClick={(e) => { e.preventDefault(); handleVoterModal(item.name, choice.name); }} style={{ color: "#1a73e8", textDecoration: "underline" }}>
+                            <div className="vote-count">
+                              {canVoterLink ? (
+                                <a href="#" onClick={(e) => { e.preventDefault(); handleVoterModal(item.name, choice.name); }}>
                                   {count}票
                                 </a>
                               ) : (
                                 <span>{count}票</span>
                               )}
                             </div>
-                          </div>
+                          </>
                         )}
                       </div>
                     );

@@ -4,16 +4,13 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Vote } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
-import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
+import { AnswerEditLayout } from "@/src/components/Layout/AnswerEditLayout";
 import { buildYouTubeHtml, showDialog, showSpinner, hideSpinner } from "@/src/lib/functions";
 import { submitVoteAnswer } from "@/src/features/vote/api/vote-client-service";
 import { db } from "@/src/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Modal } from "@/src/components/Modal";
-import { FormButtons } from "@/src/components/Form/FormButtons";
-import { FormFooter } from "@/src/components/Form/FormFooter";
 
 type Props = {
   vote: Vote;
@@ -24,21 +21,13 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
   const router = useRouter();
   const { userData } = useAuth();
   const uid = userData?.id;
-  const { setBreadcrumbs } = useBreadcrumb();
 
   const [answers, setAnswers] = useState<Record<string, string | null>>({});
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
   const [isEdit, setIsEdit] = useState(false);
-
-  useEffect(() => {
-    setBreadcrumbs([
-      { title: "投票一覧", href: "/vote" },
-      { title: "投票確認", href: `/vote/confirm?voteId=${voteId}` },
-      { title: "回答登録/修正", href: "" }
-    ]);
-  }, [setBreadcrumbs, voteId]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!uid) return;
@@ -49,6 +38,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
         setAnswers(data.answers || {});
         setIsEdit(true);
       }
+      setIsLoading(false);
     };
     fetchExisting();
   }, [uid, voteId]);
@@ -116,10 +106,15 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
 
   return (
     <BaseLayout>
-      <div className="page-header">
-        <h1>{isEdit ? "回答修正" : "回答登録"}</h1>
-      </div>
-      <div className="container">
+      <AnswerEditLayout
+        featureName="投票"
+        basePath="/vote"
+        featureIdKey="voteId"
+        dataId={voteId}
+        mode={isEdit ? "edit" : "new"}
+        onSave={handleSave}
+        isLoading={isLoading}
+      >
         <div style={{ marginBottom: "24px" }}>
           <h2>{vote.name}</h2>
           <p style={{ whiteSpace: "pre-wrap", color: "#555" }}>
@@ -133,17 +128,15 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
 
         <div>
           {vote.items.map((item, i) => (
-            <div key={item.name} className="vote-item" style={{ marginBottom: "24px", border: "1px solid #ddd", padding: "16px", borderRadius: "8px", backgroundColor: "#fff" }}>
-              <div className="vote-item-title" style={{ fontWeight: "bold", marginBottom: "12px", borderBottom: "1px solid #eee", paddingBottom: "8px" }}>
-                {item.name}
-              </div>
-              <div className="vote-choices" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div key={item.name} className="vote-item">
+              <div className="vote-item-title">{item.name}</div>
+              <div className="vote-choices">
                 {item.choices.map((choice, j) => {
                   const id = `choice-${i}-${j}`;
                   const isChecked = answers[item.name] === choice.name;
                   return (
-                    <div key={choice.name} style={{ display: "flex", alignItems: "center" }}>
-                      <label style={{ display: "flex", alignItems: "center", cursor: "pointer", flex: 1, padding: "8px", border: "1px solid", borderColor: isChecked ? "#4CAF50" : "#ccc", borderRadius: "6px", backgroundColor: isChecked ? "#E8F5E9" : "transparent" }}>
+                    <div key={choice.name} className="vote-choice-wrapper">
+                      <label className={`vote-choice-label${isChecked ? " selected" : ""}`} htmlFor={id}>
                         <input
                           type="radio"
                           name={item.name}
@@ -151,9 +144,8 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
                           value={choice.name}
                           checked={isChecked}
                           onChange={() => handleChange(item.name, choice.name)}
-                          style={{ marginRight: "12px", transform: "scale(1.2)" }}
                         />
-                        <span style={{ fontWeight: isChecked ? "bold" : "normal" }}>{choice.name}</span>
+                        {choice.name}
                       </label>
                       {renderLinkIcon(choice.link, choice.name)}
                     </div>
@@ -169,17 +161,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
             {modalContent}
           </Modal>
         )}
-
-        <FormButtons 
-          mode={isEdit ? "edit" : "new"} 
-          onSave={handleSave} 
-          onClear={() => setAnswers({})} 
-        />
-      </div>
-      <FormFooter 
-        backHref={`/vote/confirm?voteId=${voteId}`} 
-        backText="投票確認に戻る" 
-      />
+      </AnswerEditLayout>
     </BaseLayout>
   );
 }

@@ -1285,4 +1285,129 @@ a:hover {
 
 .add-room-button:hover {
   background-color: #0288d1;
+}
+
+/* ===== 投票 ===== */
+.vote-msg {
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #777;
+}
+
+.vote-item {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.vote-item-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.vote-results {
+  margin-top: 10px;
+}
+
+.result-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.result-bar .label {
+  width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.result-bar .bar-container {
+  flex-grow: 1;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 10px;
+  height: 18px;
+}
+
+.result-bar .bar {
+  height: 100%;
+  background: linear-gradient(to right, #4CAF50, #81C784);
+  border-radius: 4px;
+  transition: width 0.5s;
+}
+
+.result-bar .vote-count {
+  min-width: 40px;
+  text-align: right;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.result-bar .vote-count a {
+  color: #1a73e8;
+}
+
+.my-choice-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* 投票回答フォーム */
+.vote-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.vote-choice-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.vote-choice-label {
+  flex-grow: 1;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.vote-choice-label:hover {
+  background-color: #f0f0f0;
+}
+
+.vote-choice-label.selected {
+  background-color: #E8F5E9;
+  border-color: #4CAF50;
+}
+
+.vote-choice-label input[type="radio"] {
+  margin-right: 10px;
+}
+
+.vote-choice-link {
+  margin-left: 10px;
+  font-size: 16px;
+  color: #1a73e8;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
