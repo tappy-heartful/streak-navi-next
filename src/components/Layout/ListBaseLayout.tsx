@@ -35,9 +35,11 @@ export const ListBaseLayout = ({ title, icon, basePath, count, hideAddButton, ch
         {children}
 
         {isAdmin && !hideAddButton && (
-          <Link href={`${basePath}/edit?mode=new`} className="list-add-button" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: "2rem" }}>
-            ＋ 新規{title}作成
-          </Link>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <Link href={`${basePath}/edit?mode=new`} className="list-add-button" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', width: 'fit-content', padding: '12px 24px' }}>
+              ＋ 新規作成
+            </Link>
+          </div>
         )}
       </div>
 

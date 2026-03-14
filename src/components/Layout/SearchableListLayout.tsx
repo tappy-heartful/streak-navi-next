@@ -41,8 +41,8 @@ export const SearchableListLayout = <T extends Record<string, any>, F extends Re
           <button className="clear-button" onClick={list.resetFilters}>クリア</button>
           {/* ★ onSearch が渡されている時だけ「検索」ボタンを表示 */}
           {onSearch && (
-            <button 
-              className="save-button" 
+            <button
+              className="save-button"
               onClick={() => onSearch(list.filters)}
             >
               検索
@@ -79,9 +79,11 @@ export const SearchableListLayout = <T extends Record<string, any>, F extends Re
         </div>
 
         {isAdmin && (
-          <Link href={`${basePath}/edit?mode=new`} className="list-add-button" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            ＋ 新規作成
-          </Link>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <Link href={`${basePath}/edit?mode=new`} className="list-add-button" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', width: 'fit-content', padding: '12px 24px' }}>
+              ＋ 新規作成
+            </Link>
+          </div>
         )}
       </div>
 
