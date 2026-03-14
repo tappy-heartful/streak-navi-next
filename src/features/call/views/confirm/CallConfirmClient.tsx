@@ -42,7 +42,7 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
       await deleteCallWithAnswers(callId);
       hideSpinner();
       await showDialog("削除しました", true);
-      
+
       showSpinner(); // 遷移用スピナー
       router.push("/call");
     } catch {
@@ -61,7 +61,7 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
       await deleteMyCallAnswer(callId, uid);
       hideSpinner();
       await showDialog("回答を取り消しました", true);
-      
+
       showSpinner(); // 遷移用スピナー
       router.refresh(); // リロードのためスピナーを出しておく
     } catch {
@@ -115,9 +115,6 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
         <DisplayField label="受付期間">
           {callData.acceptStartDate} ～ {callData.acceptEndDate}
         </DisplayField>
-        <DisplayField label="受付状況">
-          {isActive ? "受付中" : "期間外"}（{participantCount}人が回答中）
-        </DisplayField>
         <DisplayField label="作成者">{callData.createdBy}</DisplayField>
 
         {/* 募集ジャンルごとの回答 */}
@@ -158,7 +155,7 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                                 {youtubeHtml ? (
                                   <div
                                     className="youtube-display-area"
-                                    style={{ marginTop: "4px" }}
+                                    style={{ marginTop: "8px", maxWidth: "480px", padding: "0 4px" }}
                                     dangerouslySetInnerHTML={{ __html: youtubeHtml }}
                                   />
                                 ) : (

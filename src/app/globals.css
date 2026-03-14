@@ -14,8 +14,8 @@ body {
   margin: 0 auto;
   padding: 0;
   
-  /* 横揺れ防止 */
-  overflow-x: hidden;
+  /* 横揺れ防止（clip は hidden と同じく視覚的にクリップするが、スクロールコンテナを作らないため子要素の横スクロールが正常に動作する） */
+  overflow-x: clip;
   
   /* Safariでスクロールが止まる現象（フリーズ）への対策 */
   -webkit-overflow-scrolling: touch;
@@ -784,7 +784,9 @@ input[type="time"] {
 
 /* ステータスラベル */
 .answer-status-container {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 16px;
 }
 
