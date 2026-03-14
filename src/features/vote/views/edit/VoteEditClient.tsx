@@ -306,24 +306,24 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
           <label className="form-label" style={{ fontWeight: "bold", marginBottom: "8px", display: "block" }}>投票項目 <span className="required">*</span></label>
           <div>
             {items.map((item, i) => (
-              <div key={i} style={{ border: "1px solid #ccc", padding: "16px", borderRadius: "8px", marginBottom: "16px", backgroundColor: "#fafafa" }}>
+              <div key={i} className="vote-item">
                 <input type="text" className="form-control" placeholder="項目名（例：演目候補）" value={item.name} onChange={e => updateItem(i, e.target.value)} />
-                <div style={{ marginTop: "12px", marginLeft: "16px" }}>
+                <div className="vote-choices" style={{ marginTop: "12px", marginLeft: "16px" }}>
                   {item.choices.map((choice, j) => (
-                    <div key={j} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-                      <span style={{ marginRight: "8px" }}>・</span>
+                    <div key={j} className="choice-wrapper">
+                      <span>・</span>
                       <input type="text" className="form-control" placeholder={`選択肢${j + 1}`} value={choice.name} onChange={e => updateChoice(i, j, e.target.value)} />
-                      <button type="button" onClick={() => removeChoice(i, j)} style={{ marginLeft: "8px", background: "none", border: "none", color: "#d32f2f", cursor: "pointer", fontSize: "1.2rem" }}>×</button>
+                      <button type="button" onClick={() => removeChoice(i, j)} className="remove-choice">×</button>
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: "12px", display: "flex", gap: "12px" }}>
-                  <button type="button" onClick={() => addChoice(i)} className="submit-button" style={{ backgroundColor: "#2196F3", fontSize: "0.9rem", padding: "6px 12px" }}>＋ 選択肢を追加</button>
-                  <button type="button" onClick={() => removeItem(i)} className="delete-button" style={{ fontSize: "0.9rem", padding: "6px 12px" }}>× 項目を削除</button>
+                <div style={{ marginTop: "10px" }}>
+                  <button type="button" onClick={() => addChoice(i)} className="add-choice">＋ 選択肢を追加</button>
+                  <button type="button" onClick={() => removeItem(i)} className="remove-item">× 項目を削除</button>
                 </div>
               </div>
             ))}
-            <button type="button" onClick={addItem} className="submit-button" style={{ backgroundColor: "#4CAF50" }}>＋ 投票項目を追加</button>
+            <button type="button" onClick={addItem} className="add-item-button">＋ 投票項目を追加</button>
           </div>
         </div>
 

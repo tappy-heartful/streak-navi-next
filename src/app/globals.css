@@ -1410,4 +1410,56 @@ a:hover {
   border: none;
   cursor: pointer;
   padding: 0;
+}
+
+/* ===== 投票編集 ===== */
+.choice-wrapper {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.choice-wrapper input {
+  flex: 1;
+}
+
+.add-choice {
+  margin-top: 10px;
+  background-color: #eee;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.remove-choice {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.remove-item {
+  display: block;
+  margin-left: auto;
+  margin-top: 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.add-item-button {
+  margin-top: 10px;
+  background-color: #eee;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
 }
