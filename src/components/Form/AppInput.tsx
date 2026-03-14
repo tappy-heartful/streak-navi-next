@@ -7,7 +7,7 @@ type AppInputProps = {
   value: any;
   error?: string;
   required?: boolean;
-  type?: "text" | "checkbox" | "date";
+  type?: "text" | "checkbox" | "date" | "time" | "url" | "number" | "textarea";
   updateField: (field: any, value: any) => void;
 };
 
@@ -20,6 +20,19 @@ export const AppInput = ({ label, field, value, error, required, type = "text", 
           {label}
         </label>
       </div>
+    );
+  }
+
+  if (type === "textarea") {
+    return (
+      <FormField label={label} required={required} error={error}>
+        <textarea
+          className="form-control"
+          value={value}
+          rows={4}
+          onChange={(e) => updateField(field, e.target.value)}
+        />
+      </FormField>
     );
   }
 

@@ -264,4 +264,49 @@ export interface EventRecording {
   url: string;
   createdAt?: number;
 }
+
+// ===== ライブ =====
+
+export interface Live {
+  id: string;
+  title: string;
+  date: string;              // "yyyy.MM.dd"
+  open?: string;             // "HH:mm" 開場時間
+  start?: string;            // "HH:mm" 開演時間
+  venue?: string;
+  venueUrl?: string;
+  venueGoogleMap?: string;
+  advance?: number;          // 前売料金
+  door?: number;             // 当日料金
+  flyerUrl?: string;
+  isAcceptReserve?: boolean;
+  acceptStartDate?: string;  // "yyyy.MM.dd"
+  acceptEndDate?: string;    // "yyyy.MM.dd"
+  ticketStock?: number;
+  totalReserved?: number;    // 予約済み数（集計値）
+  maxCompanions?: number;
+  notes?: string;
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+export interface LiveCheckIn {
+  id: string;
+  liveId: string;
+  type: string; // "door" = 当日受付, その他 = 予約来場
+  createdAt?: number;
+}
+
+export interface EnqueteQuestion {
+  id: string;
+  label: string;
+  type: "rating" | "radio" | "textarea" | "text";
+  options?: string[];
+}
+
+export interface EnqueteAnswer {
+  id: string;
+  liveId: string;
+  common: Record<string, string | number>;
+}
 

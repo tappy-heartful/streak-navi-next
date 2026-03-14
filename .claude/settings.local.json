@@ -18,7 +18,11 @@
       "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/**)",
       "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/common/**)",
       "Bash(grep -n \"showDialog\\\\|useDialog\\\\|DialogContext\" \"c:/Users/tappy/Documents/repos/streak-navi/src/contexts/\"*.tsx)",
-      "Bash(ls -la /c/Users/tappy/Documents/repos/streak-navi/src/app/*/)"
+      "Bash(ls -la /c/Users/tappy/Documents/repos/streak-navi/src/app/*/)",
+      "Bash(find c:UserstappyDocumentsreposstreak-navi -type d -name *vanilla* -o -name *original* -o -name *reference*)",
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(find c:UserstappyDocumentsreposstreak-navi -type f \\\\\\(-name *.html -o -name *.htm \\\\\\))",
+      "WebFetch(domain:streak-navi.web.app)"
     ]
   }
 }
