@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Live } from "@/src/lib/firestore/types";
 import { ListBaseLayout } from "@/src/components/Layout/ListBaseLayout";
-import { getDayOfWeek, isInTerm } from "@/src/lib/functions";
+import { getDayOfWeek } from "@/src/lib/functions";
 
 type Props = {
   initialData: { lives: Live[] };
@@ -25,7 +25,7 @@ function LiveTable({ lives, showMap = false }: { lives: Live[]; showMap?: boolea
     return <p className="empty-message">データがありません🍀</p>;
   }
   return (
-    <div className="list-table-wrapper">
+    <div className="table-wrapper">
       <table className="list-table">
         <thead>
           <tr>
