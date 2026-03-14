@@ -59,7 +59,7 @@ export function EventListClient({ events }: Props) {
       </div>
 
       {/* 日程調整中 */}
-      {(scheduleList.length > 0 || isAdmin) && (
+      {scheduleList.length > 0 && (
         <div className="container" style={{ marginBottom: "24px" }}>
           <h3>🗓️ 日程調整中</h3>
           <div className="table-wrapper">
@@ -74,29 +74,25 @@ export function EventListClient({ events }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {scheduleList.length === 0 ? (
-                  <tr><td colSpan={5} className="empty-text">該当のイベントはありません🍀</td></tr>
-                ) : (
-                  scheduleList.map(e => (
-                    <tr key={e.id}>
-                      <td className="list-table-row-header">
-                        <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
-                      </td>
-                      <td className="text-small">
-                        {(e.candidateDates || []).map(d => (
-                          <div key={d}>{getDayOfWeek(d)}</div>
-                        ))}
-                      </td>
-                      <td>{renderStatusCell(e, "schedule")}</td>
-                      <td className="text-small">{renderTermDisplay(e)}</td>
-                      <td>
-                        {e.website
-                          ? <a href={e.website} target="_blank" rel="noopener noreferrer">{e.placeName || "リンク"}</a>
-                          : e.placeName || "-"}
-                      </td>
-                    </tr>
-                  ))
-                )}
+                {scheduleList.map(e => (
+                  <tr key={e.id}>
+                    <td className="list-table-row-header">
+                      <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
+                    </td>
+                    <td className="text-small">
+                      {(e.candidateDates || []).map(d => (
+                        <div key={d}>{getDayOfWeek(d)}</div>
+                      ))}
+                    </td>
+                    <td>{renderStatusCell(e, "schedule")}</td>
+                    <td className="text-small">{renderTermDisplay(e)}</td>
+                    <td>
+                      {e.website
+                        ? <a href={e.website} target="_blank" rel="noopener noreferrer">{e.placeName || "リンク"}</a>
+                        : e.placeName || "-"}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
