@@ -99,8 +99,14 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       const genres = callData.items || [];
       genres.forEach(genre => {
         const itemObj: VoteItem = { name: genre, choices: [] };
-        // get songs for this genre
-        const songs = (callAnswers || []).flatMap(ans => ans[genre] || []);
+        // get songs for this genre, deduplicating by title
+        const allSongs = (callAnswers || []).flatMap(ans => ans[genre] || []);
+        const seen = new Set<string>();
+        const songs = allSongs.filter(s => {
+          if (!s.title || seen.has(s.title)) return false;
+          seen.add(s.title);
+          return true;
+        });
         if (songs.length > 0) {
           itemObj.choices = songs.map(s => ({ name: s.title, link: s.url || "" }));
           if (songs.length === 1) itemObj.choices.push({ name: "" }); // Add empty placeholder if only 1 song
