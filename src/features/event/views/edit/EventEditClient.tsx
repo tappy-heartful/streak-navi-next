@@ -101,6 +101,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
     });
 
   const [instrumentConfig, setInstrumentConfig] = useState<InstrumentSectionState[]>(initInstrumentConfig);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -108,6 +109,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       showDialog("この操作を行う権限がありません。", true).then(() => router.push("/event"));
       return;
     }
+    setIsAuthorized(true);
     const crumbs = [{ title: "イベント一覧", href: "/event" }];
     if (isEdit || mode === "copy") {
       crumbs.push({ title: "イベント確認", href: `/event/confirm?eventId=${eventId}` });
@@ -285,6 +287,10 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
   const backHref = isEdit && eventId ? `/event/confirm?eventId=${eventId}` : "/event";
   const backText = isEdit ? "イベント確認" : "イベント一覧";
+
+  if (loading || !isAuthorized) {
+    return <div style={{ padding: "2rem", textAlign: "center" }}>読み込み中...</div>;
+  }
 
   return (
     <BaseLayout>

@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { AnswerConfirmLayout } from "@/src/components/Layout/AnswerConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
@@ -11,10 +10,7 @@ import {
   Event,
   EventAttendanceAnswer,
   EventAdjustAnswer,
-  AttendanceStatus,
-  EventAdjustStatus,
   EventRecording,
-  Score,
   User,
 } from "@/src/lib/firestore/types";
 import { EventConfirmData } from "@/src/features/event/api/event-server-actions";

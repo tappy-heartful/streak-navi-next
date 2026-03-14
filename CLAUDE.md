@@ -65,6 +65,71 @@
 - 静的タイトルは `export const metadata: Metadata = { title: "..." }` で定義
 - 動的タイトル（IDからデータ取得して生成）は `generateMetadata` を使う
 
+### Firestoreオブジェクトのシリアライズ（重要）
+
+- サーバーコンポーネントからクライアントコンポーネントへのProps受け渡し時、**Firestoreの `Timestamp` オブジェクトはそのまま渡せない**（`Classes or null prototypes are not supported` エラー）
+- サーバー側で必ず `toMillis()` で数値に変換する
+  ```typescript
+  // ❌ そのまま渡すとエラー
+  createdAt: doc.data().createdAt  // Timestampオブジェクト
+  // ✅ 正しい
+  createdAt: doc.data().createdAt?.toMillis?.() ?? 0
+  ```
+- `...doc.data()` のスプレッドにも注意。Timestampフィールドが混入する。必要なフィールドのみ明示的に取り出す
+- サーバーコンポーネントから渡せる型：プリミティブ（string, number, boolean）、plain object、配列、null/undefined
+
+### データ更新後のUI反映
+
+- Firestoreの書き込み後に**同じページの表示を最新化**したい場合は `router.refresh()` を使う
+  - `router.refresh()` → サーバーコンポーネントのデータ再取得（Firestore再読み込み）が走る
+  - `router.push(path)` → 別ページへ遷移（現ページのデータは再取得しない）
+  ```typescript
+  // ✅ 回答を削除 → 同じページを最新データで再表示
+  await deleteMyAnswer(eventId, uid);
+  router.refresh();
+  // ✅ イベントを登録 → 一覧に遷移
+  await addEvent(data);
+  router.push("/event");
+  ```
+
+### "use client" 境界の最小化
+
+- `"use client"` はコンポーネントツリーの**できるだけ末端（葉）** に付ける
+- 親コンポーネントに `"use client"` を付けると、その子コンポーネントもすべてクライアント側になる
+- インタラクティブな部分だけをクライアントコンポーネントに切り出し、残りをサーバーコンポーネントのままにするのが理想
+  ```
+  ✅ 推奨
+  Page (server) → StaticSection (server) + InteractiveButton (client)
+  ❌ 避ける
+  Page (client) → StaticSection (client) + InteractiveButton (client)
+  ```
+
+### Hydrationエラーの回避
+
+- サーバーとクライアントでレンダリング結果が異なるとHydrationエラーが発生する
+- やりがちなNG例：
+  - `Date.now()` や `new Date()` をJSX内で直接使う（サーバーとクライアントで時刻がズレる）
+  - `typeof window !== "undefined"` の条件分岐でレンダリングを変える
+  - ブラウザ依存のAPIを初期レンダリングで参照する
+- 対策：`useEffect` 内でのみブラウザAPIを参照する
+
+### ファイルベースの特殊ファイル
+
+- `loading.tsx` — ページのデータ取得中に自動表示されるローディングUI（Suspenseの代替）
+- `error.tsx` — ページでエラーが発生した際のフォールバックUI（`"use client"` が必要）
+- `not-found.tsx` — `notFound()` を呼んだときのカスタム404UI
+- これらはページのコロケーション（同じディレクトリに配置）を推奨
+
+### 画像の最適化
+
+- 画像は `<img>` ではなく `next/image` の `<Image>` を使う（自動的にWebP変換・遅延読み込み・サイズ最適化）
+  ```typescript
+  import Image from "next/image";
+  // width / height または fill が必須
+  <Image src={url} alt="説明" width={60} height={60} />
+  ```
+- ただし外部URL（LINEプロフィール画像など）は `next.config.js` の `images.domains` への登録が必要。未登録の場合は通常の `<img>` でもよい
+
 ---
 
 ## 修正後の確認手順

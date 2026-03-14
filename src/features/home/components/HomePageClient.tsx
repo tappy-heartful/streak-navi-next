@@ -6,10 +6,11 @@ import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import * as utils from "@/src/lib/functions";
 import styles from "./home.module.css";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
+import { Announcement, Score, BlueNote, Media } from "@/src/lib/firestore/types";
 
 // --- 再描画させないためのメモ化コンポーネント群 ---
 
-const AnnouncementSection = memo(({ data }: { data: any[] }) => (
+const AnnouncementSection = memo(({ data }: { data: Announcement[] }) => (
   <main className="container">
     <section className={styles.announcementContainer}>
       <div className={styles.announcementHeader}><h3>お知らせ</h3></div>
@@ -25,10 +26,11 @@ const AnnouncementSection = memo(({ data }: { data: any[] }) => (
 ));
 AnnouncementSection.displayName = "AnnouncementSection";
 
-const MenuSection = ({ title, items }: any) => (
+type MenuItem = { h: string; l: string; c: string; b?: string | number };
+const MenuSection = ({ title, items }: { title: string; items: MenuItem[] }) => (
   <>
     <h2 className={styles.menuTitle}>{title}</h2>
-    {items.map((item: any) => (
+    {items.map((item) => (
       <Link prefetch={true} key={item.h} href={item.h} className={`${styles.menuButton} ${styles[item.c]} ${item.b ? styles.badgeInline : ""}`}>
         {item.l} {item.b && <span className={styles.badge}>{item.b}</span>}
       </Link>
@@ -49,7 +51,7 @@ const MenuSectionList = memo(() => (
 ));
 MenuSectionList.displayName = "MenuSectionList";
 
-const MediaSection = memo(({ data }: { data: any[] }) => (
+const MediaSection = memo(({ data }: { data: Media[] }) => (
   <main className="container">
     <h3>メディア</h3>
     <div className={styles.contentList}>
@@ -67,7 +69,7 @@ const MediaSection = memo(({ data }: { data: any[] }) => (
 ));
 MediaSection.displayName = "MediaSection";
 
-const Player = memo(({ title, data, idx, setIdx, onRandom }: any) => (
+const Player = memo(({ title, data, idx, setIdx, onRandom }: { title?: string; data: (Score | BlueNote)[]; idx: number; setIdx: React.Dispatch<React.SetStateAction<number>>; onRandom: () => void }) => (
   <div>
     <h2 className={styles.playerTitle}>{title}</h2>
     <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(idx, data), false) }} />
@@ -82,7 +84,15 @@ Player.displayName = "Player";
 
 // --- メインコンポーネント ---
 
-export function HomePageClient({ initialData }: any) {
+type InitialData = {
+  announcements: Announcement[];
+  quickScores: Score[];
+  scores: Score[];
+  blueNotes: BlueNote[];
+  medias: Media[];
+};
+
+export function HomePageClient({ initialData }: { initialData: InitialData }) {
   const [currentScoreIdx, setCurrentScoreIdx] = useState(0);
   const [currentBNIdx, setCurrentBNIdx] = useState(0);
   const { setBreadcrumbs } = useBreadcrumb();
@@ -98,7 +108,7 @@ export function HomePageClient({ initialData }: any) {
     }
     if (initialData.blueNotes.length) {
       const todayId = utils.format(new Date(), "MMdd");
-      const idx = initialData.blueNotes.findIndex((n: any) => n.id === todayId);
+      const idx = initialData.blueNotes.findIndex((n) => n.id === todayId);
       setCurrentBNIdx(idx !== -1 ? idx : Math.floor(Math.random() * initialData.blueNotes.length));
     }
   }, [initialData]);
@@ -107,7 +117,7 @@ export function HomePageClient({ initialData }: any) {
     if ((window as any).instgrm) (window as any).instgrm.Embeds.process();
   }, [initialData.medias]);
 
-  const scorePlaylistIds = useMemo(() => initialData.scores.map((s: any) => s.youtubeId).filter(Boolean).join(","), [initialData.scores]);
+  const scorePlaylistIds = useMemo(() => initialData.scores.map((s) => s.youtubeId).filter(Boolean).join(","), [initialData.scores]);
   const bnPlaylistIds = useMemo(() => utils.getWatchVideosOrder(currentBNIdx, initialData.blueNotes)?.join(","), [currentBNIdx, initialData.blueNotes]);
 
   return (
@@ -125,7 +135,7 @@ export function HomePageClient({ initialData }: any) {
           <div className={styles.scoreList}>
             {initialData.quickScores.length ? (
               <div className={styles.quickScoreGrid}>
-                {initialData.quickScores.map((s: any) => <Link prefetch={true} key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
+                {initialData.quickScores.map((s) => <Link prefetch={true} key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
               </div>
             ) : <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>}
           </div>

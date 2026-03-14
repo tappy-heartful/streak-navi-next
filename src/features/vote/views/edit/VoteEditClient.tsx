@@ -44,7 +44,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
     hideVotes: false,
   });
 
-  const handleChange = (k: string, v: any) => setValues(prev => ({ ...prev, [k]: v }));
+  const handleChange = (k: string, v: string | boolean) => setValues(prev => ({ ...prev, [k]: v }));
 
   useEffect(() => {
     if (loading) return;

@@ -155,8 +155,8 @@ export interface Board {
   files?: { name: string; url: string; path: string }[];
   createdBy?: string;
   createdByName?: string;
-  createdAt?: any; // Firestore Timestamp or number
-  updatedAt?: any;
+  createdAt?: number;
+  updatedAt?: number;
 }
 
 export interface VoteChoice {

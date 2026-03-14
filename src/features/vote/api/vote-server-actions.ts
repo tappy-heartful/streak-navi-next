@@ -4,7 +4,7 @@ import { Vote, VoteAnswer } from "@/src/lib/firestore/types";
 
 export async function fetchVotes(): Promise<Vote[]> {
   const snapshot = await db.collection("votes").orderBy("createdAt", "desc").get();
-  return snapshot.docs.map((doc: any) => {
+  return snapshot.docs.map((doc) => {
     const data = doc.data();
     return {
       id: doc.id,
@@ -46,7 +46,7 @@ export async function fetchVote(id: string): Promise<Vote | null> {
 export async function fetchVoteAnswersMap(): Promise<Record<string, number>> {
   const snapshot = await db.collection("voteAnswers").get();
   const map: Record<string, number> = {};
-  snapshot.docs.forEach((doc: any) => {
+  snapshot.docs.forEach((doc) => {
     const voteId = doc.id.split("_")[0];
     map[voteId] = (map[voteId] || 0) + 1;
   });
@@ -56,8 +56,8 @@ export async function fetchVoteAnswersMap(): Promise<Record<string, number>> {
 export async function fetchVoteAnswersByVoteId(voteId: string): Promise<VoteAnswer[]> {
   const snapshot = await db.collection("voteAnswers").get();
   return snapshot.docs
-    .filter((doc: any) => doc.id.startsWith(voteId + "_"))
-    .map((doc: any) => {
+    .filter((doc) => doc.id.startsWith(voteId + "_"))
+    .map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,

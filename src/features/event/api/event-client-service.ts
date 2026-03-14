@@ -8,6 +8,9 @@ import {
   addDoc,
   collection,
   serverTimestamp,
+  getDocs,
+  query,
+  where,
 } from "firebase/firestore";
 import { Event, EventRecording } from "@/src/lib/firestore/types";
 
@@ -63,11 +66,17 @@ export async function updateEvent(id: string, data: Partial<Event>): Promise<voi
 }
 
 export async function deleteEventWithAnswers(eventId: string): Promise<void> {
-  // イベント本体を削除
   await deleteDoc(doc(db, "events", eventId));
-  // 注意: サブドキュメントはサーバー側で削除が必要だが、
-  // ここではクライアント側から削除可能な分のみ対応
-  // (本来はCloud Functionsで対応するが、既存実装に合わせてクライアントで実装)
+
+  const deleteByEventId = async (collectionName: string) => {
+    const snap = await getDocs(query(collection(db, collectionName), where("eventId", "==", eventId)));
+    await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+  };
+
+  await Promise.all([
+    deleteByEventId("eventAttendanceAnswers"),
+    deleteByEventId("eventAdjustAnswers"),
+  ]);
 }
 
 // ===== 録音・録画リンク =====

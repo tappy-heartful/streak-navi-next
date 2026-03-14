@@ -6,7 +6,7 @@ import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
  * @param uid ユーザID
  * @param data 更新データ
  */
-export const saveUser = async (uid: string, data: any) => {
+export const saveUser = async (uid: string, data: Record<string, unknown>) => {
   const userRef = doc(db, "users", uid);
   const payload = {
     ...data,

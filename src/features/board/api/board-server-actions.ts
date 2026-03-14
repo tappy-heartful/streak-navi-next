@@ -4,7 +4,7 @@ import { Board } from "@/src/lib/firestore/types";
 
 export async function getBoards(): Promise<Board[]> {
   const snapshot = await adminDb.collection("boards").orderBy("createdAt", "desc").get();
-  return snapshot.docs.map((doc: any) => {
+  return snapshot.docs.map((doc) => {
     const data = doc.data();
     return {
       id: doc.id,

@@ -18,7 +18,7 @@ export const saveBoard = async (
   const uid = getSession("uid") || "anonymous";
   const displayName = getSession("displayName") || "匿名";
 
-  const payload: any = {
+  const payload = {
     ...data,
     updatedAt: serverTimestamp(),
   };

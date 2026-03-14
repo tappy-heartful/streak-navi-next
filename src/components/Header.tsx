@@ -6,12 +6,13 @@ import Link from "next/link";
 import { auth } from "@/src/lib/firebase";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
-import { 
-  clearAllAppSession, 
-  globalLineDefaultImage, 
+import {
+  clearAllAppSession,
+  globalLineDefaultImage,
   isTest,
-  showSpinner, 
-  hideSpinner 
+  showSpinner,
+  hideSpinner,
+  showDialog,
 } from "@/src/lib/functions";
 import React from "react";
 
@@ -44,7 +45,7 @@ export default function Header() {
       router.push("/login");
     } catch (error) {
       console.error("Logout Error:", error);
-      alert("ログアウトに失敗しました");
+      await showDialog("ログアウトに失敗しました", true);
     } finally {
       hideSpinner();
       closeMenu();
@@ -56,7 +57,7 @@ export default function Header() {
     if (navigator.share) {
       navigator.share({ title: document.title, url }).catch(console.error);
     } else {
-      navigator.clipboard.writeText(url).then(() => alert("URLをコピーしました"));
+      navigator.clipboard.writeText(url).then(() => showDialog("URLをコピーしました", true));
     }
   };
 
