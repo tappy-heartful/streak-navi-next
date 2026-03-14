@@ -7,8 +7,9 @@ import { collection, getDocs, doc, getDoc, query, where } from "firebase/firesto
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
-import { Live, LiveCheckIn, EnqueteQuestion, EnqueteAnswer } from "@/src/lib/firestore/types";
+import { Live, LiveCheckIn, EnqueteQuestion, EnqueteAnswer, Score } from "@/src/lib/firestore/types";
 import { getDayOfWeek, isInTerm } from "@/src/lib/functions";
+import { SetlistConfirm } from "@/src/components/Setlist/SetlistConfirm";
 
 type Props = {
   liveData: Live;
@@ -165,6 +166,7 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
   const [analysisStats, setAnalysisStats] = useState<AnalysisStats | null>(null);
   const [enqueteQuestions, setEnqueteQuestions] = useState<EnqueteQuestion[]>([]);
   const [enqueteAnswers, setEnqueteAnswers] = useState<EnqueteAnswer[]>([]);
+  const [scoresMap, setScoresMap] = useState<Record<string, Score>>({});
 
   useEffect(() => {
     const fetchAnalysis = async () => {
@@ -204,8 +206,22 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
       }
     };
 
+    const fetchScores = async () => {
+      try {
+        const snap = await getDocs(collection(db, "scores"));
+        const map: Record<string, Score> = {};
+        snap.docs.forEach(d => {
+          map[d.id] = { id: d.id, ...d.data() } as Score;
+        });
+        setScoresMap(map);
+      } catch (e) {
+        console.error("Scores fetch error:", e);
+      }
+    };
+
     fetchAnalysis();
     fetchEnquete();
+    fetchScores();
   }, [liveId, liveData.totalReserved]);
 
   const inTerm = liveData.isAcceptReserve
@@ -302,6 +318,14 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
         <DisplayField label="備考・ご案内" preWrap>
           {liveData.notes || ""}
         </DisplayField>
+
+        {/* セットリスト */}
+        <div className="form-group">
+          <SetlistConfirm
+            setlist={liveData.setlist || []}
+            scoresMap={scoresMap}
+          />
+        </div>
 
         {liveData.isAcceptReserve && inTerm && (
           <div className="form-group" style={{ marginTop: "8px" }}>

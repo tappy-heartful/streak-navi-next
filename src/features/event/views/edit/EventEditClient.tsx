@@ -9,6 +9,7 @@ import { FormFooter } from "@/src/components/Form/FormFooter";
 import { Event, Score, Section, SetlistGroup, InstrumentPart } from "@/src/lib/firestore/types";
 import { addEvent, updateEvent } from "@/src/features/event/api/event-client-service";
 import { showDialog, showSpinner, hideSpinner, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
+import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -19,10 +20,6 @@ type Props = {
   sections: Section[];
 };
 
-type SetlistGroupState = {
-  title: string;
-  songIds: string[];
-};
 
 type InstrumentSectionState = {
   sectionId: string;
@@ -83,7 +80,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
   const [other, setOther] = useState(initialEvent?.other || "");
   const [allowAssign, setAllowAssign] = useState(initialEvent?.allowAssign ?? false);
 
-  const [setlistGroups, setSetlistGroups] = useState<SetlistGroupState[]>(
+  const [setlistGroups, setSetlistGroups] = useState<SetlistGroup[]>(
     initialEvent?.setlist?.map(g => ({ title: g.title, songIds: g.songIds || [] })) ||
     [{ title: "", songIds: [] }]
   );
@@ -117,40 +114,6 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
     crumbs.push({ title: isEdit ? "イベント編集" : "イベント新規作成", href: "" });
     setBreadcrumbs(crumbs);
   }, [loading, isAdmin]);
-
-  // ---- Setlist helpers ----
-
-  const addSetlistGroup = () => {
-    setSetlistGroups(prev => [...prev, { title: "", songIds: [] }]);
-  };
-
-  const removeSetlistGroup = (idx: number) => {
-    setSetlistGroups(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  const updateSetlistGroupTitle = (idx: number, title: string) => {
-    setSetlistGroups(prev => prev.map((g, i) => i === idx ? { ...g, title } : g));
-  };
-
-  const addSongToGroup = (groupIdx: number) => {
-    setSetlistGroups(prev => prev.map((g, i) =>
-      i === groupIdx ? { ...g, songIds: [...g.songIds, ""] } : g
-    ));
-  };
-
-  const removeSongFromGroup = (groupIdx: number, songIdx: number) => {
-    setSetlistGroups(prev => prev.map((g, i) =>
-      i === groupIdx ? { ...g, songIds: g.songIds.filter((_, j) => j !== songIdx) } : g
-    ));
-  };
-
-  const updateSongInGroup = (groupIdx: number, songIdx: number, scoreId: string) => {
-    setSetlistGroups(prev => prev.map((g, i) =>
-      i === groupIdx
-        ? { ...g, songIds: g.songIds.map((s, j) => j === songIdx ? scoreId : s) }
-        : g
-    ));
-  };
 
   // ---- Candidate dates helpers ----
 
@@ -446,54 +409,14 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
           />
         </div>
 
-        {/* やる曲 */}
+        {/* セットリスト */}
         <div className="form-group">
-          <label>やる曲</label>
-          {setlistGroups.map((group, groupIdx) => (
-            <div key={groupIdx} className="vote-item" style={{ marginBottom: "16px" }}>
-              <input
-                type="text"
-                value={group.title}
-                onChange={e => updateSetlistGroupTitle(groupIdx, e.target.value)}
-                placeholder="グループ名（例: 前半, 後半）"
-                style={{ marginBottom: "8px", width: "100%" }}
-              />
-              <div className="vote-choices">
-                {group.songIds.map((songId, songIdx) => (
-                  <div key={songIdx} className="choice-wrapper">
-                    <select
-                      value={songId}
-                      onChange={e => updateSongInGroup(groupIdx, songIdx, e.target.value)}
-                      style={{ flex: 1 }}
-                    >
-                      <option value="">-- 曲を選択 --</option>
-                      {scores.map(s => (
-                        <option key={s.id} value={s.id}>{s.title}</option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      className="remove-choice"
-                      onClick={() => removeSongFromGroup(groupIdx, songIdx)}
-                    >
-                      削除
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <button type="button" className="add-choice" onClick={() => addSongToGroup(groupIdx)}>
-                ＋ 曲を追加
-              </button>
-              {setlistGroups.length > 1 && (
-                <button type="button" className="remove-item" onClick={() => removeSetlistGroup(groupIdx)}>
-                  このグループを削除
-                </button>
-              )}
-            </div>
-          ))}
-          <button type="button" className="add-item-button" onClick={addSetlistGroup}>
-            ＋ グループを追加
-          </button>
+          <label className="label-title">セットリスト</label>
+          <SetlistEdit
+            setlist={setlistGroups}
+            scores={scores}
+            onChange={setSetlistGroups}
+          />
         </div>
 
         {/* 服装 */}

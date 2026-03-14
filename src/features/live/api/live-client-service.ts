@@ -2,6 +2,8 @@
 import { db } from "@/src/lib/firebase";
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 
+import { Live, SetlistGroup } from "@/src/lib/firestore/types";
+
 export type LiveFormData = {
   title: string;
   date: string;
@@ -19,6 +21,7 @@ export type LiveFormData = {
   ticketStock: string;
   maxCompanions: string;
   notes: string;
+  setlist: SetlistGroup[];
 };
 
 export const saveLive = async (
@@ -27,6 +30,11 @@ export const saveLive = async (
   liveId?: string
 ): Promise<string> => {
   const toNum = (v: string) => (v !== "" ? Number(v) : undefined);
+
+  // Filter out empty group titles and empty songs like EventEditClient does
+  const setlist = data.setlist
+    .filter(g => g.title || g.songIds.some(Boolean))
+    .map(g => ({ title: g.title, songIds: g.songIds.filter(Boolean) }));
 
   const payload = {
     title: data.title,
@@ -45,8 +53,10 @@ export const saveLive = async (
     ticketStock: toNum(data.ticketStock),
     maxCompanions: toNum(data.maxCompanions),
     notes: data.notes || "",
+    setlist: setlist,
     updatedAt: serverTimestamp(),
   };
+// ... rest of the file
 
   if (mode === "edit" && liveId) {
     await updateDoc(doc(db, "lives", liveId), payload);

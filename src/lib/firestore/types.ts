@@ -286,6 +286,7 @@ export interface Live {
   totalReserved?: number;    // 予約済み数（集計値）
   maxCompanions?: number;
   notes?: string;
+  setlist?: SetlistGroup[];
   createdAt?: number;
   updatedAt?: number;
 }

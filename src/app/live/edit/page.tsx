@@ -1,4 +1,4 @@
-import { getLiveServer } from "@/src/features/live/api/live-server-actions";
+import { getLiveServer, fetchLiveEditData } from "@/src/features/live/api/live-server-actions";
 import { LiveEditClient } from "@/src/features/live/views/edit/LiveEditClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -26,17 +26,23 @@ export default async function LiveEditPage({ searchParams }: Props) {
   const validModes = ["new", "edit", "copy"];
   if (!mode || !validModes.includes(mode)) notFound();
 
-  const initialLive = liveId ? await getLiveServer(liveId) : null;
+  const [initialLive, editData] = await Promise.all([
+    liveId ? getLiveServer(liveId) : Promise.resolve(null),
+    fetchLiveEditData()
+  ]);
 
   if ((mode === "edit" || mode === "copy") && !initialLive) {
     notFound();
   }
+
+  const { scores } = editData;
 
   return (
     <LiveEditClient
       mode={mode as "new" | "edit" | "copy"}
       liveId={liveId}
       initialLive={initialLive}
+      scores={scores}
     />
   );
 }

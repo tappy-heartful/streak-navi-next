@@ -3,21 +3,23 @@
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { AppInput } from "@/src/components/Form/AppInput";
-import { saveLive } from "@/src/features/live/api/live-client-service";
+import { saveLive, LiveFormData } from "@/src/features/live/api/live-client-service";
 import { rules } from "@/src/lib/validation";
-import { Live } from "@/src/lib/firestore/types";
+import { Live, Score, SetlistGroup } from "@/src/lib/firestore/types";
 import { useAppForm } from "@/src/hooks/useAppForm";
+import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
 
 type Props = {
   mode: "new" | "edit" | "copy";
   liveId?: string;
   initialLive: Live | null;
+  scores: Score[];
 };
 
-export function LiveEditClient({ mode, liveId, initialLive }: Props) {
+export function LiveEditClient({ mode, liveId, initialLive, scores }: Props) {
   const isNewOrCopy = mode === "new" || mode === "copy";
 
-  const form = useAppForm(
+  const form = useAppForm<LiveFormData>(
     {
       title: (mode === "copy" ? `${initialLive?.title}（コピー）` : initialLive?.title) ?? "",
       date: (initialLive?.date ?? "").replace(/\./g, "-"),
@@ -35,6 +37,7 @@ export function LiveEditClient({ mode, liveId, initialLive }: Props) {
       ticketStock: initialLive?.ticketStock != null ? String(initialLive.ticketStock) : "",
       maxCompanions: initialLive?.maxCompanions != null ? String(initialLive.maxCompanions) : "",
       notes: initialLive?.notes ?? "",
+      setlist: initialLive?.setlist ?? [{ title: "", songIds: [] }],
     },
     {
       title: [rules.required],
@@ -68,6 +71,17 @@ export function LiveEditClient({ mode, liveId, initialLive }: Props) {
         <AppInput label="前売料金（円）" type="number" {...inputProps("advance")} />
         <AppInput label="当日料金（円）" type="number" {...inputProps("door")} />
         <AppInput label="フライヤーURL（画像リンク）" type="url" {...inputProps("flyerUrl")} />
+
+        {/* セットリスト */}
+        <div className="form-group">
+          <label className="label-title">セットリスト</label>
+          <SetlistEdit
+            setlist={form.formData.setlist}
+            scores={scores}
+            onChange={(val: SetlistGroup[]) => form.updateField("setlist", val)}
+          />
+        </div>
+
         <AppInput label="チケット予約受付を行う" type="checkbox" {...inputProps("isAcceptReserve")} />
         {form.formData.isAcceptReserve && (
           <>

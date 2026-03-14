@@ -31,6 +31,7 @@ import {
   addRecording,
   deleteRecording,
 } from "@/src/features/event/api/event-client-service";
+import { SetlistConfirm } from "@/src/components/Setlist/SetlistConfirm";
 
 type Props = {
   eventId: string;
@@ -221,39 +222,6 @@ export function EventConfirmClient({ eventId, data }: Props) {
     setModalContent(content);
     setModalOpen(true);
   };
-
-  // ---- Setlist + YouTube playlist ----
-
-  const buildSetlistContent = () => {
-    const setlist = event.setlist || [];
-    if (setlist.length === 0) return { html: "設定されていません", playlistUrl: null };
-
-    const watchIds: string[] = [];
-    const groups = setlist.map(group => {
-      const songs = (group.songIds || []).map(id => {
-        const score = scoresMap[id];
-        if (!score) return { id, title: "曲名が見つかりません", scoreUrl: undefined, videoId: undefined };
-        if (score.referenceTrack) {
-          const vid = extractYouTubeId(score.referenceTrack);
-          if (vid && !watchIds.includes(vid)) watchIds.push(vid);
-        }
-        return { id, title: score.title, scoreUrl: score.scoreUrl };
-      });
-      return { title: group.title, songs };
-    });
-
-    const playlistUrl = watchIds.length > 0
-      ? `https://www.youtube.com/watch_videos?video_ids=${watchIds.join(",")}`
-      : null;
-
-    return { groups, playlistUrl };
-  };
-
-  const { groups: setlistGroups, playlistUrl } = (() => {
-    const result = buildSetlistContent();
-    if ("html" in result) return { groups: null, playlistUrl: null };
-    return result;
-  })();
 
   // ---- Adjust table (schedule type) ----
 
@@ -509,38 +477,12 @@ export function EventConfirmClient({ eventId, data }: Props) {
           </div>
         </div>
 
-        {/* やる曲 */}
+        {/* セットリスト */}
         <div className="form-group">
-          <div className="score-header">
-            <label className="label-title">やる曲</label>
-            {playlistUrl && (
-              <a href={playlistUrl} target="_blank" rel="noopener noreferrer" className="playlist-button">
-                参考音源プレイリスト
-              </a>
-            )}
-          </div>
-          <div className="label-value">
-            {setlistGroups && setlistGroups.length > 0 ? (
-              setlistGroups.map((group, i) => (
-                <div key={i} className="setlist-group-confirm">
-                  {group.title && <h4>{group.title}</h4>}
-                  <div className="setlist-songs">
-                    {group.songs.map((song, j) => (
-                      <div key={j}>
-                        {song.scoreUrl ? (
-                          <a href={song.scoreUrl} target="_blank" rel="noopener noreferrer">{song.title}</a>
-                        ) : (
-                          song.title
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))
-            ) : (
-              "設定されていません"
-            )}
-          </div>
+          <SetlistConfirm
+            setlist={event.setlist || []}
+            scoresMap={scoresMap}
+          />
         </div>
 
         {/* 譜割 */}
@@ -602,84 +544,53 @@ export function EventConfirmClient({ eventId, data }: Props) {
                 })}
               </ul>
             )}
-            <button className="add-recording-button" onClick={handleAddRecording}>
-              ＋ リンクを追加
+            <button className="add-recording-btn" onClick={handleAddRecording}>
+              ＋ リンクを追加する
             </button>
           </div>
         </div>
 
-        {/* 個人で持ってくるもの */}
-        <DisplayField label="個人で持ってくるもの" preWrap>{event.bring || ""}</DisplayField>
-
-        {/* 施設に借りるもの */}
-        <DisplayField label="施設に借りるもの" preWrap>{event.rent || ""}</DisplayField>
-
-        {/* 楽器構成 */}
-        <div className="form-group">
-          <label className="label-title">楽器構成</label>
-          <div className="label-value">
-            {event.instrumentConfig && Object.keys(event.instrumentConfig).length > 0 ? (
-              Object.keys(event.instrumentConfig)
-                .sort((a, b) => Number(a) - Number(b))
-                .map(sectionId => {
-                  const parts = event.instrumentConfig![sectionId];
-                  const sectionName = sectionsMap[sectionId];
-                  const partNames = parts.map(p => p.partName).filter(Boolean).join("、");
-                  if (!sectionName || !partNames) return null;
-                  return (
-                    <div key={sectionId} style={{ marginBottom: "8px" }}>
-                      <strong>{sectionName}</strong>
-                      <br />
-                      {partNames}
-                    </div>
-                  );
-                })
-            ) : (
-              "未設定"
-            )}
-          </div>
-        </div>
-
-        {/* その他 */}
         <DisplayField label="その他" preWrap>{event.other || ""}</DisplayField>
 
         {modalOpen && (
-          <Modal title={modalTitle} onClose={() => setModalOpen(false)}>
+          <Modal
+            onClose={() => setModalOpen(false)}
+            title={modalTitle}
+          >
             {modalContent}
           </Modal>
         )}
 
         {recordingModalOpen && (
-          <Modal title="録音・録画リンクの登録" onClose={() => setRecordingModalOpen(false)}>
+          <Modal
+            onClose={() => setRecordingModalOpen(false)}
+            title="録音・録画リンクの追加"
+          >
+          <div className="recording-form">
             <div className="form-group">
-              <label className="label-title">タイトル *</label>
+              <label>タイトル</label>
               <input
                 type="text"
-                className="form-control"
-                placeholder="例: 練習/ライブ 通し録音"
                 value={recordingForm.title}
-                onChange={e => setRecordingForm(f => ({ ...f, title: e.target.value }))}
+                onChange={e => setRecordingForm(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="例: 第1練習 録音"
               />
             </div>
             <div className="form-group">
-              <label className="label-title">URL *</label>
+              <label>URL</label>
               <input
-                type="text"
-                className="form-control"
-                placeholder="https://youtube.com/..."
+                type="url"
                 value={recordingForm.url}
-                onChange={e => setRecordingForm(f => ({ ...f, url: e.target.value }))}
+                onChange={e => setRecordingForm(prev => ({ ...prev, url: e.target.value }))}
+                placeholder="Google DriveやYouTubeのURL"
               />
             </div>
-            <p style={{ fontSize: "0.85em", color: "#666", marginTop: "8px" }}>
-              ※ YouTube, Google Drive, Dropboxなどの公開リンクを登録してください。
-            </p>
-            <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
-              <button type="button" className="save-button" onClick={handleSaveRecording}>登録</button>
-              <button type="button" className="back-link" onClick={() => setRecordingModalOpen(false)}>キャンセル</button>
+            <div className="modal-actions">
+              <button className="save-button" onClick={handleSaveRecording}>保存</button>
             </div>
-          </Modal>
-        )}
+          </div>
+        </Modal>
+      )}
       </AnswerConfirmLayout>
     </BaseLayout>
   );
