@@ -853,10 +853,15 @@ button {
   justify-content: space-between;
 }
 
-.confirm-buttons button {
+.confirm-buttons button,
+.confirm-buttons a {
   flex: 1;
   padding: 12px;
   font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  box-sizing: border-box;
 }
 
 /* カラー別ボタン */
@@ -890,6 +895,71 @@ button {
 
 .clear-button {
   background-color: #ccc;
+}
+
+/* 回答フォーム内ボタン（call-answer等） */
+.add-song {
+  margin-top: 10px;
+  background-color: #eee;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.remove-song {
+  display: block;
+  margin-left: auto;
+  margin-top: 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* 回答フォーム内フォーム要素 */
+.song-item input,
+.song-item textarea,
+.song-item select {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.song-item textarea {
+  min-height: 50px;
+}
+
+/* 回答フォーム内ジャンル・曲カード */
+.genre-card {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.genre-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.song-item {
+  margin-bottom: 15px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
 }
 
 /* ツールチップ */

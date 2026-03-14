@@ -160,31 +160,28 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
           <label>募集ジャンル</label>
           <div id="call-items-container">
             {(callData.items || []).map(genre => (
-              <div key={genre} className="genre-card" style={{ marginBottom: "1.5rem", padding: "1rem", border: "1px solid #ddd", borderRadius: "6px" }}>
-                <div className="genre-title" style={{ fontWeight: "bold", marginBottom: "0.75rem" }}>
+              <div key={genre} className="genre-card">
+                <div className="genre-title">
                   🎵 {genre}
                 </div>
                 <div className="songs-container">
                   {(answers[genre] || []).map((song, idx) => (
-                    <div key={idx} className="song-item" style={{ marginBottom: "0.75rem", padding: "0.75rem", background: "#f9f9f9", borderRadius: "4px" }}>
+                    <div key={idx} className="song-item">
                       <input
                         type="text"
                         placeholder="曲名(必須)"
                         value={song.title}
                         onChange={e => updateSong(genre, idx, "title", e.target.value)}
-                        style={{ display: "block", width: "100%", marginBottom: "0.4rem", padding: "0.4rem", boxSizing: "border-box" }}
                       />
                       <input
                         type="text"
                         placeholder="参考音源URL(必須)"
                         value={song.url}
                         onChange={e => updateSong(genre, idx, "url", e.target.value)}
-                        style={{ display: "block", width: "100%", marginBottom: "0.4rem", padding: "0.4rem", boxSizing: "border-box" }}
                       />
                       <select
                         value={song.scorestatus}
                         onChange={e => updateSong(genre, idx, "scorestatus", e.target.value)}
-                        style={{ display: "block", width: "100%", marginBottom: "0.4rem", padding: "0.4rem", boxSizing: "border-box" }}
                       >
                         <option value="">譜面状況(必須)</option>
                         {scoreStatuses.map(s => (
@@ -196,21 +193,18 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
                         placeholder="購入先リンク(任意)"
                         value={song.purchase}
                         onChange={e => updateSong(genre, idx, "purchase", e.target.value)}
-                        style={{ display: "block", width: "100%", marginBottom: "0.4rem", padding: "0.4rem", boxSizing: "border-box" }}
                       />
                       <input
                         type="text"
                         placeholder="備考(任意)"
                         value={song.note}
                         onChange={e => updateSong(genre, idx, "note", e.target.value)}
-                        style={{ display: "block", width: "100%", marginBottom: "0.4rem", padding: "0.4rem", boxSizing: "border-box" }}
                       />
                       {(answers[genre] || []).length > 1 && (
                         <button
                           type="button"
-                          className="delete-button"
+                          className="remove-song"
                           onClick={() => removeSong(genre, idx)}
-                          style={{ marginTop: "0.25rem" }}
                         >
                           この曲を削除
                         </button>
@@ -220,9 +214,8 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
                 </div>
                 <button
                   type="button"
-                  className="add-button"
+                  className="add-song"
                   onClick={() => addSong(genre)}
-                  style={{ marginTop: "0.5rem" }}
                 >
                   + 曲を追加
                 </button>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { AnswerConfirmLayout } from "@/src/components/Layout/AnswerConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
@@ -72,9 +71,13 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
 
   const answerMenuSlot = (
     <>
-      <Link href={`/call/answer?callId=${callId}`} className="edit-button" style={{ textDecoration: "none", display: "inline-block" }}>
+      <button
+        type="button"
+        className="save-button"
+        onClick={() => { showSpinner(); router.push(`/call/answer?callId=${callId}`); }}
+      >
         {hasAnswered ? "回答を修正する" : "回答する"}
-      </Link>
+      </button>
       {hasAnswered && (
         <button type="button" className="delete-button" onClick={handleDeleteMyAnswer}>
           回答を取り消す
