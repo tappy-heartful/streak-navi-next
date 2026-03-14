@@ -62,13 +62,30 @@ export const AnswerConfirmLayout = ({
     if (!collectionName) return;
     const confirmed = await showDialog(`この${name}を削除しますか？\nこの操作は元に戻せません。`);
     if (!confirmed) return;
+    
+    const { showSpinner, hideSpinner } = await import("@/src/lib/functions");
+    showSpinner();
     try {
       await archiveAndDeleteDoc(collectionName, dataId);
+      hideSpinner();
       await showDialog("削除しました", true);
+      
+      showSpinner(); // 遷移用スピナー
       router.push(afterDeletePath ?? basePath);
     } catch {
+      hideSpinner();
       await showDialog("削除に失敗しました", true);
     }
+  };
+
+  const onEdit = () => {
+    import("@/src/lib/functions").then(({ showSpinner }) => showSpinner());
+    router.push(`${basePath}/edit?mode=edit&${featureIdKey}=${dataId}`);
+  };
+
+  const onCopy = () => {
+    import("@/src/lib/functions").then(({ showSpinner }) => showSpinner());
+    router.push(`${basePath}/edit?mode=copy&${featureIdKey}=${dataId}`);
   };
 
   return (
@@ -100,8 +117,8 @@ export const AnswerConfirmLayout = ({
           <>
             <DetailActionButtons
               show={isAdmin}
-              onEdit={() => router.push(`${basePath}/edit?mode=edit&${featureIdKey}=${dataId}`)}
-              onCopy={() => router.push(`${basePath}/edit?mode=copy&${featureIdKey}=${dataId}`)}
+              onEdit={onEdit}
+              onCopy={onCopy}
               onDelete={handleDelete}
               hideCopy={hideCopy}
             />

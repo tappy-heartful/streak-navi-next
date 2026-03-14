@@ -46,20 +46,30 @@ export const ConfirmLayout = ({
   }, [setBreadcrumbs, name, basePath]);
 
   // 編集・コピーの遷移をパターン化
-  const onEdit = () => router.push(`${basePath}/edit?mode=edit&${featureIdKey}=${dataId}`);
-  const onCopy = () => router.push(`${basePath}/edit?mode=copy&${featureIdKey}=${dataId}`);
+  const onEdit = () => {
+    import("@/src/lib/functions").then(({ showSpinner }) => showSpinner());
+    router.push(`${basePath}/edit?mode=edit&${featureIdKey}=${dataId}`);
+  };
+  const onCopy = () => {
+    import("@/src/lib/functions").then(({ showSpinner }) => showSpinner());
+    router.push(`${basePath}/edit?mode=copy&${featureIdKey}=${dataId}`);
+  };
 
   // 削除ロジックを共通化
   const onDelete = async () => {
     const confirmed = await showDialog(`この${name}を削除しますか？\nこの操作は元に戻せません。`);
     if (!confirmed) return;
 
+    const { showSpinner, hideSpinner, archiveAndDeleteDoc } = await import("@/src/lib/functions");
+    showSpinner();
     try {
       await archiveAndDeleteDoc(collectionName, dataId);
+      hideSpinner();
       await showDialog("削除しました", true);
       router.push(afterDeletePath ?? basePath);
     } catch (e) {
       console.error(e);
+      hideSpinner();
       await showDialog("削除に失敗しました", true);
     }
   };

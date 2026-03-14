@@ -133,6 +133,8 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
       await saveCallAnswer(callId, uid, filteredAnswers);
       hideSpinner();
       await showDialog(`回答を${mode === "edit" ? "修正" : "登録"}しました`, true);
+      
+      showSpinner(); // 遷移用スピナー
       router.push(`/call/confirm?callId=${callId}`);
     } catch {
       hideSpinner();

@@ -1,9 +1,9 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AuthProvider, useAuth } from "@/src/contexts/AuthContext";
 import { BreadcrumbProvider } from "@/src/contexts/BreadcrumbContext";
-import { useEffect, useTransition } from "react"; // useTransitionを追加
+import { useEffect, useTransition, Suspense } from "react"; // useTransitionを追加
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -47,17 +47,40 @@ function AuthGuard({ children, isPending }: { children: React.ReactNode, isPendi
   );
 }
 
+function RouteChangeListener() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    import("@/src/lib/functions").then((mod) => mod.hideSpinner());
+  }, [pathname, searchParams]);
+
+  return null;
+}
+
 // --- メインレイアウト ---
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // transition状態を管理
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
-  // Next.jsのrouter.pushをラップしてtransitionを開始する仕組みは
-  // Linkコンポーネントには自動で適用されませんが、
-  // Page遷移時のデータ読み込み(Server Componentの処理)が発生すると
-  // Reactが自動的にisPendingを更新してくれます。
+  useEffect(() => {
+    // 内部リンク（<a>タグ）クリック時にスピナーを表示する
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('a');
+      if (!target) return;
+      
+      const href = target.getAttribute('href');
+      const targetAttr = target.getAttribute('target');
+      
+      // hrefがURLスキーム（例えばhttp://やmailto:）を持たず、別タブでないなら 내부リンクとみなす
+      if (href && href.startsWith('/') && targetAttr !== '_blank' && !e.ctrlKey && !e.metaKey) {
+        import("@/src/lib/functions").then((mod) => mod.showSpinner());
+      }
+    };
+    
+    document.addEventListener('click', handleAnchorClick);
+    return () => document.removeEventListener('click', handleAnchorClick);
+  }, []);
 
   const noLayoutPaths = ["/login", "/callback", "/agreement"];
   const isNoLayout = noLayoutPaths.includes(pathname);
@@ -71,6 +94,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           {!isNoLayout && <Footer />}
         </AuthGuard>
         
+        <Suspense fallback={null}>
+          <RouteChangeListener />
+        </Suspense>
         <Script 
           src="https://www.instagram.com/embed.js" 
           strategy="afterInteractive" 

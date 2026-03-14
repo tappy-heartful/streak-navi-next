@@ -42,6 +42,8 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
       await deleteCallWithAnswers(callId);
       hideSpinner();
       await showDialog("削除しました", true);
+      
+      showSpinner(); // 遷移用スピナー
       router.push("/call");
     } catch {
       hideSpinner();
@@ -59,7 +61,9 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
       await deleteMyCallAnswer(callId, uid);
       hideSpinner();
       await showDialog("回答を取り消しました", true);
-      router.refresh();
+      
+      showSpinner(); // 遷移用スピナー
+      router.refresh(); // リロードのためスピナーを出しておく
     } catch {
       hideSpinner();
       await showDialog("削除に失敗しました", true);
@@ -83,7 +87,10 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
     <button
       type="button"
       className="edit-button"
-      onClick={() => router.push(`/vote/edit?mode=createFromCall&callId=${callId}`)}
+      onClick={() => {
+        showSpinner();
+        router.push(`/vote/edit?mode=createFromCall&callId=${callId}`);
+      }}
     >
       投票を作成する
     </button>

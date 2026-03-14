@@ -54,11 +54,17 @@ export const EditFormLayout = <T extends Record<string, any>>({
     if (Object.keys(errors).length > 0) return showDialog("入力内容を確認してください", true);
     if (!(await showDialog(`${mode === "edit" ? "更新" : "登録"}しますか？`))) return;
 
+    const { showSpinner, hideSpinner } = await import("@/src/lib/functions");
+    showSpinner();
     try {
       const finalId = await onSaveApi(form.formData);
+      hideSpinner();
       await showDialog("保存しました", true);
+      
+      showSpinner(); // 遷移用スピナー
       router.push(`${basePath}/confirm?${featureIdKey}=${finalId}`);
     } catch (error) {
+      hideSpinner();
       const msg = error instanceof Error ? error.message : "";
       if (msg.startsWith("validation:")) {
         await showDialog(msg.slice("validation:".length), true);

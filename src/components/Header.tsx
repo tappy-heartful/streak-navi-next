@@ -71,7 +71,10 @@ export default function Header() {
     <>
       <header className="site-header">
         <div className="header-left">
-          <div className="logo-text" onClick={() => router.push("/home")}>
+          <div className="logo-text" onClick={() => {
+            showSpinner();
+            router.push("/home");
+          }}>
             Streak <span className="logo-n">{isTest ? "T" : "N"}</span>avi
           </div>
         </div>
@@ -113,6 +116,7 @@ export default function Header() {
                 className="menu-user-name" 
                 onClick={() => {
                   if (uid) {
+                    showSpinner();
                     router.push(`/user/confirm?uid=${uid}`);
                     closeMenu();
                   }
@@ -147,6 +151,7 @@ export default function Header() {
           <div className="slide-menu-section menu-bottom">
             <a onClick={() => {
               if (uid) {
+                showSpinner();
                 router.push(`/user/confirm?uid=${uid}`);
                 closeMenu();
               }
