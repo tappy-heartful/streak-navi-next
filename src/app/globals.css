@@ -1462,4 +1462,303 @@ a:hover {
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
-}
+}
+/* ============================
+   イベント機能 固有スタイル
+   ============================ */
+
+/* 日程調整テーブル */
+.adjust-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.adjust-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.adjust-row:last-child {
+  border-bottom: none;
+}
+
+.adjust-row.header-row {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.date-cell {
+  flex-basis: 35%;
+  padding: 12px 10px;
+  background-color: #fcfcfc;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.date-cell .date-part {
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.date-cell .day-part {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.status-summary-cell {
+  flex-basis: 65%;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 15px;
+  font-size: 16px;
+}
+
+.status-cell {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #eee;
+}
+
+.status-cell:last-child {
+  border-right: none;
+}
+
+.status-count {
+  font-weight: bold;
+  padding: 2px 0;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+.status-count.status-count-zero {
+  border-bottom: none;
+  cursor: default;
+}
+
+/* 出欠状況ブロック */
+.attendance-status-block {
+  margin-bottom: 24px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.attendance-status-block h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: #333;
+  border-left: 4px solid #4caf50;
+  padding-left: 8px;
+}
+
+.attendance-section-group {
+  margin-bottom: 15px;
+  padding: 0 5px;
+}
+
+.attendance-section-group h4 {
+  font-size: 13px;
+  margin-bottom: 5px;
+  color: #444;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 3px;
+  font-weight: bold;
+}
+
+.attendance-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.attendance-user {
+  width: 80px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.attendance-user img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 6px;
+}
+
+.attendance-user.small-user {
+  width: 60px;
+  font-size: 11px;
+}
+
+.attendance-user.small-user img {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 4px;
+}
+
+.attendance-user span {
+  display: block;
+  word-break: break-word;
+}
+
+.no-user {
+  font-size: 13px;
+  color: #888;
+}
+
+.answer-count-summary {
+  display: block;
+  text-align: left;
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: normal;
+  margin-bottom: 10px;
+}
+
+#unanswered-button {
+  display: inline-block;
+  padding: 8px 15px;
+  margin: 0 10px 10px 10px;
+  background-color: #f0f0f0;
+  color: #6c757d;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#unanswered-button:hover {
+  background-color: #e2e6ea;
+  border-color: #adadad;
+}
+
+/* 録音リンク */
+#event-recordings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recording-list-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recording-list-ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.recording-list-ul li:last-child {
+  border-bottom: none;
+}
+
+.recording-link {
+  font-weight: bold;
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.registered-by {
+  font-size: 12px;
+  color: #6c757d;
+  white-space: nowrap;
+  margin-right: 10px;
+}
+
+.delete-recording-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px;
+}
+
+.add-recording-button {
+  margin-top: 10px;
+  background-color: #eee;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* セットリスト表示 */
+.setlist-group-confirm {
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed #ccc;
+}
+
+.setlist-group-confirm:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.setlist-group-confirm h4 {
+  font-size: 1em;
+  font-weight: bold;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+
+.setlist-songs {
+  padding-left: 10px;
+}
+
+/* プレイリストボタン */
+.score-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.playlist-button {
+  font-size: 13px;
+  padding: 4px 10px;
+  background-color: #ff0000;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.playlist-button:hover {
+  background-color: #cc0000;
+  color: white;
+}
+
+/* 日程調整回答フォーム選択スタイル */
+.adjust-row.selected-row {
+  background-color: #f0f8ff;
+}
+
+.status-cell.selected-cell {
+  background-color: #e8f4fd;
+}

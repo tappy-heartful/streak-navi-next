@@ -314,3 +314,35 @@ export type {
 
 // 初期化した db インスタンスもエクスポート
 export { db };
+
+/**
+ * "yyyy.MM.dd" または "yyyy-MM-dd" 形式の日付を表示用文字列に変換する
+ * @param dateStr "2025.01.15" など
+ * @param short true の場合は曜日のみ ("水")、false の場合は "1/15(水)"
+ */
+export function getDayOfWeek(dateStr: string, short = false): string {
+  if (!dateStr) return "";
+  const normalized = dateStr.replace(/-/g, ".");
+  const parts = normalized.split(".");
+  if (parts.length !== 3) return dateStr;
+  const [y, m, d] = parts.map(Number);
+  const date = new Date(y, m - 1, d);
+  const days = ["日", "月", "火", "水", "木", "金", "土"];
+  const dayStr = days[date.getDay()];
+  if (short) return dayStr;
+  return `${y}年${m}月${d}日(${dayStr})`;
+}
+
+/**
+ * "yyyy.MM.dd" → "yyyy-MM-dd" (input[type=date] 用)
+ */
+export function dotDateToHyphen(dateStr: string): string {
+  return dateStr?.replace(/\./g, "-") || "";
+}
+
+/**
+ * "yyyy-MM-dd" → "yyyy.MM.dd" (Firestore保存用)
+ */
+export function hyphenDateToDot(dateStr: string): string {
+  return dateStr?.replace(/-/g, ".") || "";
+}

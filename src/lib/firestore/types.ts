@@ -192,4 +192,76 @@ export interface VoteAnswer {
   answers: Record<string, string | null>;
   updatedAt?: number;
 }
+
+// ===== イベント =====
+
+export interface SetlistGroup {
+  title: string;
+  songIds: string[];
+}
+
+export interface InstrumentPart {
+  partName: string;
+  instrumentId?: string;
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  attendanceType: "schedule" | "attendance";
+  date?: string;              // "yyyy.MM.dd" (出欠タイプ)
+  candidateDates?: string[];  // "yyyy.MM.dd"[] (日程調整タイプ)
+  acceptStartDate: string;
+  acceptEndDate: string;
+  placeName?: string;
+  website?: string;
+  access?: string;
+  googleMap?: string;
+  schedule?: string;
+  dress?: string;
+  bring?: string;
+  rent?: string;
+  other?: string;
+  allowAssign?: boolean;
+  setlist?: SetlistGroup[];
+  instrumentConfig?: Record<string, InstrumentPart[]>;
+  createdBy?: string;
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+export interface EventAttendanceAnswer {
+  id: string;
+  eventId: string;
+  uid: string;
+  status: string;
+  updatedAt?: number;
+}
+
+export interface EventAdjustAnswer {
+  id: string;
+  eventId: string;
+  uid: string;
+  answers: Record<string, string>; // { "yyyy.MM.dd": statusId }
+  updatedAt?: number;
+}
+
+export interface AttendanceStatus {
+  id: string;
+  name: string;
+}
+
+export interface EventAdjustStatus {
+  id: string;
+  name: string;
+}
+
+export interface EventRecording {
+  id: string;
+  eventId: string;
+  uid: string;
+  title: string;
+  url: string;
+  createdAt?: number;
+}
 

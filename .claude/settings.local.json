@@ -16,7 +16,8 @@
       "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/media-edit/**)",
       "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/media-confirm/**)",
       "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/**)",
-      "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/common/**)"
+      "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/common/**)",
+      "Bash(grep -n \"showDialog\\\\|useDialog\\\\|DialogContext\" \"c:/Users/tappy/Documents/repos/streak-navi/src/contexts/\"*.tsx)"
     ]
   }
 }
