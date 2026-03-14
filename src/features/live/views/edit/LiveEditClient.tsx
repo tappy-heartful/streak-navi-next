@@ -68,8 +68,8 @@ export function LiveEditClient({ mode, liveId, initialLive, scores }: Props) {
         <AppInput label="会場名" required {...inputProps("venue")} />
         <AppInput label="会場公式サイトURL" type="url" {...inputProps("venueUrl")} />
         <AppInput label="Google Map URL" type="url" {...inputProps("venueGoogleMap")} />
-        <AppInput label="前売料金（円）" type="number" {...inputProps("advance")} />
-        <AppInput label="当日料金（円）" type="number" {...inputProps("door")} />
+        <AppInput label="前売料金（円）" {...inputProps("advance")} />
+        <AppInput label="当日料金（円）" {...inputProps("door")} />
         <AppInput label="フライヤーURL（画像リンク）" type="url" {...inputProps("flyerUrl")} />
 
         {/* セットリスト */}
