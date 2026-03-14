@@ -314,11 +314,21 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
   );
   const [searchResNo, setSearchResNo] = useState("");
   const [searchName, setSearchName] = useState("");
+  const [appliedResNo, setAppliedResNo] = useState("");
+  const [appliedName, setAppliedName] = useState("");
 
   // --- モーダル状態 ---
   const [checkInModalState, setCheckInModalState] = useState<CheckInModalState | null>(null);
   const [doorModalOpen, setDoorModalOpen] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
+
+  const checkLiveSelected = useCallback(async () => {
+    if (!selectedLiveId) {
+      await showDialog("ライブを選択してください", true);
+      return false;
+    }
+    return true;
+  }, [selectedLiveId]);
 
   useEffect(() => {
     setBreadcrumbs([{ title: "予約者一覧" }]);
@@ -345,13 +355,14 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
   );
 
   const filteredTickets = tickets.filter((t) => {
-    const matchResNo = !searchResNo || (t.reservationNo?.includes(searchResNo) ?? false);
-    const matchName = !searchName ||
-      (t.representativeName?.toLowerCase().includes(searchName.toLowerCase()) ?? false);
-    return matchResNo && matchName;
+    const matchLive = !selectedLiveId || t.liveId === selectedLiveId;
+    const matchResNo = !appliedResNo || (t.reservationNo?.includes(appliedResNo) ?? false);
+    const matchName = !appliedName ||
+      (t.representativeName?.toLowerCase().includes(appliedName.toLowerCase()) ?? false);
+    return matchLive && matchResNo && matchName;
   });
 
-  const doorCheckIns = checkIns.filter((c) => c.type === "door");
+  const doorCheckIns = checkIns.filter((c) => c.type === "door" && (!selectedLiveId || c.liveId === selectedLiveId));
 
   // --- チェックインモーダルを開く ---
   const openCheckInModal = async (fullId: string) => {
@@ -523,7 +534,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
     filteredTickets.forEach((t) => {
       const isNewUser = lastUid !== undefined && lastUid !== t.uid;
       lastUid = t.uid;
-      const rowStyle = isNewUser ? { borderTop: "2px solid #bbb" } : {};
+      const rowClass = isNewUser ? "group-separator" : "";
       const createdAt = t.createdAt ? format(new Date(t.createdAt), "yyyy/MM/dd HH:mm") : "-";
       const updatedAt = t.updatedAt ? format(new Date(t.updatedAt), "yyyy/MM/dd HH:mm") : "-";
 
@@ -533,15 +544,17 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
           const fullId = `${t.id}_g${gIdx + 1}`;
           const companions = group.companions.filter((c) => c !== "");
           rows.push(
-            <tr key={fullId} style={gIdx === 0 ? rowStyle : {}}>
+            <tr key={fullId} className={gIdx === 0 ? rowClass : ""}>
               <td className="text-center">
-                <button className="link-button" onClick={() => openCheckInModal(fullId)}
-                  style={{ fontWeight: "bold", color: "#e91e63", textDecoration: "underline" }}>
-                  {gNo}
-                </button>
-                <div style={{ marginTop: "4px" }}>
-                  <span className="res-type-label status-invite">招待</span>
-                  <span className="count-badge">{companions.length}名</span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                  <button className="link-button" onClick={() => openCheckInModal(fullId)}
+                    style={{ fontWeight: "bold", color: "#e91e63", textDecoration: "underline" }}>
+                    {gNo}
+                  </button>
+                  <div style={{ marginTop: "4px" }}>
+                    <span className="res-type-label status-invite">招待</span>
+                    <span className="count-badge">{companions.length}名</span>
+                  </div>
                 </div>
               </td>
               <td style={{ lineHeight: 1.7 }}>
@@ -554,7 +567,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
                 <small style={{ color: "#888" }}>({group.groupName})</small>
               </td>
               <td className="text-center">
-                <a href={`https://ssjo.vercel.app/ticket-detail/${t.id}?g=${gIdx + 1}`}
+                <a href={`/ticket-detail/${t.id}?g=${gIdx + 1}`}
                   target="_blank" rel="noopener noreferrer" className="ticket-link-icon" title="チケット表示">
                   <i className="fas fa-external-link-alt" />
                 </a>
@@ -571,15 +584,17 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
           ...companions,
         ];
         rows.push(
-          <tr key={t.id} style={rowStyle}>
+          <tr key={t.id} className={rowClass}>
             <td className="text-center">
-              <button className="link-button" onClick={() => openCheckInModal(t.id)}
-                style={{ fontWeight: "bold", color: "#e91e63", textDecoration: "underline" }}>
-                {t.reservationNo || "-"}
-              </button>
-              <div style={{ marginTop: "4px" }}>
-                <span className="res-type-label status-general">一般</span>
-                <span className="count-badge">{allCustomers.length}名</span>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                <button className="link-button" onClick={() => openCheckInModal(t.id)}
+                  style={{ fontWeight: "bold", color: "#e91e63", textDecoration: "underline" }}>
+                  {t.reservationNo || "-"}
+                </button>
+                <div style={{ marginTop: "4px" }}>
+                  <span className="res-type-label status-general">一般</span>
+                  <span className="count-badge">{allCustomers.length}名</span>
+                </div>
               </div>
             </td>
             <td style={{ lineHeight: 1.7 }}>
@@ -587,7 +602,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
             </td>
             <td className="rep-name-cell">-</td>
             <td className="text-center">
-              <a href={`https://ssjo.vercel.app/ticket-detail/${t.id}`}
+              <a href={`/ticket-detail/${t.id}`}
                 target="_blank" rel="noopener noreferrer" className="ticket-link-icon" title="チケット表示">
                 <i className="fas fa-external-link-alt" />
               </a>
@@ -613,26 +628,36 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
       <div className="page-header">
         <h1>
           <i className="fas fa-ticket-alt" /> 予約者一覧
-          {isAdmin && (
-            <span style={{ float: "right", display: "flex", gap: "8px" }}>
-              <button
-                className="btn-qr-scan"
-                style={{ background: "#4caf50", boxShadow: "0 2px 8px rgba(76,175,80,0.3)" }}
-                onClick={() => setDoorModalOpen(true)}
-              >
-                <i className="fas fa-user-plus" /> <span>当日</span>
-              </button>
-              <button className="btn-qr-scan" onClick={() => setQrModalOpen(true)}>
-                <i className="fas fa-camera" /> <span>QR</span>
-              </button>
-            </span>
-          )}
         </h1>
       </div>
 
       {/* 検索フィルター */}
       <div className="container">
-        <h3>検索</h3>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+          <h3 style={{ margin: 0 }}>検索</h3>
+          {isAdmin && (
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                className="btn-qr-scan"
+                style={{ background: "#4caf50", boxShadow: "0 2px 8px rgba(76,175,80,0.3)", padding: "6px 12px", fontSize: "13px" }}
+                onClick={async () => {
+                  if (await checkLiveSelected()) setDoorModalOpen(true);
+                }}
+              >
+                <i className="fas fa-user-plus" /> <span>当日受付</span>
+              </button>
+              <button
+                className="btn-qr-scan"
+                style={{ padding: "6px 12px", fontSize: "13px" }}
+                onClick={async () => {
+                  if (await checkLiveSelected()) setQrModalOpen(true);
+                }}
+              >
+                <i className="fas fa-camera" /> <span>QRスキャン</span>
+              </button>
+            </div>
+          )}
+        </div>
         <div className="list-filter-grid">
           <select
             className="form-control"
@@ -663,7 +688,15 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
           <button className="clear-button" onClick={() => {
             setSearchResNo("");
             setSearchName("");
+            setAppliedResNo("");
+            setAppliedName("");
           }}>クリア</button>
+          <button className="save-button" onClick={() => {
+            setAppliedResNo(searchResNo);
+            setAppliedName(searchName);
+          }}>
+            <i className="fas fa-search" /> 検索
+          </button>
         </div>
       </div>
 
