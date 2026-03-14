@@ -157,4 +157,39 @@ export interface Board {
   createdByName?: string;
   createdAt?: any; // Firestore Timestamp or number
   updatedAt?: any;
-}
+}
+
+export interface VoteChoice {
+  name: string;
+  link?: string;
+}
+
+export interface VoteItem {
+  name: string;
+  link?: string;
+  choices: VoteChoice[];
+}
+
+export interface Vote {
+  id: string;
+  name: string;
+  description: string;
+  descriptionLink?: string;
+  acceptStartDate: string;
+  acceptEndDate: string;
+  isAnonymous?: boolean;
+  hideVotes?: boolean;
+  createdBy?: string;
+  createdAt?: number;
+  updatedAt?: number;
+  items: VoteItem[];
+}
+
+export interface VoteAnswer {
+  id: string;
+  voteId: string;
+  uid: string;
+  answers: Record<string, string | null>;
+  updatedAt?: number;
+}
+

@@ -1,0 +1,586 @@
+﻿
+> streak-navi@0.1.0 build
+> next build
+
+笆ｲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+node.exe : 
+発生場所 C:\Program Files\nodejs\
+npm.ps1:29 文字:3
++   & $NODE_EXE $NPM_CLI_JS $
+args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~
+    + CategoryInfo           
+   : NotSpecified: (:String  
+  ) [], RemoteException
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+> Build error occurred
+Error: Turbopack build failed
+ with 6 errors:
+./src/features/vote/views/edi
+t/VoteEditClient.tsx:11:1
+Module not found: Can't resol
+ve '@/src/components/Form/Che
+ckbox'
+[0m [90m  9 |[39m [36mimp
+ort[39m { [33mFieldGroup[3
+9m } [36mfrom[39m [32m"@/s
+rc/components/Form/FieldGroup
+"[39m[33m;[39m
+ [90m 10 |[39m [36mimport
+[39m { [33mInput[39m } [36
+mfrom[39m [32m"@/src/compon
+ents/Form/Input"[39m[33m;[
+39m
+[31m[1m>[22m[39m[90m 11 
+|[39m [36mimport[39m { [3
+3mCheckbox[39m } [36mfrom[
+39m [32m"@/src/components/Fo
+rm/Checkbox"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[3
+1m[1m^[22m[39m
+ [90m 12 |[39m [36mimport
+[39m { useAppForm } [36mfrom
+[39m [32m"@/src/hooks/useAp
+pForm"[39m[33m;[39m
+ [90m 13 |[39m [36mimport
+[39m { [33mVote[39m[33m,[
+39m [33mCall[39m[33m,[39m
+ [33mVoteItem[39m[33m,[39
+m [33mVoteChoice[39m } [36
+mfrom[39m [32m"@/src/lib/fi
+restore/types"[39m[33m;[39
+m
+ [90m 14 |[39m [36mimport
+[39m { addVote[33m,[39m upd
+ateVote } [36mfrom[39m [32
+m"@/src/features/vote/api/vot
+e-client-service"[39m[33m;
+[39m[0m
+
+Import map: aliased to relati
+ve './src/components/Form/Che
+ckbox' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./src/features/vote/views
+/edit/VoteEditClient.tsx
+    ./src/app/vote/edit/page.
+tsx
+
+https://nextjs.org/docs/messa
+ges/module-not-found
+
+
+./src/features/vote/views/edi
+t/VoteEditClient.tsx:9:1
+Module not found: Can't resol
+ve '@/src/components/Form/Fie
+ldGroup'
+[0m [90m  7 |[39m [36mimp
+ort[39m { [33mBaseLayout[3
+9m } [36mfrom[39m [32m"@/s
+rc/components/Layout/BaseLayo
+ut"[39m[33m;[39m
+ [90m  8 |[39m [36mimport
+[39m { [33mEditFormLayout[3
+9m } [36mfrom[39m [32m"@/s
+rc/components/Layout/EditForm
+Layout"[39m[33m;[39m
+[31m[1m>[22m[39m[90m  9 
+|[39m [36mimport[39m { [3
+3mFieldGroup[39m } [36mfrom
+[39m [32m"@/src/components/
+Form/FieldGroup"[39m[33m;[
+39m
+ [90m    |[39m [31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m
+ [90m 10 |[39m [36mimport
+[39m { [33mInput[39m } [36
+mfrom[39m [32m"@/src/compon
+ents/Form/Input"[39m[33m;[
+39m
+ [90m 11 |[39m [36mimport
+[39m { [33mCheckbox[39m } 
+[36mfrom[39m [32m"@/src/com
+ponents/Form/Checkbox"[39m[
+33m;[39m
+ [90m 12 |[39m [36mimport
+[39m { useAppForm } [36mfrom
+[39m [32m"@/src/hooks/useAp
+pForm"[39m[33m;[39m[0m
+
+Import map: aliased to relati
+ve './src/components/Form/Fie
+ldGroup' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./src/features/vote/views
+/edit/VoteEditClient.tsx
+    ./src/app/vote/edit/page.
+tsx
+
+https://nextjs.org/docs/messa
+ges/module-not-found
+
+
+./src/features/vote/views/edi
+t/VoteEditClient.tsx:10:1
+Module not found: Can't resol
+ve '@/src/components/Form/Inp
+ut'
+[0m [90m  8 |[39m [36mimp
+ort[39m { [33mEditFormLayou
+t[39m } [36mfrom[39m [32m
+"@/src/components/Layout/Edit
+FormLayout"[39m[33m;[39m
+ [90m  9 |[39m [36mimport
+[39m { [33mFieldGroup[39m }
+ [36mfrom[39m [32m"@/src/c
+omponents/Form/FieldGroup"[3
+9m[33m;[39m
+[31m[1m>[22m[39m[90m 10 
+|[39m [36mimport[39m { [3
+3mInput[39m } [36mfrom[39m
+ [32m"@/src/components/Form/
+Input"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[
+1m^[22m[39m
+ [90m 11 |[39m [36mimport
+[39m { [33mCheckbox[39m } 
+[36mfrom[39m [32m"@/src/com
+ponents/Form/Checkbox"[39m[
+33m;[39m
+ [90m 12 |[39m [36mimport
+[39m { useAppForm } [36mfrom
+[39m [32m"@/src/hooks/useAp
+pForm"[39m[33m;[39m
+ [90m 13 |[39m [36mimport
+[39m { [33mVote[39m[33m,[
+39m [33mCall[39m[33m,[39m
+ [33mVoteItem[39m[33m,[39
+m [33mVoteChoice[39m } [36
+mfrom[39m [32m"@/src/lib/fi
+restore/types"[39m[33m;[39
+m[0m
+
+Import map: aliased to relati
+ve './src/components/Form/Inp
+ut' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./src/features/vote/views
+/edit/VoteEditClient.tsx
+    ./src/app/vote/edit/page.
+tsx
+
+https://nextjs.org/docs/messa
+ges/module-not-found
+
+
+./src/features/vote/views/lin
+k-edit/VoteLinkEditClient.tsx
+:9:1
+Module not found: Can't resol
+ve '@/src/components/Form/Inp
+ut'
+[0m [90m  7 |[39m [36mimp
+ort[39m { [33mBaseLayout[3
+9m } [36mfrom[39m [32m"@/s
+rc/components/Layout/BaseLayo
+ut"[39m[33m;[39m
+ [90m  8 |[39m [36mimport
+[39m { [33mEditFormLayout[3
+9m } [36mfrom[39m [32m"@/s
+rc/components/Layout/EditForm
+Layout"[39m[33m;[39m
+[31m[1m>[22m[39m[90m  9 
+|[39m [36mimport[39m { [3
+3mInput[39m } [36mfrom[39m
+ [32m"@/src/components/Form/
+Input"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[
+1m^[22m[39m
+ [90m 10 |[39m [36mimport
+[39m { showDialog[33m,[39m 
+showSpinner[33m,[39m hideSp
+inner } [36mfrom[39m [32m"
+@/src/lib/functions"[39m[33
+m;[39m
+ [90m 11 |[39m [36mimport
+[39m { updateVote } [36mfrom
+[39m [32m"@/src/features/vo
+te/api/vote-client-service"[
+39m[33m;[39m
+ [90m 12 |[39m[0m
+
+Import map: aliased to relati
+ve './src/components/Form/Inp
+ut' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./src/features/vote/views
+/link-edit/VoteLinkEditClient
+.tsx
+    ./src/app/vote/link-edit/
+page.tsx
+
+https://nextjs.org/docs/messa
+ges/module-not-found
+
+
+./src/features/vote/views/ans
+wer/VoteAnswerClient.tsx:14:1
+Module not found: Can't resol
+ve '@/src/components/Modal'
+[0m [90m 12 |[39m [36mimp
+ort[39m { db } [36mfrom[39
+m [32m"@/src/lib/firebase"[
+39m[33m;[39m
+ [90m 13 |[39m [36mimport
+[39m { doc[33m,[39m getDoc 
+} [36mfrom[39m [32m"fireba
+se/firestore"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 14 
+|[39m [36mimport[39m { [3
+3mModal[39m } [36mfrom[39m
+ [32m"@/src/components/Modal
+"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+ [90m 15 |[39m
+ [90m 16 |[39m type [33mPr
+ops[39m [33m=[39m {
+ [90m 17 |[39m   vote[33m:
+[39m [33mVote[39m[33m;[3
+9m[0m
+
+Import map: aliased to relati
+ve './src/components/Modal' i
+nside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./src/features/vote/views
+/answer/VoteAnswerClient.tsx
+    ./src/app/vote/answer/pag
+e.tsx
+
+https://nextjs.org/docs/messa
+ges/module-not-found
+
+
+./src/features/vote/views/con
+firm/VoteConfirmClient.tsx:13
+:1
+Module not found: Can't resol
+ve '@/src/components/Modal'
+[0m [90m 11 |[39m [36mimp
+ort[39m { isInTerm[33m,[39
+m buildYouTubeHtml[33m,[39m
+ showDialog[33m,[39m showSp
+inner[33m,[39m hideSpinner
+[33m,[39m globalLineDefaultI
+mage } [36mfrom[39m [32m"@
+/src/lib/functions"[39m[33m
+;[39m
+ [90m 12 |[39m [36mimport
+[39m { deleteVoteWithAnswers
+[33m,[39m deleteMyVoteAnswer
+ } [36mfrom[39m [32m"@/src
+/features/vote/api/vote-clien
+t-service"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 13 
+|[39m [36mimport[39m { [3
+3mModal[39m } [36mfrom[39m
+ [32m"@/src/components/Modal
+"[39m[33m;[39m
+ [90m    |[39m [31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22m[39m
+ [90m 14 |[39m
+ [90m 15 |[39m type [33mPr
+ops[39m [33m=[39m {
+ [90m 16 |[39m   voteData[
+33m:[39m [33mVote[39m[33m
+;[39m[0m
+
+Import map: aliased to relati
+ve './src/components/Modal' i
+nside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./src/features/vote/views
+/confirm/VoteConfirmClient.ts
+x
+    ./src/app/vote/confirm/pa
+ge.tsx
+
+https://nextjs.org/docs/messa
+ges/module-not-found
+
+
+    at <unknown> (./src/featu
+res/vote/views/edit/VoteEditC
+lient.tsx:11:1)
+    at <unknown> (https://nex
+tjs.org/docs/messages/module-
+not-found)
+    at <unknown> (./src/featu
+res/vote/views/edit/VoteEditC
+lient.tsx:9:1)
+    at <unknown> (https://nex
+tjs.org/docs/messages/module-
+not-found)
+    at <unknown> (./src/featu
+res/vote/views/edit/VoteEditC
+lient.tsx:10:1)
+    at <unknown> (https://nex
+tjs.org/docs/messages/module-
+not-found)
+    at <unknown> (./src/featu
+res/vote/views/link-edit/Vote
+LinkEditClient.tsx:9:1)
+    at <unknown> (https://nex
+tjs.org/docs/messages/module-
+not-found)
+    at <unknown> (./src/featu
+res/vote/views/answer/VoteAns
+werClient.tsx:14:1)
+    at <unknown> (https://nex
+tjs.org/docs/messages/module-
+not-found)
+    at <unknown> (./src/featu
+res/vote/views/confirm/VoteCo
+nfirmClient.tsx:13:1)
+    at <unknown> (https://nex
+tjs.org/docs/messages/module-
+not-found)
