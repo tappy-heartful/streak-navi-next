@@ -57,6 +57,14 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
 
   // 保存処理
   const handleSave = async (dateId: string, title: string, youtubeUrl: string) => {
+    // 既存データの編集時は権限チェック
+    const existingNote = blueNotes.find(n => n.id === dateId);
+    const isOwner = !!user && existingNote?.createdBy === user.uid;
+    if (existingNote && !isAdmin && !isOwner) {
+      await showDialog("編集権限がありません");
+      return;
+    }
+
     if (!title.trim() || !youtubeUrl.trim()) {
       await showDialog("タイトルとURLを入力してください");
       return;
@@ -85,7 +93,7 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
       await saveBlueNote(dateId, {
         title,
         youtubeId: videoId,
-        createdBy: user?.uid || "unknown"
+        createdBy: existingNote?.createdBy || user?.uid || "unknown" // 既存なら維持
       });
       await writeLog({ dataId: dateId, action: "BlueNote保存" });
       await showDialog("保存しました", true);
@@ -101,6 +109,13 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
 
   // 削除処理
   const handleDelete = async (dateId: string) => {
+    const existingNote = blueNotes.find(n => n.id === dateId);
+    const isOwner = !!user && existingNote?.createdBy === user.uid;
+    if (!isAdmin && !isOwner) {
+      await showDialog("削除権限がありません");
+      return;
+    }
+
     if (!(await showDialog("削除しますか？"))) return;
 
     showSpinner();
@@ -269,34 +284,38 @@ function SongItem({
               {note.title}
             </a>
           </div>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <button className={styles.deleteButton} style={{ borderColor: "#4caf50", color: "#4caf50" }} onClick={() => setIsEditing(true)}>編集</button>
-            {isAllowedToDelete && (
+          {isAllowedToDelete && (
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button className={styles.deleteButton} style={{ borderColor: "#4caf50", color: "#4caf50" }} onClick={() => setIsEditing(true)}>編集</button>
               <button className={styles.deleteButton} onClick={() => onDelete(dateId)}>削除</button>
-            )}
-          </div>
+            </div>
+          )}
         </>
       ) : (
         <div className={styles.editForm}>
-          <input 
-            className={styles.inputField} 
-            placeholder="曲名" 
-            value={title} 
-            onChange={e => setTitle(e.target.value)} 
-          />
-          <input 
-            className={styles.inputField} 
-            placeholder="YouTube URL" 
-            value={url} 
-            onChange={e => setUrl(e.target.value)} 
-          />
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-            {note && <button className={styles.deleteButton} style={{ borderColor: "#999", color: "#999" }} onClick={() => setIsEditing(false)}>キャンセル</button>}
-            <button className={styles.saveButton} onClick={() => {
-              onSave(dateId, title, url);
-              if (note) setIsEditing(false);
-            }}>保存</button>
-          </div>
+          {(!note || isAllowedToDelete) && (
+            <>
+              <input 
+                className={styles.inputField} 
+                placeholder="曲名" 
+                value={title} 
+                onChange={e => setTitle(e.target.value)} 
+              />
+              <input 
+                className={styles.inputField} 
+                placeholder="YouTube URL" 
+                value={url} 
+                onChange={e => setUrl(e.target.value)} 
+              />
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                {note && <button className={styles.deleteButton} style={{ borderColor: "#999", color: "#999" }} onClick={() => setIsEditing(false)}>キャンセル</button>}
+                <button className={styles.saveButton} onClick={() => {
+                  onSave(dateId, title, url);
+                  if (note) setIsEditing(false);
+                }}>保存</button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
