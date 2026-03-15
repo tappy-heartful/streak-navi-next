@@ -32,27 +32,17 @@ export async function getAnnouncementsServer() {
   checkTerm(votes, "📌投票、受付中です！", "name", "/vote/confirm?voteId=");
   checkTerm(calls, "📌候補曲、募集中です！", "title", "/call/confirm?callId=");
 
-  // 集金
-  let collectHeader = false;
-  collects.forEach(cDoc => {
-    const d = cDoc.data();
-    if (utils.isInTerm(d.acceptStartDate, d.acceptEndDate)) {
-      if (!collectHeader) { items.push({ type: "pending", message: "📌集金、受付中です！" }); collectHeader = true; }
-      items.push({ type: "item", label: `💰${d.title}`, link: `/collect/confirm?collectId=${cDoc.id}` });
-    }
-  });
-
   // イベント関連のロジック
   const eventResults = events.docs.map(eDoc => {
     const d = eDoc.data();
     if (d.date < todayStr) return null;
-    const diffDays = d.date ? Math.ceil((new Date(d.date.replace(/\./g, "/")).getTime() - new Date().setHours(0,0,0,0)) / 86400000) : 0;
+    const diffDays = d.date ? Math.ceil((new Date(d.date.replace(/\./g, "/")).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000) : 0;
     return { id: eDoc.id, title: d.title, date: d.date, attendanceType: d.attendanceType, allowAssign: d.allowAssign, isUnanswered: false, diffDays };
   });
 
   type UpcomingEvent = { id: string; title: string; date: string; attendanceType: string; allowAssign: boolean; isUnanswered: boolean; diffDays: number };
   const upcoming = eventResults.filter((e): e is UpcomingEvent => e !== null);
-  
+
   // 日程調整
   const schPending = upcoming.filter(e => e.attendanceType === "schedule");
   if (schPending.length) {

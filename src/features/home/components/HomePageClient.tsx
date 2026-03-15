@@ -42,10 +42,10 @@ const MenuSectionList = memo(() => (
   <main className="container">
     <h3>メニュー</h3>
     <div className={styles.menuList}>
-      <MenuSection title="演奏メニュー" items={[{h: "/score", l: "🎼 譜面", c: "score"}, {h: "/event", l: "🎺 イベント", c: "event"}, {h: "/assign", l: "🎵 譜割り", c: "assign"}]} />
-      <MenuSection title="活動メニュー" items={[{h: "/call", l: "🎶 曲募集", c: "call"}, {h: "/vote", l: "📊 投票", c: "vote"}, {h: "/collect", l: "💰 集金", c: "collect"}, {h: "/studio", l: "📍 スタジオ", c: "studio"}]} />
-      <MenuSection title="アプリメニュー" items={[{h: "/user", l: "👥 ユーザ", c: "user"}, {h: "/notice", l: "📣 通知設定", c: "notice"}, {h: "/blue-note", l: "🎧 今日の一曲", c: "blueNote", b: "募集中"}, {h: "/board", l: "📋 掲示板", c: "board"}]} />
-      <MenuSection title="ホームページ連携" items={[{h: "/live", l: "🎷 ライブ", c: "live"}, {h: "/ticket", l: "🎫 予約者一覧", c: "ticket"}, {h: "/media", l: "🎬 メディア", c: "media"}]} />
+      <MenuSection title="演奏メニュー" items={[{ h: "/score", l: "🎼 譜面", c: "score" }, { h: "/event", l: "🎺 イベント", c: "event" }, { h: "/assign", l: "🎵 譜割り", c: "assign" }]} />
+      <MenuSection title="活動メニュー" items={[{ h: "/call", l: "🎶 曲募集", c: "call" }, { h: "/vote", l: "📊 投票", c: "vote" }, { h: "/studio", l: "📍 スタジオ", c: "studio" }]} />
+      <MenuSection title="アプリメニュー" items={[{ h: "/user", l: "👥 ユーザ", c: "user" }, { h: "/notice", l: "📣 通知設定", c: "notice" }, { h: "/blue-note", l: "🎧 今日の一曲", c: "blueNote", b: "募集中" }, { h: "/board", l: "📋 掲示板", c: "board" }]} />
+      <MenuSection title="ホームページ連携" items={[{ h: "/live", l: "🎷 ライブ", c: "live" }, { h: "/ticket", l: "🎫 予約者一覧", c: "ticket" }, { h: "/media", l: "🎬 メディア", c: "media" }]} />
     </div>
   </main>
 ));
@@ -124,7 +124,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
     <BaseLayout>
       <div className={styles.homeContainer}>
         <div className="page-header"><h1><i className="fa fa-home"></i> ホーム</h1></div>
-        
+
         <AnnouncementSection data={initialData.announcements} />
 
         <main className="container">
@@ -140,11 +140,11 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
             ) : <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>}
           </div>
           {initialData.scores.length > 0 && (
-            <Player 
-              title={initialData.scores[currentScoreIdx]?.title || "参考演奏"} 
-              data={initialData.scores} 
-              idx={currentScoreIdx} 
-              setIdx={setCurrentScoreIdx} 
+            <Player
+              title={initialData.scores[currentScoreIdx]?.title || "参考演奏"}
+              data={initialData.scores}
+              idx={currentScoreIdx}
+              setIdx={setCurrentScoreIdx}
               onRandom={() => setCurrentScoreIdx(utils.getRandomIndex(currentScoreIdx, initialData.scores.length))}
             />
           )}
@@ -160,11 +160,11 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
                 <h3>今日の一曲</h3>
                 <a href={`https://www.youtube.com/watch_videos?video_ids=${bnPlaylistIds}`} target="_blank" className={styles.playlistButton} rel="noreferrer"><i className="fa-brands fa-youtube"></i> プレイリスト</a>
               </div>
-              <Player 
-                title={initialData.blueNotes[currentBNIdx]?.title} 
-                data={initialData.blueNotes} 
-                idx={currentBNIdx} 
-                setIdx={setCurrentBNIdx} 
+              <Player
+                title={initialData.blueNotes[currentBNIdx]?.title}
+                data={initialData.blueNotes}
+                idx={currentBNIdx}
+                setIdx={setCurrentBNIdx}
                 onRandom={() => setCurrentBNIdx(utils.getRandomIndex(currentBNIdx, initialData.blueNotes.length))}
               />
               <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/blue-note" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
