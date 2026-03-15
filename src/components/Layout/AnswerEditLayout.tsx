@@ -21,7 +21,7 @@ type Props = {
 /**
  * 回答フォーム画面の共通レイアウト
  * 管理者権限は不要（ログイン済みユーザーなら誰でも利用可能）
- * 投票・集金・出欠・曲募集など「ユーザーが回答する」編集画面で共通利用する
+ * 投票・出欠・曲募集など「ユーザーが回答する」編集画面で共通利用する
  */
 export const AnswerEditLayout = ({
   featureName, basePath, featureIdKey, dataId,

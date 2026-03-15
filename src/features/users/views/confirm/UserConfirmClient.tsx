@@ -22,7 +22,7 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
   // マスタデータ名の解決
   const sectionName = sections.find(s => s.id === userData.sectionId)?.name || "未設定";
   const roleName = roles.find(r => r.id === userData.roleId)?.name || "未設定";
-  
+
   const instrumentNames = (userData.instrumentIds || [])
     .map(id => instruments.find(i => i.id === id)?.name)
     .filter(Boolean)
@@ -49,9 +49,9 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
         afterDeletePath="/login"
       >
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem", padding: "1rem", backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
-          <img 
-            src={userData.pictureUrl || globalLineDefaultImage} 
-            alt="icon" 
+          <img
+            src={userData.pictureUrl || globalLineDefaultImage}
+            alt="icon"
             style={{ width: "64px", height: "64px", borderRadius: "50%", objectFit: "cover" }}
             onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
           />
@@ -87,7 +87,7 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
         <DisplayField label="最終ログイン">
           {userData.lastLoginAt ? format(userData.lastLoginAt, 'yyyy/MM/dd HH:mm') : "記録なし"}
         </DisplayField>
-        
+
         <DisplayField label="同意日時">
           {userData.agreedAt ? format(userData.agreedAt, 'yyyy/MM/dd HH:mm') : "未承認"}
         </DisplayField>

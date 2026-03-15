@@ -10,10 +10,9 @@ export async function getAnnouncementsServer() {
   const items: Announcement[] = [];
   const todayStr = utils.format(new Date(), "yyyy.MM.dd");
 
-  const [votes, calls, collects, events] = await Promise.all([
+  const [votes, calls, events] = await Promise.all([
     adminDb.collection("votes").orderBy("createdAt", "desc").get(),
     adminDb.collection("calls").orderBy("createdAt", "desc").get(),
-    adminDb.collection("collects").get(),
     adminDb.collection("events").orderBy("date", "asc").get()
   ]);
 

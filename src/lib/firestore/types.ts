@@ -363,7 +363,7 @@ export interface Notice {
 export interface NoticeBaseNotification {
   days: number;
   beforeAfter: "before" | "after";
-  interval?: number; // collectRemind のみ使用
+  interval?: number;
   message: string;
 }
 
