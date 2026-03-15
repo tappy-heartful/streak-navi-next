@@ -490,7 +490,7 @@ export function EventConfirmClient({ eventId, data }: Props) {
           <div className="form-group">
             <label className="label-title">譜割</label>
             <div className="label-value">
-              <a href={`/assign-confirm?eventId=${eventId}`} target="_blank" rel="noopener noreferrer">
+              <a href={`/assign/confirm?eventId=${eventId}`} target="_blank" rel="noopener noreferrer">
                 譜割りを見る
               </a>
             </div>
@@ -502,6 +502,33 @@ export function EventConfirmClient({ eventId, data }: Props) {
 
         {/* 服装 */}
         <DisplayField label="服装" preWrap>{event.dress || ""}</DisplayField>
+
+        {/* 個人で持ってくるもの */}
+        <DisplayField label="個人で持ってくるもの" preWrap>{event.bring || ""}</DisplayField>
+
+        {/* 施設に借りるもの */}
+        <DisplayField label="施設に借りるもの" preWrap>{event.rent || ""}</DisplayField>
+
+        {/* 楽器構成 */}
+        {event.instrumentConfig && Object.keys(event.instrumentConfig).length > 0 && (
+          <div className="form-group">
+            <label className="label-title">楽器構成</label>
+            <div className="label-value">
+              {Object.keys(event.instrumentConfig).sort((a, b) => parseInt(a) - parseInt(b)).map(sectionId => {
+                const parts = event.instrumentConfig![sectionId];
+                const sectionName = sectionsMap[sectionId];
+                const partNames = parts.map(p => p.partName).filter(Boolean).join("、");
+                if (!sectionName || !partNames) return null;
+                return (
+                  <div key={sectionId} style={{ marginBottom: "8px" }}>
+                    <strong>{sectionName}</strong><br />
+                    <span>{partNames}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* 回答状況 */}
         <div className="form-group">

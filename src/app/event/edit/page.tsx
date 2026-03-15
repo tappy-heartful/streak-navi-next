@@ -21,7 +21,7 @@ export default async function EventEditPage({
     notFound();
   }
 
-  const { scores, sections } = editData;
+  const { scores, sections, instruments } = editData;
 
   return (
     <EventEditClient
@@ -31,6 +31,7 @@ export default async function EventEditPage({
       initialType={(type as "schedule" | "attendance") || "attendance"}
       scores={scores}
       sections={sections}
+      instruments={instruments}
     />
   );
 }

@@ -21,10 +21,11 @@ export interface Score {
 
 export interface BlueNote {
   id: string;
-  title?: string;
+  title: string;
+  youtubeId: string;
+  createdBy?: string;
   createdAt?: number;
   updatedAt?: number;
-  [key: string]: any;
 }
 
 export interface Media {
@@ -334,5 +335,48 @@ export interface EnqueteAnswer {
   id: string;
   liveId: string;
   common: Record<string, string | number>;
+}
+
+// ===== 通知設定 (Notice) =====
+
+export interface NoticeScheduleItem {
+  scheduledTime: string; // "HH:mm"
+  message: string;
+}
+
+export interface NoticeSchedule {
+  scheduledDate: string; // "yyyy.MM.dd"
+  notifications: NoticeScheduleItem[];
+}
+
+export interface Notice {
+  id: string;
+  relatedType: string;   // "none" | "events" | "votes" | "calls"
+  relatedId?: string;
+  relatedTitle?: string;
+  schedules: NoticeSchedule[];
+  activeDate?: string;   // "yyyy.MM.dd" 最初のschedule日付
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+export interface NoticeBaseNotification {
+  days: number;
+  beforeAfter: "before" | "after";
+  interval?: number;
+  message: string;
+}
+
+// ===== 譜割り (Assign) =====
+
+export interface Assign {
+  id: string;
+  eventId: string;
+  songId: string;
+  partName: string;
+  userId?: string;
+  assignValue: string;
+  isRehearsal?: boolean;
+  createdAt?: number;
 }
 

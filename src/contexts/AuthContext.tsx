@@ -10,7 +10,7 @@ import { User as FirestoreUser } from "@/src/lib/firestore/types";
 
 // 管理機能の定義
 export type AdminModule = 
-  | "Score" | "Event" | "Call" | "Vote" | "Collect" | "Studio" 
+  | "Score" | "Event" | "Call" | "Vote" | "Studio" 
   | "User" | "Notice" | "BlueNote" | "Board" | "Live" | "Ticket" | "Media";
 
 // パスセグメントとモジュールのマッピング
@@ -19,11 +19,10 @@ const PATH_TO_MODULE: Record<string, AdminModule> = {
   event: "Event",
   call: "Call",
   vote: "Vote",
-  collect: "Collect",
   studio: "Studio",
   user: "User",
   notice: "Notice",
-  bluenote: "BlueNote",
+  "blue-note": "BlueNote",
   board: "Board",
   live: "Live",
   ticket: "Ticket",

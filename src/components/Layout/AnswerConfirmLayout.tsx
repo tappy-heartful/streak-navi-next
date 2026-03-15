@@ -35,7 +35,7 @@ type Props = {
 
 /**
  * 回答ステータスバッジ・回答メニュー・管理者ボタンを持つ確認画面共通レイアウト
- * 投票・集金・出欠・曲募集など「ユーザーが回答する」系の確認画面で共通利用する
+ * 投票・出欠・曲募集など「ユーザーが回答する」系の確認画面で共通利用する
  */
 export const AnswerConfirmLayout = ({
   name, basePath, dataId, featureIdKey,

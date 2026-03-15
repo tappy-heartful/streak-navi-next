@@ -20,7 +20,7 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, userData, loading } = useAuth();
-  
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { items } = useBreadcrumb();
   const noLayoutPaths = ["/home", "/login", "/callback", "/agreement"];
@@ -96,25 +96,25 @@ export default function Header() {
 
         {/* ✅ 背景を暗くするオーバーレイ: 表示中のみレンダリング & クリックで閉じる */}
         {isMenuOpen && (
-          <div 
-            className="menu-overlay" 
+          <div
+            className="menu-overlay"
             style={{ display: "block", opacity: 1 }} // jQueryのfadeIn相当
-            onClick={closeMenu} 
+            onClick={closeMenu}
           />
         )}
 
         {/* ✅ スライドメニュー: isMenuOpen に応じて open クラスを付与 */}
         <div className={`slide-menu ${isMenuOpen ? "open" : ""}`}>
           <div className="menu-header">
-            <img 
-              src={pictureUrl} 
-              className="menu-user-icon" 
-              alt="user" 
+            <img
+              src={pictureUrl}
+              className="menu-user-icon"
+              alt="user"
               onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
             />
             <div className="menu-user-info">
-              <a 
-                className="menu-user-name" 
+              <a
+                className="menu-user-name"
                 onClick={() => {
                   if (uid) {
                     showSpinner();
@@ -138,7 +138,6 @@ export default function Header() {
             {menuLink("/assign", "譜割り")}
             {menuLink("/call", "曲募集")}
             {menuLink("/vote", "投票")}
-            {menuLink("/collect", "集金")}
             {menuLink("/studio", "スタジオ")}
             {menuLink("/user", "ユーザ")}
             {menuLink("/notice", "通知設定")}

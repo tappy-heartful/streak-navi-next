@@ -6,10 +6,13 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { FormFooter } from "@/src/components/Form/FormFooter";
-import { Event, Score, Section, SetlistGroup, InstrumentPart } from "@/src/lib/firestore/types";
+import { Modal } from "@/src/components/Modal";
+import { Event, Score, Section, Instrument, Studio, SetlistGroup, InstrumentPart } from "@/src/lib/firestore/types";
 import { addEvent, updateEvent } from "@/src/features/event/api/event-client-service";
 import { showDialog, showSpinner, hideSpinner, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
 import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/src/lib/firebase";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -18,6 +21,7 @@ type Props = {
   initialType: "schedule" | "attendance";
   scores: Score[];
   sections: Section[];
+  instruments: Instrument[];
 };
 
 
@@ -41,7 +45,7 @@ function defaultDates() {
   return { start: fmt(start), end: fmt(end) };
 }
 
-export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections }: Props) {
+export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections, instruments }: Props) {
   const router = useRouter();
   const { userData, isAdmin, loading } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
@@ -99,6 +103,9 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
   const [instrumentConfig, setInstrumentConfig] = useState<InstrumentSectionState[]>(initInstrumentConfig);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [studioModalOpen, setStudioModalOpen] = useState(false);
+  const [studios, setStudios] = useState<Studio[]>([]);
+  const [selectedStudioRoom, setSelectedStudioRoom] = useState<{ sIdx: number; rIdx: number } | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -155,6 +162,47 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
     ));
   };
 
+  const updateInstrumentId = (sectionIdx: number, partIdx: number, val: string) => {
+    setInstrumentConfig(prev => prev.map((sec, i) =>
+      i === sectionIdx
+        ? { ...sec, parts: sec.parts.map((p, j) => j === partIdx ? { ...p, instrumentId: val } : p) }
+        : sec
+    ));
+  };
+
+  // ---- Studio selection ----
+
+  const handleOpenStudioModal = async () => {
+    showSpinner();
+    try {
+      const snap = await getDocs(collection(db, "studios"));
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as Studio));
+      data.sort((a, b) => {
+        const pa = a.prefecture || "ZZZ";
+        const pb = b.prefecture || "ZZZ";
+        if (pa !== pb) return pa.localeCompare(pb, "ja");
+        return (a.name || "").localeCompare(b.name || "", "ja");
+      });
+      setStudios(data);
+      setSelectedStudioRoom(null);
+    } finally {
+      hideSpinner();
+    }
+    setStudioModalOpen(true);
+  };
+
+  const handleConfirmStudio = () => {
+    if (!selectedStudioRoom) return;
+    const { sIdx, rIdx } = selectedStudioRoom;
+    const studio = studios[sIdx];
+    const room = studio.rooms?.[rIdx] ?? "";
+    setPlaceName(`${studio.name} ${room}`.trim());
+    setWebsite(studio.hp || "");
+    setAccess(studio.access || "");
+    setGoogleMap(studio.map || "");
+    setStudioModalOpen(false);
+  };
+
   // ---- Save ----
 
   const handleSave = async () => {
@@ -202,18 +250,34 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
     // Build instrumentConfig
     const instrConfig: Record<string, InstrumentPart[]> = {};
+    let configError = "";
     instrumentConfig.forEach(sec => {
       const parts = sec.parts
-        .filter(p => p.partName)
-        .map(p => ({ partName: p.partName, instrumentId: p.instrumentId }));
+        .filter(p => p.partName || p.instrumentId)
+        .map(p => {
+          if (p.partName.length > 4) {
+            configError = "パート名は4文字以内で入力してください";
+          }
+          return { partName: p.partName, instrumentId: p.instrumentId };
+        });
       if (parts.length > 0) instrConfig[sec.sectionId] = parts;
     });
+
+    if (configError) {
+      await showDialog(configError, true);
+      return;
+    }
+
+    if (allowAssign && Object.keys(instrConfig).length === 0) {
+      await showDialog("楽器構成を最低1つ登録してください", true);
+      return;
+    }
 
     const payload: Omit<Event, "id"> = {
       title,
       attendanceType,
       date: attendanceType === "attendance" ? hyphenDateToDot(date) : "",
-      candidateDates: attendanceType === "schedule" ? candidateDates.filter(Boolean).map(hyphenDateToDot) : [],
+      candidateDates: attendanceType === "schedule" ? candidateDates.filter(Boolean).map(hyphenDateToDot).sort() : [],
       acceptStartDate: hyphenDateToDot(acceptStartDate),
       acceptEndDate: hyphenDateToDot(acceptEndDate),
       placeName,
@@ -356,7 +420,12 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
         {/* 場所名 */}
         <div className="form-group">
-          <label>場所名</label>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <label style={{ marginBottom: 0 }}>場所名</label>
+            <button type="button" className="add-choice" onClick={handleOpenStudioModal} style={{ whiteSpace: "nowrap", padding: "6px 12px", fontSize: "14px" }}>
+              <i className="fas fa-music" /> スタジオから選ぶ
+            </button>
+          </div>
           <input
             type="text"
             value={placeName}
@@ -480,40 +549,54 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
         </div>
 
         {/* 楽器構成 */}
-        <div className="form-group">
-          <label>楽器構成(譜割り用)</label>
-          {instrumentConfig.map((sec, sectionIdx) => {
-            const section = sections.find(s => s.id === sec.sectionId);
-            return (
-              <div key={sec.sectionId} className="instrument-section" style={{ marginBottom: "16px" }}>
-                <h3 style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>
-                  {section?.name || sec.sectionId}
-                </h3>
-                {sec.parts.map((part, partIdx) => (
-                  <div key={partIdx} className="choice-wrapper">
-                    <input
-                      type="text"
-                      value={part.partName}
-                      onChange={e => updatePartName(sectionIdx, partIdx, e.target.value)}
-                      placeholder="パート名を入力（例: Tp1, Ts, Lead）"
-                      style={{ flex: 1 }}
-                    />
-                    <button
-                      type="button"
-                      className="remove-choice"
-                      onClick={() => removePart(sectionIdx, partIdx)}
-                    >
-                      削除
-                    </button>
-                  </div>
-                ))}
-                <button type="button" className="add-choice" onClick={() => addPart(sectionIdx)}>
-                  ＋ パートを追加
-                </button>
-              </div>
-            );
-          })}
-        </div>
+        {allowAssign && (
+          <div className="form-group">
+            <label>楽器構成(譜割り用)</label>
+            {instrumentConfig.map((sec, sectionIdx) => {
+              const section = sections.find(s => s.id === sec.sectionId);
+              const sectionInstruments = instruments.filter(inst => inst.sectionId === sec.sectionId);
+              return (
+                <div key={sec.sectionId} className="instrument-section" style={{ marginBottom: "16px" }}>
+                  <h3 style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>
+                    {section?.name || sec.sectionId}
+                  </h3>
+                  {sec.parts.map((part, partIdx) => (
+                    <div key={partIdx} className="choice-wrapper">
+                      <input
+                        type="text"
+                        value={part.partName}
+                        onChange={e => updatePartName(sectionIdx, partIdx, e.target.value)}
+                        placeholder="パート名（例: Tp1, Ts, Lead）"
+                        style={{ flex: 1 }}
+                        maxLength={4}
+                      />
+                      <select
+                        value={part.instrumentId}
+                        onChange={e => updateInstrumentId(sectionIdx, partIdx, e.target.value)}
+                        style={{ flex: 1 }}
+                      >
+                        <option value="">楽器を選択</option>
+                        {sectionInstruments.map(inst => (
+                          <option key={inst.id} value={inst.id}>{inst.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        className="remove-choice"
+                        onClick={() => removePart(sectionIdx, partIdx)}
+                      >
+                        削除
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" className="add-choice" onClick={() => addPart(sectionIdx)}>
+                    ＋ パートを追加
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* その他 */}
         <div className="form-group">
@@ -533,6 +616,58 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       </>
       </main>
       <FormFooter backHref={backHref} backText={backText} />
+
+      {studioModalOpen && (
+        <Modal title="場所を選択" onClose={() => setStudioModalOpen(false)}>
+          <div>
+            {studios.length === 0 ? (
+              <p style={{ color: "#999" }}>スタジオが登録されていません</p>
+            ) : (
+              studios.map((studio) => (
+                <div key={studio.id} style={{ marginBottom: "16px" }}>
+                  <div style={{ fontWeight: "bold", marginBottom: "8px", fontSize: "14px" }}>
+                    <i className="fas fa-music" style={{ marginRight: "6px", color: "#4caf50" }} />
+                    {studio.name}
+                    {studio.prefecture && (
+                      <span style={{ fontWeight: "normal", fontSize: "0.85em", marginLeft: "8px", color: "#777" }}>
+                        {studio.prefecture}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", paddingLeft: "12px" }}>
+                    {studio.rooms && studio.rooms.length > 0 ? (
+                      studio.rooms.map((room, rIdx) => (
+                        <button
+                          key={rIdx}
+                          type="button"
+                          className="add-choice"
+                          style={{ padding: "6px 12px", fontSize: "13px" }}
+                          onClick={() => {
+                            setPlaceName(`${studio.name} ${room}`.trim());
+                            setWebsite(studio.hp || "");
+                            setAccess(studio.access || "");
+                            setGoogleMap(studio.map || "");
+                            setStudioModalOpen(false);
+                          }}
+                        >
+                          {room}
+                        </button>
+                      ))
+                    ) : (
+                      <span style={{ color: "#999", fontSize: "0.82em" }}>ルーム情報なし</span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "24px" }}>
+              <button type="button" className="back-link" onClick={() => setStudioModalOpen(false)} style={{ border: "none", background: "none", color: "#666", textDecoration: "underline" }}>
+                キャンセル
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </BaseLayout>
   );
 }
