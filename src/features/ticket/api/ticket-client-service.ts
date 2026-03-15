@@ -1,5 +1,6 @@
 "use client";
 import { db } from "@/src/lib/firebase";
+import { archiveAndDeleteDoc } from "@/src/lib/functions";
 import {
   collection, getDocs, query, where, orderBy,
   addDoc, deleteDoc, doc, serverTimestamp,
@@ -63,6 +64,5 @@ export async function addDoorCheckIn(data: {
 }
 
 export async function deleteDoorCheckIn(checkInId: string): Promise<void> {
-  // archiveAndDeleteDoc と同様の削除（アーカイブなし）
-  await deleteDoc(doc(db, "checkIns", checkInId));
+  await archiveAndDeleteDoc("checkIns", checkInId);
 }

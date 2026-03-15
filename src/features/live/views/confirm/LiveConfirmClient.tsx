@@ -8,7 +8,7 @@ import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { Live, LiveCheckIn, EnqueteQuestion, EnqueteAnswer, Score } from "@/src/lib/firestore/types";
-import { getDayOfWeek, isInTerm } from "@/src/lib/functions";
+import { getDayOfWeek, isInTerm, writeLog } from "@/src/lib/functions";
 import { SetlistConfirm } from "@/src/components/Setlist/SetlistConfirm";
 
 type Props = {
@@ -231,6 +231,7 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
         });
       } catch (e) {
         console.error("Analysis fetch error:", e);
+        await writeLog({ dataId: liveId, action: "ライブ動員分析取得", status: "error", errorDetail: { message: (e as Error).message } });
       }
     };
 
@@ -247,6 +248,7 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
         );
       } catch (e) {
         console.error("Enquete fetch error:", e);
+        await writeLog({ dataId: liveId, action: "アンケート集計取得", status: "error", errorDetail: { message: (e as Error).message } });
       }
     };
 
@@ -260,6 +262,7 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
         setScoresMap(map);
       } catch (e) {
         console.error("Scores fetch error:", e);
+        await writeLog({ dataId: "all", action: "分析用スコア取得", status: "error", errorDetail: { message: (e as Error).message } });
       }
     };
 

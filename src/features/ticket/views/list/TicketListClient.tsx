@@ -14,6 +14,7 @@ import {
   addDoorCheckIn,
   deleteDoorCheckIn,
 } from "@/src/features/ticket/api/ticket-client-service";
+import { writeLog } from "@/src/lib/functions";
 
 // =====================================================================
 // 型定義
@@ -323,15 +324,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
   const [loading, setLoading] = useState(false);
 
   // --- フィルター状態 ---
-  const [selectedLiveId, setSelectedLiveId] = useState<string>(
-    initialLiveId ?? (() => {
-      const today = format(new Date(), "yyyy.MM.dd");
-      const closest = [...initialLives]
-        .filter((l) => l.date >= today)
-        .sort((a, b) => a.date.localeCompare(b.date))[0];
-      return closest?.id ?? (initialLives[0]?.id ?? "");
-    })()
-  );
+  const [selectedLiveId, setSelectedLiveId] = useState<string>(initialLiveId ?? "");
   const [searchResNo, setSearchResNo] = useState("");
   const [searchName, setSearchName] = useState("");
   const [appliedResNo, setAppliedResNo] = useState("");
@@ -352,7 +345,17 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
 
   useEffect(() => {
     setBreadcrumbs([{ title: "予約者一覧" }]);
-  }, [setBreadcrumbs]);
+    
+    // ライブ未選択（且つURL指定なし）の場合のみ、直近のライブを自動選択
+    if (!initialLiveId) {
+      const today = format(new Date(), "yyyy.MM.dd");
+      const closest = [...initialLives]
+        .filter((l) => l.date >= today)
+        .sort((a, b) => a.date.localeCompare(b.date))[0];
+      const targetId = closest?.id ?? (initialLives[0]?.id ?? "");
+      if (targetId) setSelectedLiveId(targetId);
+    }
+  }, [setBreadcrumbs, initialLiveId, initialLives]);
 
   // --- データ取得 ---
   const loadData = useCallback(async () => {
@@ -362,6 +365,9 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
       const [t, c] = await Promise.all([fetchTickets(selectedLiveId), fetchCheckIns(selectedLiveId)]);
       setTickets(t);
       setCheckIns(c);
+    } catch (e) {
+      console.error(e);
+      await writeLog({ dataId: selectedLiveId, action: "予約者一覧データ取得", status: "error", errorDetail: { message: (e as Error).message } });
     } finally {
       setLoading(false);
     }
@@ -387,11 +393,11 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
   // --- チェックインモーダルを開く ---
   const openCheckInModal = async (fullId: string) => {
     showSpinner();
+    let ticketId = fullId;
+    let groupSuffix: string | null = null;
     try {
       const gIndex = fullId.lastIndexOf("_g");
       const underscoreCount = (fullId.match(/_/g) || []).length;
-      let ticketId = fullId;
-      let groupSuffix: string | null = null;
 
       if (underscoreCount >= 2 && gIndex !== -1) {
         ticketId = fullId.substring(0, gIndex);
@@ -443,8 +449,10 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
         targets,
         currentCheckedMap,
       });
-    } catch {
+    } catch (e) {
       hideSpinner();
+      console.error(e);
+      await writeLog({ dataId: ticketId, action: "チケット詳細取得", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("チケット情報の取得に失敗しました", true);
     }
   };
@@ -475,8 +483,10 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
       await showDialog("チェックイン情報を更新しました", true);
       setCheckInModalState(null);
       await loadData();
-    } catch {
+    } catch (e) {
       hideSpinner();
+      console.error(e);
+      await writeLog({ dataId: checkInModalState?.ticket.id, action: "チェックイン更新", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("更新に失敗しました", true);
     }
   };
@@ -493,8 +503,10 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
       await showDialog(`${count}名のチェックインを登録しました`, true);
       setDoorModalOpen(false);
       await loadData();
-    } catch {
+    } catch (e) {
       hideSpinner();
+      console.error(e);
+      await writeLog({ dataId: selectedLiveId, action: "当日受付登録", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("登録に失敗しました", true);
     }
   };
@@ -509,8 +521,10 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
       hideSpinner();
       await showDialog("削除しました", true);
       await loadData();
-    } catch {
+    } catch (e) {
       hideSpinner();
+      console.error(e);
+      await writeLog({ dataId: checkInId, action: "当日受付削除", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };
@@ -597,8 +611,8 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
       const isNewUser = lastUid !== undefined && lastUid !== t.uid;
       lastUid = t.uid;
       const rowClass = isNewUser ? "group-separator" : "";
-      const createdAt = t.createdAt ? format(new Date(t.createdAt), "yyyy/MM/dd HH:mm") : "-";
-      const updatedAt = t.updatedAt ? format(new Date(t.updatedAt), "yyyy/MM/dd HH:mm") : "-";
+      const createdAt = t.createdAt ? format(t.createdAt, "yyyy/MM/dd HH:mm") : "-";
+      const updatedAt = t.updatedAt ? format(t.updatedAt, "yyyy/MM/dd HH:mm") : "-";
 
       if (t.resType === "invite" && t.groups) {
         t.groups.forEach((group, gIdx) => {
@@ -845,7 +859,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
                     <span className="badge badge-success">チェックイン済</span>
                   </td>
                   <td style={{ fontSize: "11px", color: "#666" }}>
-                    {c.createdAt ? format(new Date(c.createdAt), "yyyy/MM/dd HH:mm") : "-"}
+                    {c.createdAt ? format(c.createdAt, "yyyy/MM/dd HH:mm") : "-"}
                   </td>
                 </tr>
               ))}
