@@ -1,4 +1,4 @@
-import { Score } from "@/src/lib/firestore/types";
+import { Score, EventWithSetlist } from "@/src/lib/firestore/types";
 
 export type ScoreFilters = {
   search: string;
@@ -8,21 +8,21 @@ export type ScoreFilters = {
 };
 
 // フィルタ知能
-export const scoreFilterFn = (s: Score, f: ScoreFilters, events: any[]) => {
+export const scoreFilterFn = (s: Score, f: ScoreFilters, events: EventWithSetlist[]) => {
   const matchTitle = s.title?.toLowerCase().includes(f.search.toLowerCase());
   const matchGenre = !f.genre || s.genres?.includes(f.genre);
   let matchEvent = true;
   if (f.eventId) {
-    const event = events.find((e: any) => e.id === f.eventId);
-    matchEvent = event?.scoreIdsInSetlist?.includes(s.id);
+    const event = events.find((e) => e.id === f.eventId);
+    matchEvent = event?.scoreIdsInSetlist?.includes(s.id) ?? false;
   }
   return !!(matchTitle && matchGenre && matchEvent);
 };
 
 // ソート知能
-export const scoreSortFn = (a: Score, b: Score, f: ScoreFilters, events: any[]) => {
+export const scoreSortFn = (a: Score, b: Score, f: ScoreFilters, events: EventWithSetlist[]) => {
   if (f.eventId) {
-    const event = events.find((e: any) => e.id === f.eventId);
+    const event = events.find((e) => e.id === f.eventId);
     const orderedIds = event?.scoreIdsInSetlist || [];
     return orderedIds.indexOf(a.id) - orderedIds.indexOf(b.id);
   }

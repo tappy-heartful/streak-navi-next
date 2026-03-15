@@ -8,7 +8,7 @@ export function useAppForm<T extends Record<string, any>>(
   const [formData, setFormData] = useState<T>(initialValues);
   const [errors, setErrors] = useState<{ [K in keyof T]?: string }>({});
 
-  const updateField = useCallback((field: keyof T, value: any) => {
+  const updateField = useCallback((field: string, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: undefined }));
   }, []);
@@ -42,7 +42,7 @@ export function useAppForm<T extends Record<string, any>>(
 export type AppFormReturn<T extends Record<string, any>> = {
   formData: T;
   errors: { [K in keyof T]?: string };
-  updateField: (field: keyof T, value: any) => void;
+  updateField: (field: string, value: unknown) => void;
   validate: () => { [K in keyof T]?: string };
   resetForm: () => void;
 };

@@ -4,14 +4,16 @@ import { FormField } from "./FormField";
 type AppInputProps = {
   label: string;
   field: string;
-  value: any;
+  value: unknown;
   error?: string;
   required?: boolean;
-  type?: "text" | "checkbox";
-  updateField: (field: any, value: any) => void;
+  type?: "text" | "checkbox" | "date" | "time" | "url" | "number" | "textarea";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateField: (field: string, value: any) => void;
+  placeholder?: string;
 };
 
-export const AppInput = ({ label, field, value, error, required, type = "text", updateField }: AppInputProps) => {
+export const AppInput = ({ label, field, value, error, required, type = "text", updateField, placeholder }: AppInputProps) => {
   if (type === "checkbox") {
     return (
       <div className="form-group checkbox-group">
@@ -23,12 +25,29 @@ export const AppInput = ({ label, field, value, error, required, type = "text", 
     );
   }
 
+  const strValue = (value !== undefined && value !== null) ? String(value) : "";
+
+  if (type === "textarea") {
+    return (
+      <FormField label={label} required={required} error={error}>
+        <textarea
+          className="form-control"
+          value={strValue}
+          rows={4}
+          placeholder={placeholder}
+          onChange={(e) => updateField(field, e.target.value)}
+        />
+      </FormField>
+    );
+  }
+
   return (
     <FormField label={label} required={required} error={error}>
       <input
         type={type}
         className="form-control"
-        value={value}
+        value={strValue}
+        placeholder={placeholder}
         onChange={(e) => updateField(field, e.target.value)}
       />
     </FormField>

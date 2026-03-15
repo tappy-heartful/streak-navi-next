@@ -1,3 +1,4 @@
+@import "./live-confirm.css";
 /* ベーススタイル */
 html {
   /* height: 100%; は削除 */
@@ -14,8 +15,8 @@ body {
   margin: 0 auto;
   padding: 0;
   
-  /* 横揺れ防止 */
-  overflow-x: hidden;
+  /* 横揺れ防止（clip は hidden と同じく視覚的にクリップするが、スクロールコンテナを作らないため子要素の横スクロールが正常に動作する） */
+  overflow-x: clip;
   
   /* Safariでスクロールが止まる現象（フリーズ）への対策 */
   -webkit-overflow-scrolling: touch;
@@ -471,6 +472,43 @@ h3 {
   text-align: left;
 }
 
+/* 検索フィルターのグリッド */
+.list-filter-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+.list-filter-grid select, 
+.list-filter-grid input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+}
+
+/* ジャンル等の複数行セル */
+.list-text-small {
+  font-size: 11px;
+  color: #666;
+  white-space: pre-wrap;
+}
+
+/* YouTube等のバッジボタン */
+.list-badge-button {
+  background-color: #ff0000;
+  color: white !important;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  text-decoration: none;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
 /* 一覧画面テーブル */
 
 /* テーブルレスポンシブ対応 */
@@ -747,7 +785,9 @@ input[type="time"] {
 
 /* ステータスラベル */
 .answer-status-container {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 16px;
 }
 
@@ -814,10 +854,15 @@ button {
   justify-content: space-between;
 }
 
-.confirm-buttons button {
+.confirm-buttons button,
+.confirm-buttons a {
   flex: 1;
   padding: 12px;
   font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  box-sizing: border-box;
 }
 
 /* カラー別ボタン */
@@ -851,6 +896,71 @@ button {
 
 .clear-button {
   background-color: #ccc;
+}
+
+/* 回答フォーム内ボタン（call-answer等） */
+.add-song {
+  margin-top: 10px;
+  background-color: #eee;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.remove-song {
+  display: block;
+  margin-left: auto;
+  margin-top: 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* 回答フォーム内フォーム要素 */
+.song-item input,
+.song-item textarea,
+.song-item select {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.song-item textarea {
+  min-height: 50px;
+}
+
+/* 回答フォーム内ジャンル・曲カード */
+.genre-card {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.genre-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.song-item {
+  margin-bottom: 15px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
 }
 
 /* ツールチップ */
@@ -1130,4 +1240,707 @@ a:hover {
     max-height: 100%; /* 上下端を画面に合わせる */
     object-fit: contain; /* アスペクト比を維持して収める */
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* 部屋一覧の入力行 */
+.room-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.room-item input {
+  flex-grow: 1;
+}
+
+.remove-room-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-room-button:hover {
+  background-color: #d32f2f;
+}
+
+.add-room-button {
+  background-color: #03a9f4;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.add-room-button:hover {
+  background-color: #0288d1;
+}
+
+/* ===== 投票 ===== */
+.vote-msg {
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #777;
+}
+
+.vote-item {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.vote-item-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.vote-results {
+  margin-top: 10px;
+}
+
+.result-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.result-bar .label {
+  width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.result-bar .bar-container {
+  flex-grow: 1;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 10px;
+  height: 18px;
+}
+
+.result-bar .bar {
+  height: 100%;
+  background: linear-gradient(to right, #4CAF50, #81C784);
+  border-radius: 4px;
+  transition: width 0.5s;
+}
+
+.result-bar .vote-count {
+  min-width: 40px;
+  text-align: right;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.result-bar .vote-count a {
+  color: #1a73e8;
+}
+
+.my-choice-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* 投票回答フォーム */
+.vote-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.vote-choice-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.vote-choice-label {
+  flex-grow: 1;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.vote-choice-label:hover {
+  background-color: #f0f0f0;
+}
+
+.vote-choice-label.selected {
+  background-color: #E8F5E9;
+  border-color: #4CAF50;
+}
+
+.vote-choice-label input[type="radio"] {
+  margin-right: 10px;
+}
+
+.vote-choice-link {
+  margin-left: 10px;
+  font-size: 16px;
+  color: #1a73e8;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ===== 投票編集 ===== */
+.choice-wrapper {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.choice-wrapper input {
+  flex: 1;
+}
+
+.add-choice {
+  margin-top: 10px;
+  background-color: #eee;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.remove-choice {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.remove-item {
+  display: block;
+  margin-left: auto;
+  margin-top: 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.add-item-button {
+  margin-top: 10px;
+  background-color: #eee;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+/* ============================
+   イベント機能 固有スタイル
+   ============================ */
+
+/* 日程調整テーブル */
+.adjust-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.adjust-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.adjust-row:last-child {
+  border-bottom: none;
+}
+
+.adjust-row.header-row {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.date-cell {
+  flex-basis: 35%;
+  padding: 12px 10px;
+  background-color: #fcfcfc;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.date-cell .date-part {
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.date-cell .day-part {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.status-summary-cell {
+  flex-basis: 65%;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 15px;
+  font-size: 16px;
+}
+
+.status-cell {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #eee;
+}
+
+.status-cell:last-child {
+  border-right: none;
+}
+
+.status-count {
+  font-weight: bold;
+  padding: 2px 0;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+.status-count.status-count-zero {
+  border-bottom: none;
+  cursor: default;
+}
+
+/* 出欠状況ブロック */
+.attendance-status-block {
+  margin-bottom: 24px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.attendance-status-block h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: #333;
+  border-left: 4px solid #4caf50;
+  padding-left: 8px;
+}
+
+.attendance-section-group {
+  margin-bottom: 15px;
+  padding: 0 5px;
+}
+
+.attendance-section-group h4 {
+  font-size: 13px;
+  margin-bottom: 5px;
+  color: #444;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 3px;
+  font-weight: bold;
+}
+
+.attendance-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.attendance-user {
+  width: 80px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.attendance-user img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 6px;
+}
+
+.attendance-user.small-user {
+  width: 60px;
+  font-size: 11px;
+}
+
+.attendance-user.small-user img {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 4px;
+}
+
+.attendance-user span {
+  display: block;
+  word-break: break-word;
+}
+
+.no-user {
+  font-size: 13px;
+  color: #888;
+}
+
+.answer-count-summary {
+  display: block;
+  text-align: left;
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: normal;
+  margin-bottom: 10px;
+}
+
+#unanswered-button {
+  display: inline-block;
+  padding: 8px 15px;
+  margin: 0 10px 10px 10px;
+  background-color: #f0f0f0;
+  color: #6c757d;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#unanswered-button:hover {
+  background-color: #e2e6ea;
+  border-color: #adadad;
+}
+
+/* 録音リンク */
+#event-recordings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recording-list-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recording-list-ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.recording-list-ul li:last-child {
+  border-bottom: none;
+}
+
+.recording-link {
+  font-weight: bold;
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.registered-by {
+  font-size: 12px;
+  color: #6c757d;
+  white-space: nowrap;
+  margin-right: 10px;
+}
+
+.delete-recording-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px;
+}
+
+.add-recording-button {
+  margin-top: 10px;
+  background-color: #eee;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* セットリスト表示 */
+.setlist-group-confirm {
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed #ccc;
+}
+
+.setlist-group-confirm:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.setlist-group-confirm h4 {
+  font-size: 1em;
+  font-weight: bold;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+
+.setlist-songs {
+  padding-left: 10px;
+}
+
+/* プレイリストボタン */
+.score-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.playlist-button {
+  font-size: 13px;
+  padding: 4px 10px;
+  background-color: #ff0000;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.playlist-button:hover {
+  background-color: #cc0000;
+  color: white;
+}
+
+/* 日程調整回答フォーム選択スタイル */
+.adjust-row.selected-row {
+  background-color: #f0f8ff;
+}
+
+.status-cell.selected-cell {
+  background-color: #e8f4fd;
+}
+
+/* ===== 汎用ユーティリティ ===== */
+.text-center {
+  text-align: center;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.cancel-button {
+  display: block;
+  width: 100%;
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: #ccc;
+  color: #333;
+}
+
+.cancel-button:hover {
+  background-color: #bbb;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+/* ===== モーダル ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  border: none;
+  padding: 0;
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #eee;
+}
+
+.modal-footer button {
+  flex: 1;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  background: #f0f0f0;
+}
+
+/* ===== 予約者一覧専用 ===== */
+.btn-qr-scan {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #1976d2;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-qr-scan:hover {
+  opacity: 0.85;
+}
+
+.res-type-label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 4px;
+}
+
+.status-invite {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.status-general {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.count-badge {
+  display: inline-block;
+  font-size: 11px;
+  color: #555;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.badge-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.ticket-link-icon {
+  color: #1976d2;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.ticket-link-icon:hover {
+  color: #0d47a1;
+}
+
+.rep-name-cell {
+  font-size: 13px;
+  color: #444;
+  min-width: 80px;
 }

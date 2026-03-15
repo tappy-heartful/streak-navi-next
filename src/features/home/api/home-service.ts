@@ -50,7 +50,8 @@ export async function getAnnouncementsServer() {
     return { id: eDoc.id, title: d.title, date: d.date, attendanceType: d.attendanceType, allowAssign: d.allowAssign, isUnanswered: false, diffDays };
   });
 
-  const upcoming = eventResults.filter((e): e is any => e !== null);
+  type UpcomingEvent = { id: string; title: string; date: string; attendanceType: string; allowAssign: boolean; isUnanswered: boolean; diffDays: number };
+  const upcoming = eventResults.filter((e): e is UpcomingEvent => e !== null);
   
   // 日程調整
   const schPending = upcoming.filter(e => e.attendanceType === "schedule");

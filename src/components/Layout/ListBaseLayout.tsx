@@ -1,0 +1,51 @@
+"use client";
+
+import React, { useEffect } from "react";
+import Link from "next/link";
+import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
+import { useAuth } from "@/src/contexts/AuthContext";
+
+type Props = {
+  title: string;
+  icon?: string;
+  basePath: string;
+  count?: number;
+  hideAddButton?: boolean;
+  children: React.ReactNode;
+};
+
+/**
+ * 検索機能を省いた、グループ表示ベースのシンプルな一覧画面レイアウト
+ */
+export const ListBaseLayout = ({ title, icon, basePath, count, hideAddButton, children }: Props) => {
+  const { setBreadcrumbs } = useBreadcrumb();
+  const { isAdmin } = useAuth();
+
+  useEffect(() => {
+    setBreadcrumbs([{ title: `${title}一覧` }]);
+  }, [setBreadcrumbs, title]);
+
+  return (
+    <main>
+      <div className="page-header">
+        <h1>{icon && <i className={icon}></i>} {title}一覧 {count !== undefined && `(${count}件)`}</h1>
+      </div>
+
+      <div id={`${btoa(basePath)}-list-container`}>
+        {children}
+
+        {isAdmin && !hideAddButton && (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <Link href={`${basePath}/edit?mode=new`} className="list-add-button" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', width: 'fit-content', padding: '12px 24px' }}>
+              ＋ 新規作成
+            </Link>
+          </div>
+        )}
+      </div>
+
+      <div className="page-footer">
+        <Link href="/home" className="back-link">← ホームに戻る</Link>
+      </div>
+    </main>
+  );
+};

@@ -8,5 +8,7 @@ export const toPlainObject = (doc: any) => {
     id: doc.id,
     createdAt: data.createdAt?.toMillis?.() || null,
     updatedAt: data.updatedAt?.toMillis?.() || null,
+    lastLoginAt: data.lastLoginAt?.toMillis?.() || null,
+    agreedAt: data.agreedAt?.toMillis?.() || null,
   };
 };

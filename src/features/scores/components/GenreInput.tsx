@@ -1,8 +1,9 @@
 import styles from "./genre.module.css";
+import { Genre } from "@/src/lib/firestore/types";
 
 type Props = {
   genres: string[];
-  allGenres: any[];
+  allGenres: Genre[];
   onChange: (newGenres: string[]) => void;
 };
 

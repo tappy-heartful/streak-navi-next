@@ -6,6 +6,7 @@ import { auth, db } from "@/src/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { setSession, clearAllAppSession } from "@/src/lib/functions";
+import { User as FirestoreUser } from "@/src/lib/firestore/types";
 
 // 管理機能の定義
 export type AdminModule = 
@@ -32,7 +33,7 @@ const PATH_TO_MODULE: Record<string, AdminModule> = {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  userData: any | null;
+  userData: FirestoreUser | null;
   refreshUserData: () => Promise<void>;
   /** 現在表示中のページ（URL）に対する管理者権限があるかどうか */
   isAdmin: boolean;
@@ -42,7 +43,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<any | null>(null);
+  const [userData, setUserData] = useState<FirestoreUser | null>(null);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
 
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const snap = await getDoc(userRef);
       if (snap.exists()) {
         const data = snap.data();
-        setUserData(data);
+        setUserData({ id: uid, ...data } as FirestoreUser);
         Object.entries(data).forEach(([k, v]) => setSession(k, v));
       }
     } catch (e) {

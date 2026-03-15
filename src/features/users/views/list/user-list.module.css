@@ -1,0 +1,33 @@
+/* src/features/users/views/list/user-list.module.css */
+
+.userLink {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* アイコンと文字の間の最小余白 */
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.userThumb {
+  width: 24px;
+  height: 24px;
+  min-width: 24px; /* 圧縮防止 */
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #eee;
+}
+
+.userNameText {
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: bold;
+  display: inline-block;
+  word-break: break-all;
+}
+
+.textSmall {
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}

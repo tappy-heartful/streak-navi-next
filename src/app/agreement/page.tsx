@@ -6,13 +6,12 @@ import Link from 'next/link';
 import { useAuth } from "@/src/contexts/AuthContext"; // AuthContextをインポート
 import { db } from "@/src/lib/firebase";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { 
-  showSpinner, 
-  hideSpinner, 
-  getSession, 
-  removeSession, 
-  writeLog, 
-  setSession 
+import {
+  showSpinner,
+  hideSpinner,
+  showDialog,
+  writeLog,
+  setSession
 } from '@/src/lib/functions';
 import styles from './agreement.module.css';
 
@@ -53,26 +52,21 @@ export default function AgreementPage() {
         status: 'success',
       });
 
-      // 4. セッション管理とリダイレクト
-      // ログイン時に保存した「本来行きたかった場所」を取得
-      const target = getSession("redirectAfterLogin") || "/home";
-      removeSession("redirectAfterLogin");
-      
       // ログイン成功フラグ（演出用）
       setSession("fromLogin", "true");
 
-      // 初回登録時はユーザー編集画面へ飛ばす元のロジックを優先する場合
-      router.push(`/user?isInit=true`);
+      router.push(`/user/edit?uid=${user.uid}`);
       
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Agreement update error:", e);
+      const message = e instanceof Error ? e.message : String(e);
       await writeLog({
         dataId: user?.uid || 'unknown',
         action: '利用規約同意失敗',
         status: 'error',
-        errorDetail: { message: e.message },
+        errorDetail: { message },
       });
-      alert("同意処理の保存に失敗しました。通信環境を確認してください。");
+      await showDialog("同意処理の保存に失敗しました。通信環境を確認してください。", true);
     } finally {
       hideSpinner();
     }

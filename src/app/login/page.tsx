@@ -91,8 +91,8 @@ export default function LoginPage() {
       const res = await fetch('/api/line/get-url'); 
       const { loginUrl } = await res.json();
       window.location.href = loginUrl;
-    } catch (err: any) {
-      alert('ログインURL取得失敗');
+    } catch {
+      await utils.showDialog('ログインURL取得失敗', true);
       setIsLoggingIn(false);
     }
   };

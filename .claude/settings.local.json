@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"sectionId\\\\|abbreviation\\\\|paypayId\" C:UserstappyDocumentsreposstreak-navisrc --include=*.ts --include=*.tsx)",
+      "Bash(npm run:*)",
+      "Bash(taskkill /PID 23056 /F)",
+      "Bash(taskkill //PID 23056 //F)",
+      "Bash(xargs grep:*)",
+      "Bash(wc -l src/**/*.tsx src/**/*.ts src/**/*.ts)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \" %{http_code}\" http://localhost:3001/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001/)",
+      "Bash(netstat -ano)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/media-list/**)",
+      "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/media-edit/**)",
+      "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/media-confirm/**)",
+      "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/**)",
+      "Read(//c/Users/tappy/Documents/repos/ssjo_old/swing-streak-jazz-orchestra/public-navi/app/common/**)",
+      "Bash(grep -n \"showDialog\\\\|useDialog\\\\|DialogContext\" \"c:/Users/tappy/Documents/repos/streak-navi/src/contexts/\"*.tsx)",
+      "Bash(ls -la /c/Users/tappy/Documents/repos/streak-navi/src/app/*/)",
+      "Bash(find c:UserstappyDocumentsreposstreak-navi -type d -name *vanilla* -o -name *original* -o -name *reference*)",
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(find c:UserstappyDocumentsreposstreak-navi -type f \\\\\\(-name *.html -o -name *.htm \\\\\\))",
+      "WebFetch(domain:streak-navi.web.app)",
+      "Bash(grep -v \"node_modules\\\\|\\\\.d\\\\.ts\\\\|//.*any\")"
+    ]
+  }
+}
