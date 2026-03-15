@@ -75,7 +75,7 @@ export function NoticeAutoConfirmClient({ noticeBase }: Props) {
                       }}
                     >
                       <label className="label-title">通知タイミング</label>
-                      <div className="label-value" style={{ marginBottom: "8px" }}>
+                      <div className="label-value" style={{ marginBottom: "8px", color: "#2e7d32", fontWeight: "bold" }}>
                         {formatTiming(key, n)}
                       </div>
                       <label className="label-title">通知メッセージ</label>
@@ -102,7 +102,7 @@ export function NoticeAutoConfirmClient({ noticeBase }: Props) {
 
         {isAdmin && (
           <div className="confirm-buttons" style={{ marginTop: "24px" }}>
-            <Link href="/notice/auto-edit" className="edit-button" style={{ textDecoration: "none" }}>
+            <Link href="/notice/auto-edit" className="edit-button" style={{ textDecoration: "none", borderRadius: "8px" }}>
               編集する
             </Link>
           </div>
