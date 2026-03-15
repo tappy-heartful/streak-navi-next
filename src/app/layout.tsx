@@ -2,9 +2,6 @@
 import type { Metadata } from "next";
 import ClientLayout from "./ClientLayout"; // 後で作るファイル
 
-// アプリ全体を常に動的レンダリング（リクエスト毎にFirestoreから最新データを取得）
-export const dynamic = 'force-dynamic';
-
 // Metadataはサーバーコンポーネントでしか動かないのでここに置く
 export const metadata: Metadata = {
   title: {
