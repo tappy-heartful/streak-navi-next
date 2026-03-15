@@ -336,4 +336,17 @@ export interface EnqueteAnswer {
   liveId: string;
   common: Record<string, string | number>;
 }
+
+// ===== 譜割り (Assign) =====
+
+export interface Assign {
+  id: string;
+  eventId: string;
+  songId: string;
+  partName: string;
+  userId?: string;
+  assignValue: string;
+  isRehearsal?: boolean;
+  createdAt?: number;
+}
 
