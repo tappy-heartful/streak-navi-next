@@ -337,6 +337,36 @@ export interface EnqueteAnswer {
   common: Record<string, string | number>;
 }
 
+// ===== 通知設定 (Notice) =====
+
+export interface NoticeScheduleItem {
+  scheduledTime: string; // "HH:mm"
+  message: string;
+}
+
+export interface NoticeSchedule {
+  scheduledDate: string; // "yyyy.MM.dd"
+  notifications: NoticeScheduleItem[];
+}
+
+export interface Notice {
+  id: string;
+  relatedType: string;   // "none" | "events" | "votes" | "calls"
+  relatedId?: string;
+  relatedTitle?: string;
+  schedules: NoticeSchedule[];
+  activeDate?: string;   // "yyyy.MM.dd" 最初のschedule日付
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+export interface NoticeBaseNotification {
+  days: number;
+  beforeAfter: "before" | "after";
+  interval?: number; // collectRemind のみ使用
+  message: string;
+}
+
 // ===== 譜割り (Assign) =====
 
 export interface Assign {
