@@ -12,8 +12,8 @@ export async function getAssignEvents() {
     .where("allowAssign", "==", true)
     .orderBy("date", "desc")
     .get();
-  
-  return snap.docs.map((doc: any) => toPlainObject(doc) as Event);
+
+  return snap.docs.map(doc => toPlainObject(doc) as Event);
 }
 
 /**
@@ -23,8 +23,8 @@ export async function getAssignsByEvent(eventId: string) {
   const snap = await db.collection("assigns")
     .where("eventId", "==", eventId)
     .get();
-  
-  return snap.docs.map((doc: any) => toPlainObject(doc) as Assign);
+
+  return snap.docs.map(doc => toPlainObject(doc) as Assign);
 }
 
 /**
@@ -47,17 +47,17 @@ export async function getAssignMasterData() {
   ]);
 
   const scores: Record<string, Score> = {};
-  scoresSnap.docs.forEach((doc: any) => {
+  scoresSnap.docs.forEach(doc => {
     scores[doc.id] = toPlainObject(doc) as Score;
   });
 
   const users: Record<string, User> = {};
-  usersSnap.docs.forEach((doc: any) => {
+  usersSnap.docs.forEach(doc => {
     users[doc.id] = toPlainObject(doc) as User;
   });
 
   const sections: Record<string, Section> = {};
-  sectionsSnap.docs.forEach((doc: any) => {
+  sectionsSnap.docs.forEach(doc => {
     sections[doc.id] = toPlainObject(doc) as Section;
   });
 

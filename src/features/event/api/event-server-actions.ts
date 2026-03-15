@@ -9,6 +9,7 @@ import {
   EventRecording,
   Score,
   Section,
+  Instrument,
   User,
 } from "@/src/lib/firestore/types";
 
@@ -177,12 +178,14 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
 export type EventEditData = {
   scores: Score[];
   sections: Section[];
+  instruments: Instrument[];
 };
 
 export async function fetchEventEditData(): Promise<EventEditData> {
-  const [scoresSnap, sectionsSnap] = await Promise.all([
+  const [scoresSnap, sectionsSnap, instrumentsSnap] = await Promise.all([
     adminDb.collection("scores").orderBy("title", "asc").get(),
     adminDb.collection("sections").get(),
+    adminDb.collection("instruments").get(),
   ]);
 
   const scores: Score[] = scoresSnap.docs.map(d => ({
@@ -196,7 +199,11 @@ export async function fetchEventEditData(): Promise<EventEditData> {
     .map(d => ({ id: d.id, name: d.data().name || "" }))
     .sort((a, b) => Number(a.id) - Number(b.id));
 
-  return { scores, sections };
+  const instruments: Instrument[] = instrumentsSnap.docs
+    .map(d => ({ id: d.id, name: d.data().name || "", sectionId: d.data().sectionId || "" }))
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  return { scores, sections, instruments };
 }
 
 export async function fetchAttendanceAnswerPageData(eventId: string): Promise<{

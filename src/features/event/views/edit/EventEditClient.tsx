@@ -6,7 +6,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { FormFooter } from "@/src/components/Form/FormFooter";
-import { Event, Score, Section, SetlistGroup, InstrumentPart } from "@/src/lib/firestore/types";
+import { Event, Score, Section, Instrument, SetlistGroup, InstrumentPart } from "@/src/lib/firestore/types";
 import { addEvent, updateEvent } from "@/src/features/event/api/event-client-service";
 import { showDialog, showSpinner, hideSpinner, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
 import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
@@ -18,6 +18,7 @@ type Props = {
   initialType: "schedule" | "attendance";
   scores: Score[];
   sections: Section[];
+  instruments: Instrument[];
 };
 
 
@@ -41,7 +42,7 @@ function defaultDates() {
   return { start: fmt(start), end: fmt(end) };
 }
 
-export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections }: Props) {
+export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections, instruments }: Props) {
   const router = useRouter();
   const { userData, isAdmin, loading } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
@@ -151,6 +152,14 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
     setInstrumentConfig(prev => prev.map((sec, i) =>
       i === sectionIdx
         ? { ...sec, parts: sec.parts.map((p, j) => j === partIdx ? { ...p, partName: val } : p) }
+        : sec
+    ));
+  };
+
+  const updateInstrumentId = (sectionIdx: number, partIdx: number, val: string) => {
+    setInstrumentConfig(prev => prev.map((sec, i) =>
+      i === sectionIdx
+        ? { ...sec, parts: sec.parts.map((p, j) => j === partIdx ? { ...p, instrumentId: val } : p) }
         : sec
     ));
   };
@@ -484,6 +493,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
           <label>楽器構成(譜割り用)</label>
           {instrumentConfig.map((sec, sectionIdx) => {
             const section = sections.find(s => s.id === sec.sectionId);
+            const sectionInstruments = instruments.filter(inst => inst.sectionId === sec.sectionId);
             return (
               <div key={sec.sectionId} className="instrument-section" style={{ marginBottom: "16px" }}>
                 <h3 style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>
@@ -495,9 +505,19 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                       type="text"
                       value={part.partName}
                       onChange={e => updatePartName(sectionIdx, partIdx, e.target.value)}
-                      placeholder="パート名を入力（例: Tp1, Ts, Lead）"
+                      placeholder="パート名（例: Tp1, Ts, Lead）"
                       style={{ flex: 1 }}
                     />
+                    <select
+                      value={part.instrumentId}
+                      onChange={e => updateInstrumentId(sectionIdx, partIdx, e.target.value)}
+                      style={{ flex: 1 }}
+                    >
+                      <option value="">楽器を選択</option>
+                      {sectionInstruments.map(inst => (
+                        <option key={inst.id} value={inst.id}>{inst.name}</option>
+                      ))}
+                    </select>
                     <button
                       type="button"
                       className="remove-choice"
