@@ -32,6 +32,7 @@
 .eventInfo {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .eventDate {
@@ -43,6 +44,7 @@
 .eventTitle {
   font-size: 18px;
   font-weight: bold;
+  text-align: center;
 }
 
 .answerStatus {
@@ -145,6 +147,11 @@
   position: sticky;
   left: 0;
   z-index: 3;
+  width: 100px;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .assignTable tbody td {
@@ -183,6 +190,11 @@
   z-index: 2;
   padding: 6px 15px;
   height: 32px;
+  width: 100px;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rehearsalHeader {
@@ -249,9 +261,9 @@
 
 .topControls {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   padding: 0 5px;
 }
 
@@ -317,11 +329,22 @@
   background-color: #da190b;
 }
 
-.assignSelect {
+select.assignSelect {
   width: 100%;
   padding: 4px;
   border-radius: 4px;
   border: 1px solid #ddd;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  text-align: center;
+  text-align-last: center;
+  background-color: #fff !important;
+  background-image: none !important;
+}
+/* For IE/Edge */
+.assignSelect::-ms-expand {
+  display: none;
 }
 
 .sectionNameHeader {

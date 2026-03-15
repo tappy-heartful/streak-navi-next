@@ -159,11 +159,11 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
 
   return (
     <BaseLayout>
-      <div className="container">
-        <div className="page-header">
-          <h1><i className="fa-solid fa-edit" /> 譜割り編集</h1>
-        </div>
+      <div className="page-header">
+        <h1><i className="fa-solid fa-edit" /> 譜割り編集</h1>
+      </div>
 
+      <div className="container">
         <div className={styles.topControls}>
           <div className={styles.eventInfo}>
             <span className={styles.eventTitle}>{event.title}</span>
