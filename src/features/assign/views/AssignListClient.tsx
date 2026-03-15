@@ -102,8 +102,6 @@ function EventList({ events, isClosed = false }: { events: Event[]; isClosed?: b
               borderRadius: "8px",
               backgroundColor: "#f9f9f9",
               boxShadow: "1px 1px 5px rgba(0,0,0,0.05)",
-              textDecoration: "none",
-              color: "inherit",
             }}
           >
             <div style={{ display: "flex", flexDirection: "column" }}>

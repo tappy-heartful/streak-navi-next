@@ -55,7 +55,6 @@ export function NoticeListClient({ initialNotices }: Props) {
                 backgroundColor: "#f9f9f9",
                 boxShadow: "1px 1px 5px rgba(0,0,0,0.05)",
                 textDecoration: "none",
-                color: "inherit",
               }}
             >
               <span style={{ fontWeight: "bold" }}>自動通知設定を見る</span>
@@ -120,7 +119,6 @@ function NoticeList({ notices, isClosed = false }: { notices: Notice[]; isClosed
               backgroundColor: "#f9f9f9",
               boxShadow: "1px 1px 5px rgba(0,0,0,0.05)",
               textDecoration: "none",
-              color: "inherit",
               opacity: isClosed ? 0.7 : 1,
             }}
           >
