@@ -1,0 +1,199 @@
+/* blue-note.module.css */
+
+.container {
+  padding-bottom: 40px;
+}
+
+.monthTabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px 0;
+  margin-bottom: 20px;
+  scrollbar-width: none; /* Firefox */
+}
+
+.monthTabs::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.monthTab {
+  flex: 0 0 auto;
+  padding: 10px 20px;
+  background: #f0f0f0;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+.monthTab.active {
+  background: #4caf50;
+  color: white;
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+}
+
+.playlistHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.playlistButton {
+  background-color: #ff0000;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  text-decoration: none;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s;
+}
+
+.playlistButton:hover {
+  opacity: 0.8;
+}
+
+.songList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.songItem {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.dayLabel {
+  flex: 0 0 40px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #4caf50;
+  text-align: center;
+}
+
+.songContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.songTitle {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+  text-decoration: none;
+}
+
+.songTitle:hover {
+  color: #4caf50;
+}
+
+.createdBy {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.deleteButton {
+  padding: 6px 10px;
+  background: transparent;
+  color: #ff4d4d;
+  border: 1px solid #ff4d4d;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.deleteButton:hover {
+  background: #ff4d4d;
+  color: white;
+}
+
+.editForm {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputField {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.saveButton {
+  align-self: flex-end;
+  padding: 8px 16px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.playerWrapper {
+  margin-bottom: 30px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.playerTitle {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.playerControls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.controlButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #f0f0f0;
+  color: #333;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.controlButton:hover {
+  background: #e0e0e0;
+}
+
+.activeButton {
+  background: #4caf50;
+  color: white;
+}
+
+.activeButton:hover {
+  background: #45a049;
+}

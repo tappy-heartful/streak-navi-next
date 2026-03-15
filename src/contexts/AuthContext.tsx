@@ -23,7 +23,7 @@ const PATH_TO_MODULE: Record<string, AdminModule> = {
   studio: "Studio",
   user: "User",
   notice: "Notice",
-  bluenote: "BlueNote",
+  "blue-note": "BlueNote",
   board: "Board",
   live: "Live",
   ticket: "Ticket",

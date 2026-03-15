@@ -21,10 +21,11 @@ export interface Score {
 
 export interface BlueNote {
   id: string;
-  title?: string;
+  title: string;
+  youtubeId: string;
+  createdBy?: string;
   createdAt?: number;
   updatedAt?: number;
-  [key: string]: any;
 }
 
 export interface Media {
