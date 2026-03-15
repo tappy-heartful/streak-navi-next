@@ -10,8 +10,6 @@ import { showSpinner, hideSpinner, showDialog, writeLog } from "@/src/lib/functi
 import { saveBlueNote, deleteBlueNote, fetchBlueNotes } from "@/src/features/blue-note/api/blue-note-client-service";
 import styles from "./blue-note.module.css";
 import Link from "next/link";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "@/src/lib/firebase";
 
 type Props = {
   initialBlueNotes: BlueNote[];
@@ -23,35 +21,13 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
   const [blueNotes, setBlueNotes] = useState<BlueNote[]>(initialBlueNotes);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [userMap, setUserMap] = useState<Record<string, string>>({});
 
   // 1. パンくず設定
   useEffect(() => {
     setBreadcrumbs([{ title: "今日の一曲" }]);
   }, [setBreadcrumbs]);
 
-  // 2. ユーザー名のマッピングを取得
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const uids = Array.from(new Set(blueNotes.map(n => n.createdBy).filter((uid): uid is string => !!uid)));
-        if (uids.length === 0) return;
-        
-        // 簡易的に全ユーザー取得（または必要分だけ）
-        const snap = await getDocs(collection(db, "users"));
-        const map: Record<string, string> = {};
-        snap.docs.forEach(d => {
-          map[d.id] = d.data().displayName || "不明";
-        });
-        setUserMap(map);
-      } catch (e) {
-        console.error("User fetch error:", e);
-      }
-    };
-    fetchUsers();
-  }, [blueNotes]);
-
-  // 3. 初期インデックス設定（現在の日付 or ランダム）
+  // 2. 初期インデックス設定（現在の日付 or ランダム）
   useEffect(() => {
     const todayId = utils.format(new Date(), "MMdd");
     const idx = blueNotes.findIndex(n => n.id === todayId);
@@ -154,6 +130,15 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
           <h1><i className="fa fa-headphones" /> 今日の一曲</h1>
         </div>
 
+        <div className="container">
+          <h3>今日の一曲について</h3>
+          <p className={styles.pageDescription}>
+            あなたのお気に入りのジャズを登録してください🌸<br />
+            匿名・日替わりでホーム画面に表示されるようになります！<br />
+            (季節に合った曲だとなお良きです)
+          </p>
+        </div>
+
         {/* プレイヤーセクション */}
         {blueNotes.length > 0 && (
           <div className={styles.playerWrapper}>
@@ -225,7 +210,6 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
                   day={day}
                   dateId={dateId}
                   note={note}
-                  userName={note?.createdBy ? userMap[note.createdBy] : ""}
                   onSave={handleSave}
                   onDelete={handleDelete}
                   onPlay={() => {
@@ -251,9 +235,9 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
 }
 
 function SongItem({ 
-  day, dateId, note, userName, onSave, onDelete, onPlay, isAllowedToDelete 
+  day, dateId, note, onSave, onDelete, onPlay, isAllowedToDelete 
 }: { 
-  day: number; dateId: string; note?: BlueNote; userName?: string;
+  day: number; dateId: string; note?: BlueNote;
   onSave: (id: string, t: string, u: string) => void;
   onDelete: (id: string) => void;
   onPlay: () => void;
@@ -284,7 +268,6 @@ function SongItem({
               <i className="fa-brands fa-youtube" style={{ marginRight: "8px", color: "#ff0000" }} />
               {note.title}
             </a>
-            <div className={styles.createdBy}>登録: {userName || "---"}</div>
           </div>
           <div style={{ display: "flex", gap: "8px" }}>
             <button className={styles.deleteButton} style={{ borderColor: "#4caf50", color: "#4caf50" }} onClick={() => setIsEditing(true)}>編集</button>
