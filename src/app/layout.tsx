@@ -13,6 +13,22 @@ export const metadata: Metadata = {
     icon: "https://tappy-heartful.github.io/streak-images/navi/favicon.png",
     apple: "https://tappy-heartful.github.io/streak-images/navi/favicon.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Streak Navi",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport = {
+  themeColor: "#2e7d32",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
