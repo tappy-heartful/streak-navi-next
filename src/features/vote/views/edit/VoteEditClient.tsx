@@ -65,7 +65,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       paths.push({ title: "投票新規作成", href: "" });
     }
     setBreadcrumbs(paths);
-    
+
     // Default dates
     const start = new Date();
     start.setDate(start.getDate() + 1);
@@ -173,7 +173,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       await showDialog("受付期間を入力してください", true);
       valid = false;
     }
-    
+
     // date validation
     if (values.acceptStartDate && values.acceptEndDate) {
       const s = new Date(values.acceptStartDate + ' 00:00:00').getTime();
@@ -292,7 +292,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
           <AppInput label="投票名" field="name" required value={values.name} updateField={handleChange} />
           <AppInput label="投票説明" field="description" required value={values.description} updateField={handleChange} />
         </div>
-        
+
         <div className="form-group">
           <label className="form-label" style={{ fontWeight: "bold" }}>受付期間 <span className="required">*</span></label>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -331,16 +331,16 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
           <AppInput type="checkbox" label="匿名投票（誰がどこに投票したかわからなくする）" field="isAnonymous" value={values.isAnonymous} updateField={handleChange} />
           <AppInput type="checkbox" label="票数を非公開（※管理者以外には、途中経過や終了結果の票数が見えなくなります）" field="hideVotes" value={values.hideVotes} updateField={handleChange} />
         </div>
-        
-        <FormButtons 
-          mode={mode === "createFromCall" ? "new" : mode} 
-          onSave={handleSave} 
-          onClear={() => {}} // or implement actual clear
+
+        <FormButtons
+          mode={mode === "createFromCall" ? "new" : mode}
+          onSave={handleSave}
+          onClear={() => { }} // or implement actual clear
         />
       </div>
-      <FormFooter 
-        backHref={isEdit || mode === "copy" ? `/vote/confirm?voteId=${voteId}` : "/vote"} 
-        backText={isEdit || mode === "copy" ? "投票確認に戻る" : "投票一覧に戻る"} 
+      <FormFooter
+        backHref={isEdit || mode === "copy" ? `/vote/confirm?voteId=${voteId}` : "/vote"}
+        backText={isEdit || mode === "copy" ? "投票確認" : "投票一覧"}
       />
     </BaseLayout>
   );

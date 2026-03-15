@@ -56,7 +56,7 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
   const validateUrls = () => {
     const urlPattern = /^(https?:\/\/|mailto:|tel:)/i;
     let isValid = true;
-    
+
     if (descriptionLink && !urlPattern.test(descriptionLink)) isValid = false;
 
     items.forEach(item => {
@@ -103,11 +103,11 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
       <div className="container">
         <div style={{ marginBottom: "24px" }}>
           <h2>{vote.name} のリンク設定</h2>
-          <AppInput 
-            field="desc-link" 
-            label="投票説明のリンク" 
-            value={descriptionLink} 
-            updateField={(_, val) => setDescriptionLink(val)} 
+          <AppInput
+            field="desc-link"
+            label="投票説明のリンク"
+            value={descriptionLink}
+            updateField={(_, val) => setDescriptionLink(val)}
           />
         </div>
 
@@ -115,11 +115,11 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
           {items.map((item, i) => (
             <div key={item.name} className="vote-item" style={{ marginBottom: "24px", border: "1px solid #ddd", padding: "16px", borderRadius: "8px", backgroundColor: "#fafafa" }}>
               <div style={{ marginBottom: "16px" }}>
-                <AppInput 
-                  field={`item-link-${i}`} 
-                  label={`項目名：${item.name}`} 
-                  value={item.link || ""} 
-                  updateField={(_, val) => handleItemChange(i, val)} 
+                <AppInput
+                  field={`item-link-${i}`}
+                  label={`項目名：${item.name}`}
+                  value={item.link || ""}
+                  updateField={(_, val) => handleItemChange(i, val)}
                 />
               </div>
 
@@ -128,11 +128,11 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
                   <div key={choice.name} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
                     <span style={{ marginRight: "8px", width: "120px" }}>・{choice.name}</span>
                     <div style={{ flex: 1 }}>
-                      <AppInput 
-                        field={`choice-link-${i}-${j}`} 
-                        label={`${choice.name} のリンク`} 
-                        value={choice.link || ""} 
-                        updateField={(_, val) => handleChoiceChange(i, j, val)} 
+                      <AppInput
+                        field={`choice-link-${i}-${j}`}
+                        label={`${choice.name} のリンク`}
+                        value={choice.link || ""}
+                        updateField={(_, val) => handleChoiceChange(i, j, val)}
                       />
                     </div>
                   </div>
@@ -141,16 +141,16 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
             </div>
           ))}
         </div>
-        
-        <FormButtons 
-          mode="edit" 
-          onSave={handleSave} 
-          onClear={() => {}} 
+
+        <FormButtons
+          mode="edit"
+          onSave={handleSave}
+          onClear={() => { }}
         />
       </div>
-      <FormFooter 
-        backHref={`/vote/confirm?voteId=${voteId}`} 
-        backText="投票確認に戻る" 
+      <FormFooter
+        backHref={`/vote/confirm?voteId=${voteId}`}
+        backText="投票確認"
       />
     </BaseLayout>
   );
