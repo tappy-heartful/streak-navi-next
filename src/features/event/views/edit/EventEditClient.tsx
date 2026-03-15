@@ -6,10 +6,13 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { FormFooter } from "@/src/components/Form/FormFooter";
-import { Event, Score, Section, Instrument, SetlistGroup, InstrumentPart } from "@/src/lib/firestore/types";
+import { Modal } from "@/src/components/Modal";
+import { Event, Score, Section, Instrument, Studio, SetlistGroup, InstrumentPart } from "@/src/lib/firestore/types";
 import { addEvent, updateEvent } from "@/src/features/event/api/event-client-service";
 import { showDialog, showSpinner, hideSpinner, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
 import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/src/lib/firebase";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -100,6 +103,9 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
   const [instrumentConfig, setInstrumentConfig] = useState<InstrumentSectionState[]>(initInstrumentConfig);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [studioModalOpen, setStudioModalOpen] = useState(false);
+  const [studios, setStudios] = useState<Studio[]>([]);
+  const [selectedStudioRoom, setSelectedStudioRoom] = useState<{ sIdx: number; rIdx: number } | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -162,6 +168,39 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
         ? { ...sec, parts: sec.parts.map((p, j) => j === partIdx ? { ...p, instrumentId: val } : p) }
         : sec
     ));
+  };
+
+  // ---- Studio selection ----
+
+  const handleOpenStudioModal = async () => {
+    showSpinner();
+    try {
+      const snap = await getDocs(collection(db, "studios"));
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as Studio));
+      data.sort((a, b) => {
+        const pa = a.prefecture || "ZZZ";
+        const pb = b.prefecture || "ZZZ";
+        if (pa !== pb) return pa.localeCompare(pb, "ja");
+        return (a.name || "").localeCompare(b.name || "", "ja");
+      });
+      setStudios(data);
+      setSelectedStudioRoom(null);
+    } finally {
+      hideSpinner();
+    }
+    setStudioModalOpen(true);
+  };
+
+  const handleConfirmStudio = () => {
+    if (!selectedStudioRoom) return;
+    const { sIdx, rIdx } = selectedStudioRoom;
+    const studio = studios[sIdx];
+    const room = studio.rooms?.[rIdx] ?? "";
+    setPlaceName(`${studio.name} ${room}`.trim());
+    setWebsite(studio.hp || "");
+    setAccess(studio.access || "");
+    setGoogleMap(studio.map || "");
+    setStudioModalOpen(false);
   };
 
   // ---- Save ----
@@ -366,12 +405,18 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
         {/* 場所名 */}
         <div className="form-group">
           <label>場所名</label>
-          <input
-            type="text"
-            value={placeName}
-            onChange={e => setPlaceName(e.target.value)}
-            placeholder="場所名を入力..."
-          />
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <input
+              type="text"
+              value={placeName}
+              onChange={e => setPlaceName(e.target.value)}
+              placeholder="場所名を入力..."
+              style={{ flex: 1 }}
+            />
+            <button type="button" className="add-choice" onClick={handleOpenStudioModal} style={{ whiteSpace: "nowrap" }}>
+              <i className="fas fa-music" /> スタジオから選ぶ
+            </button>
+          </div>
         </div>
 
         {/* 公式サイト */}
@@ -553,6 +598,60 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       </>
       </main>
       <FormFooter backHref={backHref} backText={backText} />
+
+      {studioModalOpen && (
+        <Modal title="場所を選択" onClose={() => setStudioModalOpen(false)}>
+          <div>
+            {studios.length === 0 ? (
+              <p style={{ color: "#999" }}>スタジオが登録されていません</p>
+            ) : (
+              studios.map((studio, sIdx) => (
+                <div key={studio.id} style={{ marginBottom: "16px" }}>
+                  <div style={{ fontWeight: "bold", marginBottom: "6px", fontSize: "14px" }}>
+                    <i className="fas fa-music" style={{ marginRight: "6px", color: "#4caf50" }} />
+                    {studio.name}
+                    {studio.prefecture && (
+                      <span style={{ fontWeight: "normal", fontSize: "0.85em", marginLeft: "8px", color: "#777" }}>
+                        {studio.prefecture}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ paddingLeft: "16px" }}>
+                    {studio.rooms && studio.rooms.length > 0 ? (
+                      studio.rooms.map((room, rIdx) => (
+                        <label key={rIdx} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 0", cursor: "pointer" }}>
+                          <input
+                            type="radio"
+                            name="studio-room"
+                            checked={selectedStudioRoom?.sIdx === sIdx && selectedStudioRoom?.rIdx === rIdx}
+                            onChange={() => setSelectedStudioRoom({ sIdx, rIdx })}
+                          />
+                          {room}
+                        </label>
+                      ))
+                    ) : (
+                      <span style={{ color: "#999", fontSize: "0.85em" }}>ルーム情報なし</span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "16px" }}>
+              <button type="button" className="delete-button" onClick={() => setStudioModalOpen(false)}>
+                キャンセル
+              </button>
+              <button
+                type="button"
+                className="save-button"
+                onClick={handleConfirmStudio}
+                disabled={!selectedStudioRoom}
+              >
+                決定
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </BaseLayout>
   );
 }
