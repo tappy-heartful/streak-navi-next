@@ -250,18 +250,34 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
     // Build instrumentConfig
     const instrConfig: Record<string, InstrumentPart[]> = {};
+    let configError = "";
     instrumentConfig.forEach(sec => {
       const parts = sec.parts
-        .filter(p => p.partName)
-        .map(p => ({ partName: p.partName, instrumentId: p.instrumentId }));
+        .filter(p => p.partName || p.instrumentId)
+        .map(p => {
+          if (p.partName.length > 4) {
+            configError = "パート名は4文字以内で入力してください";
+          }
+          return { partName: p.partName, instrumentId: p.instrumentId };
+        });
       if (parts.length > 0) instrConfig[sec.sectionId] = parts;
     });
+
+    if (configError) {
+      await showDialog(configError, true);
+      return;
+    }
+
+    if (allowAssign && Object.keys(instrConfig).length === 0) {
+      await showDialog("楽器構成を最低1つ登録してください", true);
+      return;
+    }
 
     const payload: Omit<Event, "id"> = {
       title,
       attendanceType,
       date: attendanceType === "attendance" ? hyphenDateToDot(date) : "",
-      candidateDates: attendanceType === "schedule" ? candidateDates.filter(Boolean).map(hyphenDateToDot) : [],
+      candidateDates: attendanceType === "schedule" ? candidateDates.filter(Boolean).map(hyphenDateToDot).sort() : [],
       acceptStartDate: hyphenDateToDot(acceptStartDate),
       acceptEndDate: hyphenDateToDot(acceptEndDate),
       placeName,
@@ -404,19 +420,18 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
         {/* 場所名 */}
         <div className="form-group">
-          <label>場所名</label>
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <input
-              type="text"
-              value={placeName}
-              onChange={e => setPlaceName(e.target.value)}
-              placeholder="場所名を入力..."
-              style={{ flex: 1 }}
-            />
-            <button type="button" className="add-choice" onClick={handleOpenStudioModal} style={{ whiteSpace: "nowrap" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <label style={{ marginBottom: 0 }}>場所名</label>
+            <button type="button" className="add-choice" onClick={handleOpenStudioModal} style={{ whiteSpace: "nowrap", padding: "6px 12px", fontSize: "14px" }}>
               <i className="fas fa-music" /> スタジオから選ぶ
             </button>
           </div>
+          <input
+            type="text"
+            value={placeName}
+            onChange={e => setPlaceName(e.target.value)}
+            placeholder="場所名を入力..."
+          />
         </div>
 
         {/* 公式サイト */}
@@ -534,51 +549,54 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
         </div>
 
         {/* 楽器構成 */}
-        <div className="form-group">
-          <label>楽器構成(譜割り用)</label>
-          {instrumentConfig.map((sec, sectionIdx) => {
-            const section = sections.find(s => s.id === sec.sectionId);
-            const sectionInstruments = instruments.filter(inst => inst.sectionId === sec.sectionId);
-            return (
-              <div key={sec.sectionId} className="instrument-section" style={{ marginBottom: "16px" }}>
-                <h3 style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>
-                  {section?.name || sec.sectionId}
-                </h3>
-                {sec.parts.map((part, partIdx) => (
-                  <div key={partIdx} className="choice-wrapper">
-                    <input
-                      type="text"
-                      value={part.partName}
-                      onChange={e => updatePartName(sectionIdx, partIdx, e.target.value)}
-                      placeholder="パート名（例: Tp1, Ts, Lead）"
-                      style={{ flex: 1 }}
-                    />
-                    <select
-                      value={part.instrumentId}
-                      onChange={e => updateInstrumentId(sectionIdx, partIdx, e.target.value)}
-                      style={{ flex: 1 }}
-                    >
-                      <option value="">楽器を選択</option>
-                      {sectionInstruments.map(inst => (
-                        <option key={inst.id} value={inst.id}>{inst.name}</option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      className="remove-choice"
-                      onClick={() => removePart(sectionIdx, partIdx)}
-                    >
-                      削除
-                    </button>
-                  </div>
-                ))}
-                <button type="button" className="add-choice" onClick={() => addPart(sectionIdx)}>
-                  ＋ パートを追加
-                </button>
-              </div>
-            );
-          })}
-        </div>
+        {allowAssign && (
+          <div className="form-group">
+            <label>楽器構成(譜割り用)</label>
+            {instrumentConfig.map((sec, sectionIdx) => {
+              const section = sections.find(s => s.id === sec.sectionId);
+              const sectionInstruments = instruments.filter(inst => inst.sectionId === sec.sectionId);
+              return (
+                <div key={sec.sectionId} className="instrument-section" style={{ marginBottom: "16px" }}>
+                  <h3 style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>
+                    {section?.name || sec.sectionId}
+                  </h3>
+                  {sec.parts.map((part, partIdx) => (
+                    <div key={partIdx} className="choice-wrapper">
+                      <input
+                        type="text"
+                        value={part.partName}
+                        onChange={e => updatePartName(sectionIdx, partIdx, e.target.value)}
+                        placeholder="パート名（例: Tp1, Ts, Lead）"
+                        style={{ flex: 1 }}
+                        maxLength={4}
+                      />
+                      <select
+                        value={part.instrumentId}
+                        onChange={e => updateInstrumentId(sectionIdx, partIdx, e.target.value)}
+                        style={{ flex: 1 }}
+                      >
+                        <option value="">楽器を選択</option>
+                        {sectionInstruments.map(inst => (
+                          <option key={inst.id} value={inst.id}>{inst.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        className="remove-choice"
+                        onClick={() => removePart(sectionIdx, partIdx)}
+                      >
+                        削除
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" className="add-choice" onClick={() => addPart(sectionIdx)}>
+                    ＋ パートを追加
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* その他 */}
         <div className="form-group">
@@ -605,9 +623,9 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
             {studios.length === 0 ? (
               <p style={{ color: "#999" }}>スタジオが登録されていません</p>
             ) : (
-              studios.map((studio, sIdx) => (
+              studios.map((studio) => (
                 <div key={studio.id} style={{ marginBottom: "16px" }}>
-                  <div style={{ fontWeight: "bold", marginBottom: "6px", fontSize: "14px" }}>
+                  <div style={{ fontWeight: "bold", marginBottom: "8px", fontSize: "14px" }}>
                     <i className="fas fa-music" style={{ marginRight: "6px", color: "#4caf50" }} />
                     {studio.name}
                     {studio.prefecture && (
@@ -616,37 +634,35 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                       </span>
                     )}
                   </div>
-                  <div style={{ paddingLeft: "16px" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", paddingLeft: "12px" }}>
                     {studio.rooms && studio.rooms.length > 0 ? (
                       studio.rooms.map((room, rIdx) => (
-                        <label key={rIdx} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 0", cursor: "pointer" }}>
-                          <input
-                            type="radio"
-                            name="studio-room"
-                            checked={selectedStudioRoom?.sIdx === sIdx && selectedStudioRoom?.rIdx === rIdx}
-                            onChange={() => setSelectedStudioRoom({ sIdx, rIdx })}
-                          />
+                        <button
+                          key={rIdx}
+                          type="button"
+                          className="add-choice"
+                          style={{ padding: "6px 12px", fontSize: "13px" }}
+                          onClick={() => {
+                            setPlaceName(`${studio.name} ${room}`.trim());
+                            setWebsite(studio.hp || "");
+                            setAccess(studio.access || "");
+                            setGoogleMap(studio.map || "");
+                            setStudioModalOpen(false);
+                          }}
+                        >
                           {room}
-                        </label>
+                        </button>
                       ))
                     ) : (
-                      <span style={{ color: "#999", fontSize: "0.85em" }}>ルーム情報なし</span>
+                      <span style={{ color: "#999", fontSize: "0.82em" }}>ルーム情報なし</span>
                     )}
                   </div>
                 </div>
               ))
             )}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "16px" }}>
-              <button type="button" className="delete-button" onClick={() => setStudioModalOpen(false)}>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "24px" }}>
+              <button type="button" className="back-link" onClick={() => setStudioModalOpen(false)} style={{ border: "none", background: "none", color: "#666", textDecoration: "underline" }}>
                 キャンセル
-              </button>
-              <button
-                type="button"
-                className="save-button"
-                onClick={handleConfirmStudio}
-                disabled={!selectedStudioRoom}
-              >
-                決定
               </button>
             </div>
           </div>
