@@ -60,9 +60,6 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
       await deleteMyCallAnswer(callId, uid);
       hideSpinner();
       await showDialog("回答を取り消しました", true);
-
-      showSpinner(); // 遷移用スピナー
-      router.refresh(); // リロードのためスピナーを出しておく
     } catch {
       hideSpinner();
       await showDialog("削除に失敗しました", true);

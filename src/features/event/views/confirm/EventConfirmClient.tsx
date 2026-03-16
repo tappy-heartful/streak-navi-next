@@ -124,8 +124,6 @@ export function EventConfirmClient({ eventId, data }: Props) {
       }
       hideSpinner();
       await showDialog("回答を取り消しました", true);
-      showSpinner();
-      router.refresh();
     } catch {
       hideSpinner();
       await showDialog("削除に失敗しました", true);

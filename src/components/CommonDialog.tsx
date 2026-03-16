@@ -43,7 +43,7 @@ export default function CommonDialog() {
 
     // 成功メッセージ（登録、更新、修正、保存など）が含まれる場合、
     // OKを押したタイミングでRouterキャッシュをクリアする
-    if (result && /登録|更新|修正|保存/.test(options.message)) {
+    if (result && /登録|更新|修正|保存|削除|取消/.test(options.message)) {
       router.refresh();
     }
 
