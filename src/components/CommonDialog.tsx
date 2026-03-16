@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export interface DialogOptions {
@@ -34,8 +35,18 @@ export default function CommonDialog() {
   // オプションがない（ダイアログを閉じている）ときは何も描画しない
   if (!options) return null;
 
+  // src/components/CommonDialog.tsx の修正案
+  const router = useRouter(); // 追加
+
   const handleClose = (result: boolean) => {
     options.resolve(result);
+
+    // 成功メッセージ（登録、更新、修正、保存など）が含まれる場合、
+    // OKを押したタイミングでRouterキャッシュをクリアする
+    if (result && /登録|更新|修正|保存/.test(options.message)) {
+      router.refresh();
+    }
+
     setOptions(null);
   };
 
