@@ -42,7 +42,8 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
       hideSpinner();
       await showDialog("削除しました", true);
 
-      showSpinner(); // 遷移用スピナー
+      router.refresh();
+      showSpinner();
       router.push("/call");
     } catch {
       hideSpinner();
@@ -60,9 +61,7 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
       await deleteMyCallAnswer(callId, uid);
       hideSpinner();
       await showDialog("回答を取り消しました", true);
-
-      showSpinner(); // 遷移用スピナー
-      router.refresh(); // リロードのためスピナーを出しておく
+      router.refresh();
     } catch {
       hideSpinner();
       await showDialog("削除に失敗しました", true);
@@ -142,7 +141,7 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                     <div key={i} style={{ marginBottom: i < genreAnswers.length - 1 ? "24px" : "0", borderBottom: i < genreAnswers.length - 1 ? "1px dashed #ccc" : "none", paddingBottom: i < genreAnswers.length - 1 ? "16px" : "0" }}>
                       {!callData.isAnonymous && (
                         <div className="answer-user" style={{ color: "#4CAF50", fontSize: "0.95em", fontWeight: "bold", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
-                           <i className="fas fa-user-circle"></i> {usersMap[ansUid] || "(不明)"}
+                          <i className="fas fa-user-circle"></i> {usersMap[ansUid] || "(不明)"}
                         </div>
                       )}
                       {(songs as CallAnswerSong[]).map((song, j) => {

@@ -62,6 +62,7 @@ export function EventAdjustAnswerClient({ eventId, event, adjustStatuses }: Prop
       await submitAdjustAnswer(eventId, uid, answers);
       hideSpinner();
       await showDialog(`回答を${isEdit ? "修正" : "登録"}しました`, true);
+      router.refresh();
       showSpinner();
       router.push(`/event/confirm?eventId=${eventId}`);
     } catch {

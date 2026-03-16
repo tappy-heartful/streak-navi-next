@@ -15,6 +15,8 @@ export async function generateMetadata({ searchParams }: Props) {
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function UserConfirmPage({ searchParams }: Props) {
   const resolvedParams = await searchParams;
   if (!resolvedParams.uid) {

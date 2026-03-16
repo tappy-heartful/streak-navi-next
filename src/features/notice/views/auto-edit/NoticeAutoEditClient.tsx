@@ -103,6 +103,7 @@ export function NoticeAutoEditClient({ initialNoticeBase }: Props) {
       await saveNoticeBase(data);
       hideSpinner();
       await showDialog("保存しました", true);
+      router.refresh();
       router.push("/notice/auto-confirm");
       router.refresh();
     } catch {

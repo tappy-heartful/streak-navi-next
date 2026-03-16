@@ -20,6 +20,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function CallEditPage({ searchParams }: Props) {
   const { mode, callId } = await searchParams;
 

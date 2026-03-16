@@ -17,6 +17,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function MediaConfirmPage({ searchParams }: Props) {
   const { mediaId } = await searchParams;
 

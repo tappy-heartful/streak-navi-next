@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   title: "スタジオ一覧",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function StudioListPage() {
   const [studios, prefectures] = await Promise.all([
     getStudiosServer(),

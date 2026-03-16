@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   title: "譜面一覧",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ScoreListPage() {
   // データを並列で取得
   const [scores, genres, events] = await Promise.all([

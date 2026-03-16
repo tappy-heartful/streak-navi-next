@@ -269,6 +269,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       hideSpinner();
       await showDialog("保存しました", true);
 
+      router.refresh();
       if (await showDialog("続いて選択肢のリンクを設定しますか？")) {
         router.push(`/vote/link-edit?voteId=${newVoteId}`);
       } else {

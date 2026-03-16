@@ -26,6 +26,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function ScoreEditPage({ searchParams }: Props) {
   const { mode, scoreId } = await searchParams;
 

@@ -7,6 +7,8 @@ type Props = {
 
 export const metadata = { title: "予約者一覧" };
 
+export const dynamic = "force-dynamic";
+
 export default async function TicketListPage({ searchParams }: Props) {
   const { liveId } = await searchParams;
   const lives = await getLivesForTicketServer();

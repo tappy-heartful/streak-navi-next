@@ -27,6 +27,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 /**
  * 譜面確認ページ（サーバーコンポーネント）
  */
+export const dynamic = "force-dynamic";
+
 export default async function ScoreConfirmPage({ searchParams }: Props) {
   const resolvedParams = await searchParams;
   const scoreId = resolvedParams.scoreId;

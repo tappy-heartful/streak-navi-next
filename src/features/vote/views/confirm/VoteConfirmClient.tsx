@@ -46,6 +46,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
       await deleteVoteWithAnswers(voteId);
       hideSpinner();
       await showDialog("削除しました", true);
+      router.refresh();
       showSpinner();
       router.push("/vote");
     } catch {
@@ -64,7 +65,6 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
       await deleteMyVoteAnswer(voteId, uid);
       hideSpinner();
       await showDialog("回答を取り消しました", true);
-      showSpinner();
       router.refresh();
     } catch {
       hideSpinner();
@@ -113,7 +113,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
           </a>
         );
       }
-    } catch {}
+    } catch { }
     return <a href={linkUrl} target="_blank" rel="noopener noreferrer">{text}</a>;
   };
 

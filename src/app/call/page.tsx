@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   title: "曲募集一覧",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function CallListPage() {
   const [calls, callAnswerIds] = await Promise.all([
     getCallsServer(),

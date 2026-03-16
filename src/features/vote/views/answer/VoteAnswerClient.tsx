@@ -76,6 +76,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
       await submitVoteAnswer(voteId, uid, answers);
       hideSpinner();
       await showDialog(`回答を${isEdit ? "修正" : "登録"}しました`, true);
+      router.refresh();
       router.push(`/vote/confirm?voteId=${voteId}`);
     } catch {
       hideSpinner();

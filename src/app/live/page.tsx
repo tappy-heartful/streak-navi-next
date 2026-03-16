@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   title: "ライブ一覧",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function LiveListPage() {
   const lives = await getLivesServer();
   return <LiveListClient initialData={{ lives }} />;

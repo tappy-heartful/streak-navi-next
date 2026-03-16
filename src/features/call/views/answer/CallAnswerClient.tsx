@@ -134,7 +134,8 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
       hideSpinner();
       await showDialog(`回答を${mode === "edit" ? "修正" : "登録"}しました`, true);
       
-      showSpinner(); // 遷移用スピナー
+      router.refresh();
+      showSpinner();
       router.push(`/call/confirm?callId=${callId}`);
     } catch {
       hideSpinner();

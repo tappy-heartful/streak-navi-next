@@ -20,6 +20,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function MediaEditPage({ searchParams }: Props) {
   const { mode, mediaId } = await searchParams;
 

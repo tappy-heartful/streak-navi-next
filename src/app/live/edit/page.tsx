@@ -20,6 +20,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function LiveEditPage({ searchParams }: Props) {
   const { mode, liveId } = await searchParams;
 

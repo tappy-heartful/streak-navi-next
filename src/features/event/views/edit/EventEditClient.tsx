@@ -304,6 +304,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       }
       hideSpinner();
       await showDialog(`${isEdit ? "更新" : "登録"}しました`, true);
+      router.refresh();
       showSpinner();
       router.push("/event");
     } catch {

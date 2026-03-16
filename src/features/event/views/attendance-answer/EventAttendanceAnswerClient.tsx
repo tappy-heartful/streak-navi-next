@@ -53,6 +53,7 @@ export function EventAttendanceAnswerClient({ eventId, event, attendanceStatuses
       await submitAttendanceAnswer(eventId, uid, selectedStatus);
       hideSpinner();
       await showDialog(`回答を${isEdit ? "修正" : "登録"}しました`, true);
+      router.refresh();
       showSpinner();
       router.push(`/event/confirm?eventId=${eventId}`);
     } catch {
