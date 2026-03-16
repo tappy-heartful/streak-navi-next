@@ -6,6 +6,8 @@ import {
 import { AssignEditClient } from "@/src/features/assign/views/AssignEditClient";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function AssignEditPage({ 
   searchParams 
 }: { 

@@ -131,6 +131,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
       await Promise.all(promises);
       await writeLog({ dataId: event.id, action: "譜割り更新" });
       await showDialog("更新しました", true);
+      router.refresh();
       router.push(`/assign/confirm?eventId=${event.id}`);
       router.refresh(); // Server Componentsの再検証
     } catch (e) {

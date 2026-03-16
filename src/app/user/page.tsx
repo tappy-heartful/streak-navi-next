@@ -5,6 +5,8 @@ export const metadata = {
   title: "ユーザ一覧",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function UserListPage() {
   const [users, sections, roles, instruments, secretWords] = await Promise.all([
     getUsersServer(),

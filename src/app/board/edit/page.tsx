@@ -6,6 +6,8 @@ type Props = {
   searchParams: Promise<{ mode?: string; boardId?: string; sectionId?: string }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function BoardEditPage({ searchParams }: Props) {
   const { mode, boardId, sectionId } = await searchParams;
   const isEdit = mode === "edit" || mode === "copy";

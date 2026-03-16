@@ -8,6 +8,8 @@ type Props = {
   searchParams: Promise<{ boardId?: string }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function BoardConfirmPage({ searchParams }: Props) {
   const { boardId } = await searchParams;
   if (!boardId) notFound();

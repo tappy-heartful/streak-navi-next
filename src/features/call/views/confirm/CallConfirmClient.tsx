@@ -42,7 +42,8 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
       hideSpinner();
       await showDialog("削除しました", true);
 
-      showSpinner(); // 遷移用スピナー
+      router.refresh();
+      showSpinner();
       router.push("/call");
     } catch {
       hideSpinner();

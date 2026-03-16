@@ -86,6 +86,7 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
       });
       hideSpinner();
       await showDialog("保存しました", true);
+      router.refresh();
       router.push(`/vote/confirm?voteId=${voteId}`);
     } catch {
       hideSpinner();

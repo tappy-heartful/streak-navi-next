@@ -6,6 +6,8 @@ import {
 import { AssignConfirmClient } from "@/src/features/assign/views/AssignConfirmClient";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function AssignConfirmPage({ 
   searchParams 
 }: { 

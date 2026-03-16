@@ -46,6 +46,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
       await deleteVoteWithAnswers(voteId);
       hideSpinner();
       await showDialog("削除しました", true);
+      router.refresh();
       showSpinner();
       router.push("/vote");
     } catch {

@@ -102,6 +102,7 @@ export function EventConfirmClient({ eventId, data }: Props) {
       await deleteEventWithAnswers(eventId);
       hideSpinner();
       await showDialog("削除しました", true);
+      router.refresh();
       showSpinner();
       router.push("/event");
     } catch {
