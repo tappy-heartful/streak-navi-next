@@ -124,6 +124,7 @@ export function EventConfirmClient({ eventId, data }: Props) {
       }
       hideSpinner();
       await showDialog("回答を取り消しました", true);
+      router.refresh();
     } catch {
       hideSpinner();
       await showDialog("削除に失敗しました", true);
@@ -591,31 +592,31 @@ export function EventConfirmClient({ eventId, data }: Props) {
             onClose={() => setRecordingModalOpen(false)}
             title="録音・録画リンクの追加"
           >
-          <div className="recording-form">
-            <div className="form-group">
-              <label>タイトル</label>
-              <input
-                type="text"
-                value={recordingForm.title}
-                onChange={e => setRecordingForm(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="例: 第1練習 録音"
-              />
+            <div className="recording-form">
+              <div className="form-group">
+                <label>タイトル</label>
+                <input
+                  type="text"
+                  value={recordingForm.title}
+                  onChange={e => setRecordingForm(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="例: 第1練習 録音"
+                />
+              </div>
+              <div className="form-group">
+                <label>URL</label>
+                <input
+                  type="url"
+                  value={recordingForm.url}
+                  onChange={e => setRecordingForm(prev => ({ ...prev, url: e.target.value }))}
+                  placeholder="Google DriveやYouTubeのURL"
+                />
+              </div>
+              <div className="modal-actions">
+                <button className="save-button" onClick={handleSaveRecording}>保存</button>
+              </div>
             </div>
-            <div className="form-group">
-              <label>URL</label>
-              <input
-                type="url"
-                value={recordingForm.url}
-                onChange={e => setRecordingForm(prev => ({ ...prev, url: e.target.value }))}
-                placeholder="Google DriveやYouTubeのURL"
-              />
-            </div>
-            <div className="modal-actions">
-              <button className="save-button" onClick={handleSaveRecording}>保存</button>
-            </div>
-          </div>
-        </Modal>
-      )}
+          </Modal>
+        )}
       </AnswerConfirmLayout>
     </BaseLayout>
   );

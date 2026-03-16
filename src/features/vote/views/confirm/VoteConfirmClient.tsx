@@ -64,6 +64,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
       await deleteMyVoteAnswer(voteId, uid);
       hideSpinner();
       await showDialog("回答を取り消しました", true);
+      router.refresh();
     } catch {
       hideSpinner();
       await showDialog("削除に失敗しました", true);
@@ -111,7 +112,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
           </a>
         );
       }
-    } catch {}
+    } catch { }
     return <a href={linkUrl} target="_blank" rel="noopener noreferrer">{text}</a>;
   };
 
