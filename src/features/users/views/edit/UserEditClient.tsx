@@ -1,14 +1,15 @@
 "use client";
 
 import { useAppForm } from "@/src/hooks/useAppForm";
-import { User, Section, Role, Instrument } from "@/src/lib/firestore/types";
+import { User, Section, Role, Instrument, Prefecture, Municipality } from "@/src/lib/firestore/types";
 import { AppInput } from "@/src/components/Form/AppInput";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
-import { saveUser } from "@/src/features/users/api/user-client-service";
+import { saveUser, getMunicipalitiesClient } from "@/src/features/users/api/user-client-service";
 import { InstrumentInput } from "@/src/features/users/components/InstrumentInput";
 import { FormField } from "@/src/components/Form/FormField";
 import { globalLineDefaultImage } from "@/src/lib/functions";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { useState, useEffect } from "react";
 
 type Props = {
   uid: string;
@@ -16,6 +17,7 @@ type Props = {
   sections: Section[];
   roles: Role[];
   instruments: Instrument[];
+  prefectures: Prefecture[];
 };
 
 type UserFormData = {
@@ -24,10 +26,14 @@ type UserFormData = {
   abbreviation: string;
   instrumentIds: string[];
   paypayId: string;
+  prefectureId: string;
+  municipalityId: string;
 };
 
-export function UserEditClient({ uid, userData, sections, roles, instruments }: Props) {
+export function UserEditClient({ uid, userData, sections, roles, instruments, prefectures }: Props) {
   const { user } = useAuth();
+  const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
+  const [loadingMun, setLoadingMun] = useState(false);
 
   const isSelf = user?.uid === uid;
   const canEdit = isSelf;
@@ -38,6 +44,8 @@ export function UserEditClient({ uid, userData, sections, roles, instruments }: 
     abbreviation: userData.abbreviation || "",
     instrumentIds: userData.instrumentIds || [],
     paypayId: userData.paypayId || "",
+    prefectureId: userData.prefectureId || "",
+    municipalityId: userData.municipalityId || "",
   };
 
   const form = useAppForm<UserFormData>(initialValues, {
@@ -54,7 +62,39 @@ export function UserEditClient({ uid, userData, sections, roles, instruments }: 
       }
       return true;
     }],
+    prefectureId: [(v) => v ? true : "居住県を選択してください"],
+    municipalityId: [(v) => v ? true : "市区町村を選択してください"],
   });
+
+  // 都道府県が変更されたら市区町村をロード
+  useEffect(() => {
+    const loadMun = async () => {
+      if (!form.formData.prefectureId) {
+        setMunicipalities([]);
+        // 県が空になったら市区町村もクリア
+        if (form.formData.municipalityId) {
+          form.updateField("municipalityId", "");
+        }
+        return;
+      }
+
+      setLoadingMun(true);
+      try {
+        const data = await getMunicipalitiesClient(form.formData.prefectureId);
+        setMunicipalities(data);
+        
+        // 現在の市区町村が、新しく取得したリストに含まれていない場合はクリア
+        if (form.formData.municipalityId && !data.some(m => m.id === form.formData.municipalityId)) {
+          form.updateField("municipalityId", "");
+        }
+      } catch (e) {
+        console.error("Failed to load municipalities:", e);
+      } finally {
+        setLoadingMun(false);
+      }
+    };
+    loadMun();
+  }, [form.formData.prefectureId]);
 
   const handleSave = async (data: UserFormData) => {
     await saveUser(uid, data);
@@ -136,6 +176,36 @@ export function UserEditClient({ uid, userData, sections, roles, instruments }: 
         required
         error={form.errors.abbreviation}
       />
+
+      <hr style={{ margin: "2rem 0", border: "0", borderTop: "1px solid #eee" }} />
+      <h3 style={{ marginBottom: "1rem" }}>居住地情報（本人以外には非表示。必須項目）</h3>
+
+      <FormField label="居住県" required error={form.errors.prefectureId}>
+        <select
+          className="form-control"
+          value={form.formData.prefectureId}
+          onChange={(e) => form.updateField("prefectureId", e.target.value)}
+        >
+          <option value="">--- 選択してください ---</option>
+          {prefectures.map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+      </FormField>
+
+      <FormField label="市区町村" required error={form.errors.municipalityId}>
+        <select
+          className="form-control"
+          value={form.formData.municipalityId}
+          onChange={(e) => form.updateField("municipalityId", e.target.value)}
+          disabled={!form.formData.prefectureId || loadingMun}
+        >
+          <option value="">{loadingMun ? "読み込み中..." : "--- 選択してください ---"}</option>
+          {municipalities.map(m => (
+            <option key={m.id} value={m.id}>{m.name}</option>
+          ))}
+        </select>
+      </FormField>
 
     </EditFormLayout>
   );

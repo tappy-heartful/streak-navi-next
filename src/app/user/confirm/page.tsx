@@ -1,5 +1,5 @@
 import { UserConfirmClient } from "@/src/features/users/views/confirm/UserConfirmClient";
-import { getUserServer, getSectionsServer, getRolesServer, getInstrumentsServer, getSecretWordsServer } from "@/src/features/users/api/user-server-actions";
+import { getUserServer, getSectionsServer, getRolesServer, getInstrumentsServer, getSecretWordsServer, getPrefecturesServer, getMunicipalitiesServer } from "@/src/features/users/api/user-server-actions";
 import { notFound } from "next/navigation";
 
 type Props = {
@@ -23,17 +23,22 @@ export default async function UserConfirmPage({ searchParams }: Props) {
     notFound();
   }
 
-  const [userData, sections, roles, instruments, secretWords] = await Promise.all([
+  const [userData, sections, roles, instruments, secretWords, prefectures] = await Promise.all([
     getUserServer(resolvedParams.uid),
     getSectionsServer(),
     getRolesServer(),
     getInstrumentsServer(),
     getSecretWordsServer(),
+    getPrefecturesServer(),
   ]);
 
   if (!userData) {
     notFound();
   }
+
+  const municipalities = userData.prefectureId 
+    ? await getMunicipalitiesServer(userData.prefectureId)
+    : [];
 
   return (
     <UserConfirmClient
@@ -43,6 +48,8 @@ export default async function UserConfirmPage({ searchParams }: Props) {
       roles={roles}
       instruments={instruments}
       secretWords={secretWords}
+      prefectures={prefectures}
+      municipalities={municipalities}
     />
   );
 }
