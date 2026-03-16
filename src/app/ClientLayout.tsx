@@ -89,6 +89,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       
       // hrefがURLスキーム（例えばhttp://やmailto:）を持たず、別タブでないなら 내부リンクとみなす
       if (href && href.startsWith('/') && targetAttr !== '_blank' && !e.ctrlKey && !e.metaKey) {
+        // 現在のURL（パス + クエリ）と同じならスピナーを出さない
+        const currentPath = window.location.pathname + window.location.search;
+        if (href === currentPath || href === window.location.pathname) {
+          return;
+        }
         import("@/src/lib/functions").then((mod) => mod.showSpinner());
       }
     };
