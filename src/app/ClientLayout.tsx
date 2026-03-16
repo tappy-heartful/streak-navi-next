@@ -60,8 +60,21 @@ function RouteChangeListener() {
 
 // --- メインレイアウト ---
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    // iOS Safari等のBFCache（戻るボタンでの遷移）対策
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        // キャッシュから復元された場合はデータを最新にする
+        router.refresh();
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, [router]);
 
   useEffect(() => {
     // 内部リンク（<a>タグ）クリック時にスピナーを表示する
