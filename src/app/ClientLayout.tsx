@@ -65,6 +65,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
+    const noLayoutPaths = ["/login", "/callback", "/agreement"];
+    const isNoLayout = noLayoutPaths.includes(pathname);
+    
+    if (isNoLayout) {
+      document.body.classList.remove("with-fixed-header");
+    } else {
+      document.body.classList.add("with-fixed-header");
+    }
+  }, [pathname]);
+
+  useEffect(() => {
     // 1. ページ遷移（URLパスの変更）ごとにデータを強制的に最新化する (Router Cache対策)
     router.refresh();
 
