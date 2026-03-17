@@ -150,7 +150,7 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, pr
         />
       )}
 
-      <FormField label="演奏する楽器 (譜割用 複数選択可)" required error={form.errors.instrumentIds as unknown as string}>
+      <FormField label="演奏する楽器 (譜割用 複数選択可)" required error={form.errors.instrumentIds}>
         <InstrumentInput
           selectedSectionId={form.formData.sectionId}
           selectedInstrumentIds={form.formData.instrumentIds}

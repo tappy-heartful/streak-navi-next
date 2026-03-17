@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (module: AdminModule): boolean => {
       if (!userData) return false;
       if (userData.isSystemAdmin === true) return true;
-      return (userData as any)[`is${module}Admin`] === true;
+      return userData[`is${module}Admin`] === true;
     },
     [userData]
   );

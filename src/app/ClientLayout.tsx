@@ -72,7 +72,7 @@ function AuthGuard({ children, isPending }: { children: React.ReactNode, isPendi
   }, [user, loading, userData, isPublicPath, router, pathname]);
 
   // 1. 認証チェック中のスピナー
-  if (!isPublicPath && (loading || !user || (user && !userData && !isPublicPath))) {
+  if (!isPublicPath && (loading || !user)) {
     return <LoadingSpinner />;
   }
 
