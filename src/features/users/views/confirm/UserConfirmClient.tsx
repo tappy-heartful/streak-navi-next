@@ -7,8 +7,11 @@ import { User, Section, Role, Instrument, SecretWord, Prefecture, Municipality }
 import { globalLineDefaultImage, format } from "@/src/lib/functions";
 import { useAuth } from "@/src/contexts/AuthContext";
 
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
 type Props = {
-  uid: string;
+  uid?: string;
   userData: User;
   sections: Section[];
   roles: Role[];
@@ -20,6 +23,15 @@ type Props = {
 
 export function UserConfirmClient({ uid, userData, sections, roles, instruments, secretWords, prefectures, municipalities }: Props) {
   const { user, isAdmin } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!uid && user?.uid) {
+      router.replace(`/user/confirm?uid=${user.uid}`);
+    }
+  }, [uid, user, router]);
+
+  if (!uid) return null;
 
   // マスタデータ名の解決
   const sectionName = sections.find(s => s.id === userData.sectionId)?.name || "未設定";
