@@ -34,17 +34,24 @@ function CallbackContent() {
     const redirectUri = window.location.origin + window.location.pathname;
 
     // 自身のサーバーの API を叩く
-    const res = await fetch('/api/line/login', {
+    const data = await fetch('/api/line/login', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, state, redirectUri }),
     });
-    const data = await res.json();
+    const result = await data.json();
 
-      if (data.error) throw new Error(data.error);
+    if (!data.ok) {
+      if (result.error === 'NOT_FRIEND') {
+        await showDialog("LINE公式アカウントを友だち追加してください。追加後に再度ログインをお願いします。", true);
+        router.push("/login");
+        return;
+      }
+      throw new Error(result.error);
+    }
 
       // 2. Firebaseログイン
-      const userCredential = await signInWithCustomToken(auth, data.customToken);
+      const userCredential = await signInWithCustomToken(auth, result.customToken);
       const user = userCredential.user;
 
       // 3. Firestoreデータ更新
@@ -52,8 +59,8 @@ function CallbackContent() {
       const snap = await getDoc(userRef);
       
       const userData = {
-        displayName: data.profile.displayName,
-        pictureUrl: data.profile.pictureUrl,
+        displayName: result.profile.displayName,
+        pictureUrl: result.profile.pictureUrl,
         lastLoginAt: serverTimestamp(),
         ...(snap.exists() ? {} : { createdAt: serverTimestamp() })
       };
@@ -73,7 +80,7 @@ function CallbackContent() {
         setSession("uid", user.uid);
       }
 
-      const redirectAfterLogin = data.redirectAfterLogin || "/home";
+      const redirectAfterLogin = result.redirectAfterLogin || "/home";
       
       // 4. 規約同意チェック & リダイレクト
       if (!finalData?.agreedAt) {

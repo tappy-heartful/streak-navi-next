@@ -27,6 +27,16 @@ export async function POST(req: NextRequest) {
     });
     const tokenData = await tokenRes.json();
 
+    // 2.5 友だち状態チェック
+    const friendRes = await fetch('https://api.line.me/friendship/v1/status', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
+    const friendData = await friendRes.json();
+
+    if (!friendData.friendFlag) {
+      return NextResponse.json({ error: 'NOT_FRIEND' }, { status: 403 });
+    }
+
     // 3. IDトークン検証
     const verifyRes = await fetch('https://api.line.me/oauth2/v2.1/verify', {
       method: 'POST',
