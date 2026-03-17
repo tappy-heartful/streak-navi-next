@@ -1,16 +1,36 @@
 "use client";
 
-import { useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { auth, db } from "@/src/lib/firebase";
 import { signInWithCustomToken } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { showSpinner, hideSpinner, setSession, showDialog } from "@/src/lib/functions";
+import { hideSpinner, setSession, showDialog } from "@/src/lib/functions";
+
+const MESSAGES = [
+  "チューニングしています...",
+  "譜面を整理しています...",
+  "次のイベントを調べています...",
+  "楽器を組み立てています...",
+  "メンバーを呼んでいます...",
+  "リハーサルの準備中です...",
+  "会場を設営しています...",
+  "セットリストを確認しています...",
+];
 
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasCalled = useRef(false); // 二重実行防止フラグ
+  const [message, setMessage] = useState(MESSAGES[0]);
+
+  // メッセージのランダムローテーション
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMessage(MESSAGES[Math.floor(Math.random() * MESSAGES.length)]);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const code = searchParams.get("code");
@@ -30,25 +50,25 @@ function CallbackContent() {
 
   async function handleLogin(code: string, state: string) {
     try {
-    showSpinner();
-    const redirectUri = window.location.origin + window.location.pathname;
+      // ログイン時はメイン画面で演出を見せたいので showSpinner() は呼ばない
+      const redirectUri = window.location.origin + window.location.pathname;
 
-    // 自身のサーバーの API を叩く
-    const data = await fetch('/api/line/login', {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, state, redirectUri }),
-    });
-    const result = await data.json();
+      // 自身のサーバーの API を叩く
+      const data = await fetch('/api/line/login', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, state, redirectUri }),
+      });
+      const result = await data.json();
 
-    if (!data.ok) {
-      if (result.error === 'NOT_FRIEND') {
-        await showDialog("LINE公式アカウントを友だち追加してください。追加後に再度ログインをお願いします。", true);
-        router.push("/login");
-        return;
+      if (!data.ok) {
+        if (result.error === 'NOT_FRIEND') {
+          await showDialog("LINE公式アカウントを友だち追加してください。追加後に再度ログインをお願いします。", true);
+          router.push("/login");
+          return;
+        }
+        throw new Error(result.error);
       }
-      throw new Error(result.error);
-    }
 
       // 2. Firebaseログイン
       const userCredential = await signInWithCustomToken(auth, result.customToken);
@@ -57,14 +77,14 @@ function CallbackContent() {
       // 3. Firestoreデータ更新
       const userRef = doc(db, "users", user.uid);
       const snap = await getDoc(userRef);
-      
+
       const userData = {
         displayName: result.profile.displayName,
         pictureUrl: result.profile.pictureUrl,
         lastLoginAt: serverTimestamp(),
         ...(snap.exists() ? {} : { createdAt: serverTimestamp() })
       };
-      
+
       await setDoc(userRef, userData, { merge: true });
 
       // 最新データをセッションに同期
@@ -81,12 +101,12 @@ function CallbackContent() {
       }
 
       const redirectAfterLogin = result.redirectAfterLogin || "/home";
-      
+
       // 4. 規約同意チェック & リダイレクト
       if (!finalData?.agreedAt) {
         // 同意ページへ行く前に、本来行きたかった場所を覚えておく
         setSession("redirectAfterLogin", redirectAfterLogin);
-        router.push("/agreement"); 
+        router.push("/agreement");
       } else {
         // ログイン成功フラグ（演出用）
         setSession("fromLogin", "true");
@@ -102,9 +122,14 @@ function CallbackContent() {
   }
 
   return (
-    <div className="loading-screen" style={{ textAlign: "center", marginTop: "50px" }}>
-      <p>認証中...</p>
-      {/* ここにスピナーのCSSがあれば適用 */}
+    <div className="musical-loading" style={{ marginTop: "100px" }}>
+      <div className="note-container">
+        <i className="fa-solid fa-music note"></i>
+        <i className="fa-solid fa-note-sticky note"></i>
+        <i className="fa-solid fa-guitar note"></i>
+        <i className="fa-solid fa-drum note"></i>
+      </div>
+      <p className="loading-message">{message}</p>
     </div>
   );
 }
