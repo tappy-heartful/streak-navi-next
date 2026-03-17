@@ -6,6 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'ナビ',
     description: 'Swing Streak Jazz Orchestra 公式ナビサイト',
     start_url: '/',
+    scope: '/',
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#2e7d32',

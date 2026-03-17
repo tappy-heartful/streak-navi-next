@@ -1,11 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { auth, db } from "@/src/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { setSession, clearAllAppSession } from "@/src/lib/functions";
+import { setSession, clearAllAppSession, getSession } from "@/src/lib/functions";
 import { User as FirestoreUser } from "@/src/lib/firestore/types";
 
 // 管理機能の定義
@@ -44,9 +44,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<FirestoreUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const initialized = useRef(false);
   const pathname = usePathname();
 
-  const fetchUserData = async (uid: string) => {
+  const fetchUserData = useCallback(async (uid: string) => {
     try {
       const userRef = doc(db, "users", uid);
       const snap = await getDoc(userRef);
@@ -58,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, []);
 
   /**
    * 特定のモジュールの権限を判定する内部ロジック
@@ -67,18 +68,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (module: AdminModule): boolean => {
       if (!userData) return false;
       if (userData.isSystemAdmin === true) return true;
-      return userData[`is${module}Admin`] === true;
+      return (userData as any)[`is${module}Admin`] === true;
     },
     [userData]
   );
 
   /**
    * 現在のパスに基づいた isAdmin (boolean) を計算
-   * URLが /score/edit なら "Score" の権限を確認する
    */
   const isAdmin = useMemo(() => {
     if (!pathname) return false;
-    const firstSegment = pathname.split("/")[1]; // "/score/edit" -> "score"
+    const firstSegment = pathname.split("/")[1]; 
     const currentModule = PATH_TO_MODULE[firstSegment];
     
     if (!currentModule) return false;
@@ -86,8 +86,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [pathname, checkAdmin]);
 
   useEffect(() => {
+    // セッションストレージにUIDがあれば、初期のloading期間を少し長めに取って
+    // Firebaseの復旧を待つような挙動を期待できる（AuthGuard側での制御に任せるためここではフラグ管理のみ）
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
-      setLoading(true);
       if (u) {
         setUser(u);
         setSession("uid", u.uid);
@@ -95,12 +96,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUser(null);
         setUserData(null);
-        clearAllAppSession();
+        // ログアウト時のみクリアする（起動直後のnull判定で消さないよう、初期化済みフラグを確認）
+        if (initialized.current) {
+          clearAllAppSession();
+        }
       }
       setLoading(false);
+      initialized.current = true;
     });
     return () => unsubscribe();
-  }, []);
+  }, [fetchUserData]);
 
   return (
     <AuthContext.Provider
@@ -108,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         userData,
-        isAdmin, // 現在のページの権限
+        isAdmin,
         refreshUserData: async () => {
           if (user) await fetchUserData(user.uid);
         },
