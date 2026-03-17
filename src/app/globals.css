@@ -13,7 +13,7 @@ body {
   width: 100%;
   max-width: 768px;
   margin: 0 auto;
-  padding: 0;
+  padding: 65px 0 0 0; /* ヘッダー(約65px) 分の余白を追加 */
   
   /* 横揺れ防止（clip は hidden と同じく視覚的にクリップするが、スクロールコンテナを作らないため子要素の横スクロールが正常に動作する） */
   overflow-x: clip;
@@ -38,6 +38,11 @@ body.fixed {
 /* ヘッダー */
 /* --- Header & Navigation --- */
 .site-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
   width: 100%;
   max-width: 768px;
   margin: 0 auto;
@@ -205,7 +210,6 @@ body.fixed {
   background-color: #f0f0f0;
 }
 
-/* パンくず＋シェアボタンを横並びに */
 .breadcrumb-bar {
   max-width: 768px;
   margin: 8px auto;
