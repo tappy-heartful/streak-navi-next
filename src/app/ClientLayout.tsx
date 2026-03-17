@@ -40,17 +40,36 @@ function AuthGuard({ children, isPending }: { children: React.ReactNode, isPendi
 
       // ログイン済みの場合、利用規約同意チェック (PublicPath以外の時)
       if (!isPublicPath) {
-        // userDataが取得できていて、agreedAtがない場合
+        // 1. 利用規約同意チェック
         if (userData && !userData.agreedAt) {
           const { showDialog } = await import("@/src/lib/functions");
           await showDialog("ログイン後、利用規約に同意してください", true);
           router.push("/login");
+          return;
+        }
+
+        // 2. 必須プロフィール項目チェック (プロフィール編集画面以外の場合)
+        if (userData && pathname !== "/user/edit") {
+          const isIncomplete =
+            !userData.sectionId ||
+            !userData.roleId ||
+            !userData.abbreviation ||
+            !userData.instrumentIds || userData.instrumentIds.length === 0 ||
+            !userData.prefectureId ||
+            !userData.municipalityId ||
+            (userData.sectionId === "1" && !userData.paypayId); // サックスパート(1)の場合はPayPay ID必須
+
+          if (isIncomplete) {
+            const { showDialog } = await import("@/src/lib/functions");
+            await showDialog("不足しているユーザ情報を登録してください", true);
+            router.push(`/user/edit?uid=${user.uid}`);
+          }
         }
       }
     };
 
     checkAuth();
-  }, [user, loading, userData, isPublicPath, router]);
+  }, [user, loading, userData, isPublicPath, router, pathname]);
 
   // 1. 認証チェック中のスピナー
   if (!isPublicPath && (loading || !user || (user && !userData && !isPublicPath))) {

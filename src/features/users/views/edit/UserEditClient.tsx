@@ -31,7 +31,7 @@ type UserFormData = {
 };
 
 export function UserEditClient({ uid, userData, sections, roles, instruments, prefectures }: Props) {
-  const { user } = useAuth();
+  const { user, refreshUserData } = useAuth();
   const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
   const [loadingMun, setLoadingMun] = useState(false);
 
@@ -98,6 +98,10 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, pr
 
   const handleSave = async (data: UserFormData) => {
     await saveUser(uid, data);
+    // 自身のデータなら、グローバルのAuthContextを最新化する
+    if (isSelf) {
+      await refreshUserData();
+    }
     return uid;
   };
 
