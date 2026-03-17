@@ -163,7 +163,7 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
   // YouTubeモーダル表示
   const handleYoutubeModal = async (note: BlueNote) => {
     const { showModal } = await import("@/src/components/CommonModal");
-    const html = utils.buildYouTubeHtml(note.youtubeId, false);
+    const html = utils.buildYouTubeHtml(note.youtubeId);
     await showModal(note.title, html);
   };
 
@@ -194,24 +194,24 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
               </div>
               {blueNotes[currentIdx]?.title || "Now Playing"}
             </div>
-            <div dangerouslySetInnerHTML={{ 
-              __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(currentIdx, blueNotes), false) 
+            <div dangerouslySetInnerHTML={{
+              __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(currentIdx, blueNotes), false)
             }} />
             <div className={styles.playerControls}>
-              <button 
-                className={styles.controlButton} 
+              <button
+                className={styles.controlButton}
                 onClick={() => setCurrentIdx((currentIdx - 1 + blueNotes.length) % blueNotes.length)}
               >
                 <i className="fa-solid fa-backward-step" /> 前へ
               </button>
-              <button 
-                className={`${styles.controlButton} ${styles.activeButton}`} 
+              <button
+                className={`${styles.controlButton} ${styles.activeButton}`}
                 onClick={() => setCurrentIdx(utils.getRandomIndex(currentIdx, blueNotes.length))}
               >
                 ランダム <i className="fa-solid fa-arrows-rotate" />
               </button>
-              <button 
-                className={styles.controlButton} 
+              <button
+                className={styles.controlButton}
                 onClick={() => setCurrentIdx((currentIdx + 1) % blueNotes.length)}
               >
                 次へ <i className="fa-solid fa-forward-step" />
@@ -223,8 +223,8 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
         {/* 月切り替えタブ */}
         <div className={styles.monthTabs}>
           {[...Array(12)].map((_, i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className={`${styles.monthTab} ${selectedMonth === i + 1 ? styles.active : ""}`}
               onClick={() => setSelectedMonth(i + 1)}
             >
@@ -237,10 +237,10 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
           <div className={styles.playlistHeader}>
             <h3>{selectedMonth}月のプレイリスト</h3>
             {playlistIds && (
-              <a 
-                href={`https://www.youtube.com/watch_videos?video_ids=${playlistIds}`} 
-                target="_blank" 
-                rel="noreferrer" 
+              <a
+                href={`https://www.youtube.com/watch_videos?video_ids=${playlistIds}`}
+                target="_blank"
+                rel="noreferrer"
                 className={styles.playlistButton}
               >
                 <i className="fa-brands fa-youtube" /> 月間再生
@@ -254,7 +254,7 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
               const dateId = `${monthPrefix}${String(day).padStart(2, "0")}`;
               const note = blueNotes.find(n => n.id === dateId);
               return (
-                <SongItem 
+                <SongItem
                   key={dateId}
                   day={day}
                   dateId={dateId}
@@ -277,9 +277,9 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
   );
 }
 
-function SongItem({ 
-  day, dateId, note, onSave, onDelete, onShowModal, isAllowedToDelete 
-}: { 
+function SongItem({
+  day, dateId, note, onSave, onDelete, onShowModal, isAllowedToDelete
+}: {
   day: number; dateId: string; note?: BlueNote;
   onSave: (dateId: string, title: string, youtubeUrl: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
@@ -303,7 +303,7 @@ function SongItem({
   return (
     <div className={styles.songItem}>
       <div className={styles.dayLabel}>{day}日</div>
-      
+
       {note && !isEditing ? (
         <>
           <div className={styles.songContent}>
@@ -323,17 +323,17 @@ function SongItem({
         <div className={styles.editForm}>
           {(!note || isAllowedToDelete) && (
             <>
-              <input 
-                className={styles.inputField} 
-                placeholder="曲名" 
-                value={title} 
-                onChange={e => setTitle(e.target.value)} 
+              <input
+                className={styles.inputField}
+                placeholder="曲名"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
               />
-              <input 
-                className={styles.inputField} 
-                placeholder="YouTube URL" 
-                value={url} 
-                onChange={e => setUrl(e.target.value)} 
+              <input
+                className={styles.inputField}
+                placeholder="YouTube URL"
+                value={url}
+                onChange={e => setUrl(e.target.value)}
               />
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
                 {note && <button className={styles.deleteButton} style={{ borderColor: "#999", color: "#999" }} onClick={() => setIsEditing(false)}>キャンセル</button>}
