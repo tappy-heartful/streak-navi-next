@@ -27,22 +27,44 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
     setBreadcrumbs([{ title: "今日の一曲" }]);
   }, [setBreadcrumbs]);
 
-  // 2. 初期インデックス設定（現在の日付 or ランダム）
-  useEffect(() => {
-    const todayId = utils.format(new Date(), "MMdd");
-    const idx = blueNotes.findIndex(n => n.id === todayId);
-    if (idx !== -1) {
-      setCurrentIdx(idx);
-    } else if (blueNotes.length > 0) {
-      setCurrentIdx(Math.floor(Math.random() * blueNotes.length));
-    }
-  }, [blueNotes]);
-
   // 現在の月のデータ
-  const monthPrefix = String(selectedMonth).padStart(2, "0");
+  const monthPrefix = useMemo(() => String(selectedMonth).padStart(2, "0"), [selectedMonth]);
   const monthBlueNotes = useMemo(() => {
     return blueNotes.filter(n => n.id.startsWith(monthPrefix));
   }, [blueNotes, monthPrefix]);
+
+  // 2. 初期インデックス設定（優先順位：1. 今日の曲、2. 表示月の01日の曲、3. 表示月の最初の曲）
+  useEffect(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+
+    // 1. 表示されている月が「現在の月」なら、今日の曲を最優先
+    if (selectedMonth === currentMonth) {
+      const todayId = String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0");
+      const todayIdx = blueNotes.findIndex(n => n.id === todayId);
+      if (todayIdx !== -1) {
+        setCurrentIdx(todayIdx);
+        return;
+      }
+    }
+
+    // 2. 表示月の01日の曲があるかチェック
+    const firstDayId = `${monthPrefix}01`;
+    const firstDayIdx = blueNotes.findIndex(n => n.id === firstDayId);
+    if (firstDayIdx !== -1) {
+      setCurrentIdx(firstDayIdx);
+      return;
+    }
+
+    // 3. なければ表示月の登録されている最初の曲
+    if (monthBlueNotes.length > 0) {
+      const fallbackId = monthBlueNotes[0].id;
+      const fallbackIdx = blueNotes.findIndex(n => n.id === fallbackId);
+      if (fallbackIdx !== -1) {
+        setCurrentIdx(fallbackIdx);
+      }
+    }
+  }, [selectedMonth, blueNotes, monthBlueNotes, monthPrefix]);
 
   // 日数計算
   const daysInMonth = useMemo(() => {
@@ -138,6 +160,13 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
     return monthBlueNotes.map(n => n.youtubeId).filter(Boolean).join(",");
   }, [monthBlueNotes]);
 
+  // YouTubeモーダル表示
+  const handleYoutubeModal = async (note: BlueNote) => {
+    const { showModal } = await import("@/src/components/CommonModal");
+    const html = utils.buildYouTubeHtml(note.youtubeId, false);
+    await showModal(note.title, html);
+  };
+
   return (
     <BaseLayout>
       <div className={styles.container}>
@@ -158,6 +187,11 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
         {blueNotes.length > 0 && (
           <div className={styles.playerWrapper}>
             <div className={styles.playerTitle}>
+              <div style={{ fontSize: "14px", color: "#4caf50", marginBottom: "4px" }}>
+                {blueNotes[currentIdx]?.id ? (
+                  `${parseInt(blueNotes[currentIdx].id.substring(0, 2))}月${parseInt(blueNotes[currentIdx].id.substring(2))}日の曲`
+                ) : ""}
+              </div>
               {blueNotes[currentIdx]?.title || "Now Playing"}
             </div>
             <div dangerouslySetInnerHTML={{ 
@@ -227,13 +261,7 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
                   note={note}
                   onSave={handleSave}
                   onDelete={handleDelete}
-                  onPlay={() => {
-                    const idx = blueNotes.findIndex(n => n.id === dateId);
-                    if (idx !== -1) {
-                      setCurrentIdx(idx);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                  }}
+                  onShowModal={() => note && handleYoutubeModal(note)}
                   isAllowedToDelete={isAdmin || (!!user && note?.createdBy === user.uid)}
                 />
               );
@@ -250,12 +278,12 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
 }
 
 function SongItem({ 
-  day, dateId, note, onSave, onDelete, onPlay, isAllowedToDelete 
+  day, dateId, note, onSave, onDelete, onShowModal, isAllowedToDelete 
 }: { 
   day: number; dateId: string; note?: BlueNote;
-  onSave: (id: string, t: string, u: string) => void;
-  onDelete: (id: string) => void;
-  onPlay: () => void;
+  onSave: (dateId: string, title: string, youtubeUrl: string) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+  onShowModal: () => void;
   isAllowedToDelete: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -279,7 +307,7 @@ function SongItem({
       {note && !isEditing ? (
         <>
           <div className={styles.songContent}>
-            <a href="#" onClick={(e) => { e.preventDefault(); onPlay(); }} className={styles.songTitle}>
+            <a href="#" onClick={(e) => { e.preventDefault(); onShowModal(); }} className={styles.songTitle}>
               <i className="fa-brands fa-youtube" style={{ marginRight: "8px", color: "#ff0000" }} />
               {note.title}
             </a>
