@@ -123,7 +123,9 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
   return (
     <BaseLayout>
       <div className={styles.homeContainer}>
-        <div className="page-header"><h1><i className="fa fa-home"></i> ホーム</h1></div>
+        <div className="page-header">
+          <h1><i className="fa fa-home"></i> ホーム</h1>
+        </div>
 
         <AnnouncementSection data={initialData.announcements} />
 

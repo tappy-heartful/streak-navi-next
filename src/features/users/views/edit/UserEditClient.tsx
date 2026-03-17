@@ -137,6 +137,7 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, pr
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}
         </select>
+        <div className="musical-hint">所属パートを選択してください</div>
       </FormField>
 
       {form.formData.sectionId === "1" && (
@@ -157,6 +158,7 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, pr
           allInstruments={instruments}
           onChange={(ids) => form.updateField("instrumentIds", ids)}
         />
+        <div className="musical-hint">持ち替え楽器（フルートやクラリネット等）も忘れずにチェック！</div>
       </FormField>
 
       <FormField label="役職" required error={form.errors.roleId}>
@@ -180,6 +182,9 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, pr
         required
         error={form.errors.abbreviation}
       />
+      <div className="musical-hint" style={{ marginTop: '-12px', marginBottom: '16px' }}>
+        譜割りに表示されるあなたの名前です（2文字）
+      </div>
 
       <hr style={{ margin: "2rem 0", border: "0", borderTop: "1px solid #eee" }} />
       <h3 style={{ marginBottom: "0.5rem" }}>居住地情報（本人以外には非表示）</h3>

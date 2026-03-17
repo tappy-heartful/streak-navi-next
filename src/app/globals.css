@@ -1992,3 +1992,60 @@ a:hover {
   color: #444;
   min-width: 80px;
 }
+
+/* ===== Big Band Playful Styles ===== */
+
+/* テキスト選択色をブラス（真鍮）色に */
+::selection {
+  background: rgba(212, 175, 55, 0.3);
+  color: inherit;
+}
+
+/* 各ページのヘッダー */
+.page-header h1 {
+  position: relative;
+  display: inline-block;
+}
+
+/* ボタンにスウィング（揺れ）の遊びを入れる */
+button:hover:not(:disabled),
+.loginBtn:hover:not(:disabled),
+.playlistButton:hover {
+  animation: buttonSwing 0.4s ease-in-out;
+}
+
+@keyframes buttonSwing {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.02) rotate(1deg); }
+  50% { transform: scale(1.02) rotate(-1deg); }
+  75% { transform: scale(1.02) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* メニュー項目にリズム感のあるホバーエフェクト */
+.slide-menu-section a:hover {
+  background-color: #fff9e6 !important;
+  color: #d4af37 !important;
+  transform: translateX(4px);
+  transition: all 0.2s ease;
+}
+
+/* セクションの見出しにト音記号のニュアンス */
+section h3::before {
+  content: '𝄞';
+  margin-right: 8px;
+  color: #d4af37;
+  font-size: 1.2em;
+}
+
+/* フォームのヘルプテキストなどに遊び心のある言い回しを追加するためのクラス */
+.musical-hint {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.musical-hint::before {
+  content: '♪ ';
+}
