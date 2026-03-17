@@ -20,7 +20,7 @@ const LoadingSpinner = () => (
 
 // --- 認証ガード用コンポーネント ---
 function AuthGuard({ children, isPending }: { children: React.ReactNode, isPending: boolean }) {
-  const { user, loading } = useAuth();
+  const { user, loading, userData } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -28,13 +28,32 @@ function AuthGuard({ children, isPending }: { children: React.ReactNode, isPendi
   const isPublicPath = publicPaths.includes(pathname);
 
   useEffect(() => {
-    if (!loading && !user && !isPublicPath) {
-      router.push("/login");
-    }
-  }, [user, loading, isPublicPath, router]);
+    const checkAuth = async () => {
+      if (loading) return;
+
+      if (!user) {
+        if (!isPublicPath) {
+          router.push("/login");
+        }
+        return;
+      }
+
+      // ログイン済みの場合、利用規約同意チェック (PublicPath以外の時)
+      if (!isPublicPath) {
+        // userDataが取得できていて、agreedAtがない場合
+        if (userData && !userData.agreedAt) {
+          const { showDialog } = await import("@/src/lib/functions");
+          await showDialog("ログイン後、利用規約に同意してください", true);
+          router.push("/login");
+        }
+      }
+    };
+
+    checkAuth();
+  }, [user, loading, userData, isPublicPath, router]);
 
   // 1. 認証チェック中のスピナー
-  if (!isPublicPath && (loading || !user)) {
+  if (!isPublicPath && (loading || !user || (user && !userData && !isPublicPath))) {
     return <LoadingSpinner />;
   }
 
@@ -67,7 +86,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     const noLayoutPaths = ["/login", "/callback", "/agreement"];
     const isNoLayout = noLayoutPaths.includes(pathname);
-    
+
     if (isNoLayout) {
       document.body.classList.remove("with-fixed-header");
     } else {
@@ -94,10 +113,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const handleAnchorClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement).closest('a');
       if (!target) return;
-      
+
       const href = target.getAttribute('href');
       const targetAttr = target.getAttribute('target');
-      
+
       // hrefがURLスキーム（例えばhttp://やmailto:）を持たず、別タブでないなら 내부リンクとみなす
       if (href && href.startsWith('/') && targetAttr !== '_blank' && !e.ctrlKey && !e.metaKey) {
         // 現在のURL（パス + クエリ）と同じならスピナーを出さない
@@ -108,7 +127,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         import("@/src/lib/functions").then((mod) => mod.showSpinner());
       }
     };
-    
+
     document.addEventListener('click', handleAnchorClick);
 
     // Register Service Worker for PWA
@@ -139,13 +158,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           {children}
           {!isNoLayout && <Footer />}
         </AuthGuard>
-        
+
         <Suspense fallback={null}>
           <RouteChangeListener />
         </Suspense>
-        <Script 
-          src="https://www.instagram.com/embed.js" 
-          strategy="afterInteractive" 
+        <Script
+          src="https://www.instagram.com/embed.js"
+          strategy="afterInteractive"
         />
         <CommonDialog />
         <CommonModal />
