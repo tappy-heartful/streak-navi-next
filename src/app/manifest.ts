@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Streak Navi',
-    short_name: 'ナビ',
+    short_name: 'Streak Navi',
     description: 'Swing Streak Jazz Orchestra 公式ナビサイト',
     start_url: '/',
     scope: '/',
