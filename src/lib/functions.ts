@@ -58,22 +58,78 @@ export function clearAllAppSession() {
 }
 
 // --- スピナー制御 (jQueryを使わず実装) ---
+const SPINNER_MESSAGES = [
+  "チューニングしています...",
+  "譜面を整理しています...",
+  "次のイベントを調べています...",
+  "楽器を組み立てています...",
+  "メンバーを呼んでいます...",
+  "リハーサルの準備中です...",
+  "会場を設営しています...",
+  "セットリストを確認しています...",
+  "リードアルトを待っています...",
+  "リードトランペットを待っています...",
+  "リードトロンボーンを待っています...",
+  "ソロの順番を相談しています...",
+  "メトロノームと戦っています...",
+  "スウィング感を調整しています...",
+  "譜面台を並べています...",
+  "衣装のネクタイを締めています...",
+  "リードの調子を確認しています...",
+  "マイクチェック中... 1, 2...",
+  "アドリブを練っています...",
+  "ダイナミクスを意識しています...",
+  "音出し禁止時間を守っています...",
+  "マウスピースを洗浄しています...",
+  "ロングトーンで集中しています...",
+  "打ち上げの場所を検討しています...",
+  "譜面の書き込みを消しています...",
+  "ピッチを合わせています...",
+  "前打ちと後打ちを確認しています...",
+  "ドラムのセッティングを調整中です...",
+  "管楽器の水分を抜いています...",
+  "本番前の気合入れをしています...",
+  "カウントを出しています...",
+];
+
+let spinnerInterval: ReturnType<typeof setInterval> | null = null;
+
 export function showSpinner() {
   if (typeof document === 'undefined') return;
   let overlay = document.getElementById('spinner-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'spinner-overlay';
-    overlay.innerHTML = '<div class="spinner"></div>';
+    overlay.innerHTML = `
+      <div class="musical-loading">
+        <div class="note-container">
+          <i class="fa-solid fa-music note"></i>
+          <i class="fa-solid fa-note-sticky note"></i>
+          <i class="fa-solid fa-guitar note"></i>
+          <i class="fa-solid fa-drum note"></i>
+        </div>
+        <p class="loading-message" id="spinner-message">${SPINNER_MESSAGES[0]}</p>
+      </div>
+    `;
     document.body.appendChild(overlay);
   }
   overlay.style.display = 'flex';
+
+  if (spinnerInterval) clearInterval(spinnerInterval);
+  spinnerInterval = setInterval(() => {
+    const el = document.getElementById('spinner-message');
+    if (el) el.textContent = SPINNER_MESSAGES[Math.floor(Math.random() * SPINNER_MESSAGES.length)];
+  }, 1000);
 }
 
 export function hideSpinner() {
   if (typeof document === 'undefined') return;
   const overlay = document.getElementById('spinner-overlay');
   if (overlay) overlay.style.display = 'none';
+  if (spinnerInterval) {
+    clearInterval(spinnerInterval);
+    spinnerInterval = null;
+  }
 }
 
 // --- Instagram 埋め込み用 ---
