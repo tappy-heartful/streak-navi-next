@@ -69,9 +69,12 @@ const MediaSection = memo(({ data }: { data: Media[] }) => (
 ));
 MediaSection.displayName = "MediaSection";
 
-const Player = memo(({ title, data, idx, setIdx, onRandom }: { title?: string; data: (Score | BlueNote)[]; idx: number; setIdx: React.Dispatch<React.SetStateAction<number>>; onRandom: () => void }) => (
+const Player = memo(({ title, subtitle, data, idx, setIdx, onRandom }: { title?: string; subtitle?: string; data: (Score | BlueNote)[]; idx: number; setIdx: React.Dispatch<React.SetStateAction<number>>; onRandom: () => void }) => (
   <div>
-    <h2 className={styles.playerTitle}>{title}</h2>
+    <h2 className={styles.playerTitle}>
+      {subtitle && <div style={{ fontSize: "14px", color: "#4caf50", marginBottom: "4px", fontWeight: "normal" }}>{subtitle}</div>}
+      {title}
+    </h2>
     <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(idx, data), false) }} />
     <div className={styles.playerControls}>
       <button onClick={() => setIdx((idx - 1 + data.length) % data.length)} className={styles.playerControl}><i className="fa-solid fa-backward-step"></i></button>
@@ -167,6 +170,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
               </div>
               <Player
                 title={initialData.blueNotes[currentBNIdx]?.title}
+                subtitle={initialData.blueNotes[currentBNIdx]?.id ? `${parseInt(initialData.blueNotes[currentBNIdx].id.substring(0, 2))}月${parseInt(initialData.blueNotes[currentBNIdx].id.substring(2))}日の曲` : ""}
                 data={initialData.blueNotes}
                 idx={currentBNIdx}
                 setIdx={setCurrentBNIdx}
