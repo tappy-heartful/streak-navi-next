@@ -128,7 +128,7 @@ export default function LoginPage() {
         </button>
 
         <a 
-          href="https://lin.ee/1P4EH2l" 
+          href="https://lin.ee/Z4gtFj6" 
           target="_blank" 
           rel="noopener noreferrer" 
           className={styles.addFriendBtn}
