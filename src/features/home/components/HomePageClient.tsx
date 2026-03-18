@@ -127,7 +127,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
           <h1><i className="fa fa-home"></i> ホーム</h1>
         </div>
         <div style={{ textAlign: 'center', fontSize: '14px', color: '#888', marginBottom: '20px', fontStyle: 'italic' }}>
-          Welcome to Streak Navi
+          Welcome to Streak Navi！
         </div>
 
         <AnnouncementSection data={initialData.announcements} />
