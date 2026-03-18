@@ -123,7 +123,12 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
   return (
     <BaseLayout>
       <div className={styles.homeContainer}>
-        <div className="page-header"><h1><i className="fa fa-home"></i> ホーム</h1></div>
+        <div className="page-header" style={{ marginBottom: 0 }}>
+          <h1><i className="fa fa-home"></i> ホーム</h1>
+        </div>
+        <div style={{ textAlign: 'center', fontSize: '14px', color: '#888', marginBottom: '20px', fontStyle: 'italic' }}>
+          Welcome to Streak Navi！
+        </div>
 
         <AnnouncementSection data={initialData.announcements} />
 

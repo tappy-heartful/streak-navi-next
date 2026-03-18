@@ -118,13 +118,24 @@ export default function LoginPage() {
         </h1>
       </div>
 
-      <button 
-        className={`${styles.loginBtn} ${isLoggingIn ? styles.loggingIn : ''}`}
-        onClick={handleLogin}
-        disabled={isLoggingIn}
-      >
-        {isLoggingIn ? 'ログイン準備中...' : 'LINEでログイン'}
-      </button>
+      <div className={styles.authContainer}>
+        <button 
+          className={`${styles.loginBtn} ${isLoggingIn ? styles.loggingIn : ''}`}
+          onClick={handleLogin}
+          disabled={isLoggingIn}
+        >
+          {isLoggingIn ? 'ログイン準備中...' : 'LINEでログイン'}
+        </button>
+
+        <a 
+          href="https://lin.ee/1P4EH2l" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className={styles.addFriendBtn}
+        >
+          公式LINEを友だち追加
+        </a>
+      </div>
     </div>
   );
 }

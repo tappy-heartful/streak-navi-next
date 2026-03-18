@@ -73,7 +73,7 @@ export default function Header() {
       <header className="site-header">
         <div className="header-left">
           <div className="logo-text" onClick={() => {
-            showSpinner();
+            if (pathname !== "/home") showSpinner();
             router.push("/home");
           }}>
             Streak <span className="logo-n">{isTest ? "T" : "N"}</span>avi
@@ -117,8 +117,11 @@ export default function Header() {
                 className="menu-user-name"
                 onClick={() => {
                   if (uid) {
-                    showSpinner();
-                    router.push(`/user/confirm?uid=${uid}`);
+                    const targetPath = `/user/confirm?uid=${uid}`;
+                    if (pathname !== "/user/confirm" || !window.location.search.includes(uid)) {
+                      showSpinner();
+                    }
+                    router.push(targetPath);
                     closeMenu();
                   }
                 }}
@@ -151,8 +154,11 @@ export default function Header() {
           <div className="slide-menu-section menu-bottom">
             <a onClick={() => {
               if (uid) {
-                showSpinner();
-                router.push(`/user/confirm?uid=${uid}`);
+                const targetPath = `/user/confirm?uid=${uid}`;
+                if (pathname !== "/user/confirm" || !window.location.search.includes(uid)) {
+                  showSpinner();
+                }
+                router.push(targetPath);
                 closeMenu();
               }
             }}>ユーザ情報</a>

@@ -25,6 +25,10 @@ body {
   color: #333;
   background-color: #f4f4f4;
 }
+ 
+body.with-fixed-header {
+  padding-top: 65px; /* ヘッダー(約65px) 分の余白を表示時のみ追加 */
+}
 
 /* 💡もし初回ログインのオーバーレイが表示されている間だけ
    スクロールを止めているなら、以下のクラスをJSでbodyに付与すると完璧です */
@@ -38,6 +42,11 @@ body.fixed {
 /* ヘッダー */
 /* --- Header & Navigation --- */
 .site-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
   width: 100%;
   max-width: 768px;
   margin: 0 auto;
@@ -96,16 +105,18 @@ body.fixed {
   z-index: 100;
   padding: 16px;
   box-sizing: border-box;
-  transition: right 0.25s ease;
+  transition: right 0.25s ease, visibility 0.25s; /* visibilityの遷移も追加 */
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   max-height: 100dvh;
+  visibility: hidden; /* ★ デフォルト（閉じている時）は非表示 */
 }
 
 /* 開いた状態 */
 .slide-menu.open {
   right: 0;
+  visibility: visible; /* ★ 開いたら表示 */
 }
 
 .menu-header {
@@ -205,7 +216,6 @@ body.fixed {
   background-color: #f0f0f0;
 }
 
-/* パンくず＋シェアボタンを横並びに */
 .breadcrumb-bar {
   max-width: 768px;
   margin: 8px auto;
@@ -1099,6 +1109,44 @@ a:hover {
   object-fit: cover;
 }
 
+/* 音楽的なローディング */
+.musical-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  gap: 24px;
+}
+
+.note-container {
+  display: flex;
+  gap: 12px;
+}
+
+.note {
+  font-size: 32px;
+  color: #4caf50;
+  animation: noteBounce 0.6s ease-in-out infinite alternate;
+}
+
+.note:nth-child(2) { animation-delay: 0.15s; }
+.note:nth-child(3) { animation-delay: 0.3s; }
+.note:nth-child(4) { animation-delay: 0.45s; }
+
+@keyframes noteBounce {
+  from { transform: translateY(0); opacity: 0.6; }
+  to { transform: translateY(-20px); opacity: 1; }
+}
+
+.loading-message {
+  font-size: 16px;
+  font-weight: 500;
+  color: #555;
+  min-height: 1.5em;
+  transition: opacity 0.3s;
+}
+
 /* アニメーション */
 @keyframes fadeInUp {
   from {
@@ -1943,4 +1991,61 @@ a:hover {
   font-size: 13px;
   color: #444;
   min-width: 80px;
+}
+
+/* ===== Big Band Playful Styles ===== */
+
+/* テキスト選択色をブラス（真鍮）色に */
+::selection {
+  background: rgba(212, 175, 55, 0.3);
+  color: inherit;
+}
+
+/* 各ページのヘッダー */
+.page-header h1 {
+  position: relative;
+  display: inline-block;
+}
+
+/* ボタンにスウィング（揺れ）の遊びを入れる */
+button:hover:not(:disabled),
+.loginBtn:hover:not(:disabled),
+.playlistButton:hover {
+  animation: buttonSwing 0.4s ease-in-out;
+}
+
+@keyframes buttonSwing {
+  0% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.02) rotate(1deg); }
+  50% { transform: scale(1.02) rotate(-1deg); }
+  75% { transform: scale(1.02) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* メニュー項目にリズム感のあるホバーエフェクト */
+.slide-menu-section a:hover {
+  background-color: #fff9e6 !important;
+  color: #d4af37 !important;
+  transform: translateX(4px);
+  transition: all 0.2s ease;
+}
+
+/* セクションの見出しにト音記号のニュアンス */
+section h3::before {
+  content: '𝄞';
+  margin-right: 8px;
+  color: #d4af37;
+  font-size: 1.2em;
+}
+
+/* フォームのヘルプテキストなどに遊び心のある言い回しを追加するためのクラス */
+.musical-hint {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.musical-hint::before {
+  content: '♪ ';
 }

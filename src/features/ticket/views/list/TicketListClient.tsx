@@ -480,8 +480,8 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
 
       await Promise.all(promises);
       hideSpinner();
-      await showDialog("チェックイン情報を更新しました", true);
       setCheckInModalState(null);
+      await showDialog("チェックイン情報を更新しました", true);
       await loadData();
     } catch (e) {
       hideSpinner();
@@ -500,8 +500,8 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
       const resNo = `D${randomId}`;
       await addDoorCheckIn({ reservationNo: resNo, liveId: selectedLiveId, count });
       hideSpinner();
-      await showDialog(`${count}名のチェックインを登録しました`, true);
       setDoorModalOpen(false);
+      await showDialog(`${count}名のチェックインを登録しました`, true);
       await loadData();
     } catch (e) {
       hideSpinner();

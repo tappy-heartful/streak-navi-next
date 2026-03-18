@@ -108,6 +108,9 @@ export default function CommonDialog() {
       `}</style>
 
       <div className="dialog-box">
+        <div style={{ marginBottom: '12px', color: '#d4af37', fontSize: '24px' }}>
+          <i className="fa-solid fa-music"></i>
+        </div>
         <p id="dialog-message">{options.message}</p>
         <div className="dialog-buttons">
           <button className="dialog-ok" onClick={() => handleClose(true)}>

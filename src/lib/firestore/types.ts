@@ -56,6 +56,8 @@ export interface User {
   paypayId?: string;
   agreedAt?: number;
   lastLoginAt?: number;
+  prefectureId?: string;   // 都道府県コード
+  municipalityId?: string; // 市区町村コード
   createdAt?: number;
   updatedAt?: number;
   isSystemAdmin?: boolean;
@@ -96,6 +98,12 @@ export interface Prefecture {
   id: string;
   name: string;
   order?: number;
+}
+
+export interface Municipality {
+  id: string;
+  name: string;
+  prefectureCode: string;
 }
 
 export interface Studio {

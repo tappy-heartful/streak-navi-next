@@ -28,7 +28,22 @@
   border-radius: 8px;
 }
 
+.authContainer {
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  z-index: 10;
+}
+
 .loginBtn {
+  width: 100%;
+  max-width: 240px;
   background-color: #06c755;
   color: white;
   font-size: 18px;
@@ -36,12 +51,28 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
+  box-sizing: border-box;
   transition: background-color 0.3s;
+}
+
+.addFriendBtn {
+  width: 100%;
+  max-width: 240px;
+  background-color: #ffffff;
+  color: #06c755;
+  font-size: 15px;
+  padding: 10px 20px;
+  border: 1px solid #06c755;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  box-sizing: border-box;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.addFriendBtn:hover {
+  background-color: #f0fdf4;
 }
 
 .loginBtn:hover {
