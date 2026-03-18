@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: '/',
     display: 'standalone',
     background_color: '#ffffff',
-    theme_color: '#2e7d32',
+    theme_color: '#000000ff',
     icons: [
       {
         src: 'https://tappy-heartful.github.io/streak-images/navi/favicon.png',
