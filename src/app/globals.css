@@ -457,7 +457,7 @@ footer {
   border-radius: 10px;
   background-color: #ffffff;
   box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.1);
-  animation: fadeInUp 0.35s ease both;
+  animation: fadeInUp 0.35s ease;
 }
 
 /* タイトル */
