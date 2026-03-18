@@ -457,6 +457,7 @@ footer {
   border-radius: 10px;
   background-color: #ffffff;
   box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 0.35s ease both;
 }
 
 /* タイトル */
@@ -576,6 +577,14 @@ h3 {
   background-color: #fdfdfd;
 }
 
+.list-table tbody tr {
+  transition: background-color 0.15s;
+}
+
+.list-table tbody tr:hover {
+  background-color: #f0faf0;
+}
+
 .list-table th {
   background-color: #f4f4f4;
   font-weight: bold;
@@ -677,9 +686,9 @@ select {
 
 /* フォーカス時の枠線 */
 select:focus {
-  border-color: #007bff;
+  border-color: #4caf50;
   outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.4);
 }
 
 /* disabled時の見た目 */
@@ -757,6 +766,13 @@ input[type="text"], textarea, input[type="number"], input[type="url"] {
   border-radius: 6px;
   font-size: 16px;
   box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus, textarea:focus, input[type="number"]:focus, input[type="url"]:focus {
+  border-color: #4caf50;
+  outline: none;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.4);
 }
 
 /* date入力をテキスト入力と同じ見た目に */
@@ -772,9 +788,9 @@ input[type="date"] {
 }
 
 input[type="date"]:focus {
-  border-color: #007bff;
+  border-color: #4caf50;
   outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.4);
 }
 
 input[type="time"] {
@@ -881,12 +897,15 @@ button {
   width: 100%;
   padding: 12px 24px;
   font-size: 16px;
-  background-color: #4CAF50;
+  background: linear-gradient(135deg, #4CAF50 0%, #66bb6a 100%);
   color: white;
+  box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
+  transition: box-shadow 0.2s, background 0.2s;
 }
 
 .save-button:hover {
-  background-color: #45a049;
+  background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+  box-shadow: 0 5px 14px rgba(76, 175, 80, 0.45);
 }
 
 .edit-button {
@@ -1049,6 +1068,12 @@ button {
 
 .back-link:hover {
   background-color: #d8f7de;
+  animation: arrowPulse 0.6s ease infinite;
+}
+
+@keyframes arrowPulse {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-4px); }
 }
 
 /* 隠し */
