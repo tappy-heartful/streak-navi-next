@@ -3,9 +3,8 @@
 import { ListBaseLayout } from "@/src/components/Layout/ListBaseLayout";
 import { ListGroupContainer } from "@/src/components/Layout/ListGroupContainer";
 import { SimpleTable } from "@/src/components/Table/SimpleTable";
-import { User, Section, Role, Instrument, SecretWord, Prefecture } from "@/src/lib/firestore/types";
+import { User, Section, Role, Instrument, SecretWord } from "@/src/lib/firestore/types";
 import { globalLineDefaultImage } from "@/src/lib/functions";
-import { useAuth } from "@/src/contexts/AuthContext";
 import Link from "next/link";
 import React, { useMemo } from "react";
 import styles from "./user-list.module.css";
@@ -17,14 +16,11 @@ type Props = {
     roles: Role[];
     instruments: Instrument[];
     secretWords: SecretWord[];
-    prefectures: Prefecture[];
-    municipalityNamesMap: Record<string, string>;
   };
 };
 
 export function UserListClient({ initialData }: Props) {
-  const { users, sections, roles, instruments, secretWords, prefectures, municipalityNamesMap } = initialData;
-  const { user: currentUser } = useAuth();
+  const { users, sections, roles, instruments, secretWords } = initialData;
 
   // 補助関数群
   const getRoleName = (roleId?: string) => 
@@ -43,20 +39,6 @@ export function UserListClient({ initialData }: Props) {
       .filter(sw => user[sw.roleField])
       .map(sw => sw.label);
     return admins.length > 0 ? admins.join("\n") : "-";
-  };
-
-  const getMaskedResidence = (user: User) => {
-    const isSelf = currentUser?.uid === user.id;
-    const prefName = prefectures.find(p => p.id === user.prefectureId)?.name;
-    const munName = user.municipalityId ? municipalityNamesMap[user.municipalityId] : undefined;
-
-    if (!prefName && !munName) return "-";
-    
-    if (isSelf) {
-      return `${prefName || ""}${munName || ""}`;
-    } else {
-      return "***";
-    }
   };
 
   // ユーザをセクションごとにグループ化し、roleIdでソートする
@@ -103,14 +85,14 @@ export function UserListClient({ initialData }: Props) {
         return (
           <div key={section.id} className="container">
             <ListGroupContainer title={section.name}>
-              <SimpleTable headers={["氏名", "略称", "楽器", "所在地", "役職", "権限"]} hasData={true}>
+              <SimpleTable headers={["氏名", "略称", "楽器", "役職", "権限"]} hasData={true}>
                 {sectionUsers.map(u => (
                   <tr key={u.id}>
                     <td className="list-table-row-header">
                       <Link href={`/user/confirm?uid=${u.id}`} className={styles.userLink}>
-                        <img 
-                          src={u.pictureUrl || globalLineDefaultImage} 
-                          alt="icon" 
+                        <img
+                          src={u.pictureUrl || globalLineDefaultImage}
+                          alt="icon"
                           className={styles.userThumb}
                           onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
                         />
@@ -119,7 +101,6 @@ export function UserListClient({ initialData }: Props) {
                     </td>
                     <td>{u.abbreviation || "-"}</td>
                     <td className={styles.textSmall}>{getInstrumentNames(u.instrumentIds)}</td>
-                    <td className={styles.textSmall}>{getMaskedResidence(u)}</td>
                     <td>{getRoleName(u.roleId)}</td>
                     <td className={styles.textSmall}>{getAdminRoles(u)}</td>
                   </tr>
@@ -150,7 +131,6 @@ export function UserListClient({ initialData }: Props) {
                   </td>
                   <td>{u.abbreviation || "-"}</td>
                   <td className={styles.textSmall}>{getInstrumentNames(u.instrumentIds)}</td>
-                  <td className={styles.textSmall}>{getMaskedResidence(u)}</td>
                   <td>{getRoleName(u.roleId)}</td>
                   <td className={styles.textSmall}>{getAdminRoles(u)}</td>
                 </tr>
