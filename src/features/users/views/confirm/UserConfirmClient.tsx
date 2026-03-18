@@ -3,7 +3,7 @@
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
-import { User, UserLocation, Section, Role, Instrument, SecretWord, Prefecture, Municipality } from "@/src/lib/firestore/types";
+import { User, Section, Role, Instrument, SecretWord } from "@/src/lib/firestore/types";
 import { globalLineDefaultImage, format } from "@/src/lib/functions";
 import { useAuth } from "@/src/contexts/AuthContext";
 
@@ -13,16 +13,13 @@ import { useEffect } from "react";
 type Props = {
   uid?: string;
   userData: User;
-  userLocation?: UserLocation | null;
   sections: Section[];
   roles: Role[];
   instruments: Instrument[];
   secretWords: SecretWord[];
-  prefectures: Prefecture[];
-  municipalities: Municipality[];
 };
 
-export function UserConfirmClient({ uid, userData, userLocation, sections, roles, instruments, secretWords, prefectures, municipalities }: Props) {
+export function UserConfirmClient({ uid, userData, sections, roles, instruments, secretWords }: Props) {
   const { user, isAdmin } = useAuth();
   const router = useRouter();
 
@@ -50,12 +47,6 @@ export function UserConfirmClient({ uid, userData, userLocation, sections, roles
 
   const isSelf = user?.uid === uid;
   const showEditButtons = isSelf;
-
-  const prefectureName = prefectures.find(p => p.id === userLocation?.prefectureId)?.name || "未設定";
-  const municipalityName = municipalities.find(m => m.id === userLocation?.municipalityId)?.name || "未設定";
-
-  const maskedPrefecture = isSelf ? prefectureName : prefectureName === "未設定" ? "未設定" : "***";
-  const maskedMunicipality = isSelf ? municipalityName : municipalityName === "未設定" ? "未設定" : "***";
 
   return (
     <BaseLayout>
@@ -106,14 +97,6 @@ export function UserConfirmClient({ uid, userData, userLocation, sections, roles
         </DisplayField>
 
         <hr style={{ margin: "2rem 0", border: "0", borderTop: "1px solid #eee" }} />
-
-        <DisplayField label="居住県">
-          {maskedPrefecture}
-        </DisplayField>
-
-        <DisplayField label="市区町村">
-          {maskedMunicipality}
-        </DisplayField>
 
         <DisplayField label="最終ログイン">
           {userData.lastLoginAt ? format(userData.lastLoginAt, 'yyyy/MM/dd HH:mm') : "記録なし"}
