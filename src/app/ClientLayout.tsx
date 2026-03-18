@@ -55,8 +55,6 @@ function AuthGuard({ children, isPending }: { children: React.ReactNode, isPendi
             !userData.roleId ||
             !userData.abbreviation ||
             !userData.instrumentIds || userData.instrumentIds.length === 0 ||
-            !userData.prefectureId ||
-            !userData.municipalityId ||
             (userData.sectionId === "1" && !userData.paypayId); // サックスパート(1)の場合はPayPay ID必須
 
           if (isIncomplete) {

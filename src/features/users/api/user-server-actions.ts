@@ -1,7 +1,7 @@
 import 'server-only';
 import admin from "firebase-admin";
 import { adminDb } from "@/src/lib/firebase-admin";
-import { User, Section, Role, Instrument, SecretWord, Prefecture, Municipality } from "@/src/lib/firestore/types";
+import { User, UserLocation, Section, Role, Instrument, SecretWord, Prefecture, Municipality } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 
 /**
@@ -78,6 +78,15 @@ export async function getMunicipalitiesServer(prefectureCode: string): Promise<M
     .get();
   const datalist = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Municipality[];
   return datalist.sort((a, b) => a.name.localeCompare(b.name, "ja"));
+}
+
+/**
+ * ユーザの居住地情報（サブコレクション）を取得
+ */
+export async function getUserLocationServer(uid: string): Promise<UserLocation | null> {
+  const snap = await adminDb.collection("users").doc(uid).collection("private").doc("location").get();
+  if (!snap.exists) return null;
+  return snap.data() as UserLocation;
 }
 
 /**

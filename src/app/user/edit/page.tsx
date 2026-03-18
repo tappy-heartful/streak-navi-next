@@ -1,5 +1,5 @@
 import { UserEditClient } from "@/src/features/users/views/edit/UserEditClient";
-import { getUserServer, getSectionsServer, getRolesServer, getInstrumentsServer, getPrefecturesServer } from "@/src/features/users/api/user-server-actions";
+import { getUserServer, getUserLocationServer, getSectionsServer, getRolesServer, getInstrumentsServer, getPrefecturesServer } from "@/src/features/users/api/user-server-actions";
 import { notFound } from "next/navigation";
 import { User } from "@/src/lib/firestore/types";
 
@@ -25,8 +25,9 @@ export default async function UserEditPage({ searchParams }: Props) {
     notFound();
   }
 
-  const [userData, sections, roles, instruments, prefectures] = await Promise.all([
+  const [userData, userLocation, sections, roles, instruments, prefectures] = await Promise.all([
     getUserServer(resolvedParams.uid),
+    getUserLocationServer(resolvedParams.uid),
     getSectionsServer(),
     getRolesServer(),
     getInstrumentsServer(),
@@ -44,6 +45,7 @@ export default async function UserEditPage({ searchParams }: Props) {
     <UserEditClient
       uid={resolvedParams.uid}
       userData={userToEdit}
+      initialLocation={userLocation}
       sections={sections}
       roles={roles}
       instruments={instruments}

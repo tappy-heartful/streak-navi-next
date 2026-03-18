@@ -3,7 +3,7 @@
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
-import { User, Section, Role, Instrument, SecretWord, Prefecture, Municipality } from "@/src/lib/firestore/types";
+import { User, UserLocation, Section, Role, Instrument, SecretWord, Prefecture, Municipality } from "@/src/lib/firestore/types";
 import { globalLineDefaultImage, format } from "@/src/lib/functions";
 import { useAuth } from "@/src/contexts/AuthContext";
 
@@ -13,6 +13,7 @@ import { useEffect } from "react";
 type Props = {
   uid?: string;
   userData: User;
+  userLocation?: UserLocation | null;
   sections: Section[];
   roles: Role[];
   instruments: Instrument[];
@@ -21,7 +22,7 @@ type Props = {
   municipalities: Municipality[];
 };
 
-export function UserConfirmClient({ uid, userData, sections, roles, instruments, secretWords, prefectures, municipalities }: Props) {
+export function UserConfirmClient({ uid, userData, userLocation, sections, roles, instruments, secretWords, prefectures, municipalities }: Props) {
   const { user, isAdmin } = useAuth();
   const router = useRouter();
 
@@ -50,8 +51,8 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
   const isSelf = user?.uid === uid;
   const showEditButtons = isSelf;
 
-  const prefectureName = prefectures.find(p => p.id === userData.prefectureId)?.name || "未設定";
-  const municipalityName = municipalities.find(m => m.id === userData.municipalityId)?.name || "未設定";
+  const prefectureName = prefectures.find(p => p.id === userLocation?.prefectureId)?.name || "未設定";
+  const municipalityName = municipalities.find(m => m.id === userLocation?.municipalityId)?.name || "未設定";
 
   const maskedPrefecture = isSelf ? prefectureName : prefectureName === "未設定" ? "未設定" : "***";
   const maskedMunicipality = isSelf ? municipalityName : municipalityName === "未設定" ? "未設定" : "***";

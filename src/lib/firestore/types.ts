@@ -56,12 +56,16 @@ export interface User {
   paypayId?: string;
   agreedAt?: number;
   lastLoginAt?: number;
-  prefectureId?: string;   // 都道府県コード
-  municipalityId?: string; // 市区町村コード
   createdAt?: number;
   updatedAt?: number;
   isSystemAdmin?: boolean;
   [key: string]: any; // 動的フラグ (e.g. isScoreAdmin)
+}
+
+/** users/{uid}/private/location に保存する居住地情報 */
+export interface UserLocation {
+  prefectureId?: string;
+  municipalityId?: string;
 }
 
 export interface Section {
