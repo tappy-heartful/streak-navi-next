@@ -110,9 +110,24 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
       setCurrentScoreIdx(Math.floor(Math.random() * Math.min(initialData.scores.length, 4)));
     }
     if (initialData.blueNotes.length) {
-      const todayId = utils.format(new Date(), "MMdd");
-      const idx = initialData.blueNotes.findIndex((n) => n.id === todayId);
-      setCurrentBNIdx(idx !== -1 ? idx : Math.floor(Math.random() * initialData.blueNotes.length));
+      const now = new Date();
+      const todayId = utils.format(now, "MMdd");
+      const firstDayId = utils.format(now, "MM") + "01";
+      
+      const todayIdx = initialData.blueNotes.findIndex((n) => n.id === todayId);
+      if (todayIdx !== -1) {
+        setCurrentBNIdx(todayIdx);
+      } else {
+        const firstDayIdx = initialData.blueNotes.findIndex((n) => n.id === firstDayId);
+        if (firstDayIdx !== -1) {
+          setCurrentBNIdx(firstDayIdx);
+        } else {
+          // それもなければ月の最初の曲かランダム
+          const currentMonthPrefix = utils.format(now, "MM");
+          const monthBlueNotesIdx = initialData.blueNotes.findIndex(n => n.id.startsWith(currentMonthPrefix));
+          setCurrentBNIdx(monthBlueNotesIdx !== -1 ? monthBlueNotesIdx : Math.floor(Math.random() * initialData.blueNotes.length));
+        }
+      }
     }
   }, [initialData]);
 

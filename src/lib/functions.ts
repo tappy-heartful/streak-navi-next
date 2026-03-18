@@ -216,6 +216,8 @@ export function format(dateOrTimestamp: any, formatString = 'yyyy.MM.dd'): strin
   const day = String(date.getDate()).padStart(2, '0');
 
   if (formatString === 'yyyy.MM.dd') return `${year}.${month}.${day}`;
+  if (formatString === 'MMdd') return `${month}${day}`;
+  if (formatString === 'MM') return `${month}`;
   if (formatString === 'yyyy/MM/dd HH:mm') {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');

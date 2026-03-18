@@ -82,7 +82,7 @@ export async function getScoresServer() {
 }
 
 export async function getBlueNotesServer() {
-  const snap = await adminDb.collection("blueNotes").get();
+  const snap = await adminDb.collection("blueNotes").orderBy("__name__", "asc").get();
   return snap.docs.map(toPlainObject) as unknown as BlueNote[];
 }
 
