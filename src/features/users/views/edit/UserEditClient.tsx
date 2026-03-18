@@ -187,8 +187,11 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
 
       <hr style={{ margin: "2rem 0", border: "0", borderTop: "1px solid #eee" }} />
       <h3 style={{ marginBottom: "0.5rem" }}>居住地情報（本人以外には非表示・任意）</h3>
-      <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "1.5rem" }}>
+      <p style={{ fontSize: "0.85rem", color: "#666" }}>
         ※ 旅費補助額の事前調査に使用します。入力は任意ですが、ご協力お願いします。
+      </p>
+      <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "1.5rem" }}>
+        ※ 情報はセキュリティで保護され、本人以外には表示されません。
       </p>
 
       <FormField label="居住県" error={form.errors.prefectureId}>
