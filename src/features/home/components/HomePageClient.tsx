@@ -113,7 +113,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
       const now = new Date();
       const todayId = utils.format(now, "MMdd");
       const firstDayId = utils.format(now, "MM") + "01";
-      
+
       const todayIdx = initialData.blueNotes.findIndex((n) => n.id === todayId);
       if (todayIdx !== -1) {
         setCurrentBNIdx(todayIdx);
@@ -145,7 +145,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
           <h1><i className="fa fa-home"></i> ホーム</h1>
         </div>
         <div style={{ textAlign: 'center', fontSize: '14px', color: '#888', marginBottom: '20px', fontStyle: 'italic' }}>
-          Welcome to Streak Navi！
+          Welcome to Streak Navi.
         </div>
 
         <AnnouncementSection data={initialData.announcements} />
