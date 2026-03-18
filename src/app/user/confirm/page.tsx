@@ -1,6 +1,6 @@
 import { UserConfirmClient } from "@/src/features/users/views/confirm/UserConfirmClient";
-import { getUserServer, getSectionsServer, getRolesServer, getInstrumentsServer, getSecretWordsServer, getPrefecturesServer, getMunicipalitiesServer } from "@/src/features/users/api/user-server-actions";
-import { Section, Role, Instrument, SecretWord, Prefecture, Municipality } from "@/src/lib/firestore/types";
+import { getUserServer, getSectionsServer, getRolesServer, getInstrumentsServer, getSecretWordsServer } from "@/src/features/users/api/user-server-actions";
+import { Section, Role, Instrument, SecretWord } from "@/src/lib/firestore/types";
 import { notFound } from "next/navigation";
 
 type Props = {
@@ -28,26 +28,19 @@ export default async function UserConfirmPage({ searchParams }: Props) {
   let roles: Role[] = [];
   let instruments: Instrument[] = [];
   let secretWords: SecretWord[] = [];
-  let prefectures: Prefecture[] = [];
-  let municipalities: Municipality[] = [];
 
   if (uid) {
-    [userData, sections, roles, instruments, secretWords, prefectures] = await Promise.all([
+    [userData, sections, roles, instruments, secretWords] = await Promise.all([
       getUserServer(uid),
       getSectionsServer(),
       getRolesServer(),
       getInstrumentsServer(),
       getSecretWordsServer(),
-      getPrefecturesServer(),
     ]);
 
     if (!userData) {
       notFound();
     }
-
-    municipalities = userData.prefectureId 
-      ? await getMunicipalitiesServer(userData.prefectureId)
-      : [];
   }
 
   return (
@@ -58,8 +51,6 @@ export default async function UserConfirmPage({ searchParams }: Props) {
       roles={roles}
       instruments={instruments}
       secretWords={secretWords}
-      prefectures={prefectures}
-      municipalities={municipalities}
     />
   );
 }

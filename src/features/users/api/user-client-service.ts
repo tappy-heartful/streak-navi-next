@@ -1,20 +1,26 @@
 import { db } from "@/src/lib/firebase";
-import { doc, updateDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, updateDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
 import { Municipality } from "@/src/lib/firestore/types";
 
 /**
  * ユーザデータの更新
- * @param uid ユーザID
- * @param data 更新データ
+ * prefectureId / municipalityId はサブコレクション users/{uid}/private/location に保存する
  */
 export const saveUser = async (uid: string, data: Record<string, unknown>) => {
-  const userRef = doc(db, "users", uid);
-  const payload = {
-    ...data,
-    updatedAt: serverTimestamp(),
+  const { prefectureId, municipalityId, ...mainData } = data as {
+    prefectureId?: string;
+    municipalityId?: string;
+    [key: string]: unknown;
   };
 
-  await updateDoc(userRef, payload);
+  // メインドキュメントを更新
+  const userRef = doc(db, "users", uid);
+  await updateDoc(userRef, { ...mainData, updatedAt: serverTimestamp() });
+
+  // 居住地情報をサブコレクションに保存（本人のみ書き込み可のセキュリティルール対象）
+  const locationRef = doc(db, "users", uid, "private", "location");
+  await setDoc(locationRef, { prefectureId: prefectureId ?? "", municipalityId: municipalityId ?? "" }, { merge: true });
+
   return uid;
 };
 

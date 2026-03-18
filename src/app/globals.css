@@ -2024,8 +2024,8 @@ button:hover:not(:disabled),
 
 /* メニュー項目にリズム感のあるホバーエフェクト */
 .slide-menu-section a:hover {
-  background-color: #fff9e6 !important;
-  color: #d4af37 !important;
+  background-color: #e8f5e9 !important;
+  color: #2e7d32 !important;
   transform: translateX(4px);
   transition: all 0.2s ease;
 }

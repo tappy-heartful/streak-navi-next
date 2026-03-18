@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppForm } from "@/src/hooks/useAppForm";
-import { User, Section, Role, Instrument, Prefecture, Municipality } from "@/src/lib/firestore/types";
+import { User, UserLocation, Section, Role, Instrument, Prefecture, Municipality } from "@/src/lib/firestore/types";
 import { AppInput } from "@/src/components/Form/AppInput";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { saveUser, getMunicipalitiesClient } from "@/src/features/users/api/user-client-service";
@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 type Props = {
   uid: string;
   userData: User;
+  initialLocation?: UserLocation | null;
   sections: Section[];
   roles: Role[];
   instruments: Instrument[];
@@ -30,7 +31,7 @@ type UserFormData = {
   municipalityId: string;
 };
 
-export function UserEditClient({ uid, userData, sections, roles, instruments, prefectures }: Props) {
+export function UserEditClient({ uid, userData, initialLocation, sections, roles, instruments, prefectures }: Props) {
   const { user, refreshUserData } = useAuth();
   const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
   const [loadingMun, setLoadingMun] = useState(false);
@@ -44,8 +45,8 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, pr
     abbreviation: userData.abbreviation || "",
     instrumentIds: userData.instrumentIds || [],
     paypayId: userData.paypayId || "",
-    prefectureId: userData.prefectureId || "",
-    municipalityId: userData.municipalityId || "",
+    prefectureId: initialLocation?.prefectureId || "",
+    municipalityId: initialLocation?.municipalityId || "",
   };
 
   const form = useAppForm<UserFormData>(initialValues, {
@@ -62,8 +63,6 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, pr
       }
       return true;
     }],
-    prefectureId: [(v) => v ? true : "居住県を選択してください"],
-    municipalityId: [(v) => v ? true : "市区町村を選択してください"],
   });
 
   // 都道府県が変更されたら市区町村をロード
@@ -187,12 +186,15 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, pr
       </div>
 
       <hr style={{ margin: "2rem 0", border: "0", borderTop: "1px solid #eee" }} />
-      <h3 style={{ marginBottom: "0.5rem" }}>居住地情報（本人以外には非表示）</h3>
+      <h3 style={{ marginBottom: "0.5rem" }}>居住地情報（本人以外には非表示・任意）</h3>
+      <p style={{ fontSize: "0.85rem", color: "#666" }}>
+        ※ 旅費補助額の事前調査に使用します。入力は任意ですが、ご協力お願いします。
+      </p>
       <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "1.5rem" }}>
-        ※ 遠征等の旅費計算および申請のために使用します。正確な情報を入力してください。
+        ※ 情報はセキュリティで保護され、本人以外には表示されません。
       </p>
 
-      <FormField label="居住県" required error={form.errors.prefectureId}>
+      <FormField label="居住県" error={form.errors.prefectureId}>
         <select
           className="form-control"
           value={form.formData.prefectureId}
@@ -205,7 +207,7 @@ export function UserEditClient({ uid, userData, sections, roles, instruments, pr
         </select>
       </FormField>
 
-      <FormField label="市区町村" required error={form.errors.municipalityId}>
+      <FormField label="市区町村" error={form.errors.municipalityId}>
         <select
           className="form-control"
           value={form.formData.municipalityId}
