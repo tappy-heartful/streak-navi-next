@@ -376,8 +376,8 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
   useEffect(() => { loadData(); }, [loadData]);
 
   // --- フィルター済みデータ ---
-  const checkedNameSet = new Set<string>(
-    checkIns.map((c) => c.name).filter((n): n is string => !!n)
+  const checkedIdentitySet = new Set<string>(
+    checkIns.map((c) => `${c.ticketId}_${c.name}`).filter((s): s is string => !!s)
   );
 
   const filteredTickets = tickets.filter((t) => {
@@ -596,8 +596,9 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
   })();
 
   // --- 行レンダリング ---
-  const renderName = (name: string) => {
-    if (checkedNameSet.has(name)) {
+  const renderName = (name: string, ticketId: string) => {
+    const identity = `${ticketId}_${name}`;
+    if (checkedIdentitySet.has(identity)) {
       return <span style={{ color: "#28a745" }}>✅ {name} 様</span>;
     }
     return <span>{name} 様</span>;
@@ -635,7 +636,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
               </td>
               <td style={{ lineHeight: 1.7 }}>
                 {companions.length > 0
-                  ? companions.map((c, i) => <div key={i}>{renderName(c)}</div>)
+                  ? companions.map((c, i) => <div key={i}>{renderName(c, t.id)}</div>)
                   : <span style={{ color: "#aaa" }}>(招待客なし)</span>}
               </td>
               <td className="rep-name-cell">
@@ -674,7 +675,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
               </div>
             </td>
             <td style={{ lineHeight: 1.7 }}>
-              {allCustomers.map((c, i) => <div key={i}>{renderName(c)}</div>)}
+              {allCustomers.map((c, i) => <div key={i}>{renderName(c, t.id)}</div>)}
             </td>
             <td className="rep-name-cell">-</td>
             <td className="text-center">
