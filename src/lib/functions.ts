@@ -13,9 +13,9 @@ import {
   Query,
   QuerySnapshot,
   DocumentSnapshot,
-  collection, 
-  query, 
-  where, 
+  collection,
+  query,
+  where,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { showDialog } from "@/src/components/CommonDialog"; // 先ほど作った共通ダイアログ
@@ -67,9 +67,6 @@ const SPINNER_MESSAGES = [
   "リハーサルの準備中です...",
   "会場を設営しています...",
   "セットリストを確認しています...",
-  "リードアルトを待っています...",
-  "リードトランペットを待っています...",
-  "リードトロンボーンを待っています...",
   "ソロの順番を相談しています...",
   "メトロノームと戦っています...",
   "スウィング感を調整しています...",
@@ -157,7 +154,7 @@ export function extractYouTubeId(input: string): string {
 }
 
 export function buildYouTubeHtml(
-  youtubeInput: string | string[], 
+  youtubeInput: string | string[],
   showLink = true,
   showNotice = false,
 ): string {
