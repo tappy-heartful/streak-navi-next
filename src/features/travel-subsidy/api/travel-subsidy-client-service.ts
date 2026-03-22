@@ -10,7 +10,13 @@ export async function getMunicipalitiesForTravelSubsidy(prefectureId: string): P
 }
 
 export async function saveTravelSubsidy(
-  data: { prefectureId: string; municipalityId: string; amount: number },
+  data: { 
+    departurePrefectureId: string; 
+    departureMunicipalityId: string; 
+    arrivalPrefectureId: string; 
+    arrivalMunicipalityId: string; 
+    amount: number 
+  },
   id?: string,
 ): Promise<string> {
   const payload = { ...data, updatedAt: serverTimestamp() };

@@ -235,6 +235,10 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
           </Link>
         </div>
       </div>
+
+      <div className="page-footer">
+        <Link href="/assign" className="back-link">← 譜割り一覧に戻る</Link>
+      </div>
     </BaseLayout>
   );
 }

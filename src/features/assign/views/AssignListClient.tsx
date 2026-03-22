@@ -75,6 +75,10 @@ export function AssignListClient({ initialEvents }: Props) {
         <h3>🔚 過去のイベント</h3>
         <EventList events={closed} isClosed />
       </div>
+
+      <div className="page-footer">
+        <Link href="/home" className="back-link">← ホームに戻る</Link>
+      </div>
     </BaseLayout>
   );
 }

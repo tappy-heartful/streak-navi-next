@@ -46,6 +46,7 @@ const MenuSectionList = memo(() => (
       <MenuSection title="活動メニュー" items={[{ h: "/call", l: "🎶 曲募集", c: "call" }, { h: "/vote", l: "📊 投票", c: "vote" }, { h: "/studio", l: "📍 スタジオ", c: "studio" }]} />
       <MenuSection title="アプリメニュー" items={[{ h: "/user", l: "👥 ユーザ", c: "user" }, { h: "/notice", l: "📣 通知設定", c: "notice" }, { h: "/blue-note", l: "🎧 今日の一曲", c: "blueNote", b: "募集中" }, { h: "/board", l: "📋 掲示板", c: "board" }]} />
       <MenuSection title="ホームページ連携" items={[{ h: "/live", l: "🎷 ライブ", c: "live" }, { h: "/ticket", l: "🎫 予約者一覧", c: "ticket" }, { h: "/media", l: "🎬 メディア", c: "media" }]} />
+      <MenuSection title="経費管理" items={[{ h: "/travel-subsidy", l: "🚃 旅費補助額", c: "travelSubsidy" }]} />
     </div>
   </main>
 ));

@@ -379,14 +379,26 @@ export interface NoticeBaseNotification {
   message: string;
 }
 
-// ===== 旅費補助額設定 (TravelSubsidy) =====
+// ===== 旅費補助額 (TravelSubsidy) =====
+
+export interface TravelPoint {
+  prefectureId: string;
+  municipalityId: string;
+}
 
 export interface TravelSubsidy {
   id: string;
-  prefectureId: string;
-  municipalityId: string;
+  departurePrefectureId: string;
+  departureMunicipalityId: string;
+  arrivalPrefectureId: string;
+  arrivalMunicipalityId: string;
   amount: number;
   updatedAt?: number;
+}
+
+export interface TravelConfig {
+  arrivalPoints: TravelPoint[];
+  departurePoints: TravelPoint[];
 }
 
 // ===== 譜割り (Assign) =====
@@ -401,4 +413,4 @@ export interface Assign {
   isRehearsal?: boolean;
   createdAt?: number;
 }
-
+
