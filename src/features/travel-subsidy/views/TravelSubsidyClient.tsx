@@ -74,6 +74,13 @@ export function TravelSubsidyClient({
     fetchMuns();
   }, [addDeparturePrefId]);
 
+  useEffect(() => {
+    if (travelConfig.arrivalPoints.length === 1) {
+      const p = travelConfig.arrivalPoints[0];
+      setAddArrivalId(`${p.prefectureId}_${p.municipalityId}`);
+    }
+  }, [travelConfig.arrivalPoints]);
+
   const handleAdd = async () => {
     if (!addDeparturePrefId || !addDepartureMunId || !addArrivalId || !addAmount) return;
     const amount = Number(addAmount);
