@@ -356,17 +356,17 @@ function SubsidyRow({
       background: !isRegistered ? "#fff9f9" : "transparent",
     }}>
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "0.95rem" }}>{municipalityName}</span>
+        <span style={{ fontSize: "0.95rem" }}>{municipalityName}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
           {subsidy.userCount > 0 && (
-            <span style={{ fontSize: "0.7rem", color: "#666", background: "#f0f0f0", padding: "1px 6px", borderRadius: "10px" }}>
+            <span style={{ fontSize: "0.75rem", color: "#888" }}>
               {subsidy.userCount}名
             </span>
           )}
+          {!isRegistered && (
+            <span style={{ fontSize: "0.75rem", color: "#c62828", fontWeight: "bold" }}>未登録</span>
+          )}
         </div>
-        {!isRegistered && (
-          <span style={{ fontSize: "0.75rem", color: "#c62828", fontWeight: "bold" }}>未登録</span>
-        )}
       </div>
 
       {isEditing ? (
