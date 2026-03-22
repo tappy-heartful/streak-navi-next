@@ -226,7 +226,7 @@ export function TravelSubsidyClient({
                 alignItems: "center",
               }}>
                 <span>{prefecture.name}</span>
-                {totalUserCount > 0 && (
+                {isAdmin && totalUserCount > 0 && (
                   <span style={{ fontSize: "0.75rem", fontWeight: "normal", color: "#666" }}>
                     {totalUserCount}名居住
                   </span>
@@ -358,7 +358,7 @@ function SubsidyRow({
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <span style={{ fontSize: "0.95rem" }}>{municipalityName}</span>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
-          {subsidy.userCount > 0 && (
+          {isAdmin && subsidy.userCount > 0 && (
             <span style={{ fontSize: "0.75rem", color: "#888" }}>
               {subsidy.userCount}名居住
             </span>
