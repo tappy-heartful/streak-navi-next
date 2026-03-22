@@ -38,6 +38,7 @@ export interface LocationCheckItem {
   municipalityId: string;
   prefectureName: string;
   municipalityName: string;
+  userCount: number;
 }
 
 /** ユーザ登録されている居住地情報のリストを返す */
@@ -55,17 +56,19 @@ export async function getUserLocationChecklistServer(): Promise<LocationCheckIte
     })
     .filter(l => l.prefectureId && l.municipalityId) as { prefectureId: string; municipalityId: string }[];
 
-  // 重複排除
-  const uniqueKeys = new Set<string>();
-  const uniqueList: { prefectureId: string; municipalityId: string }[] = [];
+  // 重複排除 & カウント
+  const locationMap = new Map<string, { prefectureId: string; municipalityId: string; userCount: number }>();
   rawList.forEach(l => {
     const key = `${l.prefectureId}_${l.municipalityId}`;
-    if (!uniqueKeys.has(key)) {
-      uniqueKeys.add(key);
-      uniqueList.push(l);
+    const existing = locationMap.get(key);
+    if (existing) {
+      existing.userCount++;
+    } else {
+      locationMap.set(key, { ...l, userCount: 1 });
     }
   });
 
+  const uniqueList = Array.from(locationMap.values());
   if (uniqueList.length === 0) return [];
 
   // 名前を取得
@@ -74,10 +77,8 @@ export async function getUserLocationChecklistServer(): Promise<LocationCheckIte
 
   const [prefSnap, munSnap] = await Promise.all([
     adminDb.collection("prefectures").where("__name__", "in", prefIds).get(),
-    // municipalitiesは30個制限があるので注意が必要だが、一旦このままかチャンク分けが必要
-    // ユーザ居住地の種類が30を超える可能性があるならチャンク分けする
     munIds.length > 30 
-      ? Promise.resolve({ docs: [] }) // 後で個別取得
+      ? Promise.resolve({ docs: [] }) 
       : adminDb.collection("municipalities").where("__name__", "in", munIds).get(),
   ]);
 
@@ -104,6 +105,7 @@ export async function getUserLocationChecklistServer(): Promise<LocationCheckIte
     municipalityId: l.municipalityId,
     prefectureName: prefMap[l.prefectureId] ?? l.prefectureId,
     municipalityName: munMap[l.municipalityId] ?? l.municipalityId,
+    userCount: l.userCount,
   })).sort((a, b) => {
     if (a.prefectureName !== b.prefectureName) return a.prefectureName.localeCompare(b.prefectureName, "ja");
     return a.municipalityName.localeCompare(b.municipalityName, "ja");

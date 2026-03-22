@@ -163,26 +163,32 @@ export function TravelSubsidyClient({
       // 登録済み項目
       const existing = subsidies
         .filter(s => s.prefectureId === pref.id)
-        .map(s => ({ ...s, isRegistered: true }));
+        .map(s => {
+          const checkItem = locationChecklist.find(l => l.municipalityId === s.municipalityId);
+          return { ...s, isRegistered: true, userCount: checkItem?.userCount ?? 0 };
+        });
 
       // 未登録項目（管理者の場合のみ表示）
       const unregistered = isAdmin
         ? locationChecklist
-            .filter(l => l.prefectureId === pref.id && !subsidies.some(s => s.municipalityId === l.municipalityId))
-            .map(l => ({
-              id: l.municipalityId, // IDがないのでmunicipalityIdで代用
-              prefectureId: l.prefectureId,
-              municipalityId: l.municipalityId,
-              amount: 0,
-              isRegistered: false,
-            }))
+          .filter(l => l.prefectureId === pref.id && !subsidies.some(s => s.municipalityId === l.municipalityId))
+          .map(l => ({
+            id: l.municipalityId, // IDがないのでmunicipalityIdで代用
+            prefectureId: l.prefectureId,
+            municipalityId: l.municipalityId,
+            amount: 0,
+            isRegistered: false,
+            userCount: l.userCount,
+          }))
         : [];
 
       const items = [...existing, ...unregistered].sort((a, b) =>
         (munNamesMap[a.municipalityId] ?? "").localeCompare(munNamesMap[b.municipalityId] ?? "", "ja")
       );
 
-      return { prefecture: pref, items };
+      const totalUserCount = items.reduce((sum, item) => sum + item.userCount, 0);
+
+      return { prefecture: pref, items, totalUserCount };
     })
     .filter(g => g.items.length > 0);
 
@@ -206,7 +212,7 @@ export function TravelSubsidyClient({
             設定されているデータがありません
           </p>
         ) : (
-          grouped.map(({ prefecture, items }) => (
+          grouped.map(({ prefecture, items, totalUserCount }) => (
             <div key={prefecture.id} style={{ marginBottom: "1.5rem" }}>
               <div style={{
                 fontSize: "0.85rem",
@@ -215,8 +221,16 @@ export function TravelSubsidyClient({
                 borderBottom: "2px solid #4caf50",
                 paddingBottom: "4px",
                 marginBottom: "4px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}>
-                {prefecture.name}
+                <span>{prefecture.name}</span>
+                {totalUserCount > 0 && (
+                  <span style={{ fontSize: "0.75rem", fontWeight: "normal", color: "#666" }}>
+                    {totalUserCount}名
+                  </span>
+                )}
               </div>
               {items.map(item => (
                 <SubsidyRow
@@ -313,7 +327,7 @@ export function TravelSubsidyClient({
 // ===== 行コンポーネント =====
 
 type SubsidyRowProps = {
-  subsidy: TravelSubsidy & { isRegistered: boolean };
+  subsidy: TravelSubsidy & { isRegistered: boolean; userCount: number };
   municipalityName: string;
   isAdmin: boolean;
   isEditing: boolean;
@@ -342,7 +356,14 @@ function SubsidyRow({
       background: !isRegistered ? "#fff9f9" : "transparent",
     }}>
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <span style={{ fontSize: "0.95rem" }}>{municipalityName}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "0.95rem" }}>{municipalityName}</span>
+          {subsidy.userCount > 0 && (
+            <span style={{ fontSize: "0.7rem", color: "#666", background: "#f0f0f0", padding: "1px 6px", borderRadius: "10px" }}>
+              {subsidy.userCount}名
+            </span>
+          )}
+        </div>
         {!isRegistered && (
           <span style={{ fontSize: "0.75rem", color: "#c62828", fontWeight: "bold" }}>未登録</span>
         )}
