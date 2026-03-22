@@ -5,6 +5,7 @@ import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { showDialog, showSpinner, hideSpinner } from "@/src/lib/functions";
+import Link from "next/link";
 import { TravelSubsidy, Prefecture, Municipality } from "@/src/lib/firestore/types";
 import {
   getMunicipalitiesForTravelSubsidy,
@@ -253,6 +254,10 @@ export function TravelSubsidyClient({ initialSubsidies, prefectures, initialMuni
             </div>
           ))
         )}
+      </div>
+
+      <div className="page-footer">
+        <Link href="/home" className="back-link">← ホームに戻る</Link>
       </div>
     </BaseLayout>
   );
