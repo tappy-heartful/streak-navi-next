@@ -4,6 +4,7 @@ import {
   getTravelSubsidiesServer,
   getMunicipalityNamesMapForSubsidies,
   getUserLocationChecklistServer,
+  getTravelConfigServer,
 } from "@/src/features/travel-subsidy/api/travel-subsidy-server-actions";
 
 export const metadata = {
@@ -13,13 +14,14 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function TravelSubsidyPage() {
-  const [prefectures, subsidies, locationChecklist] = await Promise.all([
+  const [prefectures, subsidies, locationChecklist, travelConfig] = await Promise.all([
     getPrefecturesForTravelSubsidy(),
     getTravelSubsidiesServer(),
     getUserLocationChecklistServer(),
+    getTravelConfigServer(),
   ]);
 
-  const municipalityNamesMap = await getMunicipalityNamesMapForSubsidies(subsidies);
+  const municipalityNamesMap = await getMunicipalityNamesMapForSubsidies(subsidies, travelConfig);
 
   return (
     <TravelSubsidyClient
@@ -27,6 +29,7 @@ export default async function TravelSubsidyPage() {
       prefectures={prefectures}
       initialMunicipalityNamesMap={municipalityNamesMap}
       locationChecklist={locationChecklist}
+      travelConfig={travelConfig}
     />
   );
 }

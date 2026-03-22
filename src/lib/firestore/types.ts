@@ -381,12 +381,24 @@ export interface NoticeBaseNotification {
 
 // ===== 旅費補助額 (TravelSubsidy) =====
 
-export interface TravelSubsidy {
-  id: string;
+export interface TravelPoint {
   prefectureId: string;
   municipalityId: string;
+}
+
+export interface TravelSubsidy {
+  id: string;
+  departurePrefectureId: string;
+  departureMunicipalityId: string;
+  arrivalPrefectureId: string;
+  arrivalMunicipalityId: string;
   amount: number;
   updatedAt?: number;
+}
+
+export interface TravelConfig {
+  arrivalPoints: TravelPoint[];
+  departurePoints: TravelPoint[];
 }
 
 // ===== 譜割り (Assign) =====

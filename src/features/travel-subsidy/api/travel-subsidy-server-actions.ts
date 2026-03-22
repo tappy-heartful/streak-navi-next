@@ -13,23 +13,57 @@ export async function getTravelSubsidiesServer(): Promise<TravelSubsidy[]> {
   return snap.docs.map(toPlainObject) as TravelSubsidy[];
 }
 
-/** 補助金設定で使われている市区町村の名前マップを返す */
+import { TravelConfig } from "@/src/lib/firestore/types";
+
+export async function getTravelConfigServer(): Promise<TravelConfig> {
+  const doc = await adminDb.collection("configs").doc("travel").get();
+  if (!doc.exists) return { arrivalPoints: [], departurePoints: [] };
+  const data = doc.data()!;
+  return {
+    arrivalPoints: data.arrivalPoints || [],
+    departurePoints: data.departurePoints || [],
+  } as TravelConfig;
+}
+
+/** 補助金設定や設定値で使われている市区町村の名前マップを返す */
 export async function getMunicipalityNamesMapForSubsidies(
   subsidies: TravelSubsidy[],
+  config: TravelConfig,
 ): Promise<Record<string, string>> {
-  const prefIds = [...new Set(subsidies.map(s => s.prefectureId))];
-  if (prefIds.length === 0) return {};
+  const munIds = new Set<string>();
+  subsidies.forEach(s => {
+    munIds.add(s.departureMunicipalityId);
+    munIds.add(s.arrivalMunicipalityId);
+  });
+  
+  const arrivalPoints = config.arrivalPoints || [];
+  const departurePoints = config.departurePoints || [];
+  
+  arrivalPoints.forEach(p => munIds.add(p.municipalityId));
+  departurePoints.forEach(p => munIds.add(p.municipalityId));
+
+  const idList = [...munIds];
+  if (idList.length === 0) return {};
 
   const map: Record<string, string> = {};
+  // チャンク分けして取得
+  const chunks = [];
+  for (let i = 0; i < idList.length; i += 30) {
+    chunks.push(idList.slice(i, i + 30));
+  }
+
   await Promise.all(
-    prefIds.map(async (prefId) => {
+    chunks.map(async (chunk) => {
       const snap = await adminDb
         .collection("municipalities")
-        .where("prefectureCode", "==", prefId)
+        .where("__name__", "in", chunk)
         .get();
-      snap.docs.forEach(d => { map[d.id] = (d.data().name as string) ?? d.id; });
+      snap.docs.forEach(d => {
+        map[d.id] = (d.data().name as string) ?? d.id;
+      });
     }),
   );
+
   return map;
 }
 
