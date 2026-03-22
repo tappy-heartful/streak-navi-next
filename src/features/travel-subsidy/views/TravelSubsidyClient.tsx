@@ -291,7 +291,7 @@ export function TravelSubsidyClient({
             <h3 style={{ marginTop: 0, color: "#4caf50", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <span>
                 <i className="fa-solid fa-location-dot" style={{ marginRight: "0.5rem", fontSize: "0.9em" }} />
-                {arrivalPrefName}{arrivalMunName}までの旅費
+                {arrivalPrefName}{arrivalMunName}までの旅費補助額
               </span>
             </h3>
 
