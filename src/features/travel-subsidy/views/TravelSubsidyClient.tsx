@@ -86,7 +86,7 @@ export function TravelSubsidyClient({
     const dMun = addDepartureMunId;
     const [aPref, aMun] = addArrivalId.split("_");
 
-    const dup = subsidies.find(s => 
+    const dup = subsidies.find(s =>
       s.departureMunicipalityId === dMun && s.arrivalMunicipalityId === aMun
     );
     if (dup) {
@@ -206,17 +206,17 @@ export function TravelSubsidyClient({
     // 管理者の場合、ユーザ居住地データにあるが未設定の出発地を含める
     const unregistered = isAdmin
       ? locationChecklist
-          .filter(loc => !existing.some(s => s.departureMunicipalityId === loc.municipalityId))
-          .map(loc => ({
-            id: `unreg-${arrivalPoint.municipalityId}-${loc.municipalityId}`,
-            departurePrefectureId: loc.prefectureId,
-            departureMunicipalityId: loc.municipalityId,
-            arrivalPrefectureId: arrivalPoint.prefectureId,
-            arrivalMunicipalityId: arrivalPoint.municipalityId,
-            amount: 0,
-            isRegistered: false,
-            userCount: loc.userCount,
-          }))
+        .filter(loc => !existing.some(s => s.departureMunicipalityId === loc.municipalityId))
+        .map(loc => ({
+          id: `unreg-${arrivalPoint.municipalityId}-${loc.municipalityId}`,
+          departurePrefectureId: loc.prefectureId,
+          departureMunicipalityId: loc.municipalityId,
+          arrivalPrefectureId: arrivalPoint.prefectureId,
+          arrivalMunicipalityId: arrivalPoint.municipalityId,
+          amount: 0,
+          isRegistered: false,
+          userCount: loc.userCount,
+        }))
       : [];
 
     const items: (TravelSubsidy & { isRegistered: boolean; userCount: number })[] = [
@@ -233,7 +233,7 @@ export function TravelSubsidyClient({
         if (prefItems.length === 0) return null;
         return {
           pref,
-          prefItems: prefItems.sort((a, b) => 
+          prefItems: prefItems.sort((a, b) =>
             (munNamesMap[a.departureMunicipalityId] ?? "").localeCompare(munNamesMap[b.departureMunicipalityId] ?? "", "ja")
           ),
           groupUserCount: prefItems.reduce((sum, item) => sum + item.userCount, 0),
@@ -282,10 +282,10 @@ export function TravelSubsidyClient({
               ) : (
                 prefectureGroups.map(({ pref, prefItems, groupUserCount }) => (
                   <div key={pref.id} style={{ marginBottom: "1.5rem" }}>
-                    <h4 style={{ 
-                      fontSize: "0.9rem", 
-                      color: "#666", 
-                      borderBottom: "1px solid #eee", 
+                    <h4 style={{
+                      fontSize: "0.9rem",
+                      color: "#666",
+                      borderBottom: "1px solid #eee",
                       paddingBottom: "4px",
                       marginBottom: "8px",
                       display: "flex",
@@ -453,9 +453,7 @@ function SubsidyRow({
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "0.95rem" }}>
-            <span style={{ color: "#888", fontSize: "0.85rem", marginRight: "4px" }}>出発:</span>
             {departureName}
-            <small style={{ color: "#888", marginLeft: "4px" }}>({departurePrefName})</small>
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
