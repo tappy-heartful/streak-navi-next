@@ -257,6 +257,23 @@ export function TravelSubsidyClient({
         </h1>
       </div>
 
+      {isAdmin && (
+        <div className="container" style={{
+          background: "#fff9c4",
+          marginBottom: "1.5rem",
+          fontSize: "0.85rem",
+          color: "#856404",
+          border: "1px solid #ffeeba",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          padding: "10px 15px", // クラスの上書きを避けるため残すが、必要に応じて調整
+        }}>
+          <i className="fa-solid fa-circle-info" />
+          <span>一般ユーザーには、居住者数および未登録の旅費補助額情報は見えません。</span>
+        </div>
+      )}
+
       {/* 到着地ごとのコンテナ */}
       {containers.map(({ arrivalPoint, prefectureGroups, totalUserCount }) => {
         const arrivalPrefName = prefectures.find(p => p.id === arrivalPoint.prefectureId)?.name || "";
@@ -269,11 +286,6 @@ export function TravelSubsidyClient({
                 <i className="fa-solid fa-location-dot" style={{ marginRight: "0.5rem", fontSize: "0.9em" }} />
                 {arrivalPrefName}{arrivalMunName}までの旅費
               </span>
-              {isAdmin && totalUserCount > 0 && (
-                <span style={{ fontSize: "0.75rem", fontWeight: "normal", color: "#666" }}>
-                  {totalUserCount}名居住
-                </span>
-              )}
             </h3>
 
             <div>
