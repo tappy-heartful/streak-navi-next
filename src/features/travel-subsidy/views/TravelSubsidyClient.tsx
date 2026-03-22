@@ -228,7 +228,7 @@ export function TravelSubsidyClient({
                 <span>{prefecture.name}</span>
                 {totalUserCount > 0 && (
                   <span style={{ fontSize: "0.75rem", fontWeight: "normal", color: "#666" }}>
-                    {totalUserCount}名
+                    {totalUserCount}名居住
                   </span>
                 )}
               </div>
@@ -360,7 +360,7 @@ function SubsidyRow({
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
           {subsidy.userCount > 0 && (
             <span style={{ fontSize: "0.75rem", color: "#888" }}>
-              {subsidy.userCount}名
+              {subsidy.userCount}名居住
             </span>
           )}
           {!isRegistered && (
