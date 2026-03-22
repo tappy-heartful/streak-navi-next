@@ -238,7 +238,6 @@ export function TravelSubsidyClient({ initialSubsidies, prefectures, initialMuni
                   placeholder="例: 5000"
                   min="0"
                   disabled={!addMunicipalityId}
-                  style={{ maxWidth: "200px" }}
                 />
                 <span style={{ color: "#555" }}>円</span>
               </div>
