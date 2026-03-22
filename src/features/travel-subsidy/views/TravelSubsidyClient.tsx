@@ -12,14 +12,21 @@ import {
   saveTravelSubsidy,
   deleteTravelSubsidy,
 } from "@/src/features/travel-subsidy/api/travel-subsidy-client-service";
+import { LocationCheckItem } from "@/src/features/travel-subsidy/api/travel-subsidy-server-actions";
 
 type Props = {
   initialSubsidies: TravelSubsidy[];
   prefectures: Prefecture[];
   initialMunicipalityNamesMap: Record<string, string>;
+  locationChecklist: LocationCheckItem[];
 };
 
-export function TravelSubsidyClient({ initialSubsidies, prefectures, initialMunicipalityNamesMap }: Props) {
+export function TravelSubsidyClient({
+  initialSubsidies,
+  prefectures,
+  initialMunicipalityNamesMap,
+  locationChecklist,
+}: Props) {
   const { isAdmin } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
 
@@ -251,6 +258,53 @@ export function TravelSubsidyClient({ initialSubsidies, prefectures, initialMuni
             >
               追加する
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 設定チェックリスト（管理者のみ） */}
+      {isAdmin && locationChecklist.length > 0 && (
+        <div className="container" style={{ marginTop: "1rem" }}>
+          <h3 style={{ marginTop: 0 }}>
+            ユーザ居住地の登録状況
+          </h3>
+          <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "1rem" }}>
+            現在ユーザが登録している居住地（県・市区町村）が、旅費補助額テーブルに登録されているか確認できます。
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {locationChecklist.map((item) => {
+              const isRegistered = subsidies.some(s => s.municipalityId === item.municipalityId);
+              return (
+                <div
+                  key={`${item.prefectureId}_${item.municipalityId}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "8px 12px",
+                    background: isRegistered ? "#f0faf0" : "#fff5f5",
+                    borderRadius: "6px",
+                    border: isRegistered ? "1px solid #c8e6c9" : "1px solid #ffcdd2",
+                  }}
+                >
+                  <div style={{ fontSize: "0.9rem" }}>
+                    <span style={{ fontWeight: "bold", color: "#333", marginRight: "8px" }}>{item.prefectureName}</span>
+                    <span>{item.municipalityName}</span>
+                  </div>
+                  {isRegistered ? (
+                    <span style={{ fontSize: "0.75rem", color: "#2e7d32", background: "#e8f5e9", padding: "2px 8px", borderRadius: "10px", fontWeight: "bold" }}>
+                      <i className="fa-solid fa-check" style={{ marginRight: "4px" }} />
+                      登録済み
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: "0.75rem", color: "#c62828", background: "#ffebee", padding: "2px 8px", borderRadius: "10px", fontWeight: "bold" }}>
+                      <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: "4px" }} />
+                      未登録
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
