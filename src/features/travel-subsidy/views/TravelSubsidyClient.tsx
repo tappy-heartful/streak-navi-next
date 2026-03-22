@@ -147,12 +147,55 @@ export function TravelSubsidyClient({ initialSubsidies, prefectures, initialMuni
         </h1>
       </div>
 
+      {/* 設定一覧 */}
+      <div className="container">
+        <h3 style={{ marginTop: 0 }}>
+          設定一覧
+        </h3>
+
+        {grouped.length === 0 ? (
+          <p style={{ color: "#999", textAlign: "center", padding: "2rem 0" }}>
+            設定されているデータがありません
+          </p>
+        ) : (
+          grouped.map(({ prefecture, items }) => (
+            <div key={prefecture.id} style={{ marginBottom: "1.5rem" }}>
+              <div style={{
+                fontSize: "0.85rem",
+                fontWeight: "bold",
+                color: "#4caf50",
+                borderBottom: "2px solid #4caf50",
+                paddingBottom: "4px",
+                marginBottom: "4px",
+              }}>
+                {prefecture.name}
+              </div>
+              {items.map(subsidy => (
+                <SubsidyRow
+                  key={subsidy.id}
+                  subsidy={subsidy}
+                  municipalityName={munNamesMap[subsidy.municipalityId] ?? subsidy.municipalityId}
+                  isAdmin={isAdmin}
+                  isEditing={editingId === subsidy.id}
+                  editAmount={editAmount}
+                  onEditStart={() => handleEditStart(subsidy)}
+                  onEditAmountChange={setEditAmount}
+                  onEditSave={() => handleEditSave(subsidy.id)}
+                  onEditCancel={() => setEditingId(null)}
+                  onDelete={() => handleDelete(subsidy.id)}
+                />
+              ))}
+            </div>
+          ))
+        )}
+      </div>
+
       {/* 管理者: 新規追加フォーム */}
       {isAdmin && (
         <div className="container">
-          <h2 style={{ marginTop: 0, marginBottom: "1.2rem", fontSize: "1rem", color: "#555", fontWeight: "bold" }}>
+          <h3 style={{ marginTop: 0 }}>
             ＋ 新規追加
-          </h2>
+          </h3>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <div>
@@ -212,49 +255,6 @@ export function TravelSubsidyClient({ initialSubsidies, prefectures, initialMuni
           </div>
         </div>
       )}
-
-      {/* 設定一覧 */}
-      <div className="container">
-        <h2 style={{ marginTop: 0, marginBottom: "1.2rem", fontSize: "1rem", color: "#555", fontWeight: "bold" }}>
-          設定一覧
-        </h2>
-
-        {grouped.length === 0 ? (
-          <p style={{ color: "#999", textAlign: "center", padding: "2rem 0" }}>
-            設定されているデータがありません
-          </p>
-        ) : (
-          grouped.map(({ prefecture, items }) => (
-            <div key={prefecture.id} style={{ marginBottom: "1.5rem" }}>
-              <div style={{
-                fontSize: "0.85rem",
-                fontWeight: "bold",
-                color: "#4caf50",
-                borderBottom: "2px solid #4caf50",
-                paddingBottom: "4px",
-                marginBottom: "4px",
-              }}>
-                {prefecture.name}
-              </div>
-              {items.map(subsidy => (
-                <SubsidyRow
-                  key={subsidy.id}
-                  subsidy={subsidy}
-                  municipalityName={munNamesMap[subsidy.municipalityId] ?? subsidy.municipalityId}
-                  isAdmin={isAdmin}
-                  isEditing={editingId === subsidy.id}
-                  editAmount={editAmount}
-                  onEditStart={() => handleEditStart(subsidy)}
-                  onEditAmountChange={setEditAmount}
-                  onEditSave={() => handleEditSave(subsidy.id)}
-                  onEditCancel={() => setEditingId(null)}
-                  onDelete={() => handleDelete(subsidy.id)}
-                />
-              ))}
-            </div>
-          ))
-        )}
-      </div>
 
       <div className="page-footer">
         <Link href="/home" className="back-link">← ホームに戻る</Link>
