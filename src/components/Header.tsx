@@ -149,7 +149,7 @@ export default function Header() {
             {menuLink("/live", "ライブ")}
             {menuLink("/ticket", "予約者一覧")}
             {menuLink("/media", "メディア")}
-            {menuLink("/travel-subsidy", "旅費補助")}
+            {menuLink("/travel-subsidy", "旅費補助額")}
           </div>
 
           <div className="slide-menu-section menu-bottom">

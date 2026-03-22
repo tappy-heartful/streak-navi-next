@@ -38,7 +38,7 @@ export function TravelSubsidyClient({ initialSubsidies, prefectures, initialMuni
   const [editAmount, setEditAmount] = useState("");
 
   useEffect(() => {
-    setBreadcrumbs([{ title: "旅費補助額設定", href: "" }]);
+    setBreadcrumbs([{ title: "旅費補助額", href: "" }]);
   }, [setBreadcrumbs]);
 
   // 追加フォーム: 県変更時に市区町村をロード
@@ -143,7 +143,7 @@ export function TravelSubsidyClient({ initialSubsidies, prefectures, initialMuni
       <div className="page-header">
         <h1>
           <i className="fa-solid fa-train" style={{ marginRight: "0.5rem" }} />
-          旅費補助額設定
+          旅費補助額
         </h1>
       </div>
 

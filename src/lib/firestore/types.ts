@@ -379,7 +379,7 @@ export interface NoticeBaseNotification {
   message: string;
 }
 
-// ===== 旅費補助額設定 (TravelSubsidy) =====
+// ===== 旅費補助額 (TravelSubsidy) =====
 
 export interface TravelSubsidy {
   id: string;
@@ -401,4 +401,4 @@ export interface Assign {
   isRehearsal?: boolean;
   createdAt?: number;
 }
-
+
