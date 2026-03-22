@@ -9,9 +9,10 @@ import { setSession, clearAllAppSession, getSession } from "@/src/lib/functions"
 import { User as FirestoreUser } from "@/src/lib/firestore/types";
 
 // 管理機能の定義
-export type AdminModule = 
-  | "Score" | "Event" | "Call" | "Vote" | "Studio" 
-  | "User" | "Notice" | "BlueNote" | "Board" | "Live" | "Ticket" | "Media";
+export type AdminModule =
+  | "Score" | "Event" | "Call" | "Vote" | "Studio"
+  | "User" | "Notice" | "BlueNote" | "Board" | "Live" | "Ticket" | "Media"
+  | "TravelSubsidy";
 
 // パスセグメントとモジュールのマッピング
 const PATH_TO_MODULE: Record<string, AdminModule> = {
@@ -27,6 +28,7 @@ const PATH_TO_MODULE: Record<string, AdminModule> = {
   live: "Live",
   ticket: "Ticket",
   media: "Media",
+  "travel-subsidy": "TravelSubsidy",
 };
 
 interface AuthContextType {
