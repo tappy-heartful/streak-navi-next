@@ -33,6 +33,20 @@ export function TravelSubsidyClient({
   const [subsidies, setSubsidies] = useState<TravelSubsidy[]>(initialSubsidies);
   const [munNamesMap, setMunNamesMap] = useState<Record<string, string>>(initialMunicipalityNamesMap);
 
+  // 名前マップにチェックリストの情報を統合
+  useEffect(() => {
+    if (!locationChecklist.length) return;
+    setMunNamesMap(prev => {
+      const next = { ...prev };
+      locationChecklist.forEach(l => {
+        if (!next[l.municipalityId]) {
+          next[l.municipalityId] = l.municipalityName;
+        }
+      });
+      return next;
+    });
+  }, [locationChecklist, initialMunicipalityNamesMap]);
+
   // 追加フォーム
   const [addPrefectureId, setAddPrefectureId] = useState("");
   const [addMunicipalities, setAddMunicipalities] = useState<Municipality[]>([]);
@@ -102,7 +116,7 @@ export function TravelSubsidyClient({
     setEditAmount(String(subsidy.amount));
   };
 
-  const handleEditSave = async (id: string) => {
+  const handleEditSave = async (id: string, isRegistered: boolean) => {
     const amount = Number(editAmount);
     if (isNaN(amount) || amount < 0) {
       await showDialog("正しい金額を入力してください", true);
@@ -110,9 +124,17 @@ export function TravelSubsidyClient({
     }
     showSpinner();
     try {
-      const target = subsidies.find(s => s.id === id)!;
-      await saveTravelSubsidy({ prefectureId: target.prefectureId, municipalityId: target.municipalityId, amount }, id);
-      setSubsidies(prev => prev.map(s => s.id === id ? { ...s, amount } : s));
+      if (isRegistered) {
+        // 既存データの更新
+        const target = subsidies.find(s => s.id === id)!;
+        await saveTravelSubsidy({ prefectureId: target.prefectureId, municipalityId: target.municipalityId, amount }, id);
+        setSubsidies(prev => prev.map(s => s.id === id ? { ...s, amount } : s));
+      } else {
+        // 新規データの追加（idはmunicipalityIdが入っている）
+        const target = locationChecklist.find(l => l.municipalityId === id)!;
+        const newId = await saveTravelSubsidy({ prefectureId: target.prefectureId, municipalityId: target.municipalityId, amount });
+        setSubsidies(prev => [...prev, { id: newId, prefectureId: target.prefectureId, municipalityId: target.municipalityId, amount }]);
+      }
       setEditingId(null);
     } catch {
       await showDialog("保存に失敗しました", true);
@@ -135,14 +157,33 @@ export function TravelSubsidyClient({
     }
   };
 
-  // 都道府県ごとにグループ化（設定済みのものだけ表示）
+  // 都道府県ごとにグループ化（設定済み、および管理者の場合はユーザ登録済み未設定分も含む）
   const grouped = prefectures
-    .map(pref => ({
-      prefecture: pref,
-      items: subsidies
+    .map(pref => {
+      // 登録済み項目
+      const existing = subsidies
         .filter(s => s.prefectureId === pref.id)
-        .sort((a, b) => (munNamesMap[a.municipalityId] ?? "").localeCompare(munNamesMap[b.municipalityId] ?? "", "ja")),
-    }))
+        .map(s => ({ ...s, isRegistered: true }));
+
+      // 未登録項目（管理者の場合のみ表示）
+      const unregistered = isAdmin
+        ? locationChecklist
+            .filter(l => l.prefectureId === pref.id && !subsidies.some(s => s.municipalityId === l.municipalityId))
+            .map(l => ({
+              id: l.municipalityId, // IDがないのでmunicipalityIdで代用
+              prefectureId: l.prefectureId,
+              municipalityId: l.municipalityId,
+              amount: 0,
+              isRegistered: false,
+            }))
+        : [];
+
+      const items = [...existing, ...unregistered].sort((a, b) =>
+        (munNamesMap[a.municipalityId] ?? "").localeCompare(munNamesMap[b.municipalityId] ?? "", "ja")
+      );
+
+      return { prefecture: pref, items };
+    })
     .filter(g => g.items.length > 0);
 
   return (
@@ -177,19 +218,19 @@ export function TravelSubsidyClient({
               }}>
                 {prefecture.name}
               </div>
-              {items.map(subsidy => (
+              {items.map(item => (
                 <SubsidyRow
-                  key={subsidy.id}
-                  subsidy={subsidy}
-                  municipalityName={munNamesMap[subsidy.municipalityId] ?? subsidy.municipalityId}
+                  key={item.id}
+                  subsidy={item as any}
+                  municipalityName={munNamesMap[item.municipalityId] ?? item.municipalityId}
                   isAdmin={isAdmin}
-                  isEditing={editingId === subsidy.id}
+                  isEditing={editingId === item.id}
                   editAmount={editAmount}
-                  onEditStart={() => handleEditStart(subsidy)}
+                  onEditStart={() => handleEditStart(item as any)}
                   onEditAmountChange={setEditAmount}
-                  onEditSave={() => handleEditSave(subsidy.id)}
+                  onEditSave={() => handleEditSave(item.id, !!item.isRegistered)}
                   onEditCancel={() => setEditingId(null)}
-                  onDelete={() => handleDelete(subsidy.id)}
+                  onDelete={() => handleDelete(item.id)}
                 />
               ))}
             </div>
@@ -262,53 +303,6 @@ export function TravelSubsidyClient({
         </div>
       )}
 
-      {/* 設定チェックリスト（管理者のみ） */}
-      {isAdmin && locationChecklist.length > 0 && (
-        <div className="container" style={{ marginTop: "1rem" }}>
-          <h3 style={{ marginTop: 0 }}>
-            ユーザ居住地の登録状況
-          </h3>
-          <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "1rem" }}>
-            現在ユーザが登録している居住地（県・市区町村）が、旅費補助額テーブルに登録されているか確認できます。
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {locationChecklist.map((item) => {
-              const isRegistered = subsidies.some(s => s.municipalityId === item.municipalityId);
-              return (
-                <div
-                  key={`${item.prefectureId}_${item.municipalityId}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "8px 12px",
-                    background: isRegistered ? "#f0faf0" : "#fff5f5",
-                    borderRadius: "6px",
-                    border: isRegistered ? "1px solid #c8e6c9" : "1px solid #ffcdd2",
-                  }}
-                >
-                  <div style={{ fontSize: "0.9rem" }}>
-                    <span style={{ fontWeight: "bold", color: "#333", marginRight: "8px" }}>{item.prefectureName}</span>
-                    <span>{item.municipalityName}</span>
-                  </div>
-                  {isRegistered ? (
-                    <span style={{ fontSize: "0.75rem", color: "#2e7d32", background: "#e8f5e9", padding: "2px 8px", borderRadius: "10px", fontWeight: "bold" }}>
-                      <i className="fa-solid fa-check" style={{ marginRight: "4px" }} />
-                      登録済み
-                    </span>
-                  ) : (
-                    <span style={{ fontSize: "0.75rem", color: "#c62828", background: "#ffebee", padding: "2px 8px", borderRadius: "10px", fontWeight: "bold" }}>
-                      <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: "4px" }} />
-                      未登録
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       <div className="page-footer">
         <Link href="/home" className="back-link">← ホームに戻る</Link>
       </div>
@@ -319,7 +313,7 @@ export function TravelSubsidyClient({
 // ===== 行コンポーネント =====
 
 type SubsidyRowProps = {
-  subsidy: TravelSubsidy;
+  subsidy: TravelSubsidy & { isRegistered: boolean };
   municipalityName: string;
   isAdmin: boolean;
   isEditing: boolean;
@@ -335,6 +329,8 @@ function SubsidyRow({
   municipalityName, subsidy, isAdmin, isEditing, editAmount,
   onEditStart, onEditAmountChange, onEditSave, onEditCancel, onDelete,
 }: SubsidyRowProps) {
+  const isRegistered = subsidy.isRegistered;
+
   return (
     <div style={{
       display: "flex",
@@ -343,8 +339,14 @@ function SubsidyRow({
       padding: "10px 8px",
       borderBottom: "1px solid #f0f0f0",
       gap: "8px",
+      background: !isRegistered ? "#fff9f9" : "transparent",
     }}>
-      <span style={{ flex: 1, fontSize: "0.95rem" }}>{municipalityName}</span>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <span style={{ fontSize: "0.95rem" }}>{municipalityName}</span>
+        {!isRegistered && (
+          <span style={{ fontSize: "0.75rem", color: "#c62828", fontWeight: "bold" }}>未登録</span>
+        )}
+      </div>
 
       {isEditing ? (
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -359,8 +361,8 @@ function SubsidyRow({
           <span style={{ fontSize: "0.85rem", color: "#555" }}>円</span>
         </div>
       ) : (
-        <span style={{ fontWeight: "bold", color: "#2c3e50", minWidth: "80px", textAlign: "right" }}>
-          ¥{subsidy.amount.toLocaleString()}
+        <span style={{ fontWeight: "bold", color: isRegistered ? "#2c3e50" : "#999", minWidth: "80px", textAlign: "right" }}>
+          {isRegistered ? `¥${subsidy.amount.toLocaleString()}` : "---"}
         </span>
       )}
 
@@ -384,18 +386,20 @@ function SubsidyRow({
           <div style={{ display: "flex", gap: "6px" }}>
             <button
               onClick={onEditStart}
-              className="edit-button"
+              className={isRegistered ? "edit-button" : "save-button"}
               style={{ padding: "5px 10px", fontSize: "0.8rem" }}
             >
-              編集
+              {isRegistered ? "編集" : "登録"}
             </button>
-            <button
-              onClick={onDelete}
-              className="delete-button"
-              style={{ padding: "5px 10px", fontSize: "0.8rem" }}
-            >
-              削除
-            </button>
+            {isRegistered && (
+              <button
+                onClick={onDelete}
+                className="delete-button"
+                style={{ padding: "5px 10px", fontSize: "0.8rem" }}
+              >
+                削除
+              </button>
+            )}
           </div>
         )
       )}
