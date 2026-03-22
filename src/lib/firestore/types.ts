@@ -379,6 +379,16 @@ export interface NoticeBaseNotification {
   message: string;
 }
 
+// ===== 旅費補助額設定 (TravelSubsidy) =====
+
+export interface TravelSubsidy {
+  id: string;
+  prefectureId: string;
+  municipalityId: string;
+  amount: number;
+  updatedAt?: number;
+}
+
 // ===== 譜割り (Assign) =====
 
 export interface Assign {
