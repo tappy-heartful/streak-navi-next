@@ -277,7 +277,7 @@ export function TravelSubsidyClient({
           padding: "10px 15px", // クラスの上書きを避けるため残すが、必要に応じて調整
         }}>
           <i className="fa-solid fa-circle-info" />
-          <span>一般ユーザーには、居住者数および未登録の市区町村は見えません。</span>
+          <span>管理ユーザーのみ設定できます。一般ユーザーには居住者数および「補助額未登録の市区町村」は見えません。</span>
         </div>
       )}
 
