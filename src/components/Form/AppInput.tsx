@@ -11,9 +11,10 @@ type AppInputProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateField: (field: string, value: any) => void;
   placeholder?: string;
+  disabled?: boolean;
 };
 
-export const AppInput = ({ label, field, value, error, required, type = "text", updateField, placeholder }: AppInputProps) => {
+export const AppInput = ({ label, field, value, error, required, type = "text", updateField, placeholder, disabled }: AppInputProps) => {
   if (type === "checkbox") {
     return (
       <div className="form-group checkbox-group">
@@ -35,6 +36,7 @@ export const AppInput = ({ label, field, value, error, required, type = "text", 
           value={strValue}
           rows={4}
           placeholder={placeholder}
+          disabled={disabled}
           onChange={(e) => updateField(field, e.target.value)}
         />
       </FormField>
@@ -48,6 +50,7 @@ export const AppInput = ({ label, field, value, error, required, type = "text", 
         className="form-control"
         value={strValue}
         placeholder={placeholder}
+        disabled={disabled}
         onChange={(e) => updateField(field, e.target.value)}
       />
     </FormField>

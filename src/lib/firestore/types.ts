@@ -414,3 +414,28 @@ export interface Assign {
   createdAt?: number;
 }
 
+// ===== 経費申請 (ExpenseApply) =====
+
+export interface ExpenseApply {
+  id: string;
+  uid: string;
+  type: 'expenditure' | 'income';
+  category: string;
+  name: string;
+  amount: number;
+  date: string; // yyyy.MM.dd
+  status: 'pending' | 'approved' | 'rejected';
+  
+  // 旅費の場合のみ使用
+  isTravel?: boolean;
+  departurePrefectureId?: string;
+  departureMunicipalityId?: string;
+  arrivalPrefectureId?: string;
+  arrivalMunicipalityId?: string;
+  
+  files?: { name: string; url: string; path: string }[];
+  adminComment?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+

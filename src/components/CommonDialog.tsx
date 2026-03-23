@@ -5,7 +5,9 @@ import { useState, useEffect } from "react";
 export interface DialogOptions {
   message: string;
   isOKOnly?: boolean;
-  resolve: (value: boolean) => void;
+  isPrompt?: boolean;
+  promptPlaceholder?: string;
+  resolve: (value: boolean | string | null) => void;
 }
 
 // グローバルに呼び出すためのsetterを保持
@@ -15,27 +17,49 @@ let setter: (options: DialogOptions | null) => void;
  * プロミスを返すダイアログ表示関数
  * @param message 表示するテキスト
  * @param isOKOnly OKボタンのみにするかどうか
+ * @param isPrompt 入力フィールドを表示するかどうか
+ * @param promptPlaceholder 入力フィールドのプレースホルダー
  */
-export const showDialog = (message: string, isOKOnly = false): Promise<boolean> => {
+export const showDialog = (
+  message: string, 
+  isOKOnly = false, 
+  isPrompt = false, 
+  promptPlaceholder = ""
+): Promise<boolean | string | null> => {
   return new Promise((resolve) => {
     if (setter) {
-      setter({ message, isOKOnly, resolve });
+      setter({ message, isOKOnly, isPrompt, promptPlaceholder, resolve });
     }
   });
 };
 
 export default function CommonDialog() {
   const [options, setOptions] = useState<DialogOptions | null>(null);
+  const [promptValue, setPromptValue] = useState("");
 
   useEffect(() => {
     setter = setOptions;
   }, []);
 
+  useEffect(() => {
+    if (options?.isPrompt) {
+      setPromptValue("");
+    }
+  }, [options]);
+
   // オプションがない（ダイアログを閉じている）ときは何も描画しない
   if (!options) return null;
 
   const handleClose = (result: boolean) => {
-    options.resolve(result);
+    if (options.isPrompt) {
+      if (result) {
+        options.resolve(promptValue);
+      } else {
+        options.resolve(null);
+      }
+    } else {
+      options.resolve(result);
+    }
     setOptions(null);
   };
 
@@ -52,7 +76,7 @@ export default function CommonDialog() {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 10000; /* ヘッダーより上に表示 */
+          z-index: 10000;
         }
 
         .dialog-box {
@@ -60,7 +84,7 @@ export default function CommonDialog() {
           padding: 24px;
           border-radius: 8px;
           width: 90%;
-          max-width: 350px;
+          max-width: 400px;
           min-width: 280px;
           text-align: center;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -69,10 +93,19 @@ export default function CommonDialog() {
         #dialog-message {
           font-size: 16px;
           line-height: 1.6;
-          margin-bottom: 24px;
+          margin-bottom: 20px;
           color: #333;
           white-space: pre-wrap;
           word-break: break-all;
+        }
+
+        .dialog-prompt-input {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 20px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          font-size: 16px;
         }
 
         .dialog-buttons {
@@ -112,17 +145,29 @@ export default function CommonDialog() {
           <i className="fa-solid fa-music"></i>
         </div>
         <p id="dialog-message">{options.message}</p>
+        
+        {options.isPrompt && (
+          <input
+            type="text"
+            className="dialog-prompt-input"
+            value={promptValue}
+            onChange={(e) => setPromptValue(e.target.value)}
+            placeholder={options.promptPlaceholder}
+            autoFocus
+          />
+        )}
+
         <div className="dialog-buttons">
           <button className="dialog-ok" onClick={() => handleClose(true)}>
-            {options.isOKOnly ? "OK" : "はい"}
+            {options.isOKOnly ? "OK" : (options.isPrompt ? "送信" : "はい")}
           </button>
           {!options.isOKOnly && (
             <button className="dialog-cancel" onClick={() => handleClose(false)}>
-              いいえ
+              {options.isPrompt ? "キャンセル" : "いいえ"}
             </button>
           )}
         </div>
       </div>
     </div>
   );
-}
+}

@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 // T に Record<string, any> の制約を付与
 export function useAppForm<T extends Record<string, any>>(
   initialValues: T,
-  validationSchema: { [K in keyof T]?: ((v: T[K]) => string | true)[] }
+  validationSchema: { [K in keyof T]?: ((v: T[K], data: T) => string | true)[] }
 ) {
   const [formData, setFormData] = useState<T>(initialValues);
   const [errors, setErrors] = useState<{ [K in keyof T]?: string }>({});
@@ -19,7 +19,7 @@ export function useAppForm<T extends Record<string, any>>(
       const fieldRules = validationSchema[key];
       if (!fieldRules) continue;
       for (const rule of fieldRules) {
-        const result = rule(formData[key]);
+        const result = rule(formData[key], formData);
         if (result !== true) {
           newErrors[key] = result;
           break;
