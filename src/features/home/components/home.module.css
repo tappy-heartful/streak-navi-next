@@ -207,20 +207,20 @@
   pointer-events: none;
 }
 
-.score::after { content: '🎼'; }
-.event::after { content: '🎺'; }
-.assign::after { content: '🎵'; }
-.call::after { content: '🎶'; }
-.vote::after { content: '📊'; }
-.collect::after { content: '💰'; }
-.studio::after { content: '📍'; }
-.user::after { content: '👥'; }
-.notice::after { content: '📣'; }
-.blueNote::after { content: '🎧'; }
-.media::after { content: '🎬'; }
-.board::after { content: '📋'; }
-.live::after { content: '🎷'; }
-.ticket::after { content: '🎫'; }
+/* 演奏メニュー (Green) */
+.perfMenu { background-color: #4caf50; }
+
+/* 活動メニュー (Blue) */
+.actMenu { background-color: #2196f3; }
+
+/* アプリメニュー (Teal/Dark Green) */
+.appMenu { background-color: #009688; }
+
+/* ホームページ連携 (Purple) */
+.extMenu { background-color: #9c27b0; }
+
+/* 経費管理 (Orange) */
+.costMenu { background-color: #ff9800; }
 
 /* バッジアニメーション */
 .badgeInline {

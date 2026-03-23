@@ -153,31 +153,46 @@ body.fixed {
 
 .slide-menu-section {
   border-top: 1px solid #ddd;
-  padding-top: 12px;
-  margin-top: 12px;
+  padding-top: 10px;
+  margin-top: 10px;
 
   /* ▼ 追加（縦→2列レイアウト） */
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px 12px; /* 行、列の余白 */
+  gap: 6px 8px; /* 行、列の余白 */
 }
 
 .slide-menu-section a {
   font-weight: 600;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   color: #222;
   text-decoration: none;
-  padding: 8px 4px;
+  padding: 6px 4px;
 
   /* ▼ 追加（見た目整える） */
   text-align: center;
   background: #f5f5f7;
   border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+}
+
+@media (max-width: 380px) {
+  .slide-menu-section a {
+    font-size: 13px;
+    padding: 4px 2px;
+    min-height: 34px;
+  }
+  .slide-menu-section {
+    gap: 4px 6px;
+  }
 }
 
 .slide-menu-section a:hover {
-  opacity: 0.7;
+  background: #ebebe0;
 }
 
 /* 下段（設定・ログアウト） */
