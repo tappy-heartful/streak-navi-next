@@ -1,7 +1,28 @@
 import { db } from "@/src/lib/firebase";
 import { collection, addDoc, doc, updateDoc, serverTimestamp, deleteDoc, query, where, getDocs, orderBy, limit } from "firebase/firestore";
-import { ExpenseApply, Municipality } from "@/src/lib/firestore/types";
+import { ExpenseApply, Municipality, ExpenseType, ExpenseCategory, ExpenseItem } from "@/src/lib/firestore/types";
 import { getSession } from "@/src/lib/functions";
+
+/** すべての経費種別を取得 */
+export async function getExpenseTypesClient(): Promise<ExpenseType[]> {
+  const q = query(collection(db, "expenseTypes"), orderBy("__name__", "asc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as ExpenseType));
+}
+
+/** すべての経費区分を取得 */
+export async function getExpenseCategoriesClient(): Promise<ExpenseCategory[]> {
+  const q = query(collection(db, "expenseCategories"), orderBy("__name__", "asc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as ExpenseCategory));
+}
+
+/** すべての経費項目を取得 */
+export async function getExpenseItemsClient(): Promise<ExpenseItem[]> {
+  const q = query(collection(db, "expenseItems"), orderBy("__name__", "asc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as ExpenseItem));
+}
 
 export type ExpenseApplyFormData = Omit<ExpenseApply, 'id' | 'uid' | 'createdAt' | 'updatedAt'>;
 

@@ -8,12 +8,15 @@ import { AppInput } from "@/src/components/Form/AppInput";
 import { FormField } from "@/src/components/Form/FormField";
 import { useAppForm } from "@/src/hooks/useAppForm";
 import { rules } from "@/src/lib/validation";
-import { ExpenseApply, Prefecture, Municipality } from "@/src/lib/firestore/types";
 import { 
   saveExpenseApply, 
   getMunicipalitiesClient, 
-  calculateTravelSubsidyClient 
+  calculateTravelSubsidyClient,
+  getExpenseTypesClient,
+  getExpenseCategoriesClient,
+  getExpenseItemsClient
 } from "@/src/features/expense-apply/api/expense-apply-client-service";
+import { ExpenseApply, Prefecture, Municipality, ExpenseType, ExpenseCategory, ExpenseItem } from "@/src/lib/firestore/types";
 import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
@@ -26,16 +29,29 @@ type Props = {
   prefectures: Prefecture[];
 };
 
-const EXPENSE_CATEGORIES = {
-  expenditure: ["バンド資産購入", "旅費", "ライブ参加費", "譜面購入", "練習会場費", "その他"],
-  income: ["ライブ謝礼金", "その他"],
-};
-
 export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectures }: Props) {
   const { user } = useAuth();
   const [files, setFiles] = useState<{ name: string; url: string; path: string }[]>(
     initialData?.files || []
   );
+
+  const [masterTypes, setMasterTypes] = useState<ExpenseType[]>([]);
+  const [masterCategories, setMasterCategories] = useState<ExpenseCategory[]>([]);
+  const [masterItems, setMasterItems] = useState<ExpenseItem[]>([]);
+
+  useEffect(() => {
+    const fetchMasters = async () => {
+      const [t, c, i] = await Promise.all([
+        getExpenseTypesClient(),
+        getExpenseCategoriesClient(),
+        getExpenseItemsClient()
+      ]);
+      setMasterTypes(t);
+      setMasterCategories(c);
+      setMasterItems(i);
+    };
+    fetchMasters();
+  }, []);
 
   // 市区町村リストの状態
   const [departureMuns, setDepartureMuns] = useState<{ id: string; name: string }[]>([]);
@@ -44,7 +60,10 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
   const form = useAppForm(
     {
       type: initialData?.type || "expenditure",
+      typeId: initialData?.typeId || "",
       category: initialData?.category || "",
+      categoryId: initialData?.categoryId || "",
+      itemId: initialData?.itemId || "",
       name: initialData?.name || "",
       amount: initialData?.amount || 0,
       date: dotDateToHyphen(initialData?.date || new Date().toISOString().split('T')[0]),
@@ -55,21 +74,22 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
       isTravel: initialData?.isTravel || false,
     },
     {
-      type: [rules.required],
-      category: [rules.required],
-      name: [(v, data) => data.category !== "旅費" && !v ? "項目名を入力してください" : true],
+      typeId: [rules.required],
+      categoryId: [rules.required],
+      itemId: [rules.required],
+      name: [(v, data) => !data.isTravel && !v ? "項目名を入力してください" : true],
       amount: [rules.required, (v) => Number(v) > 0 || "1円以上の金額を入力してください"],
       date: [rules.required],
-      departurePrefectureId: [(v, data) => data.category === "旅費" && !v ? "出発県を選択してください" : true],
-      departureMunicipalityId: [(v, data) => data.category === "旅費" && !v ? "出発市区町村を選択してください" : true],
-      arrivalPrefectureId: [(v, data) => data.category === "旅費" && !v ? "到着県を選択してください" : true],
-      arrivalMunicipalityId: [(v, data) => data.category === "旅費" && !v ? "到着市区町村を選択してください" : true],
+      departurePrefectureId: [(v, data) => data.isTravel && !v ? "出発県を選択してください" : true],
+      departureMunicipalityId: [(v, data) => data.isTravel && !v ? "出発市区町村を選択してください" : true],
+      arrivalPrefectureId: [(v, data) => data.isTravel && !v ? "到着県を選択してください" : true],
+      arrivalMunicipalityId: [(v, data) => data.isTravel && !v ? "到着市区町村を選択してください" : true],
     }
   );
 
-  const isExpenditure = form.formData.type === "expenditure";
-  const isTravel = form.formData.category === "旅費";
-  const categories = isExpenditure ? EXPENSE_CATEGORIES.expenditure : EXPENSE_CATEGORIES.income;
+  const currentCategories = masterCategories.filter(c => c.typeId === form.formData.typeId);
+  const currentItems = masterItems.filter(i => i.categoryId === form.formData.categoryId);
+  const isTravel = masterItems.find(i => i.id === form.formData.itemId)?.isTravel || false;
 
   // 出発地市区町村の取得
   useEffect(() => {
@@ -171,11 +191,17 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
   };
 
   const onSave = async (data: any) => {
+    // 保存時に表示名も解決して入れる（互換性&リスト表示用）
+    const typeName = masterTypes.find(t => t.id === data.typeId)?.name || "";
+    const itemName = masterItems.find(i => i.id === data.itemId)?.name || "";
+
     const payload = {
       ...data,
+      type: data.typeId === "001" ? "expenditure" : "income", // マスタに応じて設定
+      category: itemName, // リスト表示用に項目の名前を入れる
       date: hyphenDateToDot(data.date),
       files,
-      isTravel: data.category === "旅費",
+      isTravel: isTravel,
     };
     return saveExpenseApply(mode, payload, expenseId);
   };
@@ -195,52 +221,54 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
         form={form}
         onSaveApi={onSave}
       >
-        <FormField label="種別" required error={form.errors.type}>
-          <div style={{ display: "flex", gap: "20px", marginTop: "8px" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-              <input 
-                type="radio" 
-                name="type" 
-                value="expenditure" 
-                checked={form.formData.type === "expenditure"} 
-                onChange={() => {
-                  form.updateField("type", "expenditure");
-                  form.updateField("category", "");
-                }}
-              />
-              支出
-            </label>
-            <label style={{ display: "flex", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-              <input 
-                type="radio" 
-                name="type" 
-                value="income" 
-                checked={form.formData.type === "income"} 
-                onChange={() => {
-                  form.updateField("type", "income");
-                  form.updateField("category", "");
-                }}
-              />
-              収入
-            </label>
-          </div>
-        </FormField>
-
-        <FormField label="項目" required error={form.errors.category}>
+        <FormField label="経費種別" required error={form.errors.typeId}>
           <select
             className="form-control"
-            value={form.formData.category}
+            value={form.formData.typeId}
             onChange={(e) => {
-              form.updateField("category", e.target.value);
-              if (e.target.value !== "旅費") {
-                form.updateField("isTravel", false);
-              } else {
-                form.updateField("isTravel", true);
-              }
+              form.updateField("typeId", e.target.value);
+              form.updateField("categoryId", "");
+              form.updateField("itemId", "");
+              form.updateField("isTravel", false);
             }}
           >
+            <option value="">--- 種別を選択 ---</option>
+            {masterTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+          </select>
+        </FormField>
+
+        <FormField label="経費区分" required error={form.errors.categoryId}>
+          <select
+            className="form-control"
+            value={form.formData.categoryId}
+            onChange={(e) => {
+              form.updateField("categoryId", e.target.value);
+              form.updateField("itemId", "");
+              form.updateField("isTravel", false);
+            }}
+            disabled={!form.formData.typeId}
+          >
+            <option value="">--- 区分を選択 ---</option>
+            {currentCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </FormField>
+
+        <FormField label="経費項目" required error={form.errors.itemId}>
+          <select
+            className="form-control"
+            value={form.formData.itemId}
+            onChange={(e) => {
+              const item = masterItems.find(i => i.id === e.target.value);
+              form.updateField("itemId", e.target.value);
+              form.updateField("isTravel", item?.isTravel || false);
+              if (item?.isTravel) {
+                form.updateField("name", ""); // 自動入力されるのでクリア
+              }
+            }}
+            disabled={!form.formData.categoryId}
+          >
             <option value="">--- 項目を選択 ---</option>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            {currentItems.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
           </select>
         </FormField>
 

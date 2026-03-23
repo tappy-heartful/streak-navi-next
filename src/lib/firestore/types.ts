@@ -414,13 +414,36 @@ export interface Assign {
   createdAt?: number;
 }
 
+// ===== 経費マスタ =====
+
+export interface ExpenseType {
+  id: string; // 001, 002
+  name: string;
+}
+
+export interface ExpenseCategory {
+  id: string; // 001_001
+  typeId: string;
+  name: string;
+}
+
+export interface ExpenseItem {
+  id: string; // 001_001_001
+  categoryId: string;
+  name: string;
+  isTravel?: boolean;
+}
+
 // ===== 経費申請 (ExpenseApply) =====
 
 export interface ExpenseApply {
   id: string;
   uid: string;
-  type: 'expenditure' | 'income';
-  category: string;
+  type: 'expenditure' | 'income'; // 互換性のため維持
+  typeId: string;     // 001
+  category: string;   // 互換性のため表示名も持つ
+  categoryId: string; // 001_001
+  itemId: string;     // 001_001_001
   name: string;
   amount: number;
   date: string; // yyyy.MM.dd
