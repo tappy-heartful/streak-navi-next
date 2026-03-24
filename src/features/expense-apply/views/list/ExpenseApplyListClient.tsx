@@ -92,7 +92,7 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
                 </td>
                 <td>
                   <div className="list-text-small" style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
-                    {typeMap[expense.typeId] || "不明"} / {expense.category}
+                    {typeMap[expense.typeId] || "不明"}<br/>{expense.category}
                   </div>
                 </td>
                 <td style={{ textAlign: "right", fontWeight: "bold" }}>

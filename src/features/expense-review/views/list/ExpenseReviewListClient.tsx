@@ -50,9 +50,9 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
         <thead>
           <tr>
             <th>日付・経費名</th>
-            <th>申請者</th>
             <th>種別</th>
             <th>金額</th>
+            <th>申請者</th>
             <th>状態</th>
             <th>操作</th>
           </tr>
@@ -70,15 +70,15 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
                   </Link>
                 </td>
                 <td>
-                  {usersMap[expense.uid] || "不明"}
-                </td>
-                <td>
                   <div className="list-text-small" style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
-                    {typeMap[expense.typeId] || "不明"} / {expense.category}
+                    {typeMap[expense.typeId] || "不明"}<br/>{expense.category}
                   </div>
                 </td>
                 <td style={{ textAlign: "right", fontWeight: "bold" }}>
                   ¥{expense.amount.toLocaleString()}
+                </td>
+                <td>
+                  {usersMap[expense.uid] || "不明"}
                 </td>
                 <td style={{ textAlign: "center" }}>
                   {getStatusBadge(expense.status)}
