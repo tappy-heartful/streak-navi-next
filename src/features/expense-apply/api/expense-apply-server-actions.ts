@@ -3,6 +3,12 @@ import { adminDb } from "@/src/lib/firebase-admin";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 import { ExpenseApply, Prefecture, TravelSubsidy, ExpenseApplyHistory } from "@/src/lib/firestore/types";
 
+/** 経費種別マスタを取得 */
+export async function getExpenseTypesServer(): Promise<any[]> {
+  const snap = await adminDb.collection("expenseTypes").orderBy("__name__", "asc").get();
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
 /** 自分の経費申請一覧を取得 (uidでフィルタ) */
 export async function getMyExpenseAppliesServer(uid: string): Promise<ExpenseApply[]> {
   const snap = await adminDb.collection("expenseApplies")

@@ -439,7 +439,6 @@ export interface ExpenseItem {
 export interface ExpenseApply {
   id: string;
   uid: string;
-  type: 'expenditure' | 'income'; // 互換性のため維持
   typeId: string;     // 001
   category: string;   // 互換性のため表示名も持つ
   categoryId: string; // 001_001
@@ -477,7 +476,6 @@ export interface ExpenseApplyHistory {
 }
 // ===== 経費申請フォームデータ (ExpenseApplyFormData) =====
 export interface ExpenseApplyFormData {
-  type: 'expenditure' | 'income';
   typeId: string;
   category: string;
   categoryId: string;

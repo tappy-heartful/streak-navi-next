@@ -3,10 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ListBaseLayout } from "@/src/components/Layout/ListBaseLayout";
-import { ExpenseApply } from "@/src/lib/firestore/types";
+import { ExpenseApply, ExpenseType } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import Link from "next/link";
+import { getExpenseTypesClient } from "@/src/features/expense-apply/api/expense-apply-client-service";
 
 type Props = {
   initialExpenses: ExpenseApply[];
@@ -17,9 +18,17 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
   const { user } = useAuth();
   const [expenses, setExpenses] = useState<ExpenseApply[]>(initialExpenses);
   const [loading, setLoading] = useState(true);
+  const [typeMap, setTypeMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setBreadcrumbs([{ title: "経費申請", href: "" }]);
+    
+    // 種別マスタの取得
+    getExpenseTypesClient().then(types => {
+      const map: Record<string, string> = {};
+      types.forEach(t => map[t.id] = t.name);
+      setTypeMap(map);
+    });
   }, [setBreadcrumbs]);
 
   useEffect(() => {
@@ -80,8 +89,8 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
                   </Link>
                 </td>
                 <td>
-                  <div className="list-text-small" style={{ color: expense.type === "expenditure" ? "#c62828" : "#2e7d32" }}>
-                    {expense.type === "expenditure" ? "支出" : "収入"} / {expense.category}
+                  <div className="list-text-small" style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
+                    {typeMap[expense.typeId] || "不明"} / {expense.category}
                   </div>
                 </td>
                 <td>

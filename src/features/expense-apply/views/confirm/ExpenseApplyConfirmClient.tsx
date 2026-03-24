@@ -13,10 +13,18 @@ type Props = {
   initialData: ExpenseApply;
   prefectures: Prefecture[];
   municipalityNames: Record<string, string>;
+  typeNamesMap: Record<string, string>;
   history: ExpenseApplyHistory[];
 };
 
-export function ExpenseApplyConfirmClient({ expenseId, initialData, prefectures, municipalityNames, history }: Props) {
+export function ExpenseApplyConfirmClient({ 
+  expenseId, 
+  initialData, 
+  prefectures, 
+  municipalityNames, 
+  typeNamesMap,
+  history 
+}: Props) {
   const { user } = useAuth();
   
   // 自分自身の申請であれば編集・削除が可能 (審査中または否認済みのみ)
@@ -149,7 +157,7 @@ export function ExpenseApplyConfirmClient({ expenseId, initialData, prefectures,
         </FormField>
 
         <FormField label="種別">
-          <div className="label-value">{initialData.type === "expenditure" ? "支出" : "収入"} / {initialData.category}</div>
+          <div className="label-value">{typeNamesMap[initialData.typeId] || "不明"} / {initialData.category}</div>
         </FormField>
 
         {initialData.isTravel && (
@@ -175,7 +183,7 @@ export function ExpenseApplyConfirmClient({ expenseId, initialData, prefectures,
         </FormField>
 
         <FormField label="金額 (税込)">
-          <div className="label-value" style={{ fontSize: "1.5rem", fontWeight: "900", color: initialData.type === "expenditure" ? "#c62828" : "#2e7d32" }}>
+          <div className="label-value" style={{ fontSize: "1.5rem", fontWeight: "900", color: initialData.typeId === "001" ? "#c62828" : "#2e7d32" }}>
             ¥{initialData.amount.toLocaleString()}
           </div>
         </FormField>

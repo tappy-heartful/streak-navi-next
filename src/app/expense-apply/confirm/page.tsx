@@ -2,7 +2,8 @@ import React from "react";
 import { 
   getExpenseApplyServer, 
   getPrefecturesServer,
-  getExpenseHistoryServer 
+  getExpenseHistoryServer,
+  getExpenseTypesServer
 } from "@/src/features/expense-apply/api/expense-apply-server-actions";
 import { getMunicipalityNamesMapServer } from "@/src/features/users/api/user-server-actions";
 import { ExpenseApplyConfirmClient } from "@/src/features/expense-apply/views/confirm/ExpenseApplyConfirmClient";
@@ -18,13 +19,17 @@ export default async function ExpenseConfirmPage({ searchParams }: Props) {
   const { expenseId } = await searchParams;
   if (!expenseId) notFound();
 
-  const [expense, prefectures, history] = await Promise.all([
+  const [expense, prefectures, history, types] = await Promise.all([
     getExpenseApplyServer(expenseId),
     getPrefecturesServer(),
     getExpenseHistoryServer(expenseId),
+    getExpenseTypesServer()
   ]);
 
   if (!expense) notFound();
+
+  const typeNamesMap: Record<string, string> = {};
+  types.forEach(t => typeNamesMap[t.id] = t.name);
 
   // 市区町村名のマップを取得
   const munIds = new Set<string>();
@@ -38,6 +43,7 @@ export default async function ExpenseConfirmPage({ searchParams }: Props) {
       initialData={expense} 
       prefectures={prefectures}
       municipalityNames={munNamesMap}
+      typeNamesMap={typeNamesMap}
       history={history}
     />
   );

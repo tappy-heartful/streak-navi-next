@@ -63,7 +63,6 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
 
   const form = useAppForm(
     {
-      type: (initialData?.type || "expenditure") as "expenditure" | "income",
       typeId: initialData?.typeId || "",
       category: initialData?.category || "",
       categoryId: initialData?.categoryId || "",
@@ -219,7 +218,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const onSaveApi = async (data: typeof form.formData) => {
+  const onSaveApi = async (data: any) => {
     const itemName = masterItems.find(i => i.id === data.itemId)?.name || "";
 
     const payload = {
@@ -249,8 +248,6 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
             value={form.formData.typeId} 
             onChange={(e) => {
               form.updateField("typeId", e.target.value);
-              const type = masterTypes.find(t => t.id === e.target.value);
-              if (type) form.updateField("type", e.target.id === "001" ? "expenditure" : "income");
             }}
             className="form-control"
           >

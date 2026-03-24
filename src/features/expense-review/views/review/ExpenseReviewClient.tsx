@@ -15,6 +15,7 @@ type Props = {
   initialData: ExpenseApply;
   prefectures: Prefecture[];
   municipalityNamesMap: Record<string, string>;
+  typeNamesMap: Record<string, string>;
   applicantName: string;
   history: ExpenseApplyHistory[];
 };
@@ -24,6 +25,7 @@ export function ExpenseReviewClient({
   initialData, 
   prefectures, 
   municipalityNamesMap,
+  typeNamesMap,
   applicantName,
   history 
 }: Props) {
@@ -213,7 +215,7 @@ export function ExpenseReviewClient({
         </FormField>
 
         <FormField label="種別">
-          <div className="label-value">{initialData.type === "expenditure" ? "支出" : "収入"} / {initialData.category}</div>
+          <div className="label-value">{typeNamesMap[initialData.typeId] || "不明"} / {initialData.category}</div>
         </FormField>
 
         {initialData.isTravel && (
@@ -233,7 +235,7 @@ export function ExpenseReviewClient({
         </FormField>
 
         <FormField label="金額 (税込)">
-          <div className="label-value" style={{ fontSize: "1.8rem", fontWeight: "900", color: initialData.type === "expenditure" ? "#c62828" : "#2e7d32" }}>
+          <div className="label-value" style={{ fontSize: "1.8rem", fontWeight: "900", color: initialData.typeId === "001" ? "#c62828" : "#2e7d32" }}>
             ¥{initialData.amount.toLocaleString()}
           </div>
         </FormField>
