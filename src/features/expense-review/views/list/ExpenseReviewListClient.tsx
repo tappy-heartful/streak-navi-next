@@ -115,13 +115,13 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
         </div>
 
         <div className="container" style={{ marginBottom: "20px" }}>
-          <h3 className="section-title"><i className="fa-solid fa-circle-check"></i> 承認済み</h3>
-          {renderTable(approvedItems, "承認済みの申請はありません")}
+          <h3 className="section-title"><i className="fa-solid fa-circle-xmark"></i> 否認済み</h3>
+          {renderTable(rejectedItems, "否認された申請はありません")}
         </div>
 
         <div className="container" style={{ marginBottom: "20px" }}>
-          <h3 className="section-title"><i className="fa-solid fa-circle-xmark"></i> 否認済み</h3>
-          {renderTable(rejectedItems, "否認された申請はありません")}
+          <h3 className="section-title"><i className="fa-solid fa-circle-check"></i> 承認済み</h3>
+          {renderTable(approvedItems, "承認済みの申請はありません")}
         </div>
 
         <style jsx>{`

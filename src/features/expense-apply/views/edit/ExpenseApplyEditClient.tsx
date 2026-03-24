@@ -379,6 +379,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
           error={form.errors.amount}
           type="number"
           placeholder="金額を入力"
+          disabled={isTravel}
         />
 
         <AppInput 

@@ -127,16 +127,16 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
         </div>
 
         <div className="container" style={{ marginBottom: "20px" }}>
-          <h3 className="section-title"><i className="fa-solid fa-circle-check"></i> 承認済み</h3>
-          {renderTable(approvedItems, "承認済みの申請はありません")}
-        </div>
-
-        <div className="container" style={{ marginBottom: "20px" }}>
           <h3 className="section-title"><i className="fa-solid fa-circle-xmark"></i> 否認済み</h3>
           <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: "10px", padding: "0 10px" }}>
             ※否認された申請は、詳細画面から編集して再申請することが可能です。
           </div>
           {renderTable(rejectedItems, "否認された申請はありません")}
+        </div>
+
+        <div className="container" style={{ marginBottom: "20px" }}>
+          <h3 className="section-title"><i className="fa-solid fa-circle-check"></i> 承認済み</h3>
+          {renderTable(approvedItems, "承認済みの申請はありません")}
         </div>
 
         <style jsx>{`
