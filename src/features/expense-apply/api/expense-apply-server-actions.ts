@@ -1,7 +1,7 @@
 import 'server-only';
 import { adminDb } from "@/src/lib/firebase-admin";
 import { toPlainObject } from "@/src/lib/firestore/utils";
-import { ExpenseApply, Prefecture, TravelSubsidy } from "@/src/lib/firestore/types";
+import { ExpenseApply, Prefecture, TravelSubsidy, ExpenseApplyHistory } from "@/src/lib/firestore/types";
 
 /** 自分の経費申請一覧を取得 (uidでフィルタ) */
 export async function getMyExpenseAppliesServer(uid: string): Promise<ExpenseApply[]> {
@@ -63,4 +63,12 @@ export async function getTravelConfigServer() {
   const doc = await adminDb.collection("configs").doc("travel").get();
   if (!doc.exists) return { arrivalPoints: [], departurePoints: [] };
   return doc.data();
+}
+
+/** 経費申請の履歴を取得 */
+export async function getExpenseHistoryServer(id: string): Promise<ExpenseApplyHistory[]> {
+  const snap = await adminDb.collection("expenseApplies").doc(id).collection("history")
+    .orderBy("createdAt", "asc")
+    .get();
+  return snap.docs.map(toPlainObject) as ExpenseApplyHistory[];
 }

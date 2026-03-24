@@ -1,7 +1,8 @@
 import React from "react";
 import { 
   getExpenseApplyServer, 
-  getPrefecturesServer 
+  getPrefecturesServer,
+  getExpenseHistoryServer 
 } from "@/src/features/expense-apply/api/expense-apply-server-actions";
 import { getMunicipalityNamesMapServer, getUserServer } from "@/src/features/users/api/user-server-actions";
 import { ExpenseReviewClient } from "@/src/features/expense-review/views/review/ExpenseReviewClient";
@@ -20,9 +21,10 @@ export default async function ExpenseReviewPage({ searchParams }: Props) {
   const expense = await getExpenseApplyServer(expenseId);
   if (!expense) notFound();
 
-  const [prefectures, applicant] = await Promise.all([
+  const [prefectures, applicant, history] = await Promise.all([
     getPrefecturesServer(),
-    getUserServer(expense.uid)
+    getUserServer(expense.uid),
+    getExpenseHistoryServer(expenseId)
   ]);
 
   // 市区町村名のマップを取得
@@ -38,6 +40,7 @@ export default async function ExpenseReviewPage({ searchParams }: Props) {
       prefectures={prefectures}
       municipalityNamesMap={munNamesMap}
       applicantName={applicant?.displayName || "不明"}
+      history={history}
     />
   );
 }

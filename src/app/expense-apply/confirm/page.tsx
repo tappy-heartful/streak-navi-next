@@ -1,7 +1,8 @@
 import React from "react";
 import { 
   getExpenseApplyServer, 
-  getPrefecturesServer 
+  getPrefecturesServer,
+  getExpenseHistoryServer 
 } from "@/src/features/expense-apply/api/expense-apply-server-actions";
 import { getMunicipalityNamesMapServer } from "@/src/features/users/api/user-server-actions";
 import { ExpenseApplyConfirmClient } from "@/src/features/expense-apply/views/confirm/ExpenseApplyConfirmClient";
@@ -17,9 +18,10 @@ export default async function ExpenseConfirmPage({ searchParams }: Props) {
   const { expenseId } = await searchParams;
   if (!expenseId) notFound();
 
-  const [expense, prefectures] = await Promise.all([
+  const [expense, prefectures, history] = await Promise.all([
     getExpenseApplyServer(expenseId),
     getPrefecturesServer(),
+    getExpenseHistoryServer(expenseId),
   ]);
 
   if (!expense) notFound();
@@ -36,6 +38,7 @@ export default async function ExpenseConfirmPage({ searchParams }: Props) {
       initialData={expense} 
       prefectures={prefectures}
       municipalityNames={munNamesMap}
+      history={history}
     />
   );
 }

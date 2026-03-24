@@ -31,6 +31,73 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
     }
   };
 
+  const pendingItems = expenses.filter(e => e.status === 'pending');
+  const approvedItems = expenses.filter(e => e.status === 'approved');
+  const rejectedItems = expenses.filter(e => e.status === 'rejected');
+
+  const renderTable = (items: ExpenseApply[], emptyMsg: string) => (
+    <div className="table-wrapper" style={{ marginBottom: "30px" }}>
+      <table className="list-table">
+        <thead>
+          <tr>
+            <th style={{ width: "100px" }}>日付</th>
+            <th style={{ width: "100px" }}>申請者</th>
+            <th style={{ width: "120px" }}>種別</th>
+            <th>経費名</th>
+            <th style={{ width: "100px" }}>金額</th>
+            <th style={{ width: "100px" }}>状態</th>
+            <th style={{ width: "100px" }}>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.length > 0 ? (
+            items.map((expense) => (
+              <tr key={expense.id} style={{ opacity: expense.status !== "pending" ? 0.8 : 1 }}>
+                <td>
+                  <Link prefetch={true} href={`/expense-review/review?expenseId=${expense.id}`}>
+                    {expense.date}
+                  </Link>
+                </td>
+                <td>
+                  {usersMap[expense.uid] || "不明"}
+                </td>
+                <td>
+                  <div className="list-text-small" style={{ color: expense.type === "expenditure" ? "#c62828" : "#2e7d32" }}>
+                    {expense.type === "expenditure" ? "支出" : "収入"} / {expense.category}
+                  </div>
+                </td>
+                <td>
+                  <Link href={`/expense-review/review?expenseId=${expense.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                    <div className="list-table-row-header">{expense.name}</div>
+                  </Link>
+                </td>
+                <td style={{ textAlign: "right", fontWeight: "bold" }}>
+                  ¥{expense.amount.toLocaleString()}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  {getStatusBadge(expense.status)}
+                </td>
+                <td style={{ textAlign: "center" }}>
+                  <Link 
+                    href={`/expense-review/review?expenseId=${expense.id}`}
+                    className="judge-btn approved-btn"
+                    style={{ textDecoration: "none" }}
+                  >
+                    {expense.status === 'pending' ? "審査" : "詳細"}
+                  </Link>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={7} className="empty-text">{emptyMsg}</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <BaseLayout>
       <ListBaseLayout
@@ -43,69 +110,27 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
             会計メンバーのみ閲覧可能です。各メンバーからの経費申請を承認・拒否できます。
           </div>
 
-          <div className="table-wrapper">
-            <table className="list-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "100px" }}>日付</th>
-                  <th style={{ width: "100px" }}>申請者</th>
-                  <th style={{ width: "120px" }}>種別</th>
-                  <th>経費名</th>
-                  <th style={{ width: "100px" }}>金額</th>
-                  <th style={{ width: "100px" }}>状態</th>
-                  <th style={{ width: "100px" }}>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {expenses.length > 0 ? (
-                  expenses.map((expense) => (
-                    <tr key={expense.id} style={{ opacity: expense.status !== "pending" ? 0.6 : 1 }}>
-                      <td>
-                        <Link prefetch={true} href={`/expense-review/review?expenseId=${expense.id}`}>
-                          {expense.date}
-                        </Link>
-                      </td>
-                      <td>
-                        {usersMap[expense.uid] || "不明"}
-                      </td>
-                      <td>
-                        <div className="list-text-small" style={{ color: expense.type === "expenditure" ? "#c62828" : "#2e7d32" }}>
-                          {expense.type === "expenditure" ? "支出" : "収入"} / {expense.category}
-                        </div>
-                      </td>
-                      <td>
-                        <Link href={`/expense-review/review?expenseId=${expense.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                          <div className="list-table-row-header">{expense.name}</div>
-                        </Link>
-                      </td>
-                      <td style={{ textAlign: "right", fontWeight: "bold" }}>
-                        ¥{expense.amount.toLocaleString()}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        {getStatusBadge(expense.status)}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        <Link 
-                          href={`/expense-review/review?expenseId=${expense.id}`}
-                          className="judge-btn approved-btn"
-                          style={{ textDecoration: "none" }}
-                        >
-                          審査
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={7} className="empty-text">審査待ちの申請はありません🍀</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <h3 className="section-title"><i className="fa-solid fa-clock"></i> 審査待ち</h3>
+          {renderTable(pendingItems, "審査待ちの申請はありません🍀")}
+
+          <h3 className="section-title"><i className="fa-solid fa-circle-check"></i> 承認済み</h3>
+          {renderTable(approvedItems, "承認済みの申請はありません")}
+
+          <h3 className="section-title"><i className="fa-solid fa-circle-xmark"></i> 否認済み</h3>
+          {renderTable(rejectedItems, "否認された申請はありません")}
         </div>
 
         <style jsx>{`
+          .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #333;
+            border-left: 4px solid #4caf50;
+            padding-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
           .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: #fff; }
           .pending { background: #999; }
           .approved { background: #4caf50; }

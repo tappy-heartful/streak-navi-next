@@ -465,3 +465,14 @@ export interface ExpenseApply {
   updatedAt: any;
 }
 
+// ===== 経費申請履歴 (ExpenseApplyHistory) =====
+export interface ExpenseApplyHistory {
+  id: string;
+  type: 'created' | 'updated' | 'reviewed' | 'commented';
+  status: 'pending' | 'approved' | 'rejected';
+  comment?: string;
+  actorId: string;
+  actorName: string;
+  createdAt: any;
+}
+

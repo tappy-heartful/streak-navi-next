@@ -30,7 +30,7 @@ type Props = {
 };
 
 export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectures }: Props) {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const [files, setFiles] = useState<{ name: string; url: string; path: string }[]>(
     initialData?.files || []
   );
@@ -203,7 +203,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
       files,
       isTravel: isTravel,
     };
-    return saveExpenseApply(mode, payload, expenseId);
+    return saveExpenseApply(mode, payload, userData?.displayName || "不明", expenseId);
   };
 
   const isOwn = !initialData || user?.uid === initialData.uid;

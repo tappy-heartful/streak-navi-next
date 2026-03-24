@@ -57,6 +57,7 @@ export async function calculateTravelSubsidyClient(
 export const saveExpenseApply = async (
   mode: "new" | "edit" | "copy",
   data: ExpenseApplyFormData,
+  actorName: string,
   id?: string
 ): Promise<string> => {
   const uid = getSession("uid");
@@ -64,12 +65,23 @@ export const saveExpenseApply = async (
 
   const payload = {
     ...data,
+    status: "pending",
     updatedAt: serverTimestamp(),
   };
 
   if (mode === "edit" && id) {
     const docRef = doc(db, "expenseApplies", id);
     await updateDoc(docRef, payload);
+    
+    // 履歴に追加
+    await addDoc(collection(docRef, "history"), {
+      type: 'updated',
+      status: 'pending',
+      actorId: uid,
+      actorName,
+      createdAt: serverTimestamp(),
+    });
+
     return id;
   } else {
     const docRef = await addDoc(collection(db, "expenseApplies"), {
@@ -78,6 +90,16 @@ export const saveExpenseApply = async (
       status: "pending", // 初期ステータス
       createdAt: serverTimestamp(),
     });
+
+    // 履歴に追加
+    await addDoc(collection(docRef, "history"), {
+      type: 'created',
+      status: 'pending',
+      actorId: uid,
+      actorName,
+      createdAt: serverTimestamp(),
+    });
+
     return docRef.id;
   }
 };
