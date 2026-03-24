@@ -144,42 +144,66 @@ export function ExpenseReviewClient({
         </div>
 
         <FormField label="申請・審査履歴">
-          <div style={{ background: "#fafafa", borderRadius: "12px", border: "1px solid #eee", padding: "15px" }}>
+          <div style={{ padding: "10px 0" }}>
             {history.length > 0 ? (
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "0.85rem" }}>
+              <div style={{ position: "relative" }}>
+                {/* タイムラインの縦線 */}
+                <div style={{ position: "absolute", left: "15px", top: "10px", bottom: "10px", width: "2px", background: "#e0e0e0" }}></div>
+                
                 {history.map((h, i) => (
-                  <li key={h.id || i} style={{ padding: "12px 0", borderBottom: i === history.length - 1 ? "none" : "1px solid #eee" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#888", marginBottom: "4px" }}>
-                      <span style={{ fontSize: "0.8rem" }}>{format(h.createdAt, 'yyyy/MM/dd HH:mm')}</span>
-                      <span style={{ 
-                        fontWeight: "bold", 
-                        padding: "2px 8px", 
-                        borderRadius: "10px", 
-                        background: h.status === 'approved' ? '#e8f5e9' : h.status === 'rejected' ? '#ffebee' : '#f5f5f5',
-                        color: h.status === 'approved' ? '#2e7d32' : h.status === 'rejected' ? '#c62828' : '#666'
-                      }}>
-                        {getHistoryLabel(h.type)}
-                      </span>
+                  <div key={h.id || i} style={{ position: "relative", paddingLeft: "45px", marginBottom: "25px" }}>
+                    {/* 番号付きの円 */}
+                    <div style={{ 
+                      position: "absolute", left: "0", top: "0", width: "32px", height: "32px", 
+                      borderRadius: "50%", background: "#fff", border: `2px solid ${h.status === 'approved' ? '#4caf50' : h.status === 'rejected' ? '#f44336' : '#2196f3'}`,
+                      display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", fontWeight: "bold", zIndex: 1
+                    }}>
+                      {i + 1}
                     </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontWeight: "600" }}>{h.actorName}</span>
-                      <span style={{ 
-                        color: h.status === 'approved' ? '#4caf50' : h.status === 'rejected' ? '#f44336' : '#999',
-                        fontWeight: "bold"
-                      }}>
-                        {h.status === 'approved' ? '承認' : h.status === 'rejected' ? '否認' : '審査待ち'}
-                      </span>
-                    </div>
-                    {h.comment && (
-                      <div style={{ marginTop: "8px", padding: "10px", background: "#fff", borderRadius: "8px", border: "1px solid #eee", color: "#333", lineHeight: "1.4" }}>
-                        {h.comment}
+
+                    <div style={{ 
+                      background: "#fff", borderRadius: "12px", border: "1px solid #eee", padding: "12px", 
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.02)" 
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                        <div>
+                          <span style={{ 
+                            fontSize: "0.7rem", fontWeight: "bold", padding: "2px 8px", borderRadius: "4px", 
+                            background: h.type === 'created' ? '#e3f2fd' : h.type === 'reviewed' ? '#f3e5f5' : '#f5f5f5',
+                            color: h.type === 'created' ? '#1976d2' : h.type === 'reviewed' ? '#7b1fa2' : '#666',
+                            marginRight: "8px", textTransform: "uppercase"
+                          }}>
+                            {getHistoryLabel(h.type)}
+                          </span>
+                          <span style={{ fontSize: "0.8rem", color: "#888" }}>{format(h.createdAt, 'yyyy/MM/dd HH:mm')}</span>
+                        </div>
+                        <span style={{ 
+                          fontSize: "0.75rem", fontWeight: "bold",
+                          color: h.status === 'approved' ? '#4caf50' : h.status === 'rejected' ? '#f44336' : '#ffa000'
+                        }}>
+                          {h.status === 'approved' ? '承認済' : h.status === 'rejected' ? '否認済' : '審査待'}
+                        </span>
                       </div>
-                    )}
-                  </li>
+                      
+                      <div style={{ fontWeight: "bold", fontSize: "0.9rem", color: "#333" }}>{h.actorName}</div>
+                      
+                      {h.comment && (
+                        <div style={{ 
+                          marginTop: "10px", padding: "10px", background: "#f8f9fa", borderRadius: "8px", 
+                          fontSize: "0.85rem", color: "#555", borderLeft: "4px solid #dee2e6",
+                          whiteSpace: "pre-wrap", lineHeight: "1.5"
+                        }}>
+                          {h.comment}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : (
-              <div style={{ color: "#999", textAlign: "center", fontSize: "0.8rem" }}>履歴はありません</div>
+              <div style={{ color: "#999", textAlign: "center", fontSize: "0.8rem", padding: "20px", background: "#fafafa", borderRadius: "12px" }}>
+                履歴はありません
+              </div>
             )}
           </div>
         </FormField>
