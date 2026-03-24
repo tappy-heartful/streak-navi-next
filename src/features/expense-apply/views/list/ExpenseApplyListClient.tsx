@@ -30,7 +30,6 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
       const { collection, query, where, getDocs } = await import("firebase/firestore");
       const { toPlainObject } = await import("@/src/lib/firestore/utils");
       
-      // 複合インデックスエラーを避けるため、クエリではorderByをせず、取得後にソート
       const q = query(
         collection(db, "expenseApplies"),
         where("uid", "==", user.uid)
@@ -38,7 +37,6 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
       const snap = await getDocs(q);
       const items = snap.docs.map(toPlainObject) as ExpenseApply[];
       
-      // 日付降順でソート
       items.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
       
       setExpenses(items);
@@ -61,7 +59,7 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
   const rejectedItems = expenses.filter(e => e.status === 'rejected');
 
   const renderTable = (items: ExpenseApply[], emptyMsg: string) => (
-    <div className="table-wrapper" style={{ marginBottom: "30px" }}>
+    <div className="table-wrapper">
       <table className="list-table">
         <thead>
           <tr>
@@ -113,25 +111,29 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
         title="経費申請"
         basePath="/expense-apply"
       >
-        <div className="container" style={{ paddingTop: "20px" }}>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
-            <Link 
-              href="/expense-apply/edit?mode=new" 
-              className="list-add-button"
-              style={{ margin: 0, textDecoration: "none" }}
-            >
-              ＋ 新規経費申請
-            </Link>
-          </div>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px", marginTop: "20px" }}>
+          <Link 
+            href="/expense-apply/edit?mode=new" 
+            className="list-add-button"
+            style={{ margin: 0, textDecoration: "none" }}
+          >
+            ＋ 新規経費申請
+          </Link>
+        </div>
 
+        <div className="container" style={{ marginBottom: "20px" }}>
           <h3 className="section-title"><i className="fa-solid fa-clock"></i> 審査待ち</h3>
           {renderTable(pendingItems, "審査待ちの申請はありません🍀")}
+        </div>
 
+        <div className="container" style={{ marginBottom: "20px" }}>
           <h3 className="section-title"><i className="fa-solid fa-circle-check"></i> 承認済み</h3>
           {renderTable(approvedItems, "承認済みの申請はありません")}
+        </div>
 
+        <div className="container" style={{ marginBottom: "20px" }}>
           <h3 className="section-title"><i className="fa-solid fa-circle-xmark"></i> 否認済み</h3>
-          <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: "10px" }}>
+          <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: "10px", padding: "0 10px" }}>
             ※否認された申請は、詳細画面から編集して再申請することが可能です。
           </div>
           {renderTable(rejectedItems, "否認された申請はありません")}
@@ -147,6 +149,7 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-top: 10px;
           }
           .status-badge {
             display: inline-block;

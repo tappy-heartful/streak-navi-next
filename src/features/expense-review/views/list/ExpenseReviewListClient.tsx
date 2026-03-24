@@ -36,7 +36,7 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
   const rejectedItems = expenses.filter(e => e.status === 'rejected');
 
   const renderTable = (items: ExpenseApply[], emptyMsg: string) => (
-    <div className="table-wrapper" style={{ marginBottom: "30px" }}>
+    <div className="table-wrapper">
       <table className="list-table">
         <thead>
           <tr>
@@ -104,18 +104,22 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
         title="経費審査"
         basePath="/expense-review"
       >
-        <div className="container" style={{ paddingTop: "20px" }}>
-          <div style={{ padding: "10px", background: "#f5f5f7", borderRadius: "8px", marginBottom: "20px", fontSize: "0.9rem", color: "#666" }}>
-            <i className="fa-solid fa-circle-info" style={{ marginRight: "4px" }} />
-            会計メンバーのみ閲覧可能です。各メンバーからの経費申請を承認・拒否できます。
-          </div>
+        <div style={{ padding: "10px", background: "#f5f5f7", borderRadius: "8px", marginBottom: "20px", marginTop: "20px", fontSize: "0.9rem", color: "#666" }}>
+          <i className="fa-solid fa-circle-info" style={{ marginRight: "4px" }} />
+          会計メンバーのみ閲覧可能です。各メンバーからの経費申請を承認・拒否できます。
+        </div>
 
+        <div className="container" style={{ marginBottom: "20px" }}>
           <h3 className="section-title"><i className="fa-solid fa-clock"></i> 審査待ち</h3>
           {renderTable(pendingItems, "審査待ちの申請はありません🍀")}
+        </div>
 
+        <div className="container" style={{ marginBottom: "20px" }}>
           <h3 className="section-title"><i className="fa-solid fa-circle-check"></i> 承認済み</h3>
           {renderTable(approvedItems, "承認済みの申請はありません")}
+        </div>
 
+        <div className="container" style={{ marginBottom: "20px" }}>
           <h3 className="section-title"><i className="fa-solid fa-circle-xmark"></i> 否認済み</h3>
           {renderTable(rejectedItems, "否認された申請はありません")}
         </div>
@@ -130,6 +134,7 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-top: 10px;
           }
           .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: #fff; }
           .pending { background: #999; }
