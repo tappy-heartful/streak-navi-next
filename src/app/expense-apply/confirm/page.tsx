@@ -7,6 +7,7 @@ import {
 } from "@/src/features/expense-apply/api/expense-apply-server-actions";
 import { getMunicipalityNamesMapServer } from "@/src/features/users/api/user-server-actions";
 import { ExpenseApplyConfirmClient } from "@/src/features/expense-apply/views/confirm/ExpenseApplyConfirmClient";
+import { ExpenseType } from "@/src/lib/firestore/types";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,7 @@ export default async function ExpenseConfirmPage({ searchParams }: Props) {
   if (!expense) notFound();
 
   const typeNamesMap: Record<string, string> = {};
-  types.forEach(t => typeNamesMap[t.id] = t.name);
+  types.forEach((t: ExpenseType) => typeNamesMap[t.id] = t.name);
 
   // 市区町村名のマップを取得
   const munIds = new Set<string>();

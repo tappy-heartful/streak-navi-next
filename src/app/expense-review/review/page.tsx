@@ -30,7 +30,7 @@ export default async function ExpenseReviewPage({ searchParams }: Props) {
   ]);
 
   const typeNamesMap: Record<string, string> = {};
-  types.forEach(t => typeNamesMap[t.id] = t.name);
+  types.forEach((t: any) => typeNamesMap[t.id] = t.name);
 
   // 市区町村名のマップを取得
   const munIds = new Set<string>();

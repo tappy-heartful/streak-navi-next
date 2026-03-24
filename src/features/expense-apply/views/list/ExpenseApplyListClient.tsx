@@ -72,29 +72,28 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
       <table className="list-table">
         <thead>
           <tr>
-            <th style={{ width: "120px" }}>日付</th>
-            <th style={{ width: "120px" }}>種別</th>
-            <th>経費名</th>
-            <th style={{ width: "100px" }}>金額</th>
-            <th style={{ width: "100px" }}>状態</th>
+            <th>日付・経費名</th>
+            <th>種別</th>
+            <th>金額</th>
+            <th>状態</th>
           </tr>
         </thead>
         <tbody>
           {items.length > 0 ? (
             items.map((expense) => (
               <tr key={expense.id}>
-                <td>
-                  <Link prefetch={true} href={`/expense-apply/confirm?expenseId=${expense.id}`}>
+                <td className="list-table-row-header">
+                  <div style={{ fontSize: "10px", color: "#888", fontWeight: "normal", marginBottom: "2px" }}>
                     {expense.date}
+                  </div>
+                  <Link prefetch={true} href={`/expense-apply/confirm?expenseId=${expense.id}`} style={{ textDecoration: "none" }}>
+                    {expense.name}
                   </Link>
                 </td>
                 <td>
                   <div className="list-text-small" style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
-                    {typeMap[expense.typeId] || "不明"} / {expense.category}
+                    {typeMap[expense.typeId] || "不明"}<br/>{expense.category}
                   </div>
-                </td>
-                <td>
-                  <div className="list-table-row-header">{expense.name}</div>
                 </td>
                 <td style={{ textAlign: "right", fontWeight: "bold" }}>
                   ¥{expense.amount.toLocaleString()}
@@ -106,7 +105,7 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
             ))
           ) : (
             <tr>
-              <td colSpan={5} className="empty-text">{emptyMsg}</td>
+              <td colSpan={4} className="empty-text">{emptyMsg}</td>
             </tr>
           )}
         </tbody>

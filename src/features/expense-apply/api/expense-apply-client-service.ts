@@ -14,7 +14,7 @@ import {
   getDoc
 } from "firebase/firestore";
 import { getSession } from "@/src/lib/functions";
-import { ExpenseApplyFormData } from "@/src/lib/firestore/types";
+import { ExpenseApplyFormData, ExpenseType, ExpenseCategory, ExpenseItem } from "@/src/lib/firestore/types";
 
 /** 都道府県IDから市区町村一覧を取得 (Client SDK) */
 export const getMunicipalitiesClient = async (prefectureCode: string) => {
@@ -38,21 +38,21 @@ export const calculateTravelSubsidyClient = async (
 };
 
 /** 経費種別一覧を取得 */
-export const getExpenseTypesClient = async () => {
+export const getExpenseTypesClient = async (): Promise<ExpenseType[]> => {
   const snap = await getDocs(collection(db, "expenseTypes"));
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseType[];
 };
 
 /** 経費区分一覧を取得 */
-export const getExpenseCategoriesClient = async () => {
+export const getExpenseCategoriesClient = async (): Promise<ExpenseCategory[]> => {
   const snap = await getDocs(collection(db, "expenseCategories"));
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseCategory[];
 };
 
 /** 経費項目一覧を取得 */
-export const getExpenseItemsClient = async () => {
+export const getExpenseItemsClient = async (): Promise<ExpenseItem[]> => {
   const snap = await getDocs(collection(db, "expenseItems"));
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseItem[];
 };
 
 /** 経費申請の保存 (新規作成・更新・コピー) */

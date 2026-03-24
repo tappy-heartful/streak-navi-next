@@ -166,7 +166,12 @@ export function ExpenseApplyConfirmClient({
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: 1, textAlign: "center" }}>
                   <div style={{ fontSize: "0.65rem", color: "#1976d2", fontWeight: "bold" }}>出発</div>
-                  <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>{getPointName(initialData.departurePrefectureId, initialData.departureMunicipalityId)}</div>
+                  <div style={{ fontSize: "0.7rem", color: "#666", fontWeight: "normal", marginTop: "2px" }}>
+                    {prefectures.find(p => p.id === initialData.departurePrefectureId)?.name || initialData.departurePrefectureId}
+                  </div>
+                  <div style={{ fontSize: "0.95rem", fontWeight: "bold" }}>
+                    {municipalityNames[initialData.departureMunicipalityId || ""] || initialData.departureMunicipalityId}
+                  </div>
                 </div>
                 
                 <div style={{ textAlign: "center", minWidth: "50px" }}>
@@ -176,8 +181,24 @@ export function ExpenseApplyConfirmClient({
 
                 <div style={{ flex: 1, textAlign: "center" }}>
                   <div style={{ fontSize: "0.65rem", color: "#1976d2", fontWeight: "bold" }}>到着</div>
-                  <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>{getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId)}</div>
+                  <div style={{ fontSize: "0.7rem", color: "#666", fontWeight: "normal", marginTop: "2px" }}>
+                    {prefectures.find(p => p.id === initialData.arrivalPrefectureId)?.name || initialData.arrivalPrefectureId}
+                  </div>
+                  <div style={{ fontSize: "0.95rem", fontWeight: "bold" }}>
+                    {municipalityNames[initialData.arrivalMunicipalityId || ""] || initialData.arrivalMunicipalityId}
+                  </div>
                 </div>
+              </div>
+              
+              <div style={{ marginTop: "15px", borderRadius: "8px", overflow: "hidden", border: "1px solid #e0e0e0", height: "200px" }}>
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://maps.google.com/maps?saddr=${encodeURIComponent(getPointName(initialData.departurePrefectureId, initialData.departureMunicipalityId))}&daddr=${encodeURIComponent(getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId))}&dirflg=r&output=embed`}
+                ></iframe>
               </div>
             </div>
           </FormField>

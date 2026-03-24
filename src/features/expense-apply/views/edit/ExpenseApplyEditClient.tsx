@@ -18,7 +18,7 @@ import {
   getUserLocationClient
 } from "@/src/features/expense-apply/api/expense-apply-client-service";
 import { getTravelSubsidyAmountClient } from "@/src/features/travel-subsidy/api/travel-subsidy-client-service";
-import { ExpenseApply, Prefecture, Municipality, ExpenseType, ExpenseCategory, ExpenseItem } from "@/src/lib/firestore/types";
+import { ExpenseApply, Prefecture, Municipality, ExpenseType, ExpenseCategory, ExpenseItem, ExpenseApplyFormData } from "@/src/lib/firestore/types";
 import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
@@ -225,10 +225,10 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const onSaveApi = async (data: any) => {
+  const onSaveApi = async (data: typeof form.formData) => {
     const itemName = masterItems.find(i => i.id === data.itemId)?.name || "";
 
-    const payload = {
+    const payload: ExpenseApplyFormData = {
       ...data,
       category: itemName,
       date: hyphenDateToDot(data.date),
@@ -364,6 +364,19 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
                 ))}
               </select>
             </FormField>
+            
+            {(form.formData.departureMunicipalityId && form.formData.arrivalMunicipalityId) && (
+              <div style={{ marginTop: "15px", borderRadius: "8px", overflow: "hidden", border: "1px solid #dee2e6", height: "180px" }}>
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://maps.google.com/maps?saddr=${encodeURIComponent(prefectures.find(p => p.id === form.formData.departurePrefectureId)?.name + (departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || ""))}&daddr=${encodeURIComponent(prefectures.find(p => p.id === form.formData.arrivalPrefectureId)?.name + (arrivalMuns.find(m => m.id === form.formData.arrivalMunicipalityId)?.name || ""))}&dirflg=r&output=embed`}
+                ></iframe>
+              </div>
+            )}
           </div>
         )}
 
