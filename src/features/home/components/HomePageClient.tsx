@@ -48,7 +48,7 @@ const MenuSectionList = memo(({ isAdmin }: { isAdmin: boolean }) => (
       <MenuSection title="アプリメニュー" items={[{ h: "/user", l: "👥 ユーザ", c: "appMenu" }, { h: "/notice", l: "📣 通知設定", c: "appMenu" }, { h: "/blue-note", l: "🎧 今日の一曲", c: "appMenu", b: "募集中" }, { h: "/board", l: "📋 掲示板", c: "appMenu" }]} />
       <MenuSection title="ホームページ連携" items={[{ h: "/live", l: "🎷 ライブ", c: "extMenu" }, { h: "/ticket", l: "🎫 予約者一覧", c: "extMenu" }, { h: "/media", l: "🎬 メディア", c: "extMenu" }]} />
       <MenuSection title="経費管理" items={[
-        ...(isAdmin ? [{ h: "/travel-subsidy", l: "🚃 旅費補助額", c: "costMenu" }] : []),
+        { h: "/travel-subsidy", l: "🚃 旅費補助額", c: "costMenu" },
         { h: "/expense-apply", l: "📝 経費申請", c: "costMenu" },
         ...(isAdmin ? [{ h: "/expense-review", l: "🔍 経費審査", c: "costMenu" }] : [])
       ]} />
