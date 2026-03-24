@@ -12,6 +12,7 @@ import { saveBoard } from "@/src/features/board/api/board-client-service";
 import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
+import { compressImage } from "@/src/lib/image-compression";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -46,7 +47,13 @@ export function BoardEditClient({ mode, boardId, initialBoard, sections, userSec
     try {
       const newFiles = [...files];
       for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
+        let file = selectedFiles[i];
+        
+        // 画像なら圧縮
+        if (file.type.startsWith('image/')) {
+          file = await compressImage(file);
+        }
+
         const fileName = file.name;
         const path = `boards/attachments/${Date.now()}_${fileName}`;
         const storageRef = ref(storage, path);

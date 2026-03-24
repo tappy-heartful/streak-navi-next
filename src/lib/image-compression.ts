@@ -1,7 +1,18 @@
-export async function compressImage(file: File, maxWidth = 1280, maxHeight = 1280, quality = 0.6): Promise<File> {
+/**
+ * 画像を圧縮する (旧アプリのロジックを踏襲)
+ * @param file 圧縮対象のファイル
+ * @param max 最大長 (幅または高さ)
+ * @param quality 品質 (0.0 ～ 1.0)
+ * @returns 圧縮されたFileオブジェクト
+ */
+export async function compressImage(
+  file: File, 
+  max = 1000, 
+  quality = 0.7
+): Promise<File> {
   if (!file.type.startsWith('image/')) return file;
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
@@ -10,16 +21,12 @@ export async function compressImage(file: File, maxWidth = 1280, maxHeight = 128
         let width = img.width;
         let height = img.height;
 
-        if (width > height) {
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width *= maxHeight / height;
-            height = maxHeight;
-          }
+        if (width > height && width > max) {
+          height *= max / width;
+          width = max;
+        } else if (height > max) {
+          width *= max / height;
+          height = max;
         }
 
         canvas.width = width;
@@ -33,6 +40,7 @@ export async function compressImage(file: File, maxWidth = 1280, maxHeight = 128
 
         canvas.toBlob((blob) => {
           if (blob) {
+            // 元のファイル名を維持して新しいFileを作成
             resolve(new File([blob], file.name, { type: 'image/jpeg' }));
           } else {
             resolve(file);

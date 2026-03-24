@@ -20,7 +20,7 @@ import { ExpenseApply, Prefecture, Municipality, ExpenseType, ExpenseCategory, E
 import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
-import { compressImage } from "@/src/features/expense-apply/lib/image-compression";
+import { compressImage } from "@/src/lib/image-compression";
 
 type Props = {
   mode: "new" | "edit" | "copy";
