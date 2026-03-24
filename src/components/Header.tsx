@@ -135,7 +135,7 @@ export default function Header() {
           </div>
 
           <div className="slide-menu-section">
-            {menuLink("/home", " ホーム")}
+            {menuLink("/home", "ホーム")}
             {menuLink("/score", "譜面")}
             {menuLink("/event", "イベント")}
             {menuLink("/assign", "譜割り")}
@@ -150,8 +150,8 @@ export default function Header() {
             {menuLink("/ticket", "予約者一覧")}
             {menuLink("/media", "メディア")}
             {menuLink("/travel-subsidy", "旅費補助額")}
-            {menuLink("/expense/apply", "経費申請")}
-            {menuLink("/expense/review", "経費審査")}
+            {menuLink("/expense-apply", "経費申請")}
+            {userData?.isSystemAdmin && menuLink("/expense-review", "経費審査")}
           </div>
 
           <div className="slide-menu-section menu-bottom">

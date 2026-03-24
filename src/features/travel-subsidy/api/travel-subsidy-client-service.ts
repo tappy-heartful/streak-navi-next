@@ -31,3 +31,15 @@ export async function saveTravelSubsidy(
 export async function deleteTravelSubsidy(id: string): Promise<void> {
   await deleteDoc(doc(db, "travelSubsidies", id));
 }
+
+/** 補助額を個別に取得 */
+export async function getTravelSubsidyAmountClient(departureMunId: string, arrivalMunId: string): Promise<number | null> {
+  const q = query(
+    collection(db, "travelSubsidies"),
+    where("departureMunicipalityId", "==", departureMunId),
+    where("arrivalMunicipalityId", "==", arrivalMunId)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  return snap.docs[0].data().amount as number;
+}

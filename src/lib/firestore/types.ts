@@ -414,3 +414,79 @@ export interface Assign {
   createdAt?: number;
 }
 
+// ===== 経費マスタ =====
+
+export interface ExpenseType {
+  id: string; // 001, 002
+  name: string;
+}
+
+export interface ExpenseCategory {
+  id: string; // 001_001
+  typeId: string;
+  name: string;
+}
+
+export interface ExpenseItem {
+  id: string; // 001_001_001
+  categoryId: string;
+  name: string;
+  isTravel?: boolean;
+}
+
+// ===== 経費申請 (ExpenseApply) =====
+
+export interface ExpenseApply {
+  id: string;
+  uid: string;
+  typeId: string;     // 001
+  category: string;   // 互換性のため表示名も持つ
+  categoryId: string; // 001_001
+  itemId: string;     // 001_001_001
+  name: string;
+  amount: number;
+  date: string; // yyyy.MM.dd
+  status: 'pending' | 'approved' | 'rejected';
+  
+  // 旅費の場合のみ使用
+  isTravel?: boolean;
+  departurePrefectureId?: string;
+  departureMunicipalityId?: string;
+  arrivalPrefectureId?: string;
+  arrivalMunicipalityId?: string;
+  
+  files?: { name: string; url: string; path: string }[];
+  adminComment?: string;
+  reviewerId?: string;      // 審査者UID
+  reviewerName?: string;    // 審査者名
+  reviewedAt?: any;         // 審査日時
+  createdAt: any;
+  updatedAt: any;
+}
+
+// ===== 経費申請履歴 (ExpenseApplyHistory) =====
+export interface ExpenseApplyHistory {
+  id: string;
+  type: 'created' | 'updated' | 'reviewed' | 'commented';
+  status: 'pending' | 'approved' | 'rejected';
+  comment?: string;
+  actorId: string;
+  actorName: string;
+  createdAt: any;
+}
+// ===== 経費申請フォームデータ (ExpenseApplyFormData) =====
+export interface ExpenseApplyFormData {
+  typeId: string;
+  category: string;
+  categoryId: string;
+  itemId: string;
+  name: string;
+  amount: number;
+  date: string;
+  isTravel?: boolean;
+  departurePrefectureId?: string;
+  departureMunicipalityId?: string;
+  arrivalPrefectureId?: string;
+  arrivalMunicipalityId?: string;
+  files?: { name: string; url: string; path: string }[];
+}

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, memo } from "react";
 import Link from "next/link";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
+import { useAuth } from "@/src/contexts/AuthContext";
 import * as utils from "@/src/lib/functions";
 import styles from "./home.module.css";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
@@ -38,7 +39,7 @@ const MenuSection = ({ title, items }: { title: string; items: MenuItem[] }) => 
   </>
 );
 
-const MenuSectionList = memo(() => (
+const MenuSectionList = memo(({ isAdmin }: { isAdmin: boolean }) => (
   <main className="container">
     <h3>メニュー</h3>
     <div className={styles.menuList}>
@@ -48,8 +49,8 @@ const MenuSectionList = memo(() => (
       <MenuSection title="ホームページ連携" items={[{ h: "/live", l: "🎷 ライブ", c: "extMenu" }, { h: "/ticket", l: "🎫 予約者一覧", c: "extMenu" }, { h: "/media", l: "🎬 メディア", c: "extMenu" }]} />
       <MenuSection title="経費管理" items={[
         { h: "/travel-subsidy", l: "🚃 旅費補助額", c: "costMenu" },
-        { h: "/expense/apply", l: "📝 経費申請", c: "costMenu" },
-        { h: "/expense/review", l: "🔍 経費審査", c: "costMenu" }
+        { h: "/expense-apply", l: "📝 経費申請", c: "costMenu" },
+        ...(isAdmin ? [{ h: "/expense-review", l: "🔍 経費審査", c: "costMenu" }] : [])
       ]} />
     </div>
   </main>
@@ -104,6 +105,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
   const [currentScoreIdx, setCurrentScoreIdx] = useState(0);
   const [currentBNIdx, setCurrentBNIdx] = useState(0);
   const { setBreadcrumbs } = useBreadcrumb();
+  const { userData } = useAuth();
 
   useEffect(() => {
     // ホームに来たらパンくずを空にする
@@ -179,7 +181,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
           <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
         </main>
 
-        <MenuSectionList />
+        <MenuSectionList isAdmin={!!userData?.isSystemAdmin} />
 
         <main className="container">
           {initialData.blueNotes.length > 0 && (

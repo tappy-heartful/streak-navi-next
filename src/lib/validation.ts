@@ -13,8 +13,9 @@ export const rules = {
  * バリデーション用ユーティリティ
  */
 // 必須チェック
-export const isRequired = (value: string): boolean => {
-  return value.trim().length > 0;
+export const isRequired = (value: any): boolean => {
+  if (value === null || value === undefined) return false;
+  return String(value).trim().length > 0;
 };
 
 // 文字数制限
