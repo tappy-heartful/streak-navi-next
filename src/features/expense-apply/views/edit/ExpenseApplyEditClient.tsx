@@ -173,10 +173,17 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
         if (amount !== null) {
           form.updateField("amount", amount);
         }
+
+        // 経費名の自動設定
+        const depMunName = departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || "";
+        const arrMunName = arrivalMuns.find(m => m.id === form.formData.arrivalMunicipalityId)?.name || "";
+        if (depMunName && arrMunName) {
+          form.updateField("name", `旅費補助(往復) ${depMunName}⇔${arrMunName}`);
+        }
       };
       fetchSubsidy();
     }
-  }, [isTravel, form.formData.departureMunicipalityId, form.formData.arrivalMunicipalityId]);
+  }, [isTravel, form.formData.departureMunicipalityId, form.formData.arrivalMunicipalityId, departureMuns, arrivalMuns]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -324,8 +331,11 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
               </select>
             </FormField>
 
-            <div style={{ textAlign: "center", margin: "10px 0", color: "#666" }}>
-              <i className="fas fa-arrow-down"></i>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", margin: "15px 0", color: "#1976d2", fontWeight: "bold" }}>
+              <div style={{ height: "1px", flex: 1, background: "linear-gradient(to right, transparent, #1976d2)" }}></div>
+              <i className="fas fa-exchange-alt"></i>
+              <span>往復</span>
+              <div style={{ height: "1px", flex: 1, background: "linear-gradient(to left, transparent, #1976d2)" }}></div>
             </div>
 
             <FormField label="到着地 (都道府県)" error={form.errors.arrivalPrefectureId}>

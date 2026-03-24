@@ -220,12 +220,23 @@ export function ExpenseReviewClient({
 
         {initialData.isTravel && (
           <FormField label="旅費詳細">
-            <div className="label-value" style={{ background: "#f8f9fa", padding: "10px", borderRadius: "8px" }}>
-              <div style={{ color: "#666", fontSize: "0.8rem" }}>出発地</div>
-              <div style={{ fontWeight: "bold" }}>{getPointName(initialData.departurePrefectureId, initialData.departureMunicipalityId)}</div>
-              <div style={{ textAlign: "center", margin: "4px 0" }}><i className="fas fa-arrow-down" style={{ color: "#ccc" }}></i></div>
-              <div style={{ color: "#666", fontSize: "0.8rem" }}>到着地</div>
-              <div style={{ fontWeight: "bold" }}>{getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId)}</div>
+            <div className="label-value" style={{ background: "#f1f8ff", padding: "12px", borderRadius: "10px", border: "1px solid #e3f2fd" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ flex: 1, textAlign: "center" }}>
+                   <div style={{ color: "#1976d2", fontSize: "0.7rem", fontWeight: "bold" }}>出発</div>
+                   <div style={{ fontWeight: "bold", fontSize: "1rem" }}>{getPointName(initialData.departurePrefectureId, initialData.departureMunicipalityId)}</div>
+                </div>
+
+                <div style={{ textAlign: "center", minWidth: "60px" }}>
+                  <div style={{ color: "#1976d2", fontSize: "0.7rem", fontWeight: "bold" }}>往復</div>
+                  <i className="fas fa-exchange-alt" style={{ color: "#1976d2", fontSize: "1.1rem" }}></i>
+                </div>
+
+                <div style={{ flex: 1, textAlign: "center" }}>
+                   <div style={{ color: "#1976d2", fontSize: "0.7rem", fontWeight: "bold" }}>到着</div>
+                   <div style={{ fontWeight: "bold", fontSize: "1rem" }}>{getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId)}</div>
+                </div>
+              </div>
             </div>
           </FormField>
         )}

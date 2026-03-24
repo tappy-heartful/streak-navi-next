@@ -162,15 +162,20 @@ export function ExpenseApplyConfirmClient({
 
         {initialData.isTravel && (
           <FormField label="旅費詳細">
-            <div className="label-value" style={{ border: "1px solid #eee", padding: "10px", borderRadius: "8px", background: "#fafafa" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div className="label-value" style={{ border: "1px solid #e3f2fd", padding: "12px", borderRadius: "8px", background: "#f1f8ff" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ flex: 1, textAlign: "center" }}>
-                  <div style={{ fontSize: "0.7rem", color: "#999" }}>出発</div>
+                  <div style={{ fontSize: "0.65rem", color: "#1976d2", fontWeight: "bold" }}>出発</div>
                   <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>{getPointName(initialData.departurePrefectureId, initialData.departureMunicipalityId)}</div>
                 </div>
-                <i className="fas fa-chevron-right" style={{ color: "#ccc", fontSize: "0.8rem" }}></i>
+                
+                <div style={{ textAlign: "center", minWidth: "50px" }}>
+                  <div style={{ fontSize: "0.65rem", color: "#1976d2", fontWeight: "bold" }}>往復</div>
+                  <i className="fas fa-exchange-alt" style={{ color: "#1976d2", fontSize: "0.9rem" }}></i>
+                </div>
+
                 <div style={{ flex: 1, textAlign: "center" }}>
-                  <div style={{ fontSize: "0.7rem", color: "#999" }}>到着</div>
+                  <div style={{ fontSize: "0.65rem", color: "#1976d2", fontWeight: "bold" }}>到着</div>
                   <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>{getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId)}</div>
                 </div>
               </div>
