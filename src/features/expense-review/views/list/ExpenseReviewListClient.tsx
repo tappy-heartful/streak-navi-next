@@ -49,22 +49,24 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
       <table className="list-table">
         <thead>
           <tr>
-            <th style={{ width: "100px" }}>日付</th>
-            <th style={{ width: "100px" }}>申請者</th>
-            <th style={{ width: "120px" }}>種別</th>
-            <th>経費名</th>
-            <th style={{ width: "100px" }}>金額</th>
-            <th style={{ width: "100px" }}>状態</th>
-            <th style={{ width: "100px" }}>操作</th>
+            <th>日付・経費名</th>
+            <th>申請者</th>
+            <th>種別</th>
+            <th>金額</th>
+            <th>状態</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody>
           {items.length > 0 ? (
             items.map((expense) => (
               <tr key={expense.id} style={{ opacity: expense.status !== "pending" ? 0.8 : 1 }}>
-                <td>
-                  <Link prefetch={true} href={`/expense-review/review?expenseId=${expense.id}`}>
+                <td className="list-table-row-header">
+                  <div style={{ fontSize: "10px", color: "#888", fontWeight: "normal", marginBottom: "2px" }}>
                     {expense.date}
+                  </div>
+                  <Link href={`/expense-review/review?expenseId=${expense.id}`} style={{ textDecoration: "none" }}>
+                    {expense.name}
                   </Link>
                 </td>
                 <td>
@@ -74,11 +76,6 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
                   <div className="list-text-small" style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
                     {typeMap[expense.typeId] || "不明"} / {expense.category}
                   </div>
-                </td>
-                <td>
-                  <Link href={`/expense-review/review?expenseId=${expense.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                    <div className="list-table-row-header">{expense.name}</div>
-                  </Link>
                 </td>
                 <td style={{ textAlign: "right", fontWeight: "bold" }}>
                   ¥{expense.amount.toLocaleString()}
@@ -99,7 +96,7 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
             ))
           ) : (
             <tr>
-              <td colSpan={7} className="empty-text">{emptyMsg}</td>
+              <td colSpan={6} className="empty-text">{emptyMsg}</td>
             </tr>
           )}
         </tbody>
