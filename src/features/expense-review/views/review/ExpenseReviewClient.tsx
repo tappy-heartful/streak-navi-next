@@ -237,6 +237,17 @@ export function ExpenseReviewClient({
                    <div style={{ fontWeight: "bold", fontSize: "1rem" }}>{getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId)}</div>
                 </div>
               </div>
+              
+              <div style={{ marginTop: "15px", borderRadius: "10px", overflow: "hidden", border: "1px solid #e0e0e0", height: "220px" }}>
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://maps.google.com/maps?saddr=${encodeURIComponent(getPointName(initialData.departurePrefectureId, initialData.departureMunicipalityId))}&daddr=${encodeURIComponent(getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId))}&dirflg=r&output=embed`}
+                ></iframe>
+              </div>
             </div>
           </FormField>
         )}

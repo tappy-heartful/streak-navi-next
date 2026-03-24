@@ -179,6 +179,17 @@ export function ExpenseApplyConfirmClient({
                   <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>{getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId)}</div>
                 </div>
               </div>
+              
+              <div style={{ marginTop: "15px", borderRadius: "8px", overflow: "hidden", border: "1px solid #e0e0e0", height: "200px" }}>
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://maps.google.com/maps?saddr=${encodeURIComponent(getPointName(initialData.departurePrefectureId, initialData.departureMunicipalityId))}&daddr=${encodeURIComponent(getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId))}&dirflg=r&output=embed`}
+                ></iframe>
+              </div>
             </div>
           </FormField>
         )}

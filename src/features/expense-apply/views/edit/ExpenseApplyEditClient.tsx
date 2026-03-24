@@ -364,6 +364,19 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
                 ))}
               </select>
             </FormField>
+            
+            {(form.formData.departureMunicipalityId && form.formData.arrivalMunicipalityId) && (
+              <div style={{ marginTop: "15px", borderRadius: "8px", overflow: "hidden", border: "1px solid #dee2e6", height: "180px" }}>
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://maps.google.com/maps?saddr=${encodeURIComponent(prefectures.find(p => p.id === form.formData.departurePrefectureId)?.name + (departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || ""))}&daddr=${encodeURIComponent(prefectures.find(p => p.id === form.formData.arrivalPrefectureId)?.name + (arrivalMuns.find(m => m.id === form.formData.arrivalMunicipalityId)?.name || ""))}&dirflg=r&output=embed`}
+                ></iframe>
+              </div>
+            )}
           </div>
         )}
 
