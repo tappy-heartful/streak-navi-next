@@ -13,6 +13,7 @@ import {
   deleteTravelSubsidy,
 } from "@/src/features/travel-subsidy/api/travel-subsidy-client-service";
 import { LocationCheckItem } from "@/src/features/travel-subsidy/api/travel-subsidy-server-actions";
+import { showModal } from "@/src/components/CommonModal";
 
 type Props = {
   initialSubsidies: TravelSubsidy[];
@@ -334,6 +335,19 @@ export function TravelSubsidyClient({
                         })}
                         onEditCancel={() => setEditingId(null)}
                         onDelete={() => handleDelete(item.id)}
+                        isSelected={false}
+                        onSelect={() => {
+                          const depName = munNamesMap[item.departureMunicipalityId] || item.departureMunicipalityId;
+                          const depPrefName = prefectures.find(p => p.id === item.departurePrefectureId)?.name || "";
+                          showModal(
+                            `マッププレビュー: ${depPrefName}${depName} ⇔ ${arrivalPrefName}${arrivalMunName}`,
+                            `<div style="border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; height: 350px;">
+                              <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="https://maps.google.com/maps?saddr=${encodeURIComponent(depPrefName + depName)}&daddr=${encodeURIComponent(arrivalPrefName + arrivalMunName)}&dirflg=r&output=embed"></iframe>
+                            </div>`,
+                            undefined,
+                            "閉じる"
+                          );
+                        }}
                       />
                     ))}
                   </div>
@@ -451,27 +465,40 @@ type SubsidyRowProps = {
   onEditSave: () => void;
   onEditCancel: () => void;
   onDelete: () => void;
+  isSelected: boolean;
+  onSelect: () => void;
 };
 
 function SubsidyRow({
   departureName, departurePrefName, subsidy, isAdmin, isEditing, editAmount,
   onEditStart, onEditAmountChange, onEditSave, onEditCancel, onDelete,
+  isSelected, onSelect,
 }: SubsidyRowProps) {
   const isRegistered = subsidy.isRegistered;
 
   return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: "10px 8px",
-      borderBottom: "1px solid #f0f0f0",
-      gap: "8px",
-      background: !isRegistered ? "#fff9f9" : "transparent",
-    }}>
+    <div 
+      onClick={onSelect}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "10px 8px",
+        borderBottom: "1px solid #f0f0f0",
+        gap: "8px",
+        background: isSelected ? "#e3f2fd" : (!isRegistered ? "#fff9f9" : "transparent"),
+        cursor: "pointer",
+        transition: "background 0.2s",
+      }}
+    >
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "0.95rem" }}>
+          <span style={{ 
+            fontSize: "0.95rem", 
+            color: "#1976d2", 
+            textDecoration: "underline",
+            fontWeight: "500" 
+          }}>
             {departureName}
           </span>
         </div>
