@@ -3,11 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ListBaseLayout } from "@/src/components/Layout/ListBaseLayout";
-import { ExpenseApply, User } from "@/src/lib/firestore/types";
+import { ExpenseApply } from "@/src/lib/firestore/types";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import Link from "next/link";
-import { judgeExpenseApply } from "@/src/features/expense-apply/api/expense-apply-client-service";
-import { showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
 import { useRouter } from "next/navigation";
 
 type Props = {
@@ -23,24 +21,7 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
     setBreadcrumbs([{ title: "経費審査", href: "" }]);
   }, [setBreadcrumbs]);
 
-  const [expenses, setExpenses] = useState<ExpenseApply[]>(initialExpenses);
-
-  const handleJudge = async (id: string, status: 'approved' | 'rejected') => {
-    const action = status === "approved" ? "承認" : "拒否";
-    const comment = await showDialog(`${action}します。コメントがあれば入力してください(任意):`, false, true);
-    if (comment === null) return;
-
-    showSpinner();
-    try {
-      await judgeExpenseApply(id, status, typeof comment === "string" ? comment : "");
-      setExpenses(prev => prev.map(e => e.id === id ? { ...e, status, adminComment: typeof comment === "string" ? comment : "" } : e));
-      await showDialog(`${action}しました`, true);
-    } catch {
-      await showDialog("審査に失敗しました", true);
-    } finally {
-      hideSpinner();
-    }
-  };
+  const [expenses] = useState<ExpenseApply[]>(initialExpenses);
 
   const getStatusBadge = (status: ExpenseApply['status']) => {
     switch (status) {
@@ -72,7 +53,7 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
                   <th>経費名</th>
                   <th style={{ width: "100px" }}>金額</th>
                   <th style={{ width: "100px" }}>状態</th>
-                  <th style={{ width: "120px" }}>操作</th>
+                  <th style={{ width: "100px" }}>操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -80,7 +61,7 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
                   expenses.map((expense) => (
                     <tr key={expense.id} style={{ opacity: expense.status !== "pending" ? 0.6 : 1 }}>
                       <td>
-                        <Link prefetch={true} href={`/expense-apply/confirm?expenseId=${expense.id}`}>
+                        <Link prefetch={true} href={`/expense-review/review?expenseId=${expense.id}`}>
                           {expense.date}
                         </Link>
                       </td>
@@ -93,7 +74,9 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
                         </div>
                       </td>
                       <td>
-                        <div className="list-table-row-header">{expense.name}</div>
+                        <Link href={`/expense-review/review?expenseId=${expense.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                          <div className="list-table-row-header">{expense.name}</div>
+                        </Link>
                       </td>
                       <td style={{ textAlign: "right", fontWeight: "bold" }}>
                         ¥{expense.amount.toLocaleString()}
@@ -102,12 +85,13 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
                         {getStatusBadge(expense.status)}
                       </td>
                       <td style={{ textAlign: "center" }}>
-                        {expense.status === "pending" && (
-                          <div style={{ display: "flex", gap: "4px", justifyContent: "center" }}>
-                            <button onClick={() => handleJudge(expense.id, "approved")} className="judge-btn approved-btn">承認</button>
-                            <button onClick={() => handleJudge(expense.id, "rejected")} className="judge-btn rejected-btn">拒否</button>
-                          </div>
-                        )}
+                        <Link 
+                          href={`/expense-review/review?expenseId=${expense.id}`}
+                          className="judge-btn approved-btn"
+                          style={{ textDecoration: "none" }}
+                        >
+                          審査
+                        </Link>
                       </td>
                     </tr>
                   ))
@@ -126,7 +110,7 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
           .pending { background: #999; }
           .approved { background: #4caf50; }
           .rejected { background: #f44336; }
-          .judge-btn { border: none; padding: 4px 8px; border-radius: 4px; color: white; font-size: 11px; font-weight: bold; cursor: pointer; }
+          .judge-btn { border: none; padding: 4px 12px; border-radius: 4px; color: white; font-size: 11px; font-weight: bold; cursor: pointer; display: inline-block; }
           .approved-btn { background: #4caf50; }
           .rejected-btn { background: #f44336; }
           .judge-btn:hover { opacity: 0.8; }

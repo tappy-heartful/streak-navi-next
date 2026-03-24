@@ -87,16 +87,3 @@ export const deleteExpenseApply = async (id: string) => {
   await deleteDoc(doc(db, "expenseApplies", id));
 };
 
-/** 審査結果の反映 (経理メンバーのみが実行可能) */
-export const judgeExpenseApply = async (
-  id: string,
-  status: 'approved' | 'rejected',
-  adminComment: string
-) => {
-  const docRef = doc(db, "expenseApplies", id);
-  await updateDoc(docRef, {
-    status,
-    adminComment,
-    updatedAt: serverTimestamp(),
-  });
-};

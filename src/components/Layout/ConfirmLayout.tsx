@@ -7,7 +7,6 @@ import { DetailActionButtons } from "../Form/DetailActionButtons";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { showDialog } from "@/src/components/CommonDialog";
-import { archiveAndDeleteDoc } from "@/src/lib/functions";
 
 type Props = {
   name: string;        // "譜面"
@@ -17,6 +16,8 @@ type Props = {
   collectionName: string; // "scores"
   overrideAdmin?: boolean; // 権限を強制的に付与する場合（自分自身のページなど）
   hideCopy?: boolean; // コピーボタンを非表示にするフラグ
+  hideEdit?: boolean;
+  hideDelete?: boolean;
   afterDeletePath?: string; // 削除後の遷移先（デフォルトは basePath）
   children: React.ReactNode;
 };
@@ -29,6 +30,8 @@ export const ConfirmLayout = ({
   collectionName,
   overrideAdmin,
   hideCopy,
+  hideEdit,
+  hideDelete,
   afterDeletePath,
   children 
 }: Props) => {
@@ -90,6 +93,8 @@ export const ConfirmLayout = ({
             onCopy={onCopy}
             onDelete={onDelete}
             hideCopy={hideCopy}
+            hideEdit={hideEdit}
+            hideDelete={hideDelete}
           />
         )}
       </div>

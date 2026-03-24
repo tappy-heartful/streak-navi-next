@@ -458,7 +458,10 @@ export interface ExpenseApply {
   
   files?: { name: string; url: string; path: string }[];
   adminComment?: string;
-  createdAt: number;
-  updatedAt: number;
+  reviewerId?: string;      // 審査者UID
+  reviewerName?: string;    // 審査者名
+  reviewedAt?: any;         // 審査日時
+  createdAt: any;
+  updatedAt: any;
 }
 
