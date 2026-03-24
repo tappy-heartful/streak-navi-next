@@ -23,13 +23,15 @@ export function ExpenseApplyConfirmClient({ expenseId, initialData, prefectures,
   const isOwn = user?.uid === initialData.uid;
   const canModify = isOwn && (initialData.status === "pending" || initialData.status === "rejected");
 
-  const getStatusLabel = (status: ExpenseApply['status']) => {
+  const getStatusInfo = (status: ExpenseApply['status']) => {
     switch (status) {
-      case "approved": return "承認済み ✅";
-      case "rejected": return "否認 ❌";
-      default: return "審査待ち ⏳";
+      case "approved": return { label: "承認済み ✅", color: "#4caf50", bg: "#e8f5e9" };
+      case "rejected": return { label: "否認 ❌", color: "#f44336", bg: "#ffebee" };
+      default: return { label: "審査中 ⏳", color: "#ffa000", bg: "#fff8e1" };
     }
   };
+
+  const statusInfo = getStatusInfo(initialData.status);
 
   const getPointName = (prefId?: string, munId?: string) => {
     if (!prefId || !munId) return "";
@@ -59,31 +61,40 @@ export function ExpenseApplyConfirmClient({ expenseId, initialData, prefectures,
         overrideAdmin={canModify} 
         hideCopy={true}
       >
-        <FormField label="現在の状態">
-          <div style={{ fontSize: "1.2rem", fontWeight: "bold", padding: "10px", background: "#f5f5f7", borderRadius: "8px", textAlign: "center" }}>
-            {getStatusLabel(initialData.status)}
-          </div>
+        <div style={{ 
+          marginBottom: "2rem", 
+          padding: "15px", 
+          background: statusInfo.bg, 
+          borderRadius: "12px", 
+          border: `1px solid ${statusInfo.color}`,
+          textAlign: "center"
+        }}>
+          <h3 style={{ margin: 0, fontSize: "1.2rem", color: statusInfo.color }}>
+            {statusInfo.label}
+          </h3>
           {initialData.adminComment && (
-            <div style={{ marginTop: "10px", padding: "10px", background: "#fff3e0", borderRadius: "8px", border: "1px solid #ffe0b2" }}>
-              <strong>会計からのコメント:</strong>
-              <div style={{ marginTop: "4px", whiteSpace: "pre-wrap" }}>{initialData.adminComment}</div>
+            <div style={{ marginTop: "10px", padding: "10px", background: "#fff", borderRadius: "8px", border: "1px solid #ffe0b2", textAlign: "left" }}>
+              <div style={{ fontSize: "0.75rem", color: "#e65100", fontWeight: "bold", marginBottom: "4px" }}>
+                <i className="fas fa-comment"></i> 会計からのコメント:
+              </div>
+              <div style={{ fontSize: "0.9rem", whiteSpace: "pre-wrap" }}>{initialData.adminComment}</div>
             </div>
           )}
-        </FormField>
+        </div>
 
         {/* 履歴セクション */}
         <FormField label="申請・審査履歴">
-          <div style={{ background: "#fafafa", borderRadius: "8px", border: "1px solid #eee", padding: "10px" }}>
+          <div style={{ background: "#fafafa", borderRadius: "12px", border: "1px solid #eee", padding: "12px" }}>
             {history.length > 0 ? (
               <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "0.85rem" }}>
                 {history.map((h, i) => (
-                  <li key={h.id || i} style={{ padding: "8px 0", borderBottom: i === history.length - 1 ? "none" : "1px dashed #ddd" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#666", marginBottom: "2px" }}>
+                  <li key={h.id || i} style={{ padding: "10px 0", borderBottom: i === history.length - 1 ? "none" : "1px solid #eee" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#888", marginBottom: "4px", fontSize: "0.8rem" }}>
                       <span>{format(h.createdAt, 'yyyy/MM/dd HH:mm')}</span>
                       <span style={{ fontWeight: "bold" }}>{getHistoryLabel(h.type)}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span>{h.actorName}</span>
+                      <span style={{ fontWeight: "600" }}>{h.actorName}</span>
                       <span style={{ 
                         color: h.status === 'approved' ? '#4caf50' : h.status === 'rejected' ? '#f44336' : '#999',
                         fontWeight: "bold"
@@ -92,7 +103,7 @@ export function ExpenseApplyConfirmClient({ expenseId, initialData, prefectures,
                       </span>
                     </div>
                     {h.comment && (
-                      <div style={{ marginTop: "4px", padding: "4px 8px", background: "#fff", borderRadius: "4px", border: "1px solid #eee", color: "#333" }}>
+                      <div style={{ marginTop: "6px", padding: "8px", background: "#fff", borderRadius: "6px", border: "1px solid #eee", color: "#333", fontSize: "0.85rem" }}>
                         {h.comment}
                       </div>
                     )}
@@ -111,22 +122,28 @@ export function ExpenseApplyConfirmClient({ expenseId, initialData, prefectures,
 
         {initialData.isTravel && (
           <FormField label="旅費詳細">
-            <div className="label-value">
-              {getPointName(initialData.departurePrefectureId, initialData.departureMunicipalityId)}
-              <br />
-              ↓
-              <br />
-              {getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId)}
+            <div className="label-value" style={{ border: "1px solid #eee", padding: "10px", borderRadius: "8px", background: "#fafafa" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ flex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: "0.7rem", color: "#999" }}>出発</div>
+                  <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>{getPointName(initialData.departurePrefectureId, initialData.departureMunicipalityId)}</div>
+                </div>
+                <i className="fas fa-chevron-right" style={{ color: "#ccc", fontSize: "0.8rem" }}></i>
+                <div style={{ flex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: "0.7rem", color: "#999" }}>到着</div>
+                  <div style={{ fontSize: "0.9rem", fontWeight: "bold" }}>{getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId)}</div>
+                </div>
+              </div>
             </div>
           </FormField>
         )}
 
         <FormField label="経費名">
-          <div className="label-value">{initialData.name}</div>
+          <div className="label-value" style={{ fontWeight: "bold" }}>{initialData.name}</div>
         </FormField>
 
-        <FormField label="金額">
-          <div className="label-value" style={{ fontSize: "1.2rem", fontWeight: "bold", color: initialData.type === "expenditure" ? "#c62828" : "#2e7d32" }}>
+        <FormField label="金額 (税込)">
+          <div className="label-value" style={{ fontSize: "1.5rem", fontWeight: "900", color: initialData.type === "expenditure" ? "#c62828" : "#2e7d32" }}>
             ¥{initialData.amount.toLocaleString()}
           </div>
         </FormField>
@@ -137,17 +154,14 @@ export function ExpenseApplyConfirmClient({ expenseId, initialData, prefectures,
 
         {initialData.files && initialData.files.length > 0 && (
           <FormField label="添付ファイル">
-            <ul style={{ listStyle: "none", padding: 0 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "10px" }}>
               {initialData.files.map((file, i) => (
-                <li key={i} style={{ marginBottom: "10px" }}>
-                  <a href={file.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none", color: "#1a73e8" }}>
-                    <i className="far fa-file-image"></i>
-                    <span>{file.name}</span>
-                    <i className="fas fa-external-link-alt" style={{ fontSize: "0.8em" }}></i>
-                  </a>
-                </li>
+                <a key={i} href={file.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "5px", textDecoration: "none", color: "#1a73e8", padding: "10px", background: "#f8f9fa", borderRadius: "8px", border: "1px solid #eee" }}>
+                  <i className="far fa-file-image" style={{ fontSize: "1.5rem" }}></i>
+                  <span style={{ fontSize: "0.7rem", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" }}>{file.name}</span>
+                </a>
               ))}
-            </ul>
+            </div>
           </FormField>
         )}
       </ConfirmLayout>

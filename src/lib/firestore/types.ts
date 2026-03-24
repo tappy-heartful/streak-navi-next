@@ -475,4 +475,20 @@ export interface ExpenseApplyHistory {
   actorName: string;
   createdAt: any;
 }
-
+// ===== 経費申請フォームデータ (ExpenseApplyFormData) =====
+export interface ExpenseApplyFormData {
+  type: 'expenditure' | 'income';
+  typeId: string;
+  category: string;
+  categoryId: string;
+  itemId: string;
+  name: string;
+  amount: number;
+  date: string;
+  isTravel?: boolean;
+  departurePrefectureId?: string;
+  departureMunicipalityId?: string;
+  arrivalPrefectureId?: string;
+  arrivalMunicipalityId?: string;
+  files?: { name: string; url: string; path: string }[];
+}

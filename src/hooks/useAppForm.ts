@@ -35,12 +35,13 @@ export function useAppForm<T extends Record<string, any>>(
     setErrors({});
   }, [initialValues]);
 
-  return { formData, errors, updateField, validate, resetForm };
+  return { formData, setFormData, errors, updateField, validate, resetForm };
 }
 
 // Layoutで受け取るための型定義
 export type AppFormReturn<T extends Record<string, any>> = {
   formData: T;
+  setFormData: React.Dispatch<React.SetStateAction<T>>;
   errors: { [K in keyof T]?: string };
   updateField: (field: string, value: unknown) => void;
   validate: () => { [K in keyof T]?: string };

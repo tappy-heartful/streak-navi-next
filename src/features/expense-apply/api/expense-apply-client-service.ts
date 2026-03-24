@@ -1,57 +1,59 @@
+"use client";
+
 import { db } from "@/src/lib/firebase";
-import { collection, addDoc, doc, updateDoc, serverTimestamp, deleteDoc, query, where, getDocs, orderBy, limit } from "firebase/firestore";
-import { ExpenseApply, Municipality, ExpenseType, ExpenseCategory, ExpenseItem } from "@/src/lib/firestore/types";
+import { 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  doc, 
+  deleteDoc, 
+  getDocs, 
+  query, 
+  where, 
+  serverTimestamp,
+  getDoc
+} from "firebase/firestore";
 import { getSession } from "@/src/lib/functions";
+import { ExpenseApplyFormData } from "@/src/lib/firestore/types";
 
-/** すべての経費種別を取得 */
-export async function getExpenseTypesClient(): Promise<ExpenseType[]> {
-  const q = query(collection(db, "expenseTypes"), orderBy("__name__", "asc"));
-  const snap = await getDocs(q);
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as ExpenseType));
-}
-
-/** すべての経費区分を取得 */
-export async function getExpenseCategoriesClient(): Promise<ExpenseCategory[]> {
-  const q = query(collection(db, "expenseCategories"), orderBy("__name__", "asc"));
-  const snap = await getDocs(q);
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as ExpenseCategory));
-}
-
-/** すべての経費項目を取得 */
-export async function getExpenseItemsClient(): Promise<ExpenseItem[]> {
-  const q = query(collection(db, "expenseItems"), orderBy("__name__", "asc"));
-  const snap = await getDocs(q);
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as ExpenseItem));
-}
-
-export type ExpenseApplyFormData = Omit<ExpenseApply, 'id' | 'uid' | 'createdAt' | 'updatedAt'>;
-
-/** 都道府県IDから市区町村リストを取得 (Client用) */
-export async function getMunicipalitiesClient(prefectureId: string): Promise<{ id: string; name: string }[]> {
+/** 都道府県IDから市区町村一覧を取得 (Client SDK) */
+export const getMunicipalitiesClient = async (prefectureCode: string) => {
   const q = query(
     collection(db, "municipalities"),
-    where("prefectureCode", "==", prefectureId),
-    orderBy("name", "asc")
+    where("prefectureCode", "==", prefectureCode)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(doc => ({ id: doc.id, name: (doc.data() as any).name }));
-}
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+};
 
-/** 旅費補助額を算出 (Client用) */
-export async function calculateTravelSubsidyClient(
-  departureMunicipalityId: string,
-  arrivalMunicipalityId: string
-): Promise<number> {
-  const q = query(
-    collection(db, "travelSubsidies"),
-    where("departureMunicipalityId", "==", departureMunicipalityId),
-    where("arrivalMunicipalityId", "==", arrivalMunicipalityId),
-    limit(1)
-  );
-  const snap = await getDocs(q);
-  if (snap.empty) return 0;
-  return snap.docs[0].data().amount as number;
-}
+/** 旅費の補助額計算 (ロジックは仮) */
+export const calculateTravelSubsidyClient = async (
+  fromPref: string, 
+  fromMun: string, 
+  toPref: string, 
+  toMun: string
+) => {
+  // 本来はマスタ(travelSubsidies)を参照するが、一旦0で返す
+  return 0;
+};
+
+/** 経費種別一覧を取得 */
+export const getExpenseTypesClient = async () => {
+  const snap = await getDocs(collection(db, "expenseTypes"));
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+};
+
+/** 経費区分一覧を取得 */
+export const getExpenseCategoriesClient = async () => {
+  const snap = await getDocs(collection(db, "expenseCategories"));
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+};
+
+/** 経費項目一覧を取得 */
+export const getExpenseItemsClient = async () => {
+  const snap = await getDocs(collection(db, "expenseItems"));
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+};
 
 /** 経費申請の保存 (新規作成・更新・コピー) */
 export const saveExpenseApply = async (
@@ -84,13 +86,14 @@ export const saveExpenseApply = async (
 
     return id;
   } else {
-    const docRef = await addDoc(collection(db, "expenseApplies"), {
+    const res = await addDoc(collection(db, "expenseApplies"), {
       ...payload,
       uid,
       status: "pending", // 初期ステータス
       createdAt: serverTimestamp(),
     });
 
+    const docRef = doc(db, "expenseApplies", res.id);
     // 履歴に追加
     await addDoc(collection(docRef, "history"), {
       type: 'created',
@@ -100,7 +103,7 @@ export const saveExpenseApply = async (
       createdAt: serverTimestamp(),
     });
 
-    return docRef.id;
+    return res.id;
   }
 };
 
@@ -109,3 +112,14 @@ export const deleteExpenseApply = async (id: string) => {
   await deleteDoc(doc(db, "expenseApplies", id));
 };
 
+/** 旅費設定を取得 */
+export const getTravelConfigClient = async () => {
+  const s = await getDoc(doc(db, "configs", "travel"));
+  return s.exists() ? s.data() as { arrivalPoints: any[], departurePoints: any[] } : { arrivalPoints: [], departurePoints: [] };
+};
+
+/** ユーザの現在地情報を取得 */
+export const getUserLocationClient = async (uid: string) => {
+  const s = await getDoc(doc(db, "users", uid, "private", "location"));
+  return s.exists() ? s.data() as { prefectureId: string, municipalityId: string } : null;
+};
