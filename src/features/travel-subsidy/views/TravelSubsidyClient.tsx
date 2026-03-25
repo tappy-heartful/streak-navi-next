@@ -15,6 +15,43 @@ import {
 import { LocationCheckItem } from "@/src/features/travel-subsidy/api/travel-subsidy-server-actions";
 import { showModal } from "@/src/components/CommonModal";
 
+// --- Geocoding & Distance Helpers ---
+const getCoords = async (prefecture: string, city: string): Promise<{ lat: number; lng: number } | null> => {
+  if (typeof window === "undefined") return null;
+  const address = `${prefecture}_${city}`;
+  const cacheKey = `geo_cache_${address}`;
+  const cached = localStorage.getItem(cacheKey);
+  if (cached) return JSON.parse(cached);
+
+  const url = `https://geoapi.heartrails.com/api/json?method=getTowns&prefecture=${encodeURIComponent(prefecture)}&city=${encodeURIComponent(city)}`;
+  
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.response?.location?.[0]) {
+      const b = data.response.location[0];
+      const loc = { lat: parseFloat(b.y), lng: parseFloat(b.x) };
+      localStorage.setItem(cacheKey, JSON.stringify(loc));
+      return loc;
+    }
+  } catch (e) {
+    console.error("Geocoding error:", e);
+  }
+  return null;
+};
+
+const getDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+// ------------------------------------
+
 type Props = {
   initialSubsidies: TravelSubsidy[];
   prefectures: Prefecture[];
@@ -336,13 +373,31 @@ export function TravelSubsidyClient({
                         onEditCancel={() => setEditingId(null)}
                         onDelete={() => handleDelete(item.id)}
                         isSelected={false}
-                        onSelect={() => {
+                        onSelect={async () => {
                           const depName = munNamesMap[item.departureMunicipalityId] || item.departureMunicipalityId;
                           const depPrefName = prefectures.find(p => p.id === item.departurePrefectureId)?.name || "";
+                          const arrName = arrivalMunName;
+                          const arrPrefName = arrivalPrefName;
+
+                          showSpinner();
+                          let distanceStr = "";
+                          try {
+                            const [p1, p2] = await Promise.all([
+                              getCoords(depPrefName, depName),
+                              getCoords(arrPrefName, arrName)
+                            ]);
+                            if (p1 && p2) {
+                              const dist = getDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng);
+                              distanceStr = ` (直線距離: 約${dist.toFixed(1)}km)`;
+                            }
+                          } finally {
+                            hideSpinner();
+                          }
+
                           showModal(
-                            `マッププレビュー: ${depPrefName}${depName} ⇔ ${arrivalPrefName}${arrivalMunName}`,
+                            `マッププレビュー: ${depPrefName}${depName} ⇔ ${arrPrefName}${arrName}${distanceStr}`,
                             `<div style="border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; height: 350px;">
-                              <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="https://maps.google.com/maps?saddr=${encodeURIComponent(depPrefName + depName)}&daddr=${encodeURIComponent(arrivalPrefName + arrivalMunName)}&dirflg=r&output=embed"></iframe>
+                              <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="https://maps.google.com/maps?saddr=${encodeURIComponent(depPrefName + depName)}&daddr=${encodeURIComponent(arrPrefName + arrName)}&dirflg=r&output=embed"></iframe>
                             </div>`,
                             undefined,
                             "閉じる"
