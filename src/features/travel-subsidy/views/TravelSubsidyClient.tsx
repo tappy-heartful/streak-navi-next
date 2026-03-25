@@ -132,7 +132,7 @@ export function TravelSubsidyClient({
           };
         }))
       ).filter((i): i is NonNullable<typeof i> => i !== null)
-       .filter(item => distancesMap[item.id] === undefined);
+        .filter(item => distancesMap[item.id] === undefined);
 
       if (itemsToCalculate.length === 0) return;
 
@@ -423,44 +423,44 @@ export function TravelSubsidyClient({
                         onEditCancel={() => setEditingId(null)}
                         onDelete={() => handleDelete(item.id)}
                         isSelected={false}
-                         onSelect={async () => {
-                           const depName = munNamesMap[item.departureMunicipalityId] || item.departureMunicipalityId;
-                           const depPrefName = prefectures.find(p => p.id === item.departurePrefectureId)?.name || "";
-                           const arrName = arrivalMunName;
-                           const arrPrefName = arrivalPrefName;
- 
-                           showSpinner();
-                           let distanceStr = "";
-                           try {
-                             const [p1, p2] = await Promise.all([
-                               getCoords(depPrefName, depName),
-                               getCoords(arrPrefName, arrName)
-                             ]);
-                             if (p1 && p2) {
-                               const dist = getDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng);
-                               distanceStr = `(約${dist.toFixed(1)}km)`;
-                             }
-                           } finally {
-                             hideSpinner();
-                           }
- 
-                           const fullTitle = distanceStr 
-                             ? `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}\n直線距離：約${distancesMap[item.id].toFixed(1)}km`
-                             : `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}`;
- 
-                           const mapUrl = getGoogleMapsUrl(depPrefName, depName, arrPrefName, arrName, new Date().toISOString().split('T')[0]);
- 
-                           showModal(
-                             fullTitle,
-                             `<div style="border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; height: 350px;">
+                        onSelect={async () => {
+                          const depName = munNamesMap[item.departureMunicipalityId] || item.departureMunicipalityId;
+                          const depPrefName = prefectures.find(p => p.id === item.departurePrefectureId)?.name || "";
+                          const arrName = arrivalMunName;
+                          const arrPrefName = arrivalPrefName;
+
+                          showSpinner();
+                          let distanceStr = "";
+                          try {
+                            const [p1, p2] = await Promise.all([
+                              getCoords(depPrefName, depName),
+                              getCoords(arrPrefName, arrName)
+                            ]);
+                            if (p1 && p2) {
+                              const dist = getDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng);
+                              distanceStr = `(約${dist.toFixed(1)}km)`;
+                            }
+                          } finally {
+                            hideSpinner();
+                          }
+
+                          const fullTitle = distanceStr
+                            ? `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}(約${distancesMap[item.id].toFixed(1)}km)`
+                            : `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}`;
+
+                          const mapUrl = getGoogleMapsUrl(depPrefName, depName, arrPrefName, arrName, new Date().toISOString().split('T')[0]);
+
+                          showModal(
+                            fullTitle,
+                            `<div style="border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; height: 350px;">
                                <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="${mapUrl}"></iframe>
                              </div>`,
-                             undefined,
-                             "閉じる"
-                           );
-                         }}
-                         distance={distancesMap[item.id]}
-                       />
+                            undefined,
+                            "閉じる"
+                          );
+                        }}
+                        distance={distancesMap[item.id]}
+                      />
                     ))}
                   </div>
                 ))
@@ -617,7 +617,7 @@ function SubsidyRow({
             {departureName}
           </span>
         </div>
-        
+
         {distance !== undefined && (
           <div style={{ fontSize: "0.75rem", color: "#888" }}>
             約{distance.toFixed(1)}km
