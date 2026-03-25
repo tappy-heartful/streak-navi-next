@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { getSession } from "@/src/lib/functions";
 import { ExpenseApplyFormData, ExpenseType, ExpenseCategory, ExpenseItem } from "@/src/lib/firestore/types";
+import { notifyExpenseApply } from "./expense-notification-server-actions";
 
 /** 都道府県IDから市区町村一覧を取得 (Client SDK) */
 export const getMunicipalitiesClient = async (prefectureCode: string) => {
@@ -84,6 +85,9 @@ export const saveExpenseApply = async (
       createdAt: serverTimestamp(),
     });
 
+    // 通知の送信
+    notifyExpenseApply(id, "update");
+
     return id;
   } else {
     const res = await addDoc(collection(db, "expenseApplies"), {
@@ -100,8 +104,10 @@ export const saveExpenseApply = async (
       status: 'pending',
       actorId: uid,
       actorName,
-      createdAt: serverTimestamp(),
     });
+
+    // 通知の送信
+    notifyExpenseApply(res.id, "create");
 
     return res.id;
   }
@@ -109,7 +115,11 @@ export const saveExpenseApply = async (
 
 /** 経費申請の削除 */
 export const deleteExpenseApply = async (id: string) => {
-  await deleteDoc(doc(db, "expenseApplies", id));
+  const uid = getSession("uid") || "";
+  const { archiveAndDeleteDoc } = await import("@/src/lib/functions");
+  await archiveAndDeleteDoc("expenseApplies", id);
+  // 通知の送信
+  notifyExpenseApply(id, "delete");
 };
 
 /** 旅費設定を取得 */

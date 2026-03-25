@@ -14,6 +14,44 @@ import {
 } from "@/src/features/travel-subsidy/api/travel-subsidy-client-service";
 import { LocationCheckItem } from "@/src/features/travel-subsidy/api/travel-subsidy-server-actions";
 import { showModal } from "@/src/components/CommonModal";
+import { getGoogleMapsUrl } from "@/src/components/TravelRouteMap";
+
+// --- Geocoding & Distance Helpers ---
+const getCoords = async (prefecture: string, city: string): Promise<{ lat: number; lng: number } | null> => {
+  if (typeof window === "undefined") return null;
+  const address = `${prefecture}_${city}`;
+  const cacheKey = `geo_cache_${address}`;
+  const cached = localStorage.getItem(cacheKey);
+  if (cached) return JSON.parse(cached);
+
+  const url = `https://geoapi.heartrails.com/api/json?method=getTowns&prefecture=${encodeURIComponent(prefecture)}&city=${encodeURIComponent(city)}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.response?.location?.[0]) {
+      const b = data.response.location[0];
+      const loc = { lat: parseFloat(b.y), lng: parseFloat(b.x) };
+      localStorage.setItem(cacheKey, JSON.stringify(loc));
+      return loc;
+    }
+  } catch (e) {
+    console.error("Geocoding error:", e);
+  }
+  return null;
+};
+
+const getDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+// ------------------------------------
 
 type Props = {
   initialSubsidies: TravelSubsidy[];
@@ -35,6 +73,7 @@ export function TravelSubsidyClient({
 
   const [subsidies, setSubsidies] = useState<TravelSubsidy[]>(initialSubsidies);
   const [munNamesMap, setMunNamesMap] = useState<Record<string, string>>(initialMunicipalityNamesMap);
+  const [distancesMap, setDistancesMap] = useState<Record<string, number>>({});
 
   // 名前マップに情報を統合
   useEffect(() => {
@@ -74,6 +113,54 @@ export function TravelSubsidyClient({
     };
     fetchMuns();
   }, [addDeparturePrefId]);
+
+  // 全アイテムの距離を非同期で計算してキャッシュ
+  useEffect(() => {
+    const fetchAllDistances = async () => {
+      // 名前が解決されているアイテムのみを対象にする
+      const itemsToCalculate = containers.flatMap(c =>
+        c.prefectureGroups.flatMap(g => g.prefItems.map(item => {
+          const depMunName = munNamesMap[item.departureMunicipalityId];
+          const arrMunName = munNamesMap[item.arrivalMunicipalityId];
+          if (!depMunName || !arrMunName) return null;
+          return {
+            ...item,
+            depName: depMunName,
+            depPref: g.pref.name,
+            arrName: arrMunName,
+            arrPref: prefectures.find(p => p.id === item.arrivalPrefectureId)?.name || ""
+          };
+        }))
+      ).filter((i): i is NonNullable<typeof i> => i !== null)
+        .filter(item => distancesMap[item.id] === undefined);
+
+      if (itemsToCalculate.length === 0) return;
+
+      const newMap: Record<string, number> = { ...distancesMap };
+      for (const item of itemsToCalculate) {
+        const [p1, p2] = await Promise.all([
+          getCoords(item.depPref, item.depName),
+          getCoords(item.arrPref, item.arrName)
+        ]);
+
+        if (p1 && p2) {
+          const dist = getDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng);
+          newMap[item.id] = dist;
+          // 一定数ごとにステート更新して順次表示
+          if (Object.keys(newMap).length % 5 === 0) {
+            setDistancesMap({ ...newMap });
+          }
+        }
+        // 未取得の場合は少し待機（API負荷軽減）
+        if (!localStorage.getItem(`geo_cache_${item.depPref}_${item.depName}`) || !localStorage.getItem(`geo_cache_${item.arrPref}_${item.arrName}`)) {
+          await new Promise(r => setTimeout(r, 100));
+        }
+      }
+      setDistancesMap(newMap);
+    };
+
+    fetchAllDistances();
+  }, [subsidies, munNamesMap, travelConfig, prefectures]);
 
   useEffect(() => {
     if (travelConfig.arrivalPoints.length === 1) {
@@ -336,18 +423,43 @@ export function TravelSubsidyClient({
                         onEditCancel={() => setEditingId(null)}
                         onDelete={() => handleDelete(item.id)}
                         isSelected={false}
-                        onSelect={() => {
+                        onSelect={async () => {
                           const depName = munNamesMap[item.departureMunicipalityId] || item.departureMunicipalityId;
                           const depPrefName = prefectures.find(p => p.id === item.departurePrefectureId)?.name || "";
+                          const arrName = arrivalMunName;
+                          const arrPrefName = arrivalPrefName;
+
+                          showSpinner();
+                          let distanceStr = "";
+                          try {
+                            const [p1, p2] = await Promise.all([
+                              getCoords(depPrefName, depName),
+                              getCoords(arrPrefName, arrName)
+                            ]);
+                            if (p1 && p2) {
+                              const dist = getDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng);
+                              distanceStr = `(約${dist.toFixed(1)}km)`;
+                            }
+                          } finally {
+                            hideSpinner();
+                          }
+
+                          const fullTitle = distanceStr
+                            ? `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName} (約${distancesMap[item.id].toFixed(1)}km)`
+                            : `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}`;
+
+                          const mapUrl = getGoogleMapsUrl(depPrefName, depName, arrPrefName, arrName, new Date().toISOString().split('T')[0]);
+
                           showModal(
-                            `マッププレビュー: ${depPrefName}${depName} ⇔ ${arrivalPrefName}${arrivalMunName}`,
+                            fullTitle,
                             `<div style="border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; height: 350px;">
-                              <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="https://maps.google.com/maps?saddr=${encodeURIComponent(depPrefName + depName)}&daddr=${encodeURIComponent(arrivalPrefName + arrivalMunName)}&dirflg=r&output=embed"></iframe>
-                            </div>`,
+                               <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="${mapUrl}"></iframe>
+                             </div>`,
                             undefined,
                             "閉じる"
                           );
                         }}
+                        distance={distancesMap[item.id]}
                       />
                     ))}
                   </div>
@@ -467,18 +579,18 @@ type SubsidyRowProps = {
   onDelete: () => void;
   isSelected: boolean;
   onSelect: () => void;
+  distance?: number;
 };
 
 function SubsidyRow({
   departureName, departurePrefName, subsidy, isAdmin, isEditing, editAmount,
   onEditStart, onEditAmountChange, onEditSave, onEditCancel, onDelete,
-  isSelected, onSelect,
+  isSelected, onSelect, distance,
 }: SubsidyRowProps) {
   const isRegistered = subsidy.isRegistered;
 
   return (
-    <div 
-      onClick={onSelect}
+    <div
       style={{
         display: "flex",
         alignItems: "center",
@@ -487,22 +599,32 @@ function SubsidyRow({
         borderBottom: "1px solid #f0f0f0",
         gap: "8px",
         background: isSelected ? "#e3f2fd" : (!isRegistered ? "#fff9f9" : "transparent"),
-        cursor: "pointer",
         transition: "background 0.2s",
       }}
     >
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ 
-            fontSize: "0.95rem", 
-            color: "#1976d2", 
-            textDecoration: "underline",
-            fontWeight: "500" 
-          }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <span
+            onClick={onSelect}
+            style={{
+              fontSize: "0.95rem",
+              color: "#1976d2",
+              textDecoration: "underline",
+              fontWeight: "500",
+              cursor: "pointer"
+            }}
+          >
             {departureName}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
+
+        {distance !== undefined && (
+          <div style={{ fontSize: "0.75rem", color: "#888" }}>
+            約{distance.toFixed(1)}km
+          </div>
+        )}
+
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {isAdmin && subsidy.userCount > 0 && (
             <span style={{ fontSize: "0.75rem", color: "#888" }}>
               {subsidy.userCount}名居住
@@ -536,13 +658,13 @@ function SubsidyRow({
         isEditing ? (
           <div style={{ display: "flex", gap: "6px" }}>
             <button
-              onClick={onEditSave}
+              onClick={(e) => { e.stopPropagation(); onEditSave(); }}
               style={{ padding: "5px 12px", background: "#4caf50", color: "white", border: "none", borderRadius: "4px", fontSize: "0.8rem", cursor: "pointer" }}
             >
               保存
             </button>
             <button
-              onClick={onEditCancel}
+              onClick={(e) => { e.stopPropagation(); onEditCancel(); }}
               style={{ padding: "5px 10px", background: "#ccc", color: "#333", border: "none", borderRadius: "4px", fontSize: "0.8rem", cursor: "pointer" }}
             >
               取消
@@ -551,7 +673,7 @@ function SubsidyRow({
         ) : (
           <div style={{ display: "flex", gap: "6px" }}>
             <button
-              onClick={onEditStart}
+              onClick={(e) => { e.stopPropagation(); onEditStart(); }}
               className={isRegistered ? "edit-button" : "save-button"}
               style={{ padding: "5px 10px", fontSize: "0.8rem" }}
             >
@@ -559,7 +681,7 @@ function SubsidyRow({
             </button>
             {isRegistered && (
               <button
-                onClick={onDelete}
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
                 className="delete-button"
                 style={{ padding: "5px 10px", fontSize: "0.8rem" }}
               >
