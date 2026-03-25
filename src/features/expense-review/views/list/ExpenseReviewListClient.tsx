@@ -8,6 +8,7 @@ import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getExpenseTypesClient } from "@/src/features/expense-apply/api/expense-apply-client-service";
+import { format } from "@/src/lib/functions";
 
 type Props = {
   initialExpenses: ExpenseApply[];
@@ -50,11 +51,12 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
         <thead>
           <tr>
             <th>日付・経費名</th>
-            <th>種別</th>
-            <th>金額</th>
+            <th>種別・金額</th>
             <th>申請者</th>
             <th>状態</th>
             <th>操作</th>
+            <th>登録日時</th>
+            <th>更新日時</th>
           </tr>
         </thead>
         <tbody>
@@ -73,9 +75,9 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
                   <div className="list-text-small" style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
                     {typeMap[expense.typeId] || "不明"}<br/>{expense.category}
                   </div>
-                </td>
-                <td style={{ textAlign: "right", fontWeight: "bold" }}>
-                  ¥{expense.amount.toLocaleString()}
+                  <div style={{ textAlign: "right", fontWeight: "bold", marginTop: "4px" }}>
+                    ¥{expense.amount.toLocaleString()}
+                  </div>
                 </td>
                 <td>
                   {usersMap[expense.uid] || "不明"}
@@ -92,11 +94,17 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
                     {expense.status === 'pending' ? "審査" : "詳細"}
                   </Link>
                 </td>
+                <td style={{ fontSize: "11px", color: "#666", textAlign: "center" }}>
+                  {format(expense.createdAt, 'yyyy/MM/dd HH:mm')}
+                </td>
+                <td style={{ fontSize: "11px", color: "#666", textAlign: "center" }}>
+                  {format(expense.updatedAt, 'yyyy/MM/dd HH:mm')}
+                </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={6} className="empty-text">{emptyMsg}</td>
+              <td colSpan={7} className="empty-text">{emptyMsg}</td>
             </tr>
           )}
         </tbody>

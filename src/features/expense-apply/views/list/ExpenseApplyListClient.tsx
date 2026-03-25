@@ -8,6 +8,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import Link from "next/link";
 import { getExpenseTypesClient } from "@/src/features/expense-apply/api/expense-apply-client-service";
+import { format } from "@/src/lib/functions";
 
 type Props = {
   initialExpenses: ExpenseApply[];
@@ -73,9 +74,10 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
         <thead>
           <tr>
             <th>日付・経費名</th>
-            <th>種別</th>
-            <th>金額</th>
+            <th>種別・金額</th>
             <th>状態</th>
+            <th>登録日時</th>
+            <th>更新日時</th>
           </tr>
         </thead>
         <tbody>
@@ -94,18 +96,24 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
                   <div className="list-text-small" style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
                     {typeMap[expense.typeId] || "不明"}<br/>{expense.category}
                   </div>
-                </td>
-                <td style={{ textAlign: "right", fontWeight: "bold" }}>
-                  ¥{expense.amount.toLocaleString()}
+                  <div style={{ textAlign: "right", fontWeight: "bold", marginTop: "4px" }}>
+                    ¥{expense.amount.toLocaleString()}
+                  </div>
                 </td>
                 <td style={{ textAlign: "center" }}>
                   {getStatusBadge(expense.status)}
+                </td>
+                <td style={{ fontSize: "11px", color: "#666", textAlign: "center" }}>
+                  {format(expense.createdAt, 'yyyy/MM/dd HH:mm')}
+                </td>
+                <td style={{ fontSize: "11px", color: "#666", textAlign: "center" }}>
+                  {format(expense.updatedAt, 'yyyy/MM/dd HH:mm')}
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={4} className="empty-text">{emptyMsg}</td>
+              <td colSpan={5} className="empty-text">{emptyMsg}</td>
             </tr>
           )}
         </tbody>
