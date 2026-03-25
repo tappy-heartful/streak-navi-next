@@ -72,6 +72,7 @@ export function TravelSubsidyClient({
 
   const [subsidies, setSubsidies] = useState<TravelSubsidy[]>(initialSubsidies);
   const [munNamesMap, setMunNamesMap] = useState<Record<string, string>>(initialMunicipalityNamesMap);
+  const [distancesMap, setDistancesMap] = useState<Record<string, number>>({});
 
   // 名前マップに情報を統合
   useEffect(() => {
@@ -111,6 +112,54 @@ export function TravelSubsidyClient({
     };
     fetchMuns();
   }, [addDeparturePrefId]);
+
+  // 全アイテムの距離を非同期で計算してキャッシュ
+  useEffect(() => {
+    const fetchAllDistances = async () => {
+      // 名前が解決されているアイテムのみを対象にする
+      const itemsToCalculate = containers.flatMap(c =>
+        c.prefectureGroups.flatMap(g => g.prefItems.map(item => {
+          const depMunName = munNamesMap[item.departureMunicipalityId];
+          const arrMunName = munNamesMap[item.arrivalMunicipalityId];
+          if (!depMunName || !arrMunName) return null;
+          return {
+            ...item,
+            depName: depMunName,
+            depPref: g.pref.name,
+            arrName: arrMunName,
+            arrPref: prefectures.find(p => p.id === item.arrivalPrefectureId)?.name || ""
+          };
+        }))
+      ).filter((i): i is NonNullable<typeof i> => i !== null)
+       .filter(item => distancesMap[item.id] === undefined);
+
+      if (itemsToCalculate.length === 0) return;
+
+      const newMap: Record<string, number> = { ...distancesMap };
+      for (const item of itemsToCalculate) {
+        const [p1, p2] = await Promise.all([
+          getCoords(item.depPref, item.depName),
+          getCoords(item.arrPref, item.arrName)
+        ]);
+
+        if (p1 && p2) {
+          const dist = getDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng);
+          newMap[item.id] = dist;
+          // 一定数ごとにステート更新して順次表示
+          if (Object.keys(newMap).length % 5 === 0) {
+            setDistancesMap({ ...newMap });
+          }
+        }
+        // 未取得の場合は少し待機（API負荷軽減）
+        if (!localStorage.getItem(`geo_cache_${item.depPref}_${item.depName}`) || !localStorage.getItem(`geo_cache_${item.arrPref}_${item.arrName}`)) {
+          await new Promise(r => setTimeout(r, 100));
+        }
+      }
+      setDistancesMap(newMap);
+    };
+
+    fetchAllDistances();
+  }, [subsidies, munNamesMap, travelConfig, prefectures]);
 
   useEffect(() => {
     if (travelConfig.arrivalPoints.length === 1) {
@@ -373,40 +422,41 @@ export function TravelSubsidyClient({
                         onEditCancel={() => setEditingId(null)}
                         onDelete={() => handleDelete(item.id)}
                         isSelected={false}
-                        onSelect={async () => {
-                          const depName = munNamesMap[item.departureMunicipalityId] || item.departureMunicipalityId;
-                          const depPrefName = prefectures.find(p => p.id === item.departurePrefectureId)?.name || "";
-                          const arrName = arrivalMunName;
-                          const arrPrefName = arrivalPrefName;
-
-                          showSpinner();
-                          let distanceStr = "";
-                          try {
-                            const [p1, p2] = await Promise.all([
-                              getCoords(depPrefName, depName),
-                              getCoords(arrPrefName, arrName)
-                            ]);
-                            if (p1 && p2) {
-                              const dist = getDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng);
-                              distanceStr = `直線距離：約${dist.toFixed(1)}km`;
-                            }
-                          } finally {
-                            hideSpinner();
-                          }
-
-                          const titleBase = `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}`;
-                          const fullTitle = distanceStr ? `${titleBase}\n${distanceStr.trim()}` : titleBase;
-
-                          showModal(
-                            fullTitle,
-                            `<div style="border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; height: 350px;">
-                              <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="https://maps.google.com/maps?saddr=${encodeURIComponent(depPrefName + depName)}&daddr=${encodeURIComponent(arrPrefName + arrName)}&dirflg=r&output=embed"></iframe>
-                            </div>`,
-                            undefined,
-                            "閉じる"
-                          );
-                        }}
-                      />
+                         onSelect={async () => {
+                           const depName = munNamesMap[item.departureMunicipalityId] || item.departureMunicipalityId;
+                           const depPrefName = prefectures.find(p => p.id === item.departurePrefectureId)?.name || "";
+                           const arrName = arrivalMunName;
+                           const arrPrefName = arrivalPrefName;
+ 
+                           showSpinner();
+                           let distanceStr = "";
+                           try {
+                             const [p1, p2] = await Promise.all([
+                               getCoords(depPrefName, depName),
+                               getCoords(arrPrefName, arrName)
+                             ]);
+                             if (p1 && p2) {
+                               const dist = getDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng);
+                               distanceStr = `(約${dist.toFixed(1)}km)`;
+                             }
+                           } finally {
+                             hideSpinner();
+                           }
+ 
+                           const titleBase = `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}`;
+                           const fullTitle = distanceStr ? `${titleBase} ${distanceStr.trim()}` : titleBase;
+ 
+                           showModal(
+                             fullTitle,
+                             `<div style="border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; height: 350px;">
+                               <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="https://maps.google.com/maps?saddr=${encodeURIComponent(depPrefName + depName)}&daddr=${encodeURIComponent(arrPrefName + arrName)}&dirflg=r&output=embed"></iframe>
+                             </div>`,
+                             undefined,
+                             "閉じる"
+                           );
+                         }}
+                         distance={distancesMap[item.id]}
+                       />
                     ))}
                   </div>
                 ))
@@ -525,12 +575,13 @@ type SubsidyRowProps = {
   onDelete: () => void;
   isSelected: boolean;
   onSelect: () => void;
+  distance?: number;
 };
 
 function SubsidyRow({
   departureName, departurePrefName, subsidy, isAdmin, isEditing, editAmount,
   onEditStart, onEditAmountChange, onEditSave, onEditCancel, onDelete,
-  isSelected, onSelect,
+  isSelected, onSelect, distance,
 }: SubsidyRowProps) {
   const isRegistered = subsidy.isRegistered;
 
@@ -547,8 +598,8 @@ function SubsidyRow({
         transition: "background 0.2s",
       }}
     >
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
+        <div style={{ display: "flex", alignItems: "center" }}>
           <span
             onClick={onSelect}
             style={{
@@ -562,7 +613,14 @@ function SubsidyRow({
             {departureName}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "2px" }}>
+        
+        {distance !== undefined && (
+          <div style={{ fontSize: "0.75rem", color: "#888" }}>
+            約{distance.toFixed(1)}km
+          </div>
+        )}
+
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {isAdmin && subsidy.userCount > 0 && (
             <span style={{ fontSize: "0.75rem", color: "#888" }}>
               {subsidy.userCount}名居住
