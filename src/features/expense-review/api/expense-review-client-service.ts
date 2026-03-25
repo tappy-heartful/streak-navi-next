@@ -40,6 +40,7 @@ export const judgeExpenseApply = async (
 /** 審査を取り消して「審査待ち」に戻す */
 export const undoReview = async (
   id: string,
+  adminComment: string,
   reviewerName: string
 ) => {
   const reviewerId = getSession("uid");
@@ -48,6 +49,10 @@ export const undoReview = async (
   const docRef = doc(db, "expenseApplies", id);
   await updateDoc(docRef, {
     status: 'pending',
+    adminComment: adminComment || "審査が取り消されました(審査待ちへ変更)",
+    reviewerId: null,
+    reviewerName: null,
+    reviewedAt: null,
     updatedAt: serverTimestamp(),
   });
 
@@ -55,7 +60,7 @@ export const undoReview = async (
   await addDoc(collection(docRef, "history"), {
     type: 'commented',
     status: 'pending',
-    comment: "審査が取り消されました(審査待ちへ変更)",
+    comment: adminComment,
     actorId: reviewerId,
     actorName: reviewerName,
     createdAt: serverTimestamp(),
