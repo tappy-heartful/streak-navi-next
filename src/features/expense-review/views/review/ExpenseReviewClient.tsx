@@ -9,8 +9,8 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { showSpinner, hideSpinner, showDialog, format } from "@/src/lib/functions";
 import { judgeExpenseApply, undoReview } from "@/src/features/expense-review/api/expense-review-client-service";
 import { useRouter } from "next/navigation";
-import { TravelRouteMap } from "@/src/components/TravelRouteMap";
 import { ExpenseHistoryList } from "@/src/components/ExpenseHistoryList";
+import { TravelDetailsArea } from "@/src/components/TravelDetailsArea";
 
 type Props = {
   expenseId: string;
@@ -146,43 +146,14 @@ export function ExpenseReviewClient({
 
         {initialData.isTravel && (
           <FormField label="旅費詳細">
-            <div className="label-value" style={{ background: "#f1f8ff", padding: "12px", borderRadius: "10px", border: "1px solid #e3f2fd" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ flex: 1, textAlign: "center" }}>
-                   <div style={{ color: "#1976d2", fontSize: "0.7rem", fontWeight: "bold" }}>出発</div>
-                   <div style={{ fontSize: "0.75rem", color: "#666", fontWeight: "normal", marginTop: "2px" }}>
-                     {prefectures.find(p => p.id === initialData.departurePrefectureId)?.name || initialData.departurePrefectureId}
-                   </div>
-                   <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
-                     {municipalityNamesMap[initialData.departureMunicipalityId || ""] || initialData.departureMunicipalityId}
-                   </div>
-                </div>
-
-                <div style={{ textAlign: "center", minWidth: "60px" }}>
-                  <div style={{ color: "#1976d2", fontSize: "0.7rem", fontWeight: "bold" }}>往復</div>
-                  <i className="fas fa-exchange-alt" style={{ color: "#1976d2", fontSize: "1.1rem" }}></i>
-                </div>
-
-                <div style={{ flex: 1, textAlign: "center" }}>
-                   <div style={{ color: "#1976d2", fontSize: "0.7rem", fontWeight: "bold" }}>到着</div>
-                   <div style={{ fontSize: "0.75rem", color: "#666", fontWeight: "normal", marginTop: "2px" }}>
-                     {prefectures.find(p => p.id === initialData.arrivalPrefectureId)?.name || initialData.arrivalPrefectureId}
-                   </div>
-                   <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
-                     {municipalityNamesMap[initialData.arrivalMunicipalityId || ""] || initialData.arrivalMunicipalityId}
-                   </div>
-                </div>
-              </div>
-              
-              <TravelRouteMap
-                departurePrefecture={prefectures.find(p => p.id === initialData.departurePrefectureId)?.name}
-                departureMunicipality={municipalityNamesMap[initialData.departureMunicipalityId || ""]}
-                arrivalPrefecture={prefectures.find(p => p.id === initialData.arrivalPrefectureId)?.name}
-                arrivalMunicipality={municipalityNamesMap[initialData.arrivalMunicipalityId || ""]}
-                departureDate={initialData.date}
-                height="220px"
-              />
-            </div>
+            <TravelDetailsArea
+              departurePrefName={prefectures.find(p => p.id === initialData.departurePrefectureId)?.name || ""}
+              departureMunName={municipalityNamesMap[initialData.departureMunicipalityId || ""] || initialData.departureMunicipalityId || ""}
+              arrivalPrefName={prefectures.find(p => p.id === initialData.arrivalPrefectureId)?.name || ""}
+              arrivalMunName={municipalityNamesMap[initialData.arrivalMunicipalityId || ""] || initialData.arrivalMunicipalityId || ""}
+              date={initialData.date}
+              height="220px"
+            />
           </FormField>
         )}
 

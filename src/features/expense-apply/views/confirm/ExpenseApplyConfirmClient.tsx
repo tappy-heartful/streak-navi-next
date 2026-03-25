@@ -7,8 +7,8 @@ import { FormField } from "@/src/components/Form/FormField";
 import { ExpenseApply, Prefecture, ExpenseApplyHistory } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { format } from "@/src/lib/functions";
-import { TravelRouteMap } from "@/src/components/TravelRouteMap";
 import { ExpenseHistoryList } from "@/src/components/ExpenseHistoryList";
+import { TravelDetailsArea } from "@/src/components/TravelDetailsArea";
 
 type Props = {
   expenseId: string;
@@ -87,43 +87,14 @@ export function ExpenseApplyConfirmClient({
 
         {initialData.isTravel && (
           <FormField label="旅費詳細">
-            <div className="label-value" style={{ border: "1px solid #e3f2fd", padding: "12px", borderRadius: "8px", background: "#f1f8ff" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ flex: 1, textAlign: "center" }}>
-                  <div style={{ fontSize: "0.65rem", color: "#1976d2", fontWeight: "bold" }}>出発</div>
-                  <div style={{ fontSize: "0.7rem", color: "#666", fontWeight: "normal", marginTop: "2px" }}>
-                    {prefectures.find(p => p.id === initialData.departurePrefectureId)?.name || initialData.departurePrefectureId}
-                  </div>
-                  <div style={{ fontSize: "0.95rem", fontWeight: "bold" }}>
-                    {municipalityNames[initialData.departureMunicipalityId || ""] || initialData.departureMunicipalityId}
-                  </div>
-                </div>
-                
-                <div style={{ textAlign: "center", minWidth: "50px" }}>
-                  <div style={{ fontSize: "0.65rem", color: "#1976d2", fontWeight: "bold" }}>往復</div>
-                  <i className="fas fa-exchange-alt" style={{ color: "#1976d2", fontSize: "0.9rem" }}></i>
-                </div>
-
-                <div style={{ flex: 1, textAlign: "center" }}>
-                  <div style={{ fontSize: "0.65rem", color: "#1976d2", fontWeight: "bold" }}>到着</div>
-                  <div style={{ fontSize: "0.7rem", color: "#666", fontWeight: "normal", marginTop: "2px" }}>
-                    {prefectures.find(p => p.id === initialData.arrivalPrefectureId)?.name || initialData.arrivalPrefectureId}
-                  </div>
-                  <div style={{ fontSize: "0.95rem", fontWeight: "bold" }}>
-                    {municipalityNames[initialData.arrivalMunicipalityId || ""] || initialData.arrivalMunicipalityId}
-                  </div>
-                </div>
-              </div>
-              
-              <TravelRouteMap
-                departurePrefecture={prefectures.find(p => p.id === initialData.departurePrefectureId)?.name}
-                departureMunicipality={municipalityNames[initialData.departureMunicipalityId || ""]}
-                arrivalPrefecture={prefectures.find(p => p.id === initialData.arrivalPrefectureId)?.name}
-                arrivalMunicipality={municipalityNames[initialData.arrivalMunicipalityId || ""]}
-                departureDate={initialData.date}
-                height="200px"
-              />
-            </div>
+            <TravelDetailsArea
+              departurePrefName={prefectures.find(p => p.id === initialData.departurePrefectureId)?.name || ""}
+              departureMunName={municipalityNames[initialData.departureMunicipalityId || ""] || initialData.departureMunicipalityId || ""}
+              arrivalPrefName={prefectures.find(p => p.id === initialData.arrivalPrefectureId)?.name || ""}
+              arrivalMunName={municipalityNames[initialData.arrivalMunicipalityId || ""] || initialData.arrivalMunicipalityId || ""}
+              date={initialData.date}
+              height="200px"
+            />
           </FormField>
         )}
 
