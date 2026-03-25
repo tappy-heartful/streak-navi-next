@@ -23,6 +23,7 @@ import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
 import { compressImage } from "@/src/lib/image-compression";
+import { TravelRouteMap } from "@/src/components/TravelRouteMap";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -366,16 +367,14 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
             </FormField>
             
             {(form.formData.departureMunicipalityId && form.formData.arrivalMunicipalityId) && (
-              <div style={{ marginTop: "15px", borderRadius: "8px", overflow: "hidden", border: "1px solid #dee2e6", height: "180px" }}>
-                <iframe
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  src={`https://maps.google.com/maps?saddr=${encodeURIComponent(prefectures.find(p => p.id === form.formData.departurePrefectureId)?.name + (departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || ""))}&daddr=${encodeURIComponent(prefectures.find(p => p.id === form.formData.arrivalPrefectureId)?.name + (arrivalMuns.find(m => m.id === form.formData.arrivalMunicipalityId)?.name || ""))}&dirflg=r&output=embed`}
-                ></iframe>
-              </div>
+              <TravelRouteMap
+                departurePrefecture={prefectures.find(p => p.id === form.formData.departurePrefectureId)?.name}
+                departureMunicipality={departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name}
+                arrivalPrefecture={prefectures.find(p => p.id === form.formData.arrivalPrefectureId)?.name}
+                arrivalMunicipality={arrivalMuns.find(m => m.id === form.formData.arrivalMunicipalityId)?.name}
+                departureDate={form.formData.date}
+                height="180px"
+              />
             )}
           </div>
         )}

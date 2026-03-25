@@ -14,6 +14,7 @@ import {
 } from "@/src/features/travel-subsidy/api/travel-subsidy-client-service";
 import { LocationCheckItem } from "@/src/features/travel-subsidy/api/travel-subsidy-server-actions";
 import { showModal } from "@/src/components/CommonModal";
+import { getGoogleMapsUrl } from "@/src/components/TravelRouteMap";
 
 // --- Geocoding & Distance Helpers ---
 const getCoords = async (prefecture: string, city: string): Promise<{ lat: number; lng: number } | null> => {
@@ -443,13 +444,16 @@ export function TravelSubsidyClient({
                              hideSpinner();
                            }
  
-                           const titleBase = `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}`;
-                           const fullTitle = distanceStr ? `${titleBase} ${distanceStr.trim()}` : titleBase;
+                           const fullTitle = distanceStr 
+                             ? `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}\n直線距離：約${distancesMap[item.id].toFixed(1)}km`
+                             : `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}`;
+ 
+                           const mapUrl = getGoogleMapsUrl(depPrefName, depName, arrPrefName, arrName, new Date().toISOString().split('T')[0]);
  
                            showModal(
                              fullTitle,
                              `<div style="border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; height: 350px;">
-                               <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="https://maps.google.com/maps?saddr=${encodeURIComponent(depPrefName + depName)}&daddr=${encodeURIComponent(arrPrefName + arrName)}&dirflg=r&output=embed"></iframe>
+                               <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="${mapUrl}"></iframe>
                              </div>`,
                              undefined,
                              "閉じる"

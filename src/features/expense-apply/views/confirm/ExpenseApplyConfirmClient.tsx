@@ -7,6 +7,8 @@ import { FormField } from "@/src/components/Form/FormField";
 import { ExpenseApply, Prefecture, ExpenseApplyHistory } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { format } from "@/src/lib/functions";
+import { TravelRouteMap } from "@/src/components/TravelRouteMap";
+import { ExpenseHistoryList } from "@/src/components/ExpenseHistoryList";
 
 type Props = {
   expenseId: string;
@@ -41,22 +43,6 @@ export function ExpenseApplyConfirmClient({
 
   const statusInfo = getStatusInfo(initialData.status);
 
-  const getPointName = (prefId?: string, munId?: string) => {
-    if (!prefId || !munId) return "";
-    const pName = prefectures.find(p => p.id === prefId)?.name || prefId;
-    const mName = municipalityNames[munId] || munId;
-    return `${mName} (${pName})`;
-  };
-
-  const getHistoryLabel = (type: string) => {
-    switch (type) {
-      case 'created': return '申請作成';
-      case 'updated': return '再申請/修正';
-      case 'reviewed': return '審査実施';
-      case 'commented': return 'コメント追加';
-      default: return type;
-    }
-  };
 
   return (
     <BaseLayout>
@@ -92,68 +78,7 @@ export function ExpenseApplyConfirmClient({
 
         {/* 履歴セクション */}
         <FormField label="申請・審査履歴">
-          <div style={{ padding: "10px 0" }}>
-            {history.length > 0 ? (
-              <div style={{ position: "relative" }}>
-                {/* タイムラインの縦線 */}
-                <div style={{ position: "absolute", left: "15px", top: "10px", bottom: "10px", width: "2px", background: "#e0e0e0" }}></div>
-                
-                {history.map((h, i) => (
-                  <div key={h.id || i} style={{ position: "relative", paddingLeft: "45px", marginBottom: "20px" }}>
-                    {/* 番号付きの円 */}
-                    <div style={{ 
-                       position: "absolute", left: "0", top: "0", width: "32px", height: "32px", 
-                       borderRadius: "50%", background: "#fff", border: `2px solid ${h.status === 'approved' ? '#4caf50' : h.status === 'rejected' ? '#f44336' : '#2196f3'}`,
-                       display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", fontWeight: "bold", zIndex: 1
-                    }}>
-                      {i + 1}
-                    </div>
-
-                    <div style={{ 
-                      background: "#fff", borderRadius: "10px", border: "1px solid #eee", padding: "12px",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.02)"
-                    }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
-                        <div>
-                          <span style={{ 
-                            fontSize: "0.65rem", fontWeight: "bold", padding: "2px 6px", borderRadius: "4px", 
-                            background: h.type === 'created' ? '#e3f2fd' : h.type === 'reviewed' ? '#f3e5f5' : '#f5f5f5',
-                            color: h.type === 'created' ? '#1976d2' : h.type === 'reviewed' ? '#7b1fa2' : '#666',
-                            marginRight: "6px"
-                          }}>
-                            {getHistoryLabel(h.type)}
-                          </span>
-                          <span style={{ fontSize: "0.75rem", color: "#888" }}>{format(h.createdAt, 'yyyy/MM/dd HH:mm')}</span>
-                        </div>
-                        <span style={{ 
-                          fontSize: "0.7rem", fontWeight: "bold",
-                          color: h.status === 'approved' ? '#4caf50' : h.status === 'rejected' ? '#f44336' : '#ffa000'
-                        }}>
-                          {h.status === 'approved' ? '承認' : h.status === 'rejected' ? '否認' : '待機'}
-                        </span>
-                      </div>
-                      
-                      <div style={{ fontWeight: "600", fontSize: "0.85rem", color: "#333" }}>{h.actorName}</div>
-                      
-                      {h.comment && (
-                        <div style={{ 
-                          marginTop: "8px", padding: "8px", background: "#f8f9fa", borderRadius: "6px", 
-                          fontSize: "0.8rem", color: "#555", borderLeft: "3px solid #dee2e6",
-                          whiteSpace: "pre-wrap"
-                        }}>
-                          {h.comment}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ color: "#999", textAlign: "center", fontSize: "0.8rem", padding: "15px", background: "#fafafa", borderRadius: "10px" }}>
-                履歴はありません
-              </div>
-            )}
-          </div>
+          <ExpenseHistoryList history={history} />
         </FormField>
 
         <FormField label="種別">
@@ -190,16 +115,14 @@ export function ExpenseApplyConfirmClient({
                 </div>
               </div>
               
-              <div style={{ marginTop: "15px", borderRadius: "8px", overflow: "hidden", border: "1px solid #e0e0e0", height: "200px" }}>
-                <iframe
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  src={`https://maps.google.com/maps?saddr=${encodeURIComponent(getPointName(initialData.departurePrefectureId, initialData.departureMunicipalityId))}&daddr=${encodeURIComponent(getPointName(initialData.arrivalPrefectureId, initialData.arrivalMunicipalityId))}&dirflg=r&output=embed`}
-                ></iframe>
-              </div>
+              <TravelRouteMap
+                departurePrefecture={prefectures.find(p => p.id === initialData.departurePrefectureId)?.name}
+                departureMunicipality={municipalityNames[initialData.departureMunicipalityId || ""]}
+                arrivalPrefecture={prefectures.find(p => p.id === initialData.arrivalPrefectureId)?.name}
+                arrivalMunicipality={municipalityNames[initialData.arrivalMunicipalityId || ""]}
+                departureDate={initialData.date}
+                height="200px"
+              />
             </div>
           </FormField>
         )}
