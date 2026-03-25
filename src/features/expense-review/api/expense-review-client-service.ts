@@ -1,6 +1,7 @@
 import { db } from "@/src/lib/firebase";
 import { doc, updateDoc, serverTimestamp, collection, addDoc } from "firebase/firestore";
 import { getSession } from "@/src/lib/functions";
+import { notifyExpenseReview } from "../../expense-apply/api/expense-notification-server-actions";
 
 /** 審査結果の反映 (経理メンバーのみが実行可能) */
 export const judgeExpenseApply = async (
@@ -31,6 +32,9 @@ export const judgeExpenseApply = async (
     actorName: reviewerName,
     createdAt: serverTimestamp(),
   });
+
+  // 通知の送信
+  notifyExpenseReview(id, status);
 };
 
 /** 審査を取り消して「審査待ち」に戻す */
@@ -56,4 +60,7 @@ export const undoReview = async (
     actorName: reviewerName,
     createdAt: serverTimestamp(),
   });
+
+  // 通知の送信
+  notifyExpenseReview(id, "pending");
 };
