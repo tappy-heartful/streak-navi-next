@@ -184,7 +184,8 @@ https://streak-navi.web.app/app/home/home.html
 ### 🎨 UI/UX 一貫性
 
 - エラー表示は `alert()` ではなく `showDialog()` を使っているか（`src/lib/functions.ts` からインポート）
-- ローディングはスピナー（`showSpinner` / `hideSpinner`）を使っているか
+- ローディングはスピナー（`showSpinner` / `hideSpinner`）を使っています
+- スタイルはグローバルなものを除き、画面固有のものはCSS Module（`.module.css`）に記述すること
 - フォームは `useAppForm` hook + `EditFormLayout` を使っているか
 - 詳細表示は `ConfirmLayout` を使っているか
 - 一覧（検索あり）は `SearchableListLayout`、一覧（シンプル）は `ListBaseLayout` を使っているか

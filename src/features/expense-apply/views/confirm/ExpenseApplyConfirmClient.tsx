@@ -9,6 +9,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { format } from "@/src/lib/functions";
 import { ExpenseHistoryList } from "@/src/components/ExpenseHistoryList";
 import { TravelDetailsArea } from "@/src/components/TravelDetailsArea";
+import styles from "./ExpenseApplyConfirm.module.css";
 
 type Props = {
   expenseId: string;
@@ -43,7 +44,6 @@ export function ExpenseApplyConfirmClient({
 
   const statusInfo = getStatusInfo(initialData.status);
 
-
   return (
     <BaseLayout>
       <ConfirmLayout
@@ -55,23 +55,16 @@ export function ExpenseApplyConfirmClient({
         overrideAdmin={canModify} 
         hideCopy={true}
       >
-        <div style={{ 
-          marginBottom: "2rem", 
-          padding: "15px", 
-          background: statusInfo.bg, 
-          borderRadius: "12px", 
-          border: `1px solid ${statusInfo.color}`,
-          textAlign: "center"
-        }}>
-          <h3 style={{ margin: 0, fontSize: "1.2rem", color: statusInfo.color }}>
+        <div className={styles.statusContainer} style={{ background: statusInfo.bg, border: `1px solid ${statusInfo.color}` }}>
+          <h3 className={styles.statusLabel} style={{ color: statusInfo.color }}>
             {statusInfo.label}
           </h3>
           {initialData.adminComment && (
-            <div style={{ marginTop: "10px", padding: "10px", background: "#fff", borderRadius: "8px", border: "1px solid #ffe0b2", textAlign: "left" }}>
-              <div style={{ fontSize: "0.75rem", color: "#e65100", fontWeight: "bold", marginBottom: "4px" }}>
+            <div className={styles.adminCommentBox}>
+              <div className={styles.commentLabel}>
                 <i className="fas fa-comment"></i> 会計からのコメント:
               </div>
-              <div style={{ fontSize: "0.9rem", whiteSpace: "pre-wrap" }}>{initialData.adminComment}</div>
+              <div className={styles.commentText}>{initialData.adminComment}</div>
             </div>
           )}
         </div>
@@ -103,7 +96,7 @@ export function ExpenseApplyConfirmClient({
         </FormField>
 
         <FormField label="金額 (税込)">
-          <div className="label-value" style={{ fontSize: "1.5rem", fontWeight: "900", color: initialData.typeId === "001" ? "#c62828" : "#2e7d32" }}>
+          <div className={`${styles.amountValue} label-value`} style={{ color: initialData.typeId === "001" ? "#c62828" : "#2e7d32" }}>
             ¥{initialData.amount.toLocaleString()}
           </div>
         </FormField>
@@ -114,11 +107,11 @@ export function ExpenseApplyConfirmClient({
 
         {initialData.files && initialData.files.length > 0 && (
           <FormField label="添付ファイル">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "10px" }}>
+            <div className={styles.fileGrid}>
               {initialData.files.map((file, i) => (
-                <a key={i} href={file.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "5px", textDecoration: "none", color: "#1a73e8", padding: "10px", background: "#f8f9fa", borderRadius: "8px", border: "1px solid #eee" }}>
-                  <i className="far fa-file-image" style={{ fontSize: "1.5rem" }}></i>
-                  <span style={{ fontSize: "0.7rem", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" }}>{file.name}</span>
+                <a key={i} href={file.url} target="_blank" rel="noopener noreferrer" className={styles.fileItem}>
+                  <i className={`far fa-file-image ${styles.fileIcon}`}></i>
+                  <span className={styles.fileName}>{file.name}</span>
                 </a>
               ))}
             </div>

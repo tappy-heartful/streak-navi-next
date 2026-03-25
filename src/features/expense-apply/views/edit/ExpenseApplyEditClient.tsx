@@ -24,40 +24,38 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
 import { compressImage } from "@/src/lib/image-compression";
 import { TravelRouteMap } from "@/src/components/TravelRouteMap";
+import styles from "./ExpenseApplyEdit.module.css";
 
 type Props = {
   mode: "new" | "edit" | "copy";
   expenseId?: string;
   initialData: ExpenseApply | null;
   prefectures: Prefecture[];
+  initialMasterTypes: ExpenseType[];
+  initialMasterCategories: ExpenseCategory[];
+  initialMasterItems: ExpenseItem[];
+  initialTravelConfig: { arrivalPoints: any[], departurePoints: any[] };
 };
 
-export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectures }: Props) {
+export function ExpenseApplyEditClient({ 
+  mode, 
+  expenseId, 
+  initialData, 
+  prefectures,
+  initialMasterTypes,
+  initialMasterCategories,
+  initialMasterItems,
+  initialTravelConfig
+}: Props) {
   const { user, userData } = useAuth();
   const [files, setFiles] = useState<{ name: string; url: string; path: string }[]>(
     initialData?.files || []
   );
 
-  const [masterTypes, setMasterTypes] = useState<ExpenseType[]>([]);
-  const [masterCategories, setMasterCategories] = useState<ExpenseCategory[]>([]);
-  const [masterItems, setMasterItems] = useState<ExpenseItem[]>([]);
-  const [travelConfig, setTravelConfig] = useState<{ arrivalPoints: any[], departurePoints: any[] }>({ arrivalPoints: [], departurePoints: [] });
-
-  useEffect(() => {
-    const fetchMasters = async () => {
-      const [t, c, i, conf] = await Promise.all([
-        getExpenseTypesClient(),
-        getExpenseCategoriesClient(),
-        getExpenseItemsClient(),
-        getTravelConfigClient()
-      ]);
-      setMasterTypes(t);
-      setMasterCategories(c);
-      setMasterItems(i);
-      setTravelConfig(conf);
-    };
-    fetchMasters();
-  }, []);
+  const [masterTypes] = useState<ExpenseType[]>(initialMasterTypes);
+  const [masterCategories] = useState<ExpenseCategory[]>(initialMasterCategories);
+  const [masterItems] = useState<ExpenseItem[]>(initialMasterItems);
+  const [travelConfig] = useState<{ arrivalPoints: any[], departurePoints: any[] }>(initialTravelConfig);
 
   const [departureMuns, setDepartureMuns] = useState<Municipality[]>([]);
   const [arrivalMuns, setArrivalMuns] = useState<Municipality[]>([]);
@@ -302,8 +300,8 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
         )}
 
         {isTravel && (
-          <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px", marginBottom: "20px", border: "1px solid #dee2e6" }}>
-            <h3 style={{ fontSize: "0.9rem", marginTop: 0 }}>旅費詳細</h3>
+          <div className={styles.travelSection}>
+            <h3 className={styles.travelTitle}>旅費詳細</h3>
             
             <FormField label="出発地 (都道府県)" error={form.errors.departurePrefectureId} required={true}>
               <select 
@@ -332,11 +330,11 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
               </select>
             </FormField>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", margin: "15px 0", color: "#1976d2", fontWeight: "bold" }}>
-              <div style={{ height: "1px", flex: 1, background: "linear-gradient(to right, transparent, #1976d2)" }}></div>
+            <div className={styles.exchangeContainer}>
+              <div className={styles.exchangeLineRight}></div>
               <i className="fas fa-exchange-alt"></i>
               <span>往復</span>
-              <div style={{ height: "1px", flex: 1, background: "linear-gradient(to left, transparent, #1976d2)" }}></div>
+              <div className={styles.exchangeLineLeft}></div>
             </div>
 
             <FormField label="到着地 (都道府県)" error={form.errors.arrivalPrefectureId} required={true}>
@@ -416,18 +414,18 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
         <FormField label="添付ファイル (領収書など)">
           <div style={{ marginBottom: "10px" }}>
             <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: "none" }} id="file-upload" />
-            <label htmlFor="file-upload" className="list-add-button" style={{ display: "inline-block", cursor: "pointer", fontSize: "0.85rem", padding: "8px 16px" }}>
+            <label htmlFor="file-upload" className={styles.fileUploadLabel}>
               画像をアップロード
             </label>
           </div>
           
-          <ul style={{ listStyle: "none", padding: 0 }}>
+          <ul className={styles.fileList}>
             {files.map((file, i) => (
-              <li key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px", background: "#f1f3f4", borderRadius: "4px", marginBottom: "5px" }}>
-                <span style={{ fontSize: "0.85rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, marginRight: "10px" }}>
+              <li key={i} className={styles.fileItem}>
+                <span className={styles.fileName}>
                   {file.name}
                 </span>
-                <button type="button" onClick={() => removeFile(i)} style={{ background: "none", border: "none", color: "#d93025", cursor: "pointer" }}>
+                <button type="button" onClick={() => removeFile(i)} className={styles.removeBtn}>
                   <i className="fas fa-times"></i>
                 </button>
               </li>

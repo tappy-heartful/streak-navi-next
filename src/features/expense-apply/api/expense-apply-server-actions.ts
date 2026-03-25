@@ -1,12 +1,24 @@
 import 'server-only';
 import { adminDb } from "@/src/lib/firebase-admin";
 import { toPlainObject } from "@/src/lib/firestore/utils";
-import { ExpenseApply, Prefecture, TravelSubsidy, ExpenseApplyHistory, ExpenseType } from "@/src/lib/firestore/types";
+import { ExpenseApply, Prefecture, TravelSubsidy, ExpenseApplyHistory, ExpenseType, ExpenseCategory, ExpenseItem } from "@/src/lib/firestore/types";
 
 /** 経費種別マスタを取得 */
 export async function getExpenseTypesServer(): Promise<ExpenseType[]> {
   const snap = await adminDb.collection("expenseTypes").orderBy("__name__", "asc").get();
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseType[];
+}
+
+/** 経費区分マスタを取得 */
+export async function getExpenseCategoriesServer(): Promise<ExpenseCategory[]> {
+  const snap = await adminDb.collection("expenseCategories").orderBy("__name__", "asc").get();
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseCategory[];
+}
+
+/** 経費項目マスタを取得 */
+export async function getExpenseItemsServer(): Promise<ExpenseItem[]> {
+  const snap = await adminDb.collection("expenseItems").orderBy("__name__", "asc").get();
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseItem[];
 }
 
 /** 自分の経費申請一覧を取得 (uidでフィルタ) */
