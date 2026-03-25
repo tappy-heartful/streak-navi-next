@@ -445,7 +445,7 @@ export function TravelSubsidyClient({
                           }
 
                           const fullTitle = distanceStr
-                            ? `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}(約${distancesMap[item.id].toFixed(1)}km)`
+                            ? `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName} (約${distancesMap[item.id].toFixed(1)}km)`
                             : `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}`;
 
                           const mapUrl = getGoogleMapsUrl(depPrefName, depName, arrPrefName, arrName, new Date().toISOString().split('T')[0]);
