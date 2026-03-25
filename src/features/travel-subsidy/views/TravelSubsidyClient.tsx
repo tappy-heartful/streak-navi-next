@@ -478,7 +478,6 @@ function SubsidyRow({
 
   return (
     <div 
-      onClick={onSelect}
       style={{
         display: "flex",
         alignItems: "center",
@@ -487,18 +486,21 @@ function SubsidyRow({
         borderBottom: "1px solid #f0f0f0",
         gap: "8px",
         background: isSelected ? "#e3f2fd" : (!isRegistered ? "#fff9f9" : "transparent"),
-        cursor: "pointer",
         transition: "background 0.2s",
       }}
     >
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ 
-            fontSize: "0.95rem", 
-            color: "#1976d2", 
-            textDecoration: "underline",
-            fontWeight: "500" 
-          }}>
+          <span 
+            onClick={onSelect}
+            style={{ 
+              fontSize: "0.95rem", 
+              color: "#1976d2", 
+              textDecoration: "underline",
+              fontWeight: "500",
+              cursor: "pointer"
+            }}
+          >
             {departureName}
           </span>
         </div>
@@ -536,13 +538,13 @@ function SubsidyRow({
         isEditing ? (
           <div style={{ display: "flex", gap: "6px" }}>
             <button
-              onClick={onEditSave}
+              onClick={(e) => { e.stopPropagation(); onEditSave(); }}
               style={{ padding: "5px 12px", background: "#4caf50", color: "white", border: "none", borderRadius: "4px", fontSize: "0.8rem", cursor: "pointer" }}
             >
               保存
             </button>
             <button
-              onClick={onEditCancel}
+              onClick={(e) => { e.stopPropagation(); onEditCancel(); }}
               style={{ padding: "5px 10px", background: "#ccc", color: "#333", border: "none", borderRadius: "4px", fontSize: "0.8rem", cursor: "pointer" }}
             >
               取消
@@ -551,7 +553,7 @@ function SubsidyRow({
         ) : (
           <div style={{ display: "flex", gap: "6px" }}>
             <button
-              onClick={onEditStart}
+              onClick={(e) => { e.stopPropagation(); onEditStart(); }}
               className={isRegistered ? "edit-button" : "save-button"}
               style={{ padding: "5px 10px", fontSize: "0.8rem" }}
             >
@@ -559,7 +561,7 @@ function SubsidyRow({
             </button>
             {isRegistered && (
               <button
-                onClick={onDelete}
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
                 className="delete-button"
                 style={{ padding: "5px 10px", fontSize: "0.8rem" }}
               >
