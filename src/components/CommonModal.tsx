@@ -111,6 +111,10 @@ export default function CommonModal() {
           font-weight: bold;
           font-size: 18px;
         }
+        .modal-title {
+          white-space: pre-wrap;
+          line-height: 1.4;
+        }
         .modal-body {
           flex: 1;
           overflow-y: auto;

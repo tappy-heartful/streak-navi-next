@@ -24,7 +24,7 @@ const getCoords = async (prefecture: string, city: string): Promise<{ lat: numbe
   if (cached) return JSON.parse(cached);
 
   const url = `https://geoapi.heartrails.com/api/json?method=getTowns&prefecture=${encodeURIComponent(prefecture)}&city=${encodeURIComponent(city)}`;
-  
+
   try {
     const res = await fetch(url);
     const data = await res.json();
@@ -45,8 +45,8 @@ const getDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number) =
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLng = (lng2 - lng1) * Math.PI / 180;
   const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -388,14 +388,17 @@ export function TravelSubsidyClient({
                             ]);
                             if (p1 && p2) {
                               const dist = getDistanceKm(p1.lat, p1.lng, p2.lat, p2.lng);
-                              distanceStr = ` (直線距離: 約${dist.toFixed(1)}km)`;
+                              distanceStr = `直線距離：約${dist.toFixed(1)}km`;
                             }
                           } finally {
                             hideSpinner();
                           }
 
+                          const titleBase = `${depPrefName} ${depName} ⇔\n${arrPrefName} ${arrName}`;
+                          const fullTitle = distanceStr ? `${titleBase}\n${distanceStr.trim()}` : titleBase;
+
                           showModal(
-                            `マッププレビュー: ${depPrefName}${depName} ⇔ ${arrPrefName}${arrName}${distanceStr}`,
+                            fullTitle,
                             `<div style="border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; height: 350px;">
                               <iframe width="100%" height="100%" style="border: 0" loading="lazy" src="https://maps.google.com/maps?saddr=${encodeURIComponent(depPrefName + depName)}&daddr=${encodeURIComponent(arrPrefName + arrName)}&dirflg=r&output=embed"></iframe>
                             </div>`,
@@ -532,7 +535,7 @@ function SubsidyRow({
   const isRegistered = subsidy.isRegistered;
 
   return (
-    <div 
+    <div
       style={{
         display: "flex",
         alignItems: "center",
@@ -546,11 +549,11 @@ function SubsidyRow({
     >
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span 
+          <span
             onClick={onSelect}
-            style={{ 
-              fontSize: "0.95rem", 
-              color: "#1976d2", 
+            style={{
+              fontSize: "0.95rem",
+              color: "#1976d2",
               textDecoration: "underline",
               fontWeight: "500",
               cursor: "pointer"
