@@ -251,7 +251,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
         form={form}
         overrideAdmin={true}
       >
-        <FormField label="経費種別" error={form.errors.typeId}>
+        <FormField label="経費種別" error={form.errors.typeId} required={true}>
           <select 
             value={form.formData.typeId} 
             onChange={(e) => {
@@ -267,7 +267,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
         </FormField>
 
         {form.formData.typeId && (
-          <FormField label="経費区分" error={form.errors.categoryId}>
+          <FormField label="経費区分" error={form.errors.categoryId} required={true}>
             <select 
               value={form.formData.categoryId} 
               onChange={(e) => form.updateField("categoryId", e.target.value)}
@@ -282,7 +282,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
         )}
 
         {form.formData.categoryId && (
-          <FormField label="経費項目" error={form.errors.itemId}>
+          <FormField label="経費項目" error={form.errors.itemId} required={true}>
             <select 
               value={form.formData.itemId} 
               onChange={(e) => {
@@ -305,7 +305,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
           <div style={{ padding: "15px", background: "#f8f9fa", borderRadius: "8px", marginBottom: "20px", border: "1px solid #dee2e6" }}>
             <h3 style={{ fontSize: "0.9rem", marginTop: 0 }}>旅費詳細</h3>
             
-            <FormField label="出発地 (都道府県)" error={form.errors.departurePrefectureId}>
+            <FormField label="出発地 (都道府県)" error={form.errors.departurePrefectureId} required={true}>
               <select 
                 value={form.formData.departurePrefectureId} 
                 onChange={(e) => form.updateField("departurePrefectureId", e.target.value)}
@@ -318,7 +318,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
               </select>
             </FormField>
 
-            <FormField label="出発地 (市区町村)" error={form.errors.departureMunicipalityId}>
+            <FormField label="出発地 (市区町村)" error={form.errors.departureMunicipalityId} required={true}>
               <select 
                 value={form.formData.departureMunicipalityId} 
                 onChange={(e) => form.updateField("departureMunicipalityId", e.target.value)}
@@ -339,7 +339,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
               <div style={{ height: "1px", flex: 1, background: "linear-gradient(to left, transparent, #1976d2)" }}></div>
             </div>
 
-            <FormField label="到着地 (都道府県)" error={form.errors.arrivalPrefectureId}>
+            <FormField label="到着地 (都道府県)" error={form.errors.arrivalPrefectureId} required={true}>
               <select 
                 value={form.formData.arrivalPrefectureId} 
                 onChange={(e) => form.updateField("arrivalPrefectureId", e.target.value)}
@@ -352,7 +352,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
               </select>
             </FormField>
 
-            <FormField label="到着地 (市区町村)" error={form.errors.arrivalMunicipalityId}>
+            <FormField label="到着地 (市区町村)" error={form.errors.arrivalMunicipalityId} required={true}>
               <select 
                 value={form.formData.arrivalMunicipalityId} 
                 onChange={(e) => form.updateField("arrivalMunicipalityId", e.target.value)}
@@ -386,6 +386,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
             value={form.formData.name}
             updateField={form.updateField}
             error={form.errors.name}
+            required={true}
             placeholder="例: マウス、会場費など"
           />
         )}
@@ -397,6 +398,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
           updateField={form.updateField}
           error={form.errors.amount}
           type="number"
+          required={true}
           placeholder="金額を入力"
           disabled={isTravel}
         />
@@ -408,6 +410,7 @@ export function ExpenseApplyEditClient({ mode, expenseId, initialData, prefectur
           updateField={form.updateField}
           error={form.errors.date}
           type="date"
+          required={true}
         />
 
         <FormField label="添付ファイル (領収書など)">
