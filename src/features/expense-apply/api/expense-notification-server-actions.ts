@@ -5,18 +5,17 @@ import { sendLinePushMessage } from "@/src/lib/line";
 import { ExpenseApply, User, Prefecture, ExpenseApplyHistory } from "@/src/lib/firestore/types";
 import { getMunicipalityNamesMapServer } from "../../users/api/user-server-actions";
 
+const BASE_URL = "https://streak-navi.vercel.app";
+
 /**
  * 経費申請に関する通知 (申請者本人宛)
  */
 export async function notifyExpenseApply(expenseId: string, action: 'create' | 'update' | 'delete') {
   try {
-    // 申請データの取得 (削除の場合はアーカイブから取得するか、事前に渡されたデータを使う必要があるが、
-    // ここでは事後通知を想定してアーカイブまたは通常のドキュメントを確認)
     let expenseData: ExpenseApply | null = null;
     const doc = await adminDb.collection("expenseApplies").doc(expenseId).get();
-    
+
     if (!doc.exists && action === 'delete') {
-      // 削除済みの場合はアーカイブを直近1件探す (簡易的)
       const archSnap = await adminDb.collection("archives")
         .where("originalCollection", "==", "expenseApplies")
         .where("originalId", "==", expenseId)
@@ -32,43 +31,48 @@ export async function notifyExpenseApply(expenseId: string, action: 'create' | '
 
     if (!expenseData) return;
 
-    // 関連データの取得
-    const applicant = await adminDb.collection("users").doc(expenseData.uid).get();
+    let text = "";
+    if (action === 'delete') {
+      text = `お疲れ様です！Streak Naviです🍀\n`;
+      text += `申請されていた経費の取り下げ（削除）を承りました。\n\n`;
+      text += `【削除された申請】\n`;
+      text += `項目: ${expenseData.name}\n`;
+      text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
+    } else {
+      const actionLabel = action === 'create' ? "申請を承りました" : "申請内容の更新を承りました";
+      text = `お疲れ様です！Streak Naviです🍀\n`;
+      text += `経費の${actionLabel}。内容をご確認ください。\n\n`;
+      text += `【申請内容】\n`;
+      text += `項目: ${expenseData.name}\n`;
+      text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
+      text += `日付: ${expenseData.date}\n`;
+      text += `種別: ${expenseData.category || "不明"}\n`;
 
-    const applicantName = applicant.exists ? (applicant.data() as any).displayName : "不明";
-    const actionLabel = action === 'create' ? "新規作成" : action === 'update' ? "更新" : "削除";
+      if (expenseData.isTravel) {
+        const munIds = [];
+        if (expenseData.departureMunicipalityId) munIds.push(expenseData.departureMunicipalityId);
+        if (expenseData.arrivalMunicipalityId) munIds.push(expenseData.arrivalMunicipalityId);
 
-    // メッセージ構築
-    let text = `【経費申請: ${actionLabel}】\n`;
-    text += `申請者: ${applicantName}様\n`;
-    text += `項目: ${expenseData.name}\n`;
-    text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
-    text += `日付: ${expenseData.date}\n`;
-    text += `種別: ${expenseData.category || "不明"}\n`;
+        const [munMap, prefsSnap] = await Promise.all([
+          getMunicipalityNamesMapServer(munIds),
+          adminDb.collection("prefectures").get()
+        ]);
 
-    if (expenseData.isTravel) {
-      const munIds = [];
-      if (expenseData.departureMunicipalityId) munIds.push(expenseData.departureMunicipalityId);
-      if (expenseData.arrivalMunicipalityId) munIds.push(expenseData.arrivalMunicipalityId);
-      
-      const [munMap, prefsSnap] = await Promise.all([
-        getMunicipalityNamesMapServer(munIds),
-        adminDb.collection("prefectures").get()
-      ]);
+        const prefs = prefsSnap.docs.map(d => ({ id: d.id, name: d.data().name }));
+        const depPref = prefs.find(p => p.id === expenseData?.departurePrefectureId)?.name || "";
+        const arrPref = prefs.find(p => p.id === expenseData?.arrivalPrefectureId)?.name || "";
+        const depMun = munMap[expenseData.departureMunicipalityId || ""] || expenseData.departureMunicipalityId || "";
+        const arrMun = munMap[expenseData.arrivalMunicipalityId || ""] || expenseData.arrivalMunicipalityId || "";
 
-      const prefs = prefsSnap.docs.map(d => ({ id: d.id, name: d.data().name }));
-      const depPref = prefs.find(p => p.id === expenseData?.departurePrefectureId)?.name || "";
-      const arrPref = prefs.find(p => p.id === expenseData?.arrivalPrefectureId)?.name || "";
-      
-      const depMun = munMap[expenseData.departureMunicipalityId || ""] || expenseData.departureMunicipalityId || "";
-      const arrMun = munMap[expenseData.arrivalMunicipalityId || ""] || expenseData.arrivalMunicipalityId || "";
+        text += `行程: ${depPref}${depMun} ⇔ ${arrPref}${arrMun}\n`;
+      }
 
-      text += `行程: ${depPref}${depMun} ⇔ ${arrPref}${arrMun}\n`;
+      text += `\n▼ 詳細はこちらからご確認いただけます\n`;
+      text += `${BASE_URL}/expense-apply/confirm?expenseId=${expenseId}`;
     }
 
     const messages: any[] = [{ type: "text", text }];
 
-    // 画像があれば追加 (最大5メッセージの制限に注意)
     if (expenseData.files && expenseData.files.length > 0) {
       expenseData.files.slice(0, 4).forEach(file => {
         if (file.url.match(/\.(jpeg|jpg|png|gif)/i) || file.url.includes("image")) {
@@ -81,7 +85,6 @@ export async function notifyExpenseApply(expenseId: string, action: 'create' | '
       });
     }
 
-    // 申請者本人に送信
     const lineDoc = await adminDb.collection("lineMessagingIds").doc(expenseData.uid).get();
     if (lineDoc.exists && lineDoc.data()?.lineUid) {
       await sendLinePushMessage(lineDoc.data()?.lineUid, messages);
@@ -100,21 +103,24 @@ export async function notifyExpenseReview(expenseId: string, status: 'approved' 
     if (!doc.exists) return;
     const expenseData = doc.data() as ExpenseApply;
 
-    const statusLabel = status === 'approved' ? "承認 ✅" : status === 'rejected' ? "否認 ❌" : "審査待ち(戻し) ⏳";
-    let text = `【経費審査結果のお知らせ】\n`;
+    const statusLabel = status === 'approved' ? "承認されました ✅" : status === 'rejected' ? "否認されました ❌" : "審査待ち(pending)に戻りました ⏳";
+
+    let text = `お疲れ様です！Streak Naviです🍀\n`;
+    text += `経費の審査状況が更新されましたので、お知らせいたします✨\n\n`;
+    text += `【審査結果】\n`;
     text += `状態: ${statusLabel}\n`;
     text += `項目: ${expenseData.name}\n`;
     text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
-    
+
     if (expenseData.adminComment) {
-      text += `\nコメント:\n${expenseData.adminComment}`;
+      text += `\n▼ 会計担当からのメッセージ:\n${expenseData.adminComment}\n`;
     }
 
-    text += `\n\n詳細はアプリでご確認ください。`;
+    text += `\n▼ 詳細はこちらからご確認いただけます\n`;
+    text += `${BASE_URL}/expense-apply/confirm?expenseId=${expenseId}`;
 
     const messages = [{ type: "text", text }];
 
-    // 申請者のLINE IDを取得
     const lineDoc = await adminDb.collection("lineMessagingIds").doc(expenseData.uid).get();
     if (lineDoc.exists && lineDoc.data()?.lineUid) {
       await sendLinePushMessage(lineDoc.data()?.lineUid, messages);
