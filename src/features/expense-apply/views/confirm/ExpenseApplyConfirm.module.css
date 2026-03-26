@@ -1,0 +1,79 @@
+.statusContainer {
+  margin-bottom: 2rem;
+  padding: 20px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 1px solid transparent;
+}
+
+.statusIcon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.statusLabel {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.reviewerInfo {
+  margin-top: 15px;
+  font-size: 0.85rem;
+  color: #555;
+  border-top: 1px dashed #ccc;
+  padding-top: 10px;
+}
+
+.amountValue {
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.fileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.fileItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: #f1f3f4;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #1a73e8;
+}
+
+.fileIcon {
+  font-size: 2rem;
+}
+
+.fileName {
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.adminCommentBox {
+  margin-top: 10px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #ffe0b2;
+  text-align: left;
+}
+
+.commentLabel {
+  font-size: 0.75rem;
+  color: #e65100;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.commentText {
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}

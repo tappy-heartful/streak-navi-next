@@ -6,7 +6,7 @@ import { notifyExpenseReview } from "../../expense-apply/api/expense-notificatio
 /** 審査結果の反映 (経理メンバーのみが実行可能) */
 export const judgeExpenseApply = async (
   id: string,
-  status: 'approved' | 'rejected',
+  status: 'approved' | 'returned',
   adminComment: string,
   reviewerName: string
 ) => {

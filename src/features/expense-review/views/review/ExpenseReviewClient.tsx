@@ -11,6 +11,7 @@ import { judgeExpenseApply, undoReview } from "@/src/features/expense-review/api
 import { useRouter } from "next/navigation";
 import { ExpenseHistoryList } from "@/src/components/ExpenseHistoryList";
 import { TravelDetailsArea } from "@/src/components/TravelDetailsArea";
+import styles from "./ExpenseReview.module.css";
 
 type Props = {
   expenseId: string;
@@ -37,18 +38,18 @@ export function ExpenseReviewClient({
   const getStatusInfo = (status: ExpenseApply['status']) => {
     switch (status) {
       case "approved": return { label: "承認済み", icon: "✅", color: "#4caf50", bg: "#e8f5e9" };
-      case "rejected": return { label: "否認済み", icon: "❌", color: "#f44336", bg: "#ffebee" };
-      default: return { label: "審査中", icon: "⏳", color: "#ffa000", bg: "#fff8e1" };
+      case "returned": return { label: "差し戻し済み", icon: "🔄", color: "#f57c00", bg: "#fff3e0" };
+      default: return { label: "審査待ち", icon: "⏳", color: "#ffa000", bg: "#fff8e1" };
     }
   };
 
   const statusInfo = getStatusInfo(initialData.status);
 
 
-  const handleProcess = async (status: 'approved' | 'rejected') => {
-    const action = status === 'approved' ? "承認" : "拒否";
+  const handleProcess = async (status: 'approved' | 'returned') => {
+    const action = status === 'approved' ? "承認" : "差し戻し";
     const comment = await showDialog(
-      `申請を${action}します。\nコメントを${status === 'rejected' ? '必ず' : '任意で'}入力してください:\n※本操作は申請者にLINEで通知されます。`,
+      `申請を${action}します。\nコメントを${status === 'returned' ? '必ず' : '任意で'}入力してください:\n※本操作は申請者にLINEで通知されます。`,
       false,
       true
     );
@@ -56,8 +57,8 @@ export function ExpenseReviewClient({
     if (comment === null) return; // キャンセル
     const commentStr = typeof comment === 'string' ? comment : "";
 
-    if (status === 'rejected' && !commentStr.trim()) {
-      await showDialog("拒否の際はコメントが必須です", true);
+    if (status === 'returned' && !commentStr.trim()) {
+      await showDialog("差し戻しの際はコメントが必須です", true);
       return;
     }
 
@@ -121,22 +122,14 @@ export function ExpenseReviewClient({
         hideEdit={true}
         hideDelete={true}
       >
-        <div style={{
-          marginBottom: "2rem",
-          padding: "20px",
-          background: statusInfo.bg,
-          borderRadius: "15px",
-          border: `1px solid ${statusInfo.color}`,
-          textAlign: "center",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
-        }}>
-          <div style={{ fontSize: "2rem", marginBottom: "8px" }}>{statusInfo.icon}</div>
-          <div style={{ fontSize: "1.4rem", fontWeight: "bold", color: statusInfo.color }}>
+        <div className={styles.statusContainer} style={{ background: statusInfo.bg, border: `1px solid ${statusInfo.color}` }}>
+          <div className={styles.statusIcon}>{statusInfo.icon}</div>
+          <div className={styles.statusLabel} style={{ color: statusInfo.color }}>
             {statusInfo.label}
           </div>
 
           {initialData.status !== 'pending' && (
-            <div style={{ marginTop: "15px", fontSize: "0.85rem", color: "#555", borderTop: "1px dashed #ccc", paddingTop: "10px" }}>
+            <div className={styles.reviewerInfo}>
               <div><strong>審査者:</strong> {initialData.reviewerName || "不明"}</div>
               <div><strong>日時:</strong> {initialData.reviewedAt ? format(initialData.reviewedAt, 'yyyy/MM/dd HH:mm') : "不明"}</div>
             </div>
@@ -173,7 +166,7 @@ export function ExpenseReviewClient({
         </FormField>
 
         <FormField label="金額 (税込)">
-          <div className="label-value" style={{ fontSize: "1.8rem", fontWeight: "900", color: initialData.typeId === "001" ? "#c62828" : "#2e7d32" }}>
+          <div className={`${styles.amountValue} label-value`} style={{ color: initialData.typeId === "001" ? "#c62828" : "#2e7d32" }}>
             ¥{initialData.amount.toLocaleString()}
           </div>
         </FormField>
@@ -184,52 +177,46 @@ export function ExpenseReviewClient({
 
         {initialData.files && initialData.files.length > 0 && (
           <FormField label="添付ファイル">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "10px" }}>
+            <div className={styles.fileGrid}>
               {initialData.files.map((file, i) => (
-                <a key={i} href={file.url} target="_blank" rel="noopener noreferrer" style={{
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: "8px",
-                  padding: "10px", background: "#f1f3f4", borderRadius: "8px", textDecoration: "none", color: "#1a73e8"
-                }}>
-                  <i className="far fa-file-image" style={{ fontSize: "2rem" }}></i>
-                  <span style={{ fontSize: "0.75rem", textAlign: "center", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{file.name}</span>
+                <a key={i} href={file.url} target="_blank" rel="noopener noreferrer" className={styles.fileItem}>
+                  <i className={`far fa-file-image ${styles.fileIcon}`}></i>
+                  <span className={styles.fileName}>{file.name}</span>
                 </a>
               ))}
             </div>
           </FormField>
         )}
 
-        <div style={{ marginTop: "40px", paddingTop: "30px", borderTop: "1px solid #eee" }}>
-          <h4 style={{ textAlign: "center", fontSize: "0.9rem", color: "#888", marginBottom: "8px", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "1px" }}>審査アクション</h4>
-          <div style={{ textAlign: "center", fontSize: "0.75rem", color: "#999", marginBottom: "20px" }}>
-            <i className="fab fa-line" style={{ marginRight: "4px", color: "#06C755" }}></i>
+        <div className={styles.actionSection}>
+          <h4 className={styles.actionTitle}>審査アクション</h4>
+          <div className={styles.actionNotice}>
+            <i className={`fab fa-line ${styles.actionLineIcon}`}></i>
             ※審査アクションを実行すると、申請者本人にLINEで通知が送信されます。
           </div>
-          <div style={{ display: "flex", gap: "15px", justifyContent: "center", flexWrap: "wrap" }}>
+          <div className={styles.buttonGroup}>
             <button
               onClick={() => handleProcess('approved')}
-              className="save-button"
-              style={{ padding: "14px 28px", fontSize: "1rem", background: "#4caf50", boxShadow: "0 4px 10px rgba(76, 175, 80, 0.3)" }}
+              className={styles.approveBtn}
               disabled={initialData.status === 'approved'}
             >
-              <i className="fas fa-check-circle" style={{ marginRight: "8px" }}></i>
+              <i className={`fas fa-check-circle ${styles.btnIcon}`}></i>
               承認する
             </button>
             <button
-              onClick={() => handleProcess('rejected')}
-              className="delete-button"
-              style={{ padding: "14px 28px", fontSize: "1rem", background: "#f44336", boxShadow: "0 4px 10px rgba(244, 67, 54, 0.3)", border: "none", color: "white", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
-              disabled={initialData.status === 'rejected'}
+              onClick={() => handleProcess('returned')}
+              className={styles.rejectBtn}
+              disabled={initialData.status === 'returned'}
             >
-              <i className="fas fa-times-circle" style={{ marginRight: "8px" }}></i>
-              否認する
+              <i className={`fas fa-undo ${styles.btnIcon}`}></i>
+              差し戻す
             </button>
             {initialData.status !== 'pending' && (
               <button
                 onClick={handleUndo}
-                className="edit-button"
-                style={{ padding: "14px 28px", fontSize: "1rem", background: "#607d8b", boxShadow: "0 4px 10px rgba(96, 125, 139, 0.3)", border: "none", color: "white", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
+                className={styles.undoBtn}
               >
-                <i className="fas fa-undo" style={{ marginRight: "8px" }}></i>
+                <i className={`fas fa-rotate-left ${styles.btnIcon}`}></i>
                 審査待ちに戻す
               </button>
             )}

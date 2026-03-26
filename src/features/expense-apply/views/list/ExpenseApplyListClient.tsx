@@ -8,6 +8,8 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import Link from "next/link";
 import { getExpenseTypesClient } from "@/src/features/expense-apply/api/expense-apply-client-service";
+import { format } from "@/src/lib/functions";
+import styles from "./ExpenseApplyList.module.css";
 
 type Props = {
   initialExpenses: ExpenseApply[];
@@ -57,15 +59,15 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
 
   const getStatusBadge = (status: ExpenseApply['status']) => {
     switch (status) {
-      case "approved": return <span className="status-badge approved">承認済み</span>;
-      case "rejected": return <span className="status-badge rejected">否認</span>;
-      default: return <span className="status-badge pending">審査中</span>;
+      case "approved": return <span className={`${styles.statusBadge} ${styles.approved}`}>承認済み</span>;
+      case "returned": return <span className={`${styles.statusBadge} ${styles.rejected}`}>差し戻し</span>;
+      default: return <span className={`${styles.statusBadge} ${styles.pending}`}>審査待ち</span>;
     }
   };
 
   const pendingItems = expenses.filter(e => e.status === 'pending');
   const approvedItems = expenses.filter(e => e.status === 'approved');
-  const rejectedItems = expenses.filter(e => e.status === 'rejected');
+  const rejectedItems = expenses.filter(e => e.status === 'returned');
 
   const renderTable = (items: ExpenseApply[], emptyMsg: string) => (
     <div className="table-wrapper">
@@ -73,9 +75,10 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
         <thead>
           <tr>
             <th>日付・経費名</th>
-            <th>種別</th>
-            <th>金額</th>
+            <th>種別・金額</th>
             <th>状態</th>
+            <th>登録日時</th>
+            <th>更新日時</th>
           </tr>
         </thead>
         <tbody>
@@ -83,7 +86,7 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
             items.map((expense) => (
               <tr key={expense.id}>
                 <td className="list-table-row-header">
-                  <div style={{ fontSize: "10px", color: "#888", fontWeight: "normal", marginBottom: "2px" }}>
+                  <div className={styles.dateSub}>
                     {expense.date}
                   </div>
                   <Link prefetch={true} href={`/expense-apply/confirm?expenseId=${expense.id}`} style={{ textDecoration: "none" }}>
@@ -91,21 +94,27 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
                   </Link>
                 </td>
                 <td>
-                  <div className="list-text-small" style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
+                  <div className={styles.typeText} style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
                     {typeMap[expense.typeId] || "不明"}<br/>{expense.category}
                   </div>
-                </td>
-                <td style={{ textAlign: "right", fontWeight: "bold" }}>
-                  ¥{expense.amount.toLocaleString()}
+                  <div className={styles.amount}>
+                    ¥{expense.amount.toLocaleString()}
+                  </div>
                 </td>
                 <td style={{ textAlign: "center" }}>
                   {getStatusBadge(expense.status)}
+                </td>
+                <td className={styles.timestamp}>
+                  {format(expense.createdAt, 'yyyy/MM/dd HH:mm')}
+                </td>
+                <td className={styles.timestamp}>
+                  {format(expense.updatedAt, 'yyyy/MM/dd HH:mm')}
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={4} className="empty-text">{emptyMsg}</td>
+              <td colSpan={5} className="empty-text">{emptyMsg}</td>
             </tr>
           )}
         </tbody>
@@ -119,58 +128,32 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
         title="経費申請"
         basePath="/expense-apply"
       >
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px", marginTop: "20px" }}>
+        <div className={styles.addButtonContainer}>
           <Link 
             href="/expense-apply/edit?mode=new" 
-            className="list-add-button"
-            style={{ margin: 0, textDecoration: "none" }}
+            className={styles.addButton}
           >
             ＋ 新規経費申請
           </Link>
         </div>
 
         <div className="container" style={{ marginBottom: "20px" }}>
-          <h3 className="section-title"><i className="fa-solid fa-clock"></i> 審査待ち</h3>
+          <h3 className={styles.sectionTitle}><i className="fa-solid fa-clock"></i> 審査待ち</h3>
           {renderTable(pendingItems, "審査待ちの申請はありません🍀")}
         </div>
 
         <div className="container" style={{ marginBottom: "20px" }}>
-          <h3 className="section-title"><i className="fa-solid fa-circle-xmark"></i> 否認済み</h3>
-          <div style={{ fontSize: "0.85rem", color: "#666", marginBottom: "10px", padding: "0 10px" }}>
-            ※否認された申請は、詳細画面から編集して再申請することが可能です。
+          <h3 className={styles.sectionTitle}><i className="fa-solid fa-rotate-left"></i> 差し戻し</h3>
+          <div className={styles.rejectedNote}>
+            ※差し戻された申請は、詳細画面から内容を修正して再申請することが可能です。
           </div>
-          {renderTable(rejectedItems, "否認された申請はありません")}
+          {renderTable(rejectedItems, "差し戻された申請はありません")}
         </div>
 
         <div className="container" style={{ marginBottom: "20px" }}>
-          <h3 className="section-title"><i className="fa-solid fa-circle-check"></i> 承認済み</h3>
+          <h3 className={styles.sectionTitle}><i className="fa-solid fa-circle-check"></i> 承認済み</h3>
           {renderTable(approvedItems, "承認済みの申請はありません")}
         </div>
-
-        <style jsx>{`
-          .section-title {
-            font-size: 1.1rem;
-            margin-bottom: 12px;
-            color: #333;
-            border-left: 4px solid #4caf50;
-            padding-left: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-          }
-          .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-            color: #fff;
-          }
-          .pending { background: #999; }
-          .approved { background: #4caf50; }
-          .rejected { background: #f44336; }
-        `}</style>
       </ListBaseLayout>
     </BaseLayout>
   );

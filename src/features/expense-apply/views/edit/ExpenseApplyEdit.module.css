@@ -1,0 +1,73 @@
+.travelSection {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #dee2e6;
+}
+
+.travelTitle {
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+.exchangeContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 15px 0;
+  color: #1976d2;
+  font-weight: bold;
+}
+
+.exchangeLineRight {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(to right, transparent, #1976d2);
+}
+
+.exchangeLineLeft {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(to left, transparent, #1976d2);
+}
+
+.fileList {
+  list-style: none;
+  padding: 0;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  background: #f1f3f4;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+.fileName {
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  margin-right: 10px;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: #d93025;
+  cursor: pointer;
+}
+
+.fileUploadLabel {
+  composes: list-add-button from global;
+  display: inline-block;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+}

@@ -1,7 +1,10 @@
-import React from "react";
 import { 
   getExpenseApplyServer, 
-  getPrefecturesServer 
+  getPrefecturesServer,
+  getExpenseTypesServer,
+  getExpenseCategoriesServer,
+  getExpenseItemsServer,
+  getTravelConfigServer
 } from "@/src/features/expense-apply/api/expense-apply-server-actions";
 import { ExpenseApplyEditClient } from "@/src/features/expense-apply/views/edit/ExpenseApplyEditClient";
 
@@ -15,9 +18,20 @@ export default async function ExpenseEditPage({ searchParams }: Props) {
   const { mode, expenseId } = await searchParams;
   const isEdit = mode === "edit" || mode === "copy";
 
-  const [initialData, prefectures] = await Promise.all([
+  const [
+    initialData, 
+    prefectures,
+    masterTypes,
+    masterCategories,
+    masterItems,
+    travelConfig
+  ] = await Promise.all([
     isEdit && expenseId ? getExpenseApplyServer(expenseId) : Promise.resolve(null),
     getPrefecturesServer(),
+    getExpenseTypesServer(),
+    getExpenseCategoriesServer(),
+    getExpenseItemsServer(),
+    getTravelConfigServer()
   ]);
 
   return (
@@ -26,6 +40,10 @@ export default async function ExpenseEditPage({ searchParams }: Props) {
       expenseId={expenseId} 
       initialData={initialData} 
       prefectures={prefectures}
+      initialMasterTypes={masterTypes}
+      initialMasterCategories={masterCategories}
+      initialMasterItems={masterItems}
+      initialTravelConfig={travelConfig as any}
     />
   );
 }

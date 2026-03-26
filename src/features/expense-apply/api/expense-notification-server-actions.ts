@@ -115,7 +115,7 @@ export async function notifyExpenseApply(expenseId: string, action: 'create' | '
 /**
  * 経費審査に関する通知 (申請者宛)
  */
-export async function notifyExpenseReview(expenseId: string, status: 'approved' | 'rejected' | 'pending') {
+export async function notifyExpenseReview(expenseId: string, status: 'approved' | 'returned' | 'pending') {
   try {
     const nowStr = formatJstDateTime(new Date());
 
@@ -123,18 +123,36 @@ export async function notifyExpenseReview(expenseId: string, status: 'approved' 
     if (!doc.exists) return;
     const expenseData = doc.data() as ExpenseApply;
 
-    const statusLabel = status === 'approved' ? "承認されました ✅" : status === 'rejected' ? "否認されました ❌" : "審査待ち(pending)に戻りました ⏳";
-
     let text = `お疲れ様です！Streak Navi コンシェルジュです🍀\n`;
-    text += `経費の審査状況が更新されましたので、お知らせいたします✨\n\n`;
-    text += `【審査結果】\n`;
-    text += `状態: ${statusLabel}\n`;
-    text += `項目: ${expenseData.name}\n`;
-    text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
-    text += `審査日時: ${nowStr}\n`;
 
-    if (expenseData.adminComment) {
-      text += `\n▼ 会計担当からのメッセージ:\n${expenseData.adminComment}\n`;
+    if (status === 'approved') {
+      text += `経費申請が承認されました ✅\n\n`;
+      text += `【承認内容】\n`;
+      text += `項目: ${expenseData.name}\n`;
+      text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
+      text += `承認日時: ${nowStr}\n`;
+      if (expenseData.adminComment) {
+        text += `\n▼ 会計担当からのコメント:\n${expenseData.adminComment}\n`;
+      }
+    } else if (status === 'returned') {
+      text += `経費申請が差し戻しになりました 🔄\n`;
+      text += `内容を確認・修正のうえ、再申請をお願いします。\n\n`;
+      text += `【対象申請】\n`;
+      text += `項目: ${expenseData.name}\n`;
+      text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
+      text += `差し戻し日時: ${nowStr}\n`;
+      if (expenseData.adminComment) {
+        text += `\n▼ 差し戻し理由:\n${expenseData.adminComment}\n`;
+      }
+    } else {
+      // pending（審査待ちに戻す）= 管理者の操作ミス修正
+      text += `経費申請が審査中に戻されました ⏳\n\n`;
+      text += `【対象申請】\n`;
+      text += `項目: ${expenseData.name}\n`;
+      text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
+      if (expenseData.adminComment) {
+        text += `\n▼ コメント:\n${expenseData.adminComment}\n`;
+      }
     }
 
     text += `\n▼ 詳細はこちらからご確認いただけます\n`;

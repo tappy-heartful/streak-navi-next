@@ -104,6 +104,7 @@ export const saveExpenseApply = async (
       status: 'pending',
       actorId: uid,
       actorName,
+      createdAt: serverTimestamp(),
     });
 
     // 通知の送信
