@@ -61,7 +61,7 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
     switch (status) {
       case "approved": return <span className={`${styles.statusBadge} ${styles.approved}`}>承認済み</span>;
       case "returned": return <span className={`${styles.statusBadge} ${styles.rejected}`}>差し戻し</span>;
-      default: return <span className={`${styles.statusBadge} ${styles.pending}`}>審査中</span>;
+      default: return <span className={`${styles.statusBadge} ${styles.pending}`}>審査待ち</span>;
     }
   };
 

@@ -38,7 +38,7 @@ export function ExpenseApplyConfirmClient({
     switch (status) {
       case "approved": return { label: "承認済み ✅", color: "#4caf50", bg: "#e8f5e9" };
       case "returned": return { label: "差し戻し 🔄", color: "#f57c00", bg: "#fff3e0" };
-      default: return { label: "審査中 ⏳", color: "#ffa000", bg: "#fff8e1" };
+      default: return { label: "審査待ち ⏳", color: "#ffa000", bg: "#fff8e1" };
     }
   };
 

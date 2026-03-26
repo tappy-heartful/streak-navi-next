@@ -102,7 +102,7 @@ export function ExpenseHistoryList({ history }: Props) {
                 fontWeight: "bold",
                 color: h.status === 'approved' ? '#4caf50' : h.status === 'returned' ? '#f57c00' : '#ffa000'
               }}>
-                {h.status === 'approved' ? '承認' : h.status === 'returned' ? '差し戻し' : '審査中'}
+                {h.status === 'approved' ? '承認' : h.status === 'returned' ? '差し戻し' : '審査待ち'}
               </span>
             </div>
             

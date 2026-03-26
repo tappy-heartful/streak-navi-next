@@ -39,7 +39,7 @@ export function ExpenseReviewClient({
     switch (status) {
       case "approved": return { label: "承認済み", icon: "✅", color: "#4caf50", bg: "#e8f5e9" };
       case "returned": return { label: "差し戻し済み", icon: "🔄", color: "#f57c00", bg: "#fff3e0" };
-      default: return { label: "審査中", icon: "⏳", color: "#ffa000", bg: "#fff8e1" };
+      default: return { label: "審査待ち", icon: "⏳", color: "#ffa000", bg: "#fff8e1" };
     }
   };
 
