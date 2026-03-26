@@ -62,7 +62,7 @@ export function ExpenseHistoryList({ history }: Props) {
              height: "32px", 
              borderRadius: "50%", 
              background: "#fff", 
-             border: `2px solid ${h.status === 'approved' ? '#4caf50' : h.status === 'rejected' ? '#f44336' : '#2196f3'}`,
+             border: `2px solid ${h.status === 'approved' ? '#4caf50' : h.status === 'returned' ? '#f57c00' : '#2196f3'}`,
              display: "flex", 
              alignItems: "center", 
              justifyContent: "center", 
@@ -100,9 +100,9 @@ export function ExpenseHistoryList({ history }: Props) {
               <span style={{ 
                 fontSize: "0.75rem", 
                 fontWeight: "bold",
-                color: h.status === 'approved' ? '#4caf50' : h.status === 'rejected' ? '#f44336' : '#ffa000'
+                color: h.status === 'approved' ? '#4caf50' : h.status === 'returned' ? '#f57c00' : '#ffa000'
               }}>
-                {h.status === 'approved' ? '承認' : h.status === 'rejected' ? '否認' : '審査待'}
+                {h.status === 'approved' ? '承認' : h.status === 'returned' ? '差し戻し' : '審査中'}
               </span>
             </div>
             

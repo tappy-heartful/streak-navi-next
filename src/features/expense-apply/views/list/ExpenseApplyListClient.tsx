@@ -60,14 +60,14 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
   const getStatusBadge = (status: ExpenseApply['status']) => {
     switch (status) {
       case "approved": return <span className={`${styles.statusBadge} ${styles.approved}`}>承認済み</span>;
-      case "rejected": return <span className={`${styles.statusBadge} ${styles.rejected}`}>否認</span>;
+      case "returned": return <span className={`${styles.statusBadge} ${styles.rejected}`}>差し戻し</span>;
       default: return <span className={`${styles.statusBadge} ${styles.pending}`}>審査中</span>;
     }
   };
 
   const pendingItems = expenses.filter(e => e.status === 'pending');
   const approvedItems = expenses.filter(e => e.status === 'approved');
-  const rejectedItems = expenses.filter(e => e.status === 'rejected');
+  const rejectedItems = expenses.filter(e => e.status === 'returned');
 
   const renderTable = (items: ExpenseApply[], emptyMsg: string) => (
     <div className="table-wrapper">
@@ -143,11 +143,11 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
         </div>
 
         <div className="container" style={{ marginBottom: "20px" }}>
-          <h3 className={styles.sectionTitle}><i className="fa-solid fa-circle-xmark"></i> 否認済み</h3>
+          <h3 className={styles.sectionTitle}><i className="fa-solid fa-rotate-left"></i> 差し戻し</h3>
           <div className={styles.rejectedNote}>
-            ※否認された申請は、詳細画面から編集して再申請することが可能です。
+            ※差し戻された申請は、詳細画面から内容を修正して再申請することが可能です。
           </div>
-          {renderTable(rejectedItems, "否認された申請はありません")}
+          {renderTable(rejectedItems, "差し戻された申請はありません")}
         </div>
 
         <div className="container" style={{ marginBottom: "20px" }}>

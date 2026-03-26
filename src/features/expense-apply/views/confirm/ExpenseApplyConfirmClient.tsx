@@ -30,14 +30,14 @@ export function ExpenseApplyConfirmClient({
 }: Props) {
   const { user } = useAuth();
   
-  // 自分自身の申請であれば編集・削除が可能 (審査中または否認済みのみ)
+  // 自分自身の申請であれば編集・削除が可能 (審査中または差し戻しのみ)
   const isOwn = user?.uid === initialData.uid;
-  const canModify = isOwn && (initialData.status === "pending" || initialData.status === "rejected");
+  const canModify = isOwn && (initialData.status === "pending" || initialData.status === "returned");
 
   const getStatusInfo = (status: ExpenseApply['status']) => {
     switch (status) {
       case "approved": return { label: "承認済み ✅", color: "#4caf50", bg: "#e8f5e9" };
-      case "rejected": return { label: "否認 ❌", color: "#f44336", bg: "#ffebee" };
+      case "returned": return { label: "差し戻し 🔄", color: "#f57c00", bg: "#fff3e0" };
       default: return { label: "審査中 ⏳", color: "#ffa000", bg: "#fff8e1" };
     }
   };

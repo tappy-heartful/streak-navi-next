@@ -446,8 +446,8 @@ export interface ExpenseApply {
   name: string;
   amount: number;
   date: string; // yyyy.MM.dd
-  status: 'pending' | 'approved' | 'rejected';
-  
+  status: 'pending' | 'approved' | 'returned';
+
   // 旅費の場合のみ使用
   isTravel?: boolean;
   departurePrefectureId?: string;
@@ -468,7 +468,7 @@ export interface ExpenseApply {
 export interface ExpenseApplyHistory {
   id: string;
   type: 'created' | 'updated' | 'reviewed' | 'commented';
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'returned';
   comment?: string;
   actorId: string;
   actorName: string;

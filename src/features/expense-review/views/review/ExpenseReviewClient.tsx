@@ -38,7 +38,7 @@ export function ExpenseReviewClient({
   const getStatusInfo = (status: ExpenseApply['status']) => {
     switch (status) {
       case "approved": return { label: "承認済み", icon: "✅", color: "#4caf50", bg: "#e8f5e9" };
-      case "rejected": return { label: "否認済み", icon: "❌", color: "#f44336", bg: "#ffebee" };
+      case "returned": return { label: "差し戻し済み", icon: "🔄", color: "#f57c00", bg: "#fff3e0" };
       default: return { label: "審査中", icon: "⏳", color: "#ffa000", bg: "#fff8e1" };
     }
   };
@@ -46,10 +46,10 @@ export function ExpenseReviewClient({
   const statusInfo = getStatusInfo(initialData.status);
 
 
-  const handleProcess = async (status: 'approved' | 'rejected') => {
-    const action = status === 'approved' ? "承認" : "拒否";
+  const handleProcess = async (status: 'approved' | 'returned') => {
+    const action = status === 'approved' ? "承認" : "差し戻し";
     const comment = await showDialog(
-      `申請を${action}します。\nコメントを${status === 'rejected' ? '必ず' : '任意で'}入力してください:\n※本操作は申請者にLINEで通知されます。`,
+      `申請を${action}します。\nコメントを${status === 'returned' ? '必ず' : '任意で'}入力してください:\n※本操作は申請者にLINEで通知されます。`,
       false,
       true
     );
@@ -57,8 +57,8 @@ export function ExpenseReviewClient({
     if (comment === null) return; // キャンセル
     const commentStr = typeof comment === 'string' ? comment : "";
 
-    if (status === 'rejected' && !commentStr.trim()) {
-      await showDialog("拒否の際はコメントが必須です", true);
+    if (status === 'returned' && !commentStr.trim()) {
+      await showDialog("差し戻しの際はコメントが必須です", true);
       return;
     }
 
@@ -204,19 +204,19 @@ export function ExpenseReviewClient({
               承認する
             </button>
             <button
-              onClick={() => handleProcess('rejected')}
+              onClick={() => handleProcess('returned')}
               className={styles.rejectBtn}
-              disabled={initialData.status === 'rejected'}
+              disabled={initialData.status === 'returned'}
             >
-              <i className={`fas fa-times-circle ${styles.btnIcon}`}></i>
-              否認する
+              <i className={`fas fa-undo ${styles.btnIcon}`}></i>
+              差し戻す
             </button>
             {initialData.status !== 'pending' && (
               <button
                 onClick={handleUndo}
                 className={styles.undoBtn}
               >
-                <i className={`fas fa-undo ${styles.btnIcon}`}></i>
+                <i className={`fas fa-rotate-left ${styles.btnIcon}`}></i>
                 審査待ちに戻す
               </button>
             )}
