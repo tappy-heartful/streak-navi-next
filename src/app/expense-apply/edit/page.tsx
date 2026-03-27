@@ -1,10 +1,11 @@
-import { 
-  getExpenseApplyServer, 
+import {
+  getExpenseApplyServer,
   getPrefecturesServer,
   getExpenseTypesServer,
   getExpenseCategoriesServer,
   getExpenseItemsServer,
-  getTravelConfigServer
+  getTravelConfigServer,
+  getPastEventsServer,
 } from "@/src/features/expense-apply/api/expense-apply-server-actions";
 import { ExpenseApplyEditClient } from "@/src/features/expense-apply/views/edit/ExpenseApplyEditClient";
 
@@ -19,31 +20,34 @@ export default async function ExpenseEditPage({ searchParams }: Props) {
   const isEdit = mode === "edit" || mode === "copy";
 
   const [
-    initialData, 
+    initialData,
     prefectures,
     masterTypes,
     masterCategories,
     masterItems,
-    travelConfig
+    travelConfig,
+    pastEvents,
   ] = await Promise.all([
     isEdit && expenseId ? getExpenseApplyServer(expenseId) : Promise.resolve(null),
     getPrefecturesServer(),
     getExpenseTypesServer(),
     getExpenseCategoriesServer(),
     getExpenseItemsServer(),
-    getTravelConfigServer()
+    getTravelConfigServer(),
+    getPastEventsServer(),
   ]);
 
   return (
-    <ExpenseApplyEditClient 
-      mode={(mode as any) || "new"} 
-      expenseId={expenseId} 
-      initialData={initialData} 
+    <ExpenseApplyEditClient
+      mode={(mode as any) || "new"}
+      expenseId={expenseId}
+      initialData={initialData}
       prefectures={prefectures}
       initialMasterTypes={masterTypes}
       initialMasterCategories={masterCategories}
       initialMasterItems={masterItems}
       initialTravelConfig={travelConfig as any}
+      pastEvents={pastEvents}
     />
   );
 }
