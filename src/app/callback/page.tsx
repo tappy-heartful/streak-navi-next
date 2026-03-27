@@ -5,49 +5,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { auth, db } from "@/src/lib/firebase";
 import { signInWithCustomToken } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { hideSpinner, setSession, showDialog } from "@/src/lib/functions";
-
-const MESSAGES = [
-  "チューニングしています...",
-  "譜面を整理しています...",
-  "次のイベントを調べています...",
-  "楽器を組み立てています...",
-  "メンバーを呼んでいます...",
-  "リハーサルの準備中です...",
-  "会場を設営しています...",
-  "セットリストを確認しています...",
-  "ソロの順番を相談しています...",
-  "メトロノームと戦っています...",
-  "スウィング感を調整しています...",
-  "譜面台を並べています...",
-  "衣装のネクタイを締めています...",
-  "リードの調子を確認しています...",
-  "マイクチェック中... 1, 2...",
-  "アドリブを練っています...",
-  "ダイナミクスを意識しています...",
-  "音出し禁止時間を守っています...",
-  "マウスピースを洗浄しています...",
-  "ロングトーンで集中しています...",
-  "打ち上げの場所を検討しています...",
-  "譜面の書き込みを消しています...",
-  "ピッチを合わせています...",
-  "前打ちと後打ちを確認しています...",
-  "ドラムのセッティングを調整中です...",
-  "管楽器の水分を抜いています...",
-  "本番前の気合入れをしています...",
-  "カウントを出しています...",
-];
+import { hideSpinner, setSession, showDialog, LOADING_MESSAGES } from "@/src/lib/functions";
 
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasCalled = useRef(false); // 二重実行防止フラグ
-  const [message, setMessage] = useState(MESSAGES[0]);
+  const [message, setMessage] = useState(LOADING_MESSAGES[0]);
 
   // メッセージのランダムローテーション
   useEffect(() => {
     const interval = setInterval(() => {
-      setMessage(MESSAGES[Math.floor(Math.random() * MESSAGES.length)]);
+      setMessage(LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)]);
     }, 1000);
     return () => clearInterval(interval);
   }, []);
