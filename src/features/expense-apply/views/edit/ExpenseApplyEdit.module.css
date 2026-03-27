@@ -67,7 +67,14 @@
 .fileUploadLabel {
   composes: list-add-button from global;
   display: inline-block;
+  width: auto;
   cursor: pointer;
   font-size: 0.85rem;
   padding: 8px 16px;
+}
+
+.fileUploadWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
 }

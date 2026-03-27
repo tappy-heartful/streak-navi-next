@@ -195,22 +195,24 @@ export function ExpenseReviewClient({
             ※審査アクションを実行すると、申請者本人にLINEで通知が送信されます。
           </div>
           <div className={styles.buttonGroup}>
-            <button
-              onClick={() => handleProcess('approved')}
-              className={styles.approveBtn}
-              disabled={initialData.status === 'approved'}
-            >
-              <i className={`fas fa-check-circle ${styles.btnIcon}`}></i>
-              承認する
-            </button>
-            <button
-              onClick={() => handleProcess('returned')}
-              className={styles.rejectBtn}
-              disabled={initialData.status === 'returned'}
-            >
-              <i className={`fas fa-undo ${styles.btnIcon}`}></i>
-              差し戻す
-            </button>
+            {initialData.status !== 'approved' && (
+              <button
+                onClick={() => handleProcess('approved')}
+                className={styles.approveBtn}
+              >
+                <i className={`fas fa-check-circle ${styles.btnIcon}`}></i>
+                承認する
+              </button>
+            )}
+            {initialData.status !== 'returned' && (
+              <button
+                onClick={() => handleProcess('returned')}
+                className={styles.rejectBtn}
+              >
+                <i className={`fas fa-undo ${styles.btnIcon}`}></i>
+                差し戻す
+              </button>
+            )}
             {initialData.status !== 'pending' && (
               <button
                 onClick={handleUndo}

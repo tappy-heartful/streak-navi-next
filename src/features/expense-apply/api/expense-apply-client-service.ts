@@ -2,14 +2,15 @@
 
 import { db } from "@/src/lib/firebase";
 import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  doc, 
-  deleteDoc, 
-  getDocs, 
-  query, 
-  where, 
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  deleteDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
   serverTimestamp,
   getDoc
 } from "firebase/firestore";
@@ -40,19 +41,19 @@ export const calculateTravelSubsidyClient = async (
 
 /** 経費種別一覧を取得 */
 export const getExpenseTypesClient = async (): Promise<ExpenseType[]> => {
-  const snap = await getDocs(collection(db, "expenseTypes"));
+  const snap = await getDocs(query(collection(db, "expenseTypes"), orderBy("order")));
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseType[];
 };
 
 /** 経費区分一覧を取得 */
 export const getExpenseCategoriesClient = async (): Promise<ExpenseCategory[]> => {
-  const snap = await getDocs(collection(db, "expenseCategories"));
+  const snap = await getDocs(query(collection(db, "expenseCategories"), orderBy("order")));
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseCategory[];
 };
 
 /** 経費項目一覧を取得 */
 export const getExpenseItemsClient = async (): Promise<ExpenseItem[]> => {
-  const snap = await getDocs(collection(db, "expenseItems"));
+  const snap = await getDocs(query(collection(db, "expenseItems"), orderBy("order")));
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseItem[];
 };
 

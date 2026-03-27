@@ -8,9 +8,9 @@ import { AppInput } from "@/src/components/Form/AppInput";
 import { FormField } from "@/src/components/Form/FormField";
 import { useAppForm } from "@/src/hooks/useAppForm";
 import { rules } from "@/src/lib/validation";
-import { 
-  saveExpenseApply, 
-  getMunicipalitiesClient, 
+import {
+  saveExpenseApply,
+  getMunicipalitiesClient,
   getExpenseTypesClient,
   getExpenseCategoriesClient,
   getExpenseItemsClient,
@@ -37,10 +37,10 @@ type Props = {
   initialTravelConfig: { arrivalPoints: any[], departurePoints: any[] };
 };
 
-export function ExpenseApplyEditClient({ 
-  mode, 
-  expenseId, 
-  initialData, 
+export function ExpenseApplyEditClient({
+  mode,
+  expenseId,
+  initialData,
   prefectures,
   initialMasterTypes,
   initialMasterCategories,
@@ -132,7 +132,7 @@ export function ExpenseApplyEditClient({
     const fetch = async () => {
       const muns = await getMunicipalitiesClient(form.formData.arrivalPrefectureId);
       // 到着地制限: travelConfig.arrivalPoints に含まれるもののみ
-      const filtered = muns.filter(m => 
+      const filtered = muns.filter(m =>
         travelConfig.arrivalPoints.some(p => p.prefectureId === form.formData.arrivalPrefectureId && p.municipalityId === m.id)
       );
       setArrivalMuns(filtered);
@@ -146,7 +146,7 @@ export function ExpenseApplyEditClient({
   }, [form.formData.arrivalPrefectureId, travelConfig.arrivalPoints, mode, form.formData.arrivalMunicipalityId]);
 
   // 到着地の都道府県リストを制限
-  const arrivalPrefectures = prefectures.filter(p => 
+  const arrivalPrefectures = prefectures.filter(p =>
     travelConfig.arrivalPoints.some(pt => pt.prefectureId === p.id)
   );
 
@@ -166,12 +166,10 @@ export function ExpenseApplyEditClient({
     if (isTravel && form.formData.departureMunicipalityId && form.formData.arrivalMunicipalityId) {
       const fetchSubsidy = async () => {
         const amount = await getTravelSubsidyAmountClient(
-          form.formData.departureMunicipalityId, 
+          form.formData.departureMunicipalityId,
           form.formData.arrivalMunicipalityId
         );
-        if (amount !== null) {
-          form.updateField("amount", amount);
-        }
+        form.updateField("amount", amount ?? 0);
 
         // 経費名の自動設定
         const depMunName = departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || "";
@@ -190,12 +188,13 @@ export function ExpenseApplyEditClient({
 
     showSpinner();
     try {
-      const compressed = await compressImage(file);
+      const isPdf = file.type === "application/pdf";
+      const uploadFile = isPdf ? file : await compressImage(file);
       const timestamp = new Date().getTime();
       const storagePath = `expenses/attachments/${timestamp}_${file.name}`;
       const storageRef = ref(storage, storagePath);
-      
-      const snapshot = await uploadBytes(storageRef, compressed);
+
+      const snapshot = await uploadBytes(storageRef, uploadFile);
       const url = await getDownloadURL(snapshot.ref);
 
       setFiles(prev => [...prev, { name: file.name, url, path: storagePath }]);
@@ -250,8 +249,8 @@ export function ExpenseApplyEditClient({
         overrideAdmin={true}
       >
         <FormField label="経費種別" error={form.errors.typeId} required={true}>
-          <select 
-            value={form.formData.typeId} 
+          <select
+            value={form.formData.typeId}
             onChange={(e) => {
               form.updateField("typeId", e.target.value);
             }}
@@ -266,8 +265,8 @@ export function ExpenseApplyEditClient({
 
         {form.formData.typeId && (
           <FormField label="経費区分" error={form.errors.categoryId} required={true}>
-            <select 
-              value={form.formData.categoryId} 
+            <select
+              value={form.formData.categoryId}
               onChange={(e) => form.updateField("categoryId", e.target.value)}
               className="form-control"
             >
@@ -281,8 +280,8 @@ export function ExpenseApplyEditClient({
 
         {form.formData.categoryId && (
           <FormField label="経費項目" error={form.errors.itemId} required={true}>
-            <select 
-              value={form.formData.itemId} 
+            <select
+              value={form.formData.itemId}
               onChange={(e) => {
                 form.updateField("itemId", e.target.value);
                 const item = currentItems.find(i => i.id === e.target.value);
@@ -302,10 +301,10 @@ export function ExpenseApplyEditClient({
         {isTravel && (
           <div className={styles.travelSection}>
             <h3 className={styles.travelTitle}>旅費詳細</h3>
-            
+
             <FormField label="出発地 (都道府県)" error={form.errors.departurePrefectureId} required={true}>
-              <select 
-                value={form.formData.departurePrefectureId} 
+              <select
+                value={form.formData.departurePrefectureId}
                 onChange={(e) => form.updateField("departurePrefectureId", e.target.value)}
                 className="form-control"
               >
@@ -317,8 +316,8 @@ export function ExpenseApplyEditClient({
             </FormField>
 
             <FormField label="出発地 (市区町村)" error={form.errors.departureMunicipalityId} required={true}>
-              <select 
-                value={form.formData.departureMunicipalityId} 
+              <select
+                value={form.formData.departureMunicipalityId}
                 onChange={(e) => form.updateField("departureMunicipalityId", e.target.value)}
                 className="form-control"
                 disabled={!form.formData.departurePrefectureId}
@@ -338,8 +337,8 @@ export function ExpenseApplyEditClient({
             </div>
 
             <FormField label="到着地 (都道府県)" error={form.errors.arrivalPrefectureId} required={true}>
-              <select 
-                value={form.formData.arrivalPrefectureId} 
+              <select
+                value={form.formData.arrivalPrefectureId}
                 onChange={(e) => form.updateField("arrivalPrefectureId", e.target.value)}
                 className="form-control"
               >
@@ -351,8 +350,8 @@ export function ExpenseApplyEditClient({
             </FormField>
 
             <FormField label="到着地 (市区町村)" error={form.errors.arrivalMunicipalityId} required={true}>
-              <select 
-                value={form.formData.arrivalMunicipalityId} 
+              <select
+                value={form.formData.arrivalMunicipalityId}
                 onChange={(e) => form.updateField("arrivalMunicipalityId", e.target.value)}
                 className="form-control"
                 disabled={!form.formData.arrivalPrefectureId}
@@ -363,7 +362,7 @@ export function ExpenseApplyEditClient({
                 ))}
               </select>
             </FormField>
-            
+
             {(form.formData.departureMunicipalityId && form.formData.arrivalMunicipalityId) && (
               <TravelRouteMap
                 departurePrefecture={prefectures.find(p => p.id === form.formData.departurePrefectureId)?.name}
@@ -378,7 +377,7 @@ export function ExpenseApplyEditClient({
         )}
 
         {!isTravel && (
-          <AppInput 
+          <AppInput
             label="項目名"
             field="name"
             value={form.formData.name}
@@ -389,7 +388,7 @@ export function ExpenseApplyEditClient({
           />
         )}
 
-        <AppInput 
+        <AppInput
           label="金額 (税込)"
           field="amount"
           value={form.formData.amount}
@@ -401,7 +400,7 @@ export function ExpenseApplyEditClient({
           disabled={isTravel}
         />
 
-        <AppInput 
+        <AppInput
           label="発生日"
           field="date"
           value={form.formData.date}
@@ -412,13 +411,13 @@ export function ExpenseApplyEditClient({
         />
 
         <FormField label="添付ファイル (領収書など)">
-          <div style={{ marginBottom: "10px" }}>
-            <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: "none" }} id="file-upload" />
+          <div className={styles.fileUploadWrapper}>
+            <input type="file" accept="image/*,application/pdf" onChange={handleFileUpload} style={{ display: "none" }} id="file-upload" />
             <label htmlFor="file-upload" className={styles.fileUploadLabel}>
-              画像をアップロード
+              画像・PDFを追加
             </label>
           </div>
-          
+
           <ul className={styles.fileList}>
             {files.map((file, i) => (
               <li key={i} className={styles.fileItem}>
