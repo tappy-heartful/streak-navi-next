@@ -169,9 +169,7 @@ export function ExpenseApplyEditClient({
           form.formData.departureMunicipalityId, 
           form.formData.arrivalMunicipalityId
         );
-        if (amount !== null) {
-          form.updateField("amount", amount);
-        }
+        form.updateField("amount", amount ?? 0);
 
         // 経費名の自動設定
         const depMunName = departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || "";
