@@ -3,6 +3,17 @@ import { adminDb } from "@/src/lib/firebase-admin";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 import { ExpenseApply, Prefecture, TravelSubsidy, ExpenseApplyHistory, ExpenseType, ExpenseCategory, ExpenseItem } from "@/src/lib/firestore/types";
 
+/** 今日以前のイベント一覧を日付降順で取得 */
+export async function getPastEventsServer(): Promise<{ id: string; title: string; date: string }[]> {
+  const today = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Tokyo" })
+    .replace(/\//g, ".");
+  const snap = await adminDb.collection("events")
+    .where("date", "<=", today)
+    .orderBy("date", "desc")
+    .get();
+  return snap.docs.map(d => ({ id: d.id, title: d.data().title as string, date: d.data().date as string }));
+}
+
 /** 経費種別マスタを取得 */
 export async function getExpenseTypesServer(): Promise<ExpenseType[]> {
   const snap = await adminDb.collection("expenseTypes").orderBy("__name__", "asc").get();

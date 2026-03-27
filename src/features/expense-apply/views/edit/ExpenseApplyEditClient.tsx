@@ -35,6 +35,7 @@ type Props = {
   initialMasterCategories: ExpenseCategory[];
   initialMasterItems: ExpenseItem[];
   initialTravelConfig: { arrivalPoints: any[], departurePoints: any[] };
+  pastEvents: { id: string; title: string; date: string }[];
 };
 
 export function ExpenseApplyEditClient({
@@ -45,7 +46,8 @@ export function ExpenseApplyEditClient({
   initialMasterTypes,
   initialMasterCategories,
   initialMasterItems,
-  initialTravelConfig
+  initialTravelConfig,
+  pastEvents,
 }: Props) {
   const { user, userData } = useAuth();
   const [files, setFiles] = useState<{ name: string; url: string; path: string }[]>(
@@ -74,6 +76,7 @@ export function ExpenseApplyEditClient({
       arrivalPrefectureId: initialData?.arrivalPrefectureId || "",
       arrivalMunicipalityId: initialData?.arrivalMunicipalityId || "",
       isTravel: initialData?.isTravel || false,
+      eventId: initialData?.eventId || "",
     },
     {
       typeId: [rules.required],
@@ -81,11 +84,12 @@ export function ExpenseApplyEditClient({
       itemId: [rules.required],
       name: [(v, data) => !data.isTravel && !v ? "項目名を入力してください" : true],
       amount: [rules.required, (v) => Number(v) > 0 || "1円以上の金額を入力してください"],
-      date: [rules.required],
+      date: [(v, data) => data.isTravel ? true : (rules.required(v) === true ? true : "発生日を入力してください")],
       departurePrefectureId: [(v, data) => data.isTravel && !v ? "出発県を選択してください" : true],
       departureMunicipalityId: [(v, data) => data.isTravel && !v ? "出発市区町村を選択してください" : true],
       arrivalPrefectureId: [(v, data) => data.isTravel && !v ? "到着県を選択してください" : true],
       arrivalMunicipalityId: [(v, data) => data.isTravel && !v ? "到着市区町村を選択してください" : true],
+      eventId: [(v, data) => data.isTravel && !v ? "イベントを選択してください" : true],
     }
   );
 
@@ -225,13 +229,16 @@ export function ExpenseApplyEditClient({
 
   const onSaveApi = async (data: typeof form.formData) => {
     const itemName = masterItems.find(i => i.id === data.itemId)?.name || "";
+    const selectedEvent = pastEvents.find(e => e.id === data.eventId);
 
     const payload: ExpenseApplyFormData = {
       ...data,
       category: itemName,
-      date: hyphenDateToDot(data.date),
+      date: isTravel && selectedEvent ? selectedEvent.date : hyphenDateToDot(data.date),
       files,
       isTravel: isTravel,
+      eventId: isTravel ? (data.eventId || "") : "",
+      eventTitle: isTravel ? (selectedEvent?.title || "") : "",
     };
     return saveExpenseApply(mode, payload, userData?.displayName || "不明", expenseId);
   };
@@ -293,6 +300,21 @@ export function ExpenseApplyEditClient({
               <option value="">選択してください</option>
               {currentItems.map(i => (
                 <option key={i.id} value={i.id}>{i.name}</option>
+              ))}
+            </select>
+          </FormField>
+        )}
+
+        {isTravel && (
+          <FormField label="対象イベント" error={form.errors.eventId} required={true}>
+            <select
+              value={form.formData.eventId}
+              onChange={(e) => form.updateField("eventId", e.target.value)}
+              className="form-control"
+            >
+              <option value="">選択してください</option>
+              {pastEvents.map(e => (
+                <option key={e.id} value={e.id}>{e.date} {e.title}</option>
               ))}
             </select>
           </FormField>
@@ -384,7 +406,7 @@ export function ExpenseApplyEditClient({
             updateField={form.updateField}
             error={form.errors.name}
             required={true}
-            placeholder="例: マウス、会場費など"
+            placeholder="例: 練習会場費、譜面代など"
           />
         )}
 
@@ -400,15 +422,17 @@ export function ExpenseApplyEditClient({
           disabled={isTravel}
         />
 
-        <AppInput
-          label="発生日"
-          field="date"
-          value={form.formData.date}
-          updateField={form.updateField}
-          error={form.errors.date}
-          type="date"
-          required={true}
-        />
+        {!isTravel && (
+          <AppInput
+            label="発生日"
+            field="date"
+            value={form.formData.date}
+            updateField={form.updateField}
+            error={form.errors.date}
+            type="date"
+            required={true}
+          />
+        )}
 
         <FormField label="添付ファイル (領収書など)">
           <div className={styles.fileUploadWrapper}>

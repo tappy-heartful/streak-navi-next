@@ -450,11 +450,13 @@ export interface ExpenseApply {
 
   // 旅費の場合のみ使用
   isTravel?: boolean;
+  eventId?: string;
+  eventTitle?: string;
   departurePrefectureId?: string;
   departureMunicipalityId?: string;
   arrivalPrefectureId?: string;
   arrivalMunicipalityId?: string;
-  
+
   files?: { name: string; url: string; path: string }[];
   adminComment?: string;
   reviewerId?: string;      // 審査者UID
@@ -484,6 +486,8 @@ export interface ExpenseApplyFormData {
   amount: number;
   date: string;
   isTravel?: boolean;
+  eventId?: string;
+  eventTitle?: string;
   departurePrefectureId?: string;
   departureMunicipalityId?: string;
   arrivalPrefectureId?: string;

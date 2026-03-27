@@ -64,6 +64,9 @@ export async function notifyExpenseApply(expenseId: string, action: 'create' | '
       text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
       text += `日付: ${expenseData.date}\n`;
       text += `種別: ${expenseData.category || "不明"}\n`;
+      if (expenseData.isTravel && expenseData.eventTitle) {
+        text += `対象イベント: ${expenseData.eventTitle}\n`;
+      }
 
       if (expenseData.isTravel) {
         const munIds = [];
@@ -141,7 +144,7 @@ export async function notifyExpenseReview(expenseId: string, status: 'approved' 
       }
     } else {
       // pending（審査待ちに戻す）= 管理者の操作ミス修正
-      text += `経費申請が審査中に戻されました ⏳\n\n`;
+      text += `経費申請が審査待ちに戻されました ⏳\n\n`;
       text += `【対象申請】\n`;
       text += `項目: ${expenseData.name}\n`;
       text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;

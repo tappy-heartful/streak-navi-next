@@ -58,7 +58,7 @@ export function clearAllAppSession() {
 }
 
 // --- スピナー制御 (jQueryを使わず実装) ---
-const SPINNER_MESSAGES = [
+export const LOADING_MESSAGES = [
   "チューニングしています...",
   "譜面を整理しています...",
   "次のイベントを調べています...",
@@ -87,6 +87,29 @@ const SPINNER_MESSAGES = [
   "管楽器の水分を抜いています...",
   "本番前の気合入れをしています...",
   "カウントを出しています...",
+  "バンドスコアを読み解いています...",
+  "4ビートを刻んでいます...",
+  "サブトーンを磨いています...",
+  "ビブラートをかけています...",
+  "ハーモニーを確認しています...",
+  "テンポキープを練習中です...",
+  "リズムセクションを整えています...",
+  "トランペットのベルを磨いています...",
+  "サックスのリガチャーを締めています...",
+  "トロンボーンのスライドを伸ばしています...",
+  "バリトンサックスを構えています...",
+  "コードチェンジを確認しています...",
+  "フレーズの山を探しています...",
+  "打ち上げのメニューを考えています...",
+  "次回の練習日程を調整しています...",
+  "ステージ衣装にアイロンをかけています...",
+  "本番のMCを考えています...",
+  "照明担当と打ち合わせ中です...",
+  "グルーヴを感じています...",
+  "コンサートのポスターをデザインしています...",
+  "ソロを耳コピしています...",
+  "アンサンブルで通じ合っています...",
+  "バンドリーダーを待っています...",
 ];
 
 let spinnerInterval: ReturnType<typeof setInterval> | null = null;
@@ -105,7 +128,7 @@ export function showSpinner() {
           <i class="fa-solid fa-guitar note"></i>
           <i class="fa-solid fa-drum note"></i>
         </div>
-        <p class="loading-message" id="spinner-message">${SPINNER_MESSAGES[0]}</p>
+        <p class="loading-message" id="spinner-message">${LOADING_MESSAGES[0]}</p>
       </div>
     `;
     document.body.appendChild(overlay);
@@ -115,7 +138,7 @@ export function showSpinner() {
   if (spinnerInterval) clearInterval(spinnerInterval);
   spinnerInterval = setInterval(() => {
     const el = document.getElementById('spinner-message');
-    if (el) el.textContent = SPINNER_MESSAGES[Math.floor(Math.random() * SPINNER_MESSAGES.length)];
+    if (el) el.textContent = LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)];
   }, 1000);
 }
 
