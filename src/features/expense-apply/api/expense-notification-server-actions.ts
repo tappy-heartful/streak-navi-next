@@ -89,19 +89,14 @@ export async function notifyExpenseApply(expenseId: string, action: 'create' | '
       text += `${BASE_URL}/expense-apply/confirm?expenseId=${expenseId}`;
     }
 
-    const messages: any[] = [{ type: "text", text }];
-
     if (expenseData.files && expenseData.files.length > 0) {
-      expenseData.files.slice(0, 4).forEach(file => {
-        if (file.url.match(/\.(jpeg|jpg|png|gif)/i) || file.url.includes("image")) {
-          messages.push({
-            type: "image",
-            originalContentUrl: file.url,
-            previewImageUrl: file.url
-          });
-        }
+      text += `\n\n▼ 添付ファイル:\n`;
+      expenseData.files.forEach(file => {
+        text += `・${file.name}\n${file.url}\n\n`;
       });
     }
+
+    const messages: any[] = [{ type: "text", text }];
 
     const lineDoc = await adminDb.collection("lineMessagingIds").doc(expenseData.uid).get();
     if (lineDoc.exists && lineDoc.data()?.lineUid) {

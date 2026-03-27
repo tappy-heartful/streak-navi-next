@@ -188,12 +188,13 @@ export function ExpenseApplyEditClient({
 
     showSpinner();
     try {
-      const compressed = await compressImage(file);
+      const isPdf = file.type === "application/pdf";
+      const uploadFile = isPdf ? file : await compressImage(file);
       const timestamp = new Date().getTime();
       const storagePath = `expenses/attachments/${timestamp}_${file.name}`;
       const storageRef = ref(storage, storagePath);
-      
-      const snapshot = await uploadBytes(storageRef, compressed);
+
+      const snapshot = await uploadBytes(storageRef, uploadFile);
       const url = await getDownloadURL(snapshot.ref);
 
       setFiles(prev => [...prev, { name: file.name, url, path: storagePath }]);
@@ -411,9 +412,9 @@ export function ExpenseApplyEditClient({
 
         <FormField label="添付ファイル (領収書など)">
           <div style={{ marginBottom: "10px" }}>
-            <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: "none" }} id="file-upload" />
+            <input type="file" accept="image/*,application/pdf" onChange={handleFileUpload} style={{ display: "none" }} id="file-upload" />
             <label htmlFor="file-upload" className={styles.fileUploadLabel}>
-              画像をアップロード
+              画像・PDFをアップロード
             </label>
           </div>
           
