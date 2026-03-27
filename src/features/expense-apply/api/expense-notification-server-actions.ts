@@ -118,7 +118,7 @@ export async function notifyExpenseReview(expenseId: string, status: 'approved' 
     if (!doc.exists) return;
     const expenseData = doc.data() as ExpenseApply;
 
-    let text = `お疲れ様です！Streak Navi コンシェルジュです🍀\n`;
+    let text = `お疲れ様です！Streak Navi コンシェルジュです🍀\n\n`;
 
     if (status === 'approved') {
       text += `経費申請が承認されました ✅\n\n`;
@@ -131,7 +131,7 @@ export async function notifyExpenseReview(expenseId: string, status: 'approved' 
       }
     } else if (status === 'returned') {
       text += `経費申請が差し戻しになりました 🔄\n`;
-      text += `内容を確認・修正のうえ、再申請をお願いします。\n\n`;
+      text += `内容を確認・修正のうえ、再申請をお願いします🙇\n\n`;
       text += `【対象申請】\n`;
       text += `項目: ${expenseData.name}\n`;
       text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
