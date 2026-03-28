@@ -290,6 +290,7 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
     <BaseLayout>
       <ConfirmLayout
         name="ライブ"
+        icon="fa fa-music"
         basePath="/live"
         dataId={liveId}
         featureIdKey="liveId"

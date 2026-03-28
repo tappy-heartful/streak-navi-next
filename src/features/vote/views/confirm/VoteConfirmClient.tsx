@@ -156,6 +156,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
     <BaseLayout>
       <AnswerConfirmLayout
         name="投票"
+        icon="fas fa-vote-yea"
         basePath="/vote"
         dataId={voteId}
         featureIdKey="voteId"

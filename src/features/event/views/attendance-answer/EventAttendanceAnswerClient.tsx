@@ -66,6 +66,7 @@ export function EventAttendanceAnswerClient({ eventId, event, attendanceStatuses
     <BaseLayout>
       <AnswerEditLayout
         featureName="イベント"
+        icon="fa-solid fa-calendar-days"
         basePath="/event"
         featureIdKey="eventId"
         dataId={eventId}

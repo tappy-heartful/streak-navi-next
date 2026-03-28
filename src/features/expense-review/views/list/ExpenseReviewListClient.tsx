@@ -116,6 +116,7 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
     <BaseLayout>
       <ListBaseLayout
         title="経費審査"
+        icon="fa-solid fa-clipboard-check"
         basePath="/expense-review"
       >
         <div className={styles.infoBox}>

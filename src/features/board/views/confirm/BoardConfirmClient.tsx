@@ -56,6 +56,7 @@ export function BoardConfirmClient({ boardData, boardId, sections }: Props) {
     <BaseLayout>
       <ConfirmLayout
         name="掲示板"
+        icon="fas fa-clipboard-list"
         basePath="/board"
         dataId={boardId}
         featureIdKey="boardId"

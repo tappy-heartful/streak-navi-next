@@ -30,6 +30,7 @@ export function StudioConfirmClient({ studioData, studioId, prefectures }: Props
     <BaseLayout>
       <ConfirmLayout
         name="スタジオ"
+        icon="fa fa-building"
         basePath="/studio"
         dataId={studioId}
         featureIdKey="studioId"

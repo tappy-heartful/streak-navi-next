@@ -8,6 +8,7 @@ import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 
 type Props = {
   featureName: string;    // "曲募集"
+  icon?: string;
   basePath: string;       // "/call"
   featureIdKey: string;   // "callId"
   dataId: string;         // callId
@@ -24,7 +25,7 @@ type Props = {
  * 投票・出欠・曲募集など「ユーザーが回答する」編集画面で共通利用する
  */
 export const AnswerEditLayout = ({
-  featureName, basePath, featureIdKey, dataId,
+  featureName, icon, basePath, featureIdKey, dataId,
   mode, onSave, isLoading = false, children
 }: Props) => {
   const router = useRouter();
@@ -55,7 +56,7 @@ export const AnswerEditLayout = ({
   return (
     <>
       <div className="page-header">
-        <h1>{title}</h1>
+        <h1>{icon && <><i className={icon} />{" "}</>}{title}</h1>
       </div>
 
       <main className="container">

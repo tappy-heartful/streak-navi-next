@@ -10,6 +10,7 @@ import { showDialog } from "@/src/components/CommonDialog";
 
 type Props = {
   name: string;        // "譜面"
+  icon?: string;
   basePath: string;    // "/score"
   dataId: string;
   featureIdKey: string; // "scoreId", "uid" など
@@ -22,9 +23,10 @@ type Props = {
   children: React.ReactNode;
 };
 
-export const ConfirmLayout = ({ 
-  name, 
-  basePath, 
+export const ConfirmLayout = ({
+  name,
+  icon,
+  basePath,
   dataId,
   featureIdKey,
   collectionName,
@@ -33,7 +35,7 @@ export const ConfirmLayout = ({
   hideEdit,
   hideDelete,
   afterDeletePath,
-  children 
+  children
 }: Props) => {
   const router = useRouter();
   const { isAdmin } = useAuth();
@@ -80,7 +82,7 @@ export const ConfirmLayout = ({
   return (
     <>
       <div className="page-header">
-        <h1>{name}確認</h1>
+        <h1>{icon && <><i className={icon} />{" "}</>}{name}確認</h1>
       </div>
 
       <div className="container">

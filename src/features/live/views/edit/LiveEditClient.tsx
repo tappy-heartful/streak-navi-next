@@ -58,7 +58,7 @@ export function LiveEditClient({ mode, liveId, initialLive, scores }: Props) {
   return (
     <BaseLayout>
       <EditFormLayout
-        featureName="ライブ" featureIdKey="liveId" basePath="/live"
+        featureName="ライブ" icon="fa fa-music" featureIdKey="liveId" basePath="/live"
         dataId={liveId} mode={mode}
         form={form}
         onSaveApi={(data) => saveLive(mode, data, liveId)}

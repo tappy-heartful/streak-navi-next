@@ -247,6 +247,7 @@ export function ExpenseApplyEditClient({
     <BaseLayout>
       <EditFormLayout
         featureName="経費申請"
+        icon="fa-solid fa-receipt"
         featureIdKey="expenseId"
         basePath="/expense-apply"
         mode={mode}

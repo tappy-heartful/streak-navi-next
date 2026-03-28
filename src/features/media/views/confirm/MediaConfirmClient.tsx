@@ -23,6 +23,7 @@ export function MediaConfirmClient({ mediaData, mediaId }: Props) {
     <BaseLayout>
       <ConfirmLayout
         name="メディア"
+        icon="fa fa-photo-film"
         basePath="/media"
         dataId={mediaId}
         featureIdKey="mediaId"

@@ -52,6 +52,7 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
     <BaseLayout>
       <ConfirmLayout
         name="ユーザ"
+        icon="fa-solid fa-users"
         basePath="/user"
         dataId={uid}
         featureIdKey="uid"

@@ -49,7 +49,7 @@ export function NoticeAutoConfirmClient({ noticeBase }: Props) {
   return (
     <BaseLayout>
       <div className="page-header">
-        <h1>自動通知設定確認</h1>
+        <h1><i className="fa-solid fa-bell" /> 自動通知設定確認</h1>
       </div>
 
       <div className="container">

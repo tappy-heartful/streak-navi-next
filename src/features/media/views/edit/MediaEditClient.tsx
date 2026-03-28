@@ -43,7 +43,7 @@ export function MediaEditClient({ mode, mediaId, initialMedia }: Props) {
   return (
     <BaseLayout>
       <EditFormLayout
-        featureName="メディア" featureIdKey="mediaId" basePath="/media"
+        featureName="メディア" icon="fa fa-photo-film" featureIdKey="mediaId" basePath="/media"
         dataId={mediaId} mode={mode}
         form={form}
         onSaveApi={(data) => saveMedia(mode, data, mediaId)}

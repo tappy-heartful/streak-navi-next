@@ -55,7 +55,7 @@ export function EventListClient({ events }: Props) {
   return (
     <BaseLayout>
       <div className="page-header">
-        <h1>イベント一覧</h1>
+        <h1><i className="fa-solid fa-calendar-days" /> イベント一覧</h1>
       </div>
 
       {/* 日程調整中 */}
