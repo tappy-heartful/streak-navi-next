@@ -104,8 +104,8 @@ export function CallEditClient({ mode, callId, initialCall }: Props) {
         form={form}
         onSaveApi={handleSave}
       >
-        <AppInput label="タイトル" required {...inputProps("title")} />
-        <AppInput label="説明" required {...inputProps("description")} />
+        <AppInput label="タイトル" required placeholder="タイトルを入力してください" {...inputProps("title")} />
+        <AppInput label="説明" required placeholder="曲募集の説明を入力してください" {...inputProps("description")} />
         <AppInput label="受付開始日" required type="date" {...inputProps("acceptStartDate")} />
         <AppInput label="受付終了日" required type="date" {...inputProps("acceptEndDate")} />
 

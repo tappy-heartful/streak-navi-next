@@ -129,7 +129,7 @@ export function BoardEditClient({ mode, boardId, initialBoard, sections, userSec
           </select>
         </FormField>
 
-        <AppInput label="タイトル" required {...inputProps("title")} />
+        <AppInput label="タイトル" required placeholder="タイトルを入力してください" {...inputProps("title")} />
         
         <FormField label="内容" required error={form.errors.content}>
           <textarea

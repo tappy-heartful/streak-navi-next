@@ -148,6 +148,7 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
           updateField={form.updateField}
           error={form.errors.paypayId}
           required={true}
+          placeholder="PayPay IDを入力してください"
         />
       )}
 
@@ -181,6 +182,7 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
         updateField={form.updateField}
         required
         error={form.errors.abbreviation}
+        placeholder="例: 太郎"
       />
       <div className="musical-hint" style={{ marginTop: '-12px', marginBottom: '16px' }}>
         譜割りに表示されるあなたの名前です（2文字）

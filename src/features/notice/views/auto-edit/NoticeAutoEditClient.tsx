@@ -174,6 +174,7 @@ export function NoticeAutoEditClient({ initialNoticeBase }: Props) {
                       className="form-control"
                       value={n.days}
                       min={0}
+                      placeholder="0"
                       onChange={e => updateNotification(key, idx, "days", parseInt(e.target.value) || 0)}
                       style={{ width: "64px" }}
                     />
@@ -195,6 +196,7 @@ export function NoticeAutoEditClient({ initialNoticeBase }: Props) {
                           className="form-control"
                           value={n.interval ?? 14}
                           min={1}
+                          placeholder="14"
                           onChange={e => updateNotification(key, idx, "interval", parseInt(e.target.value) || 14)}
                           style={{ width: "64px" }}
                         />

@@ -108,6 +108,7 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
             field="desc-link"
             label="投票説明のリンク"
             value={descriptionLink}
+            placeholder="https://..."
             updateField={(_, val) => setDescriptionLink(val)}
           />
         </div>
@@ -120,6 +121,7 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
                   field={`item-link-${i}`}
                   label={`項目名：${item.name}`}
                   value={item.link || ""}
+                  placeholder="https://..."
                   updateField={(_, val) => handleItemChange(i, val)}
                 />
               </div>
@@ -133,6 +135,7 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
                         field={`choice-link-${i}-${j}`}
                         label={`${choice.name} のリンク`}
                         value={choice.link || ""}
+                        placeholder="https://..."
                         updateField={(_, val) => handleChoiceChange(i, j, val)}
                       />
                     </div>
