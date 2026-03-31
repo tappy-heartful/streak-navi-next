@@ -83,7 +83,6 @@ export function InstagramEmbed({ url }: Props) {
         className="instagram-iframe"
         frameBorder={0}
         scrolling="no"
-        allowTransparency={true}
         style={{ height: `${height}px` }}
       />
     </div>
