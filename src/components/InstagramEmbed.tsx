@@ -6,8 +6,12 @@ type Props = {
   url: string;
 };
 
-// 各 iframe の contentWindow と高さ更新コールバックを紐付けるグローバルレジストリ
+// iframe.contentWindow → setHeight のレジストリ
 const iframeRegistry = new Map<Window, (h: number) => void>();
+
+// onLoad より先に届いた postMessage の高さをキャッシュ
+const pendingHeights = new Map<Window, number>();
+
 let globalListenerAdded = false;
 
 function ensureGlobalListener() {
@@ -15,20 +19,28 @@ function ensureGlobalListener() {
   globalListenerAdded = true;
   window.addEventListener("message", (e: MessageEvent) => {
     if (!e.source || !e.origin.includes("instagram.com")) return;
-    const cb = iframeRegistry.get(e.source as Window);
-    if (!cb) return;
     let data = e.data;
     if (typeof data === "string") {
       try { data = JSON.parse(data); } catch { return; }
     }
     const h = data?.details?.height;
-    if (typeof h === "number" && h > 50) cb(h);
+    if (typeof h !== "number" || h <= 50) return;
+
+    const source = e.source as Window;
+    const cb = iframeRegistry.get(source);
+    if (cb) {
+      // 登録済み → すぐ反映
+      cb(h);
+    } else {
+      // 未登録（onLoad より先に届いた）→ キャッシュ
+      pendingHeights.set(source, h);
+    }
   });
 }
 
 /**
  * Instagram 埋め込みコンポーネント
- * embed.js 不要。各 iframe の postMessage を正確に紐付けて高さを動的調整する。
+ * embed.js 不要。postMessage の到着順に関わらず正確に高さを動的調整する。
  */
 export function InstagramEmbed({ url }: Props) {
   const match = url.match(/instagram\.com\/p\/([A-Za-z0-9_\-]+)/);
@@ -43,14 +55,20 @@ export function InstagramEmbed({ url }: Props) {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    // iframe がロードされてから contentWindow を登録する
     const onLoad = () => {
       const win = iframe.contentWindow;
       if (!win) return;
+      // レジストリに登録
       iframeRegistry.set(win, setHeight);
+      // onLoad より前に届いていたメッセージがあれば適用
+      const pending = pendingHeights.get(win);
+      if (pending !== undefined) {
+        setHeight(pending);
+        pendingHeights.delete(win);
+      }
     };
-    iframe.addEventListener("load", onLoad);
 
+    iframe.addEventListener("load", onLoad);
     return () => {
       iframe.removeEventListener("load", onLoad);
       if (iframe.contentWindow) iframeRegistry.delete(iframe.contentWindow);
