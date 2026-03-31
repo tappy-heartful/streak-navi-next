@@ -155,8 +155,10 @@ export function hideSpinner() {
 // --- Instagram 埋め込み用 ---
 export function buildInstagramHtml(url: string, includeWrapper = true): string {
   if (!url) return '';
-  const instaUrl = url.split('?')[0];
-  const html = `<blockquote class="instagram-media" data-instgrm-permalink="${instaUrl}" data-instgrm-version="14"></blockquote>`;
+  const match = url.match(/instagram\.com\/p\/([A-Za-z0-9_\-]+)/);
+  if (!match) return '';
+  const shortcode = match[1];
+  const html = `<iframe src="https://www.instagram.com/p/${shortcode}/embed/" class="instagram-iframe" frameborder="0" scrolling="no" allowtransparency="true"></iframe>`;
   return includeWrapper ? `<div class="instagram-embed">${html}</div>` : html;
 }
 

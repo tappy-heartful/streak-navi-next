@@ -9,23 +9,23 @@ html {
 
 body {
   /* 画面の高さに合わせつつ、メニューバーの変化に対応させる */
-  min-height: 100dvh; 
+  min-height: 100dvh;
   width: 100%;
   max-width: 768px;
   margin: 0 auto;
   padding: 0;
-  
+
   /* 横揺れ防止（clip は hidden と同じく視覚的にクリップするが、スクロールコンテナを作らないため子要素の横スクロールが正常に動作する） */
   overflow-x: clip;
-  
+
   /* Safariでスクロールが止まる現象（フリーズ）への対策 */
   -webkit-overflow-scrolling: touch;
-  
+
   font-family: Arial, sans-serif;
   color: #333;
   background-color: #f4f4f4;
 }
- 
+
 body.with-fixed-header {
   padding-top: 65px; /* ヘッダー(約65px) 分の余白を表示時のみ追加 */
 }
@@ -505,7 +505,7 @@ h3 {
   gap: 10px;
   margin-top: 10px;
 }
-.list-filter-grid select, 
+.list-filter-grid select,
 .list-filter-grid input {
   width: 100%;
   padding: 10px;
@@ -573,7 +573,7 @@ h3 {
   left: 0;
   z-index: 2;
   border-right: 2px solid #ddd;
-  
+
   /* 幅を70pxに固定し、改行ルールを適用 */
   width: 70px;
   min-width: 70px;
@@ -1243,12 +1243,14 @@ a:hover {
   box-sizing: border-box;
 }
 
-/* Instagram 埋め込みの幅をレスポンシブにする */
-.instagram-embed iframe.instagram-media {
-  min-width: 0 !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  border-radius: 16px !important;
+/* Instagram 埋め込みの幅をレスポンシブにする（高さは postMessage で動的調整） */
+.instagram-embed iframe.instagram-iframe {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: 16px;
 }
 
 /* Google Drive埋め込み */

@@ -290,8 +290,8 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       </div>
       <div className="container">
         <div className="form-group">
-          <AppInput label="投票名" field="name" required value={values.name} updateField={handleChange} />
-          <AppInput label="投票説明" field="description" required value={values.description} updateField={handleChange} />
+          <AppInput label="投票名" field="name" required placeholder="投票名を入力してください" value={values.name} updateField={handleChange} />
+          <AppInput label="投票説明" field="description" required placeholder="投票の説明を入力してください" value={values.description} updateField={handleChange} />
         </div>
 
         <div className="form-group">

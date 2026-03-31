@@ -49,10 +49,10 @@ export function MediaEditClient({ mode, mediaId, initialMedia }: Props) {
         onSaveApi={(data) => saveMedia(mode, data, mediaId)}
       >
         <AppInput label="日付" required type="date" {...inputProps("date")} />
-        <AppInput label="タイトル" required {...inputProps("title")} />
-        <AppInput label="Instagram URL" {...inputProps("instagramUrl")} />
-        <AppInput label="YouTube URL" {...inputProps("youtubeUrl")} />
-        <AppInput label="Google Drive URL" {...inputProps("driveUrl")} />
+        <AppInput label="タイトル" required placeholder="タイトルを入力してください" {...inputProps("title")} />
+        <AppInput label="Instagram URL" placeholder="https://www.instagram.com/p/..." {...inputProps("instagramUrl")} />
+        <AppInput label="YouTube URL" placeholder="https://www.youtube.com/watch?v=..." {...inputProps("youtubeUrl")} />
+        <AppInput label="Google Drive URL" placeholder="https://drive.google.com/..." {...inputProps("driveUrl")} />
         <AppInput label="ホームに表示" type="checkbox" {...inputProps("isDispTop")} />
       </EditFormLayout>
     </BaseLayout>

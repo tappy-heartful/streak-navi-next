@@ -7,7 +7,6 @@ import { useEffect, useTransition, Suspense } from "react"; // useTransitionã‚’è
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Script from "next/script";
 import CommonDialog from "@/src/components/CommonDialog";
 import CommonModal from "@/src/components/CommonModal";
 
@@ -179,10 +178,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <Suspense fallback={null}>
           <RouteChangeListener />
         </Suspense>
-        <Script
-          src="https://www.instagram.com/embed.js"
-          strategy="afterInteractive"
-        />
         <CommonDialog />
         <CommonModal />
       </BreadcrumbProvider>
