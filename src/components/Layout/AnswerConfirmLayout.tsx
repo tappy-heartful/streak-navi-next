@@ -12,6 +12,7 @@ export type AnswerStatusType = "answered" | "pending" | "closed";
 
 type Props = {
   name: string;           // "曲募集"
+  icon?: string;
   basePath: string;       // "/call"
   dataId: string;
   featureIdKey: string;   // "callId"
@@ -38,7 +39,7 @@ type Props = {
  * 投票・出欠・曲募集など「ユーザーが回答する」系の確認画面で共通利用する
  */
 export const AnswerConfirmLayout = ({
-  name, basePath, dataId, featureIdKey,
+  name, icon, basePath, dataId, featureIdKey,
   collectionName, answerStatus, answerStatusText,
   isActive, onDelete, afterDeletePath,
   hideCopy, answerMenuSlot, adminExtraSlot, children
@@ -91,7 +92,7 @@ export const AnswerConfirmLayout = ({
   return (
     <>
       <div className="page-header">
-        <h1>{name}確認</h1>
+        <h1>{icon && <><i className={icon} />{" "}</>}{name}確認</h1>
       </div>
 
       <div className="container">

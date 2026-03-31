@@ -147,6 +147,7 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
     <BaseLayout>
       <AnswerEditLayout
         featureName="曲募集"
+        icon="fa fa-music"
         basePath="/call"
         featureIdKey="callId"
         dataId={callId}

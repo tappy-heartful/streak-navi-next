@@ -109,6 +109,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
     <BaseLayout>
       <AnswerEditLayout
         featureName="投票"
+        icon="fas fa-vote-yea"
         basePath="/vote"
         featureIdKey="voteId"
         dataId={voteId}

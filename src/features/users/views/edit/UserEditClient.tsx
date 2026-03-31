@@ -107,6 +107,7 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
   return (
     <EditFormLayout
       featureName="ユーザ"
+      icon="fa-solid fa-users"
       featureIdKey="uid"
       basePath="/user"
       dataId={uid}

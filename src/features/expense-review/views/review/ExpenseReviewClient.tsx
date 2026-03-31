@@ -113,6 +113,7 @@ export function ExpenseReviewClient({
     <BaseLayout>
       <ConfirmLayout
         name="経費審査"
+        icon="fa-solid fa-clipboard-check"
         basePath="/expense-review"
         dataId={expenseId}
         featureIdKey="expenseId"

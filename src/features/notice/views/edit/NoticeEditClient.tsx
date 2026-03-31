@@ -134,6 +134,7 @@ export function NoticeEditClient({ mode, noticeId, initialNotice }: Props) {
     <BaseLayout>
       <EditFormLayout
         featureName="カスタム通知"
+        icon="fa-solid fa-bell"
         featureIdKey="noticeId"
         basePath="/notice"
         dataId={noticeId}

@@ -11,6 +11,7 @@ import { AppFormReturn } from "@/src/hooks/useAppForm";
 
 type Props<T extends Record<string, any>> = {
   featureName: string;
+  icon?: string;
   featureIdKey: string;
   basePath: string;
   dataId?: string;
@@ -21,8 +22,8 @@ type Props<T extends Record<string, any>> = {
   onSaveApi: (data: T) => Promise<string | undefined>;
 };
 
-export const EditFormLayout = <T extends Record<string, any>>({ 
-  featureName, featureIdKey, basePath, dataId, mode, overrideAdmin, children, form, onSaveApi 
+export const EditFormLayout = <T extends Record<string, any>>({
+  featureName, icon, featureIdKey, basePath, dataId, mode, overrideAdmin, children, form, onSaveApi
 }: Props<T>) => {
   const router = useRouter();
   const { isAdmin, loading } = useAuth();
@@ -78,7 +79,7 @@ export const EditFormLayout = <T extends Record<string, any>>({
 
   return (
     <>
-      <div className="page-header"><h1>{displayTitle}</h1></div>
+      <div className="page-header"><h1>{icon && <><i className={icon} />{" "}</>}{displayTitle}</h1></div>
       <div className="container">
         {children}
         <FormButtons mode={mode} onSave={handleSave} onClear={form.resetForm} />

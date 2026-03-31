@@ -62,7 +62,7 @@ export function StudioEditClient({ mode, studioId, initialStudio, prefectures }:
   return (
     <BaseLayout>
       <EditFormLayout
-        featureName="スタジオ" featureIdKey="studioId" basePath="/studio"
+        featureName="スタジオ" icon="fa fa-building" featureIdKey="studioId" basePath="/studio"
         dataId={studioId} mode={mode}
         form={form}
         onSaveApi={(data) => saveStudio(mode, data, studioId)}

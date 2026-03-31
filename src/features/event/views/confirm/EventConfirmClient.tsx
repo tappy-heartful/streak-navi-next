@@ -398,6 +398,7 @@ export function EventConfirmClient({ eventId, data }: Props) {
     <BaseLayout>
       <AnswerConfirmLayout
         name="イベント"
+        icon="fa-solid fa-calendar-days"
         basePath="/event"
         dataId={eventId}
         featureIdKey="eventId"

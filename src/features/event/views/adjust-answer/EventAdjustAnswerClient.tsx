@@ -75,6 +75,7 @@ export function EventAdjustAnswerClient({ eventId, event, adjustStatuses }: Prop
     <BaseLayout>
       <AnswerEditLayout
         featureName="イベント"
+        icon="fa-solid fa-calendar-days"
         basePath="/event"
         featureIdKey="eventId"
         dataId={eventId}

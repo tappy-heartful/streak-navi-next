@@ -123,7 +123,7 @@ export function NoticeAutoEditClient({ initialNoticeBase }: Props) {
   return (
     <BaseLayout>
       <div className="page-header">
-        <h1>自動通知設定編集</h1>
+        <h1><i className="fa-solid fa-bell" /> 自動通知設定編集</h1>
       </div>
 
       <div className="container">

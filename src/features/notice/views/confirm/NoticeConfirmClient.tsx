@@ -28,6 +28,7 @@ export function NoticeConfirmClient({ notice }: Props) {
     <BaseLayout>
       <ConfirmLayout
         name="カスタム通知"
+        icon="fa-solid fa-bell"
         basePath="/notice"
         dataId={notice.id}
         featureIdKey="noticeId"

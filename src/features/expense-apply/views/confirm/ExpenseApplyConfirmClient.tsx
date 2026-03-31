@@ -48,6 +48,7 @@ export function ExpenseApplyConfirmClient({
     <BaseLayout>
       <ConfirmLayout
         name="経費申請"
+        icon="fa-solid fa-receipt"
         basePath="/expense-apply"
         dataId={expenseId}
         featureIdKey="expenseId"

@@ -52,7 +52,7 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
   return (
     <BaseLayout>
       <EditFormLayout
-        featureName="譜面" featureIdKey="scoreId" basePath="/score"
+        featureName="譜面" icon="fa fa-music" featureIdKey="scoreId" basePath="/score"
         dataId={scoreId} mode={mode}
         form={form} // フックの結果をまるごと渡す！
         onSaveApi={(data) => saveScore(mode, data, scoreId, user?.displayName || undefined)}

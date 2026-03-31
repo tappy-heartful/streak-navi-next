@@ -126,6 +126,7 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
     <BaseLayout>
       <ListBaseLayout
         title="経費申請"
+        icon="fa-solid fa-receipt"
         basePath="/expense-apply"
       >
         <div className={styles.addButtonContainer}>

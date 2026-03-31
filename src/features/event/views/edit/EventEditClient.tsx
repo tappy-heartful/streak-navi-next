@@ -323,7 +323,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
   return (
     <BaseLayout>
       <div className="page-header">
-        <h1>{isEdit ? "イベント編集" : "イベント新規作成"}</h1>
+        <h1><i className="fa-solid fa-calendar-days" /> {isEdit ? "イベント編集" : "イベント新規作成"}</h1>
       </div>
       <main className="container">
       <>

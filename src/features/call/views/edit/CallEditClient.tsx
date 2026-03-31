@@ -99,7 +99,7 @@ export function CallEditClient({ mode, callId, initialCall }: Props) {
   return (
     <BaseLayout>
       <EditFormLayout
-        featureName="曲募集" featureIdKey="callId" basePath="/call"
+        featureName="曲募集" icon="fa fa-music" featureIdKey="callId" basePath="/call"
         dataId={callId} mode={mode}
         form={form}
         onSaveApi={handleSave}
