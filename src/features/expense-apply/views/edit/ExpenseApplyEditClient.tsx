@@ -438,7 +438,7 @@ export function ExpenseApplyEditClient({
             updateField={form.updateField}
             error={form.errors.name}
             required={true}
-            placeholder="例: 練習会場費、譜面代など"
+            placeholder="例: 松山練習会場費、譜面代など"
           />
         )}
 
@@ -467,6 +467,9 @@ export function ExpenseApplyEditClient({
         )}
 
         <FormField label="添付ファイル (領収書など)">
+          <p style={{ margin: "0 0 8px", fontSize: "13px", color: "#919191" }}>
+            ※ 添付すると審査が通りやすくなります
+          </p>
           <div className={styles.fileUploadWrapper}>
             <input type="file" accept="image/*,application/pdf" onChange={handleFileUpload} style={{ display: "none" }} id="file-upload" />
             <label htmlFor="file-upload" className={styles.fileUploadLabel}>
