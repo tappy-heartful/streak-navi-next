@@ -23,7 +23,7 @@ export function UserListClient({ initialData }: Props) {
   const { users, sections, roles, instruments, secretWords } = initialData;
 
   // 補助関数群
-  const getRoleName = (roleId?: string) => 
+  const getRoleName = (roleId?: string) =>
     roles.find(r => r.id === roleId)?.name ?? "-";
 
   const getInstrumentNames = (instIds?: string[]) => {
@@ -115,14 +115,14 @@ export function UserListClient({ initialData }: Props) {
       {usersBySection.unknownUsers.length > 0 && (
         <div className="container">
           <ListGroupContainer title="❓未設定" titleStyle={{ borderColor: "#ff9800" }}>
-            <SimpleTable headers={["氏名", "略称", "楽器", "所在地", "役職", "権限"]} hasData={true}>
+            <SimpleTable headers={["氏名", "略称", "楽器",  "役職", "権限"]} hasData={true}>
               {usersBySection.unknownUsers.map(u => (
                 <tr key={u.id}>
                   <td className="list-table-row-header">
                     <Link href={`/user/confirm?uid=${u.id}`} className={styles.userLink}>
-                      <img 
-                        src={u.pictureUrl || globalLineDefaultImage} 
-                        alt="icon" 
+                      <img
+                        src={u.pictureUrl || globalLineDefaultImage}
+                        alt="icon"
                         className={styles.userThumb}
                         onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
                       />
