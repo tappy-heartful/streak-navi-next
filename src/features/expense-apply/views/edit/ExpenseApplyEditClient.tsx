@@ -438,7 +438,7 @@ export function ExpenseApplyEditClient({
             updateField={form.updateField}
             error={form.errors.name}
             required={true}
-            placeholder="例: 練習会場費、譜面代など"
+            placeholder="例: 松山練習会場費、譜面代など"
           />
         )}
 
