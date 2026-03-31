@@ -64,7 +64,7 @@ export async function notifyExpenseApply(expenseId: string, action: 'create' | '
       text += `金額: ¥${expenseData.amount.toLocaleString()}\n`;
       text += `日付: ${expenseData.date}\n`;
       text += `種別: ${expenseData.category || "不明"}\n`;
-      if (expenseData.isTravel && expenseData.eventTitle) {
+      if (expenseData.isEventRequired && expenseData.eventTitle) {
         text += `対象イベント: ${expenseData.eventTitle}\n`;
       }
 

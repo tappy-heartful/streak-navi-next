@@ -78,6 +78,7 @@ export function ExpenseApplyEditClient({
       arrivalPrefectureId: initialData?.arrivalPrefectureId || "",
       arrivalMunicipalityId: initialData?.arrivalMunicipalityId || "",
       isTravel: initialData?.isTravel || false,
+      isEventRequired: initialData?.isEventRequired || false,
       eventId: initialData?.eventId || "",
     },
     {
@@ -86,12 +87,12 @@ export function ExpenseApplyEditClient({
       itemId: [rules.required],
       name: [(v, data) => !data.isTravel && !v ? "項目名を入力してください" : true],
       amount: [rules.required, (v) => Number(v) > 0 || "1円以上の金額を入力してください"],
-      date: [(v, data) => data.isTravel ? true : (rules.required(v) === true ? true : "発生日を入力してください")],
+      date: [(v, data) => data.isEventRequired ? true : (rules.required(v) === true ? true : "発生日を入力してください")],
       departurePrefectureId: [(v, data) => data.isTravel && !v ? "出発県を選択してください" : true],
       departureMunicipalityId: [(v, data) => data.isTravel && !v ? "出発市区町村を選択してください" : true],
       arrivalPrefectureId: [(v, data) => data.isTravel && !v ? "到着県を選択してください" : true],
       arrivalMunicipalityId: [(v, data) => data.isTravel && !v ? "到着市区町村を選択してください" : true],
-      eventId: [(v, data) => data.isTravel && !v ? "イベントを選択してください" : true],
+      eventId: [(v, data) => data.isEventRequired && !v ? "イベントを選択してください" : true],
     }
   );
 
@@ -103,8 +104,8 @@ export function ExpenseApplyEditClient({
         if (loc) {
           form.setFormData(prev => ({
             ...prev,
-            departurePrefectureId: loc.prefectureId,
-            departureMunicipalityId: loc.municipalityId
+            departurePrefectureId: loc.prefectureId || "",
+            departureMunicipalityId: loc.municipalityId || ""
           }));
         }
       };
@@ -114,7 +115,9 @@ export function ExpenseApplyEditClient({
 
   const currentCategories = masterCategories.filter(c => c.typeId === form.formData.typeId);
   const currentItems = masterItems.filter(i => i.categoryId === form.formData.categoryId);
-  const isTravel = masterItems.find(i => i.id === form.formData.itemId)?.isTravel || false;
+  const selectedItem = masterItems.find(i => i.id === form.formData.itemId);
+  const isTravel = selectedItem?.isTravel || false;
+  const isEventRequired = selectedItem?.isEventRequired || false;
 
   // 出発地市区町村の取得
   useEffect(() => {
@@ -259,11 +262,12 @@ export function ExpenseApplyEditClient({
     const payload: ExpenseApplyFormData = {
       ...data,
       category: itemName,
-      date: isTravel && selectedEvent ? selectedEvent.date : hyphenDateToDot(data.date),
+      date: isEventRequired && selectedEvent ? selectedEvent.date : hyphenDateToDot(data.date),
       files,
-      isTravel: isTravel,
-      eventId: isTravel ? (data.eventId || "") : "",
-      eventTitle: isTravel ? (selectedEvent?.title || "") : "",
+      isTravel,
+      isEventRequired,
+      eventId: isEventRequired ? (data.eventId || "") : "",
+      eventTitle: isEventRequired ? (selectedEvent?.title || "") : "",
     };
     return saveExpenseApply(mode, payload, userData?.displayName || "不明", expenseId);
   };
@@ -318,8 +322,11 @@ export function ExpenseApplyEditClient({
               onChange={(e) => {
                 form.updateField("itemId", e.target.value);
                 const item = currentItems.find(i => i.id === e.target.value);
-                if (item?.isTravel) form.updateField("isTravel", true);
-                else form.updateField("isTravel", false);
+                form.setFormData(prev => ({
+                  ...prev,
+                  isTravel: item?.isTravel || false,
+                  isEventRequired: item?.isEventRequired || false
+                }));
               }}
               className="form-control"
             >
@@ -331,7 +338,7 @@ export function ExpenseApplyEditClient({
           </FormField>
         )}
 
-        {isTravel && (
+        {isEventRequired && (
           <FormField label="対象イベント" error={form.errors.eventId} required={true}>
             <select
               value={form.formData.eventId}
@@ -454,7 +461,7 @@ export function ExpenseApplyEditClient({
           disabled={isTravel}
         />
 
-        {!isTravel && (
+        {!isEventRequired && (
           <AppInput
             label="発生日"
             field="date"

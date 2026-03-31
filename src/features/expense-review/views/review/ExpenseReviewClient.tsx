@@ -149,7 +149,7 @@ export function ExpenseReviewClient({
           <div className="label-value">{typeNamesMap[initialData.typeId] || "不明"} / {initialData.category}</div>
         </FormField>
 
-        {initialData.isTravel && initialData.eventTitle && (
+        {initialData.isEventRequired && (
           <FormField label="対象イベント">
             <div className="label-value">{initialData.eventTitle}</div>
           </FormField>
