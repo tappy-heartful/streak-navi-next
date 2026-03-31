@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
@@ -49,7 +50,8 @@ export function ExpenseApplyEditClient({
   initialTravelConfig,
   pastEvents,
 }: Props) {
-  const { user, userData } = useAuth();
+  const { user, userData, isAdmin } = useAuth();
+  const router = useRouter();
   const [files, setFiles] = useState<{ name: string; url: string; path: string }[]>(
     initialData?.files || []
   );
@@ -173,11 +175,30 @@ export function ExpenseApplyEditClient({
           form.formData.departureMunicipalityId,
           form.formData.arrivalMunicipalityId
         );
-        form.updateField("amount", amount ?? 0);
 
-        // 経費名の自動設定
         const depMunName = departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || "";
         const arrMunName = arrivalMuns.find(m => m.id === form.formData.arrivalMunicipalityId)?.name || "";
+
+        if (amount === null) {
+          if (isAdmin) {
+            const goToSetting = await showDialog(
+              `${depMunName}⇔${arrMunName} の旅費額が未設定です。\n旅費補助額設定画面に移動しますか？`
+            );
+            if (goToSetting) {
+              router.push("/travel-subsidy");
+            }
+          } else {
+            await showDialog(
+              `${depMunName}⇔${arrMunName} の旅費額が未設定です。\n管理者にご連絡ください。`,
+              true
+            );
+          }
+          return;
+        }
+
+        form.updateField("amount", amount);
+
+        // 経費名の自動設定
         if (depMunName && arrMunName) {
           form.updateField("name", `旅費補助(往復) ${depMunName}⇔${arrMunName}`);
         }
