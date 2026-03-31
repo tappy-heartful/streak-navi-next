@@ -167,7 +167,7 @@ export function ExpenseApplyEditClient({
     }
   }, [mode, travelConfig.arrivalPoints, form.formData.arrivalPrefectureId]);
 
-  // 補助額の自動計算
+  // 補助額の自動計算（サイレント：ダイアログは出さない）
   useEffect(() => {
     if (isTravel && form.formData.departureMunicipalityId && form.formData.arrivalMunicipalityId) {
       const fetchSubsidy = async () => {
@@ -175,28 +175,41 @@ export function ExpenseApplyEditClient({
           form.formData.departureMunicipalityId,
           form.formData.arrivalMunicipalityId
         );
-
-        const depMunName = departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || "";
-        const arrMunName = arrivalMuns.find(m => m.id === form.formData.arrivalMunicipalityId)?.name || "";
-
         form.updateField("amount", amount ?? 0);
 
-        if (amount === null) {
-          await showDialog(
-            `${depMunName}⇔${arrMunName} の旅費額が未設定です。\n管理者にご連絡ください。`,
-            true
-          );
-          return;
-        }
-
-        // 経費名の自動設定
-        if (depMunName && arrMunName) {
-          form.updateField("name", `旅費補助(往復) ${depMunName}⇔${arrMunName}`);
+        if (amount !== null) {
+          const depMunName = departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || "";
+          const arrMunName = arrivalMuns.find(m => m.id === form.formData.arrivalMunicipalityId)?.name || "";
+          if (depMunName && arrMunName) {
+            form.updateField("name", `旅費補助(往復) ${depMunName}⇔${arrMunName}`);
+          }
         }
       };
       fetchSubsidy();
     }
   }, [isTravel, form.formData.departureMunicipalityId, form.formData.arrivalMunicipalityId, departureMuns, arrivalMuns]);
+
+  // 市区町村が確定したとき（ユーザ操作時のみ）に未設定ダイアログを表示
+  const handleSubsidyCheck = async (depMunId: string, arrMunId: string) => {
+    if (!depMunId || !arrMunId) return;
+    const amount = await getTravelSubsidyAmountClient(depMunId, arrMunId);
+    if (amount !== null) return;
+
+    const depMunName = departureMuns.find(m => m.id === depMunId)?.name || "";
+    const arrMunName = arrivalMuns.find(m => m.id === arrMunId)?.name || "";
+
+    if (isAdmin) {
+      const goToSetting = await showDialog(
+        `${depMunName}⇔${arrMunName} の旅費額が未設定です。\n旅費補助額設定画面に移動しますか？`
+      );
+      if (goToSetting) router.push("/travel-subsidy");
+    } else {
+      await showDialog(
+        `${depMunName}⇔${arrMunName} の旅費額が未設定です。\n管理者にご連絡ください。`,
+        true
+      );
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -353,7 +366,10 @@ export function ExpenseApplyEditClient({
             <FormField label="出発地 (市区町村)" error={form.errors.departureMunicipalityId} required={true}>
               <select
                 value={form.formData.departureMunicipalityId}
-                onChange={(e) => form.updateField("departureMunicipalityId", e.target.value)}
+                onChange={(e) => {
+                  form.updateField("departureMunicipalityId", e.target.value);
+                  handleSubsidyCheck(e.target.value, form.formData.arrivalMunicipalityId);
+                }}
                 className="form-control"
                 disabled={!form.formData.departurePrefectureId}
               >
@@ -387,7 +403,10 @@ export function ExpenseApplyEditClient({
             <FormField label="到着地 (市区町村)" error={form.errors.arrivalMunicipalityId} required={true}>
               <select
                 value={form.formData.arrivalMunicipalityId}
-                onChange={(e) => form.updateField("arrivalMunicipalityId", e.target.value)}
+                onChange={(e) => {
+                  form.updateField("arrivalMunicipalityId", e.target.value);
+                  handleSubsidyCheck(form.formData.departureMunicipalityId, e.target.value);
+                }}
                 className="form-control"
                 disabled={!form.formData.arrivalPrefectureId}
               >
