@@ -8,6 +8,7 @@ import * as utils from "@/src/lib/functions";
 import styles from "./home.module.css";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { Announcement, Score, BlueNote, Media } from "@/src/lib/firestore/types";
+import { InstagramEmbed } from "@/src/components/InstagramEmbed";
 
 // --- 再描画させないためのメモ化コンポーネント群 ---
 
@@ -65,7 +66,7 @@ const MediaSection = memo(({ data }: { data: Media[] }) => (
         <div key={m.id} className={styles.contentItem}>
           <h4>{m.title}</h4>
           <div className={styles.mediaDate}>{m.date}</div>
-          {m.instagramUrl && <div dangerouslySetInnerHTML={{ __html: utils.buildInstagramHtml(m.instagramUrl) }} />}
+          {m.instagramUrl && <InstagramEmbed url={m.instagramUrl} />}
           {m.youtubeUrl && <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(m.youtubeUrl, true, true) }} />}
           {m.driveUrl && <div dangerouslySetInnerHTML={{ __html: utils.buildGoogleDriveHtml(m.driveUrl, true) }} />}
         </div>
@@ -138,11 +139,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
     }
   }, [initialData]);
 
-  useEffect(() => {
-    if ((window as any).instgrm) (window as any).instgrm.Embeds.process();
-  }, [initialData.medias]);
-
-  const scorePlaylistIds = useMemo(() => initialData.scores.map((s) => s.youtubeId).filter(Boolean).join(","), [initialData.scores]);
+const scorePlaylistIds = useMemo(() => initialData.scores.map((s) => s.youtubeId).filter(Boolean).join(","), [initialData.scores]);
   const bnPlaylistIds = useMemo(() => utils.getWatchVideosOrder(currentBNIdx, initialData.blueNotes)?.join(","), [currentBNIdx, initialData.blueNotes]);
 
   return (

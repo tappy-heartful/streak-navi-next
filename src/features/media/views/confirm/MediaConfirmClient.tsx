@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { buildInstagramHtml, buildYouTubeHtml, buildGoogleDriveHtml } from "@/src/lib/functions";
+import { buildYouTubeHtml, buildGoogleDriveHtml } from "@/src/lib/functions";
+import { InstagramEmbed } from "@/src/components/InstagramEmbed";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
@@ -13,12 +13,6 @@ type Props = {
 };
 
 export function MediaConfirmClient({ mediaData, mediaId }: Props) {
-  useEffect(() => {
-    if (mediaData.instagramUrl && (window as any).instgrm) {
-      (window as any).instgrm.Embeds.process();
-    }
-  }, [mediaData.instagramUrl]);
-
   return (
     <BaseLayout>
       <ConfirmLayout
@@ -40,10 +34,7 @@ export function MediaConfirmClient({ mediaData, mediaId }: Props) {
 
         <DisplayField label="Instagram">
           {mediaData.instagramUrl ? (
-            <div
-              className="instagram-display-area"
-              dangerouslySetInnerHTML={{ __html: buildInstagramHtml(mediaData.instagramUrl) }}
-            />
+            <InstagramEmbed url={mediaData.instagramUrl} />
           ) : "未設定"}
         </DisplayField>
 
