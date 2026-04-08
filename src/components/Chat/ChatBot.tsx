@@ -55,6 +55,12 @@ export function ChatBot() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("openChat", handler);
+    return () => window.removeEventListener("openChat", handler);
+  }, []);
+
+  useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 300);
     }
@@ -126,14 +132,6 @@ export function ChatBot() {
 
   return (
     <>
-      {/* フローティングボタン */}
-      {!open && (
-        <button className={styles.fab} onClick={() => setOpen(true)}>
-          <i className="fa-solid fa-comment-dots" />
-          AIに聞く
-        </button>
-      )}
-
       {/* オーバーレイ */}
       {open && (
         <div className={styles.overlay} onClick={() => setOpen(false)} />
