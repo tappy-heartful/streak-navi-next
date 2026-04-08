@@ -155,6 +155,32 @@ const scorePlaylistIds = useMemo(() => initialData.scores.map((s) => s.youtubeId
         <AnnouncementSection data={initialData.announcements} />
 
         <main className="container">
+          <button
+            onClick={() => window.dispatchEvent(new Event("openChat"))}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "14px 16px",
+              background: "linear-gradient(135deg, #4CAF50 0%, #66bb6a 100%)",
+              border: "none",
+              borderRadius: "12px",
+              cursor: "pointer",
+              textAlign: "left",
+              boxShadow: "0 2px 8px rgba(76,175,80,0.3)",
+            }}
+          >
+            <i className="fa-solid fa-robot" style={{ fontSize: "1.4rem", color: "#fff", flexShrink: 0 }} />
+            <div>
+              <div style={{ fontWeight: "bold", fontSize: "0.9rem", color: "#fff" }}>AIコンシェルジュに聞く</div>
+              <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.85)", marginTop: "2px" }}>イベント・投票・曲募集など何でも</div>
+            </div>
+            <i className="fa-solid fa-chevron-right" style={{ marginLeft: "auto", color: "rgba(255,255,255,0.8)", fontSize: "0.85rem" }} />
+          </button>
+        </main>
+
+        <main className="container">
           <div className={styles.scoreHeader}>
             <h3>新着譜面</h3>
             {scorePlaylistIds && <a href={`https://www.youtube.com/watch_videos?video_ids=${scorePlaylistIds}`} target="_blank" className={styles.playlistButton} rel="noreferrer"><i className="fa-brands fa-youtube"></i> プレイリスト</a>}

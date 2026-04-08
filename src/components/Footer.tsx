@@ -56,6 +56,30 @@ export default function Footer() {
       <footer>
         <div>&copy; 2025, 2026 Swing Streak Jazz Orchestra</div>
         <div className="developed-by">Developed by Takumi Fujimoto</div>
+        <button
+          onClick={() => window.dispatchEvent(new Event("openChat"))}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            width: "100%",
+            maxWidth: "320px",
+            margin: "12px auto 4px",
+            padding: "12px 20px",
+            background: "linear-gradient(135deg, #4CAF50 0%, #66bb6a 100%)",
+            border: "none",
+            borderRadius: "24px",
+            color: "#fff",
+            fontSize: "0.9rem",
+            fontWeight: "bold",
+            cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(76,175,80,0.35)",
+          }}
+        >
+          <i className="fa-solid fa-robot" />
+          AIコンシェルジュに聞く
+        </button>
         <div className="footer-actions">
           <Link href="/about" target="_blank">サイト情報</Link>
         </div>

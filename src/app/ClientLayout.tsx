@@ -9,6 +9,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CommonDialog from "@/src/components/CommonDialog";
 import CommonModal from "@/src/components/CommonModal";
+import { ChatBot } from "@/src/components/Chat/ChatBot";
 
 // --- 共通スピナーコンポーネント ---
 const LoadingSpinner = () => (
@@ -180,6 +181,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </Suspense>
         <CommonDialog />
         <CommonModal />
+        {!isNoLayout && <ChatBot />}
       </BreadcrumbProvider>
     </AuthProvider>
   );
