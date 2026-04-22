@@ -42,7 +42,7 @@ export async function getCallServer(callId: string): Promise<Call | null> {
  */
 export async function getCallConfirmDataServer(callId: string): Promise<{
   callAnswers: CallAnswer[];
-  usersMap: Record<string, string>;
+  usersMap: Record<string, { displayName: string; pictureUrl?: string }>;
   scoreStatusMap: Record<string, string>;
 }> {
   // callId に紐づく回答を取得（ID が "{callId}_{uid}" の形式）
@@ -74,9 +74,14 @@ export async function getCallConfirmDataServer(callId: string): Promise<{
     Promise.all([...scoreStatusIds].map(id => adminDb.collection("scoreStatus").doc(id).get())),
   ]);
 
-  const usersMap: Record<string, string> = {};
+  const usersMap: Record<string, { displayName: string; pictureUrl?: string }> = {};
   userDocs.forEach(doc => {
-    if (doc.exists) usersMap[doc.id] = doc.data()?.displayName || "(不明)";
+    if (doc.exists) {
+      usersMap[doc.id] = {
+        displayName: doc.data()?.displayName || "(不明)",
+        pictureUrl: doc.data()?.pictureUrl || "",
+      };
+    }
   });
 
   const scoreStatusMap: Record<string, string> = {};
