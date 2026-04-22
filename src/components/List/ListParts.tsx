@@ -11,8 +11,8 @@ export const FilterInput = ({
   value, onChange, placeholder 
 }: { value: string, onChange: (v: string) => void, placeholder: string }) => (
   <input 
-    type="text" className="form-control" placeholder={placeholder} 
-    value={value} onChange={(e) => onChange(e.target.value)} 
+  type="text" className="form-control" placeholder={placeholder} 
+  value={value} onChange={(e) => onChange(e.target.value)} 
   />
 );
 
@@ -51,6 +51,6 @@ export const ListCellLink = ({
   </td>
 );
 
-export const ListCellSmall = ({ children }: { children: React.ReactNode }) => (
-  <td className="list-text-small">{children || "-"}</td>
+export const ListCellSmall = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <td className={`list-text-small ${className || ""}`}>{children || "-"}</td>
 );

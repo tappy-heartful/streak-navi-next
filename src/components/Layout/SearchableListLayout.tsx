@@ -13,13 +13,15 @@ type Props<T extends Record<string, any>, F extends Record<string, any>> = {
   list: SearchableListReturn<T, F>;
   searchFields: React.ReactNode;
   extraHeaderContent?: React.ReactNode;
-  tableHeaders: string[];
+  tableHeaders: (string | { content: React.ReactNode; className?: string })[];
   onSearch?: (filters: F) => void; // ★ これがある場合はボタンを表示し、手動実行モードになる
+  hideAddButton?: boolean;
+  topSlot?: React.ReactNode;
   children: React.ReactNode;
 };
 
 export const SearchableListLayout = <T extends Record<string, any>, F extends Record<string, any>>({
-  title, icon, basePath, list, searchFields, extraHeaderContent, tableHeaders, onSearch, children
+  title, icon, basePath, list, searchFields, extraHeaderContent, tableHeaders, onSearch, hideAddButton, topSlot, children
 }: Props<T, F>) => {
   const { setBreadcrumbs } = useBreadcrumb();
   const { isAdmin } = useAuth();
@@ -33,6 +35,8 @@ export const SearchableListLayout = <T extends Record<string, any>, F extends Re
       <div className="page-header">
         <h1>{icon && <i className={icon}></i>} {title}一覧</h1>
       </div>
+
+      {topSlot}
 
       <div className="container">
         <h3>検索</h3>
@@ -61,7 +65,16 @@ export const SearchableListLayout = <T extends Record<string, any>, F extends Re
           <table className="list-table">
             <thead>
               <tr>
-                {tableHeaders.map((header, i) => <th key={i}>{header}</th>)}
+                {tableHeaders.map((header, i) => {
+                  if (typeof header === "string") {
+                    return <th key={i}>{header}</th>;
+                  }
+                  return (
+                    <th key={i} className={header.className}>
+                      {header.content}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
@@ -78,7 +91,7 @@ export const SearchableListLayout = <T extends Record<string, any>, F extends Re
           </table>
         </div>
 
-        {isAdmin && (
+        {isAdmin && !hideAddButton && (
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Link href={`${basePath}/edit?mode=new`} className="list-add-button" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', width: 'fit-content', padding: '12px 24px' }}>
               ＋ 新規作成

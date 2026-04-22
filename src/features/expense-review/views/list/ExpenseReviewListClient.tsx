@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { BaseLayout } from "@/src/components/Layout/BaseLayout";
-import { ListBaseLayout } from "@/src/components/Layout/ListBaseLayout";
-import { ExpenseApply, ExpenseType } from "@/src/lib/firestore/types";
-import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
-import Link from "next/link";
+import React, { useState, useEffect, useMemo } from "react";
+import { useSearchableList } from "@/src/hooks/useSearchableList";
+import { SearchableListLayout } from "@/src/components/Layout/SearchableListLayout";
+import { ExpenseApply } from "@/src/lib/firestore/types";
 import { useRouter } from "next/navigation";
 import { getExpenseTypesClient } from "@/src/features/expense-apply/api/expense-apply-client-service";
 import { format } from "@/src/lib/functions";
+import {
+  ListFilterGrid, FilterSelect,
+  ListRow, ListCellHeader, ListCellSmall
+} from "@/src/components/List/ListParts";
 import styles from "./ExpenseReviewList.module.css";
 
 type Props = {
@@ -16,23 +18,67 @@ type Props = {
   usersMap: Record<string, string>; // uid -> displayName
 };
 
+type ExpenseFilters = {
+  status: string;
+  uid: string;
+  eventId: string;
+};
+
 export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
-  const { setBreadcrumbs } = useBreadcrumb();
-  const router = useRouter();
   const [typeMap, setTypeMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    setBreadcrumbs([{ title: "経費審査", href: "" }]);
-    
     // 種別マスタの取得
     getExpenseTypesClient().then(types => {
       const map: Record<string, string> = {};
       types.forEach(t => map[t.id] = t.name);
       setTypeMap(map);
     });
-  }, [setBreadcrumbs]);
+  }, []);
 
-  const [expenses] = useState<ExpenseApply[]>(initialExpenses);
+  const applicantOptions = useMemo(() => {
+    const uids = Array.from(new Set(initialExpenses.map(e => e.uid)));
+    return uids.map(uid => ({ id: uid, name: usersMap[uid] || "不明" }))
+               .sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+  }, [initialExpenses, usersMap]);
+
+  const eventOptions = useMemo(() => {
+    const events = new Map<string, string>();
+    initialExpenses.forEach(e => {
+      if (e.eventId && e.eventTitle) {
+        events.set(e.eventId, e.eventTitle);
+      }
+    });
+    return Array.from(events.entries())
+                .map(([id, name]) => ({ id, name }))
+                .sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+  }, [initialExpenses]);
+
+  const list = useSearchableList<ExpenseApply, ExpenseFilters>(
+    initialExpenses,
+    { status: "pending", uid: "", eventId: "" },
+    (e, f) => {
+      if (f.status && e.status !== f.status) return false;
+      if (f.uid && e.uid !== f.uid) return false;
+      if (f.eventId && e.eventId !== f.eventId) return false;
+      return true;
+    },
+    (a, b) => {
+      // 基本は日付降順
+      const dateA = new Date(a.date.replace(/\./g, "/")).getTime();
+      const dateB = new Date(b.date.replace(/\./g, "/")).getTime();
+      if (dateB !== dateA) return dateB - dateA;
+      // 同日の場合は作成日時降順
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    }
+  );
+
+  const statusLabels: Record<string, string> = {
+    pending: "審査待ち",
+    returned: "差し戻し",
+    approved: "承認済み",
+  };
+  const currentStatusLabel = statusLabels[list.filters.status] || "すべて";
 
   const getStatusBadge = (status: ExpenseApply['status']) => {
     switch (status) {
@@ -42,103 +88,109 @@ export function ExpenseReviewListClient({ initialExpenses, usersMap }: Props) {
     }
   };
 
-  const pendingItems = expenses.filter(e => e.status === 'pending');
-  const approvedItems = expenses.filter(e => e.status === 'approved');
-  const rejectedItems = expenses.filter(e => e.status === 'returned');
-
-  const renderTable = (items: ExpenseApply[], emptyMsg: string) => (
-    <div className="table-wrapper">
-      <table className="list-table">
-        <thead>
-          <tr>
-            <th>日付・経費名</th>
-            <th>種別・金額</th>
-            <th>申請者</th>
-            <th>状態</th>
-            <th>操作</th>
-            <th>登録日時</th>
-            <th>更新日時</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.length > 0 ? (
-            items.map((expense) => (
-              <tr key={expense.id} style={{ opacity: expense.status !== "pending" ? 0.8 : 1 }}>
-                <td className="list-table-row-header">
-                  <div className={styles.dateSub}>
-                    {expense.date}
-                  </div>
-                  <Link href={`/expense-review/review?expenseId=${expense.id}`} style={{ textDecoration: "none" }}>
-                    {expense.name}
-                  </Link>
-                </td>
-                <td>
-                  <div className={styles.typeText} style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
-                    {typeMap[expense.typeId] || "不明"}<br/>{expense.category}
-                  </div>
-                  <div className={styles.amount}>
-                    ¥{expense.amount.toLocaleString()}
-                  </div>
-                </td>
-                <td>
-                  {usersMap[expense.uid] || "不明"}
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  {getStatusBadge(expense.status)}
-                </td>
-                <td style={{ textAlign: "center" }}>
-                  <Link 
-                    href={`/expense-review/review?expenseId=${expense.id}`}
-                    className={`${styles.judgeBtn} ${styles.approvedBtn}`}
-                  >
-                    {expense.status === 'pending' ? "審査" : "詳細"}
-                  </Link>
-                </td>
-                <td className={styles.timestamp}>
-                  {format(expense.createdAt, 'yyyy/MM/dd HH:mm')}
-                </td>
-                <td className={styles.timestamp}>
-                  {format(expense.updatedAt, 'yyyy/MM/dd HH:mm')}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={7} className="empty-text">{emptyMsg}</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-
   return (
-    <BaseLayout>
-      <ListBaseLayout
-        title="経費審査"
-        icon="fa-solid fa-clipboard-check"
-        basePath="/expense-review"
-      >
-        <div className={styles.infoBox}>
-          <i className="fa-solid fa-circle-info" style={{ marginRight: "4px" }} />
-          会計メンバーのみ閲覧可能です。各メンバーからの経費申請を承認・差し戻しできます。
+    <SearchableListLayout
+      title="経費審査"
+      icon="fa-solid fa-clipboard-check"
+      basePath="/expense-review"
+      list={list}
+      hideAddButton={true}
+      topSlot={
+        <div className="container" style={{
+          background: "#fff9c4",
+          marginBottom: "1.5rem",
+          fontSize: "0.85rem",
+          color: "#856404",
+          border: "1px solid #ffeeba",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          padding: "10px 15px",
+        }}>
+          <i className="fa-solid fa-circle-info" />
+          <span>会計メンバーのみ閲覧可能です。各メンバーからの経費申請を承認・差し戻しできます。</span>
         </div>
-
-        <div className="container" style={{ marginBottom: "20px" }}>
-          <h3 className={styles.sectionTitle}><i className="fa-solid fa-clock"></i> 審査待ち</h3>
-          {renderTable(pendingItems, "審査待ちの申請はありません🍀")}
+      }
+      tableHeaders={[
+        "日付・経費名", 
+        "種別・金額", 
+        "申請者", 
+        "状態", 
+        "操作", 
+        { content: "登録日時", className: styles.hideMobile }, 
+        { content: "更新日時", className: styles.hideMobile }
+      ]}
+      searchFields={
+        <ListFilterGrid>
+          <FilterSelect
+            label="ステータス (すべて)"
+            options={[
+              { id: "pending", name: "審査待ち" },
+              { id: "returned", name: "差し戻し" },
+              { id: "approved", name: "承認済み" },
+            ]}
+            value={list.filters.status}
+            onChange={(v) => list.updateFilter("status", v)}
+          />
+          <FilterSelect
+            label="申請者を選択"
+            options={applicantOptions}
+            value={list.filters.uid}
+            onChange={(v) => list.updateFilter("uid", v)}
+          />
+          <FilterSelect
+            label="イベントを選択"
+            options={eventOptions}
+            value={list.filters.eventId}
+            onChange={(v) => list.updateFilter("eventId", v)}
+          />
+        </ListFilterGrid>
+      }
+      extraHeaderContent={
+        <div style={{ fontWeight: "bold", color: "#4caf50" }}>
+          {currentStatusLabel}
         </div>
-
-        <div className="container" style={{ marginBottom: "20px" }}>
-          <h3 className={styles.sectionTitle}><i className="fa-solid fa-rotate-left"></i> 差し戻し</h3>
-          {renderTable(rejectedItems, "差し戻された申請はありません")}
-        </div>
-
-        <div className="container" style={{ marginBottom: "20px" }}>
-          <h3 className={styles.sectionTitle}><i className="fa-solid fa-circle-check"></i> 承認済み</h3>
-          {renderTable(approvedItems, "承認済みの申請はありません")}
-        </div>
-      </ListBaseLayout>
-    </BaseLayout>
+      }
+    >
+      {list.filteredData.map((expense) => (
+        <ListRow key={expense.id}>
+          <ListCellHeader href={`/expense-review/review?expenseId=${expense.id}`}>
+            <div className={styles.dateSub}>
+              {expense.date}
+            </div>
+            {expense.name}
+          </ListCellHeader>
+          <td>
+            <div className={styles.typeText} style={{ color: expense.typeId === "001" ? "#c62828" : "#2e7d32" }}>
+              {typeMap[expense.typeId] || "不明"}<br/>{expense.category}
+            </div>
+            <div className={styles.amount}>
+              ¥{expense.amount.toLocaleString()}
+            </div>
+          </td>
+          <td>
+            {usersMap[expense.uid] || "不明"}
+          </td>
+          <td style={{ textAlign: "center" }}>
+            {getStatusBadge(expense.status)}
+          </td>
+          <td style={{ textAlign: "center" }}>
+            <a 
+              href={`/expense-review/review?expenseId=${expense.id}`}
+              className={`${styles.judgeBtn} ${styles.approvedBtn}`}
+              style={{ display: "inline-block", textDecoration: "none" }}
+            >
+              {expense.status === 'pending' ? "審査" : "詳細"}
+            </a>
+          </td>
+          <ListCellSmall className={styles.hideMobile}>
+            {format(expense.createdAt, 'yyyy/MM/dd HH:mm')}
+          </ListCellSmall>
+          <ListCellSmall className={styles.hideMobile}>
+            {format(expense.updatedAt, 'yyyy/MM/dd HH:mm')}
+          </ListCellSmall>
+        </ListRow>
+      ))}
+    </SearchableListLayout>
   );
 }

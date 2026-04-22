@@ -95,3 +95,9 @@
   font-weight: bold;
   margin-top: 4px;
 }
+
+@media (max-width: 600px) {
+  .hideMobile {
+    display: none !important;
+  }
+}
