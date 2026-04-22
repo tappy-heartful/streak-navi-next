@@ -160,8 +160,8 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                   backgroundColor: color.bg, 
                   borderBottom: `2px solid ${color.border}`,
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between"
+                  flexDirection: "column",
+                  gap: "4px"
                 }}>
                   <span style={{ 
                     fontWeight: "900", 
@@ -169,11 +169,18 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                     color: color.text,
                     display: "flex",
                     alignItems: "center",
-                    gap: "8px"
+                    gap: "8px",
+                    lineHeight: "1.3"
                   }}>
                     <i className="fas fa-music"></i> {genre}
                   </span>
-                  <span style={{ fontSize: "0.85rem", color: color.text, fontWeight: "bold", opacity: 0.8 }}>
+                  <span style={{ 
+                    fontSize: "0.85rem", 
+                    color: color.text, 
+                    fontWeight: "bold", 
+                    opacity: 0.8,
+                    marginLeft: "28px" // アイコン(16px) + gap(8px) + 余裕
+                  }}>
                     {genreAnswers.length}人が回答中
                   </span>
                 </div>
