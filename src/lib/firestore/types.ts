@@ -135,6 +135,7 @@ export interface Call {
   acceptStartDate: string;  // "yyyy.MM.dd"
   acceptEndDate: string;    // "yyyy.MM.dd"
   items: string[];          // 募集ジャンル一覧
+  maxSongsPerGenre?: number;
   isAnonymous?: boolean;
   createdBy?: string;
   createdAt?: number;

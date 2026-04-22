@@ -44,6 +44,7 @@ export function CallEditClient({ mode, callId, initialCall }: Props) {
         ? getDefaultEndDate()
         : (initialCall?.acceptEndDate ?? "").replace(/\./g, "-"),
       items: initialCall?.items ?? [""],
+      maxSongsPerGenre: initialCall?.maxSongsPerGenre ?? 0,
       isAnonymous: initialCall?.isAnonymous ?? false,
     },
     {
@@ -131,6 +132,7 @@ export function CallEditClient({ mode, callId, initialCall }: Props) {
           </button>
         </FormField>
 
+        <AppInput label="1人あたり各ジャンル回答可能数" type="number" placeholder="0（無制限）" {...inputProps("maxSongsPerGenre")} />
         <AppInput label="匿名回答" type="checkbox" {...inputProps("isAnonymous")} />
       </EditFormLayout>
     </BaseLayout>

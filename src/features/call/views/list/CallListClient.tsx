@@ -25,32 +25,50 @@ export function CallListClient({ initialData }: Props) {
   const { userData } = useAuth();
   const uid = userData?.id;
 
-  // アクティブ・終了済に分類
-  const { active, closed } = useMemo(() => {
+  // 開始前・受付中・終了に分類
+  const { upcoming, active, closed } = useMemo(() => {
+    const upcoming: Call[] = [];
     const active: Call[] = [];
     const closed: Call[] = [];
+    const now = Date.now();
+
     calls.forEach(call => {
-      if (isInTerm(call.acceptStartDate, call.acceptEndDate)) {
+      const start = call.acceptStartDate ? new Date(call.acceptStartDate.replace(/\./g, "/") + " 00:00:00").getTime() : 0;
+      const end = call.acceptEndDate ? new Date(call.acceptEndDate.replace(/\./g, "/") + " 23:59:59").getTime() : Infinity;
+
+      if (now < start) {
+        upcoming.push(call);
+      } else if (now <= end) {
         active.push(call);
       } else {
         closed.push(call);
       }
     });
 
-    // アクティブ: 未回答を先頭に
-    active.sort((a, b) => {
+    const sortByAnswered = (a: Call, b: Call) => {
       const aAnswered = uid ? callAnswerIds.includes(`${a.id}_${uid}`) : false;
       const bAnswered = uid ? callAnswerIds.includes(`${b.id}_${uid}`) : false;
       if (aAnswered === bAnswered) return 0;
       return aAnswered ? 1 : -1;
-    });
+    };
 
-    return { active, closed };
+    active.sort(sortByAnswered);
+    upcoming.sort(sortByAnswered);
+    closed.sort(sortByAnswered);
+
+    return { upcoming, active, closed };
   }, [calls, callAnswerIds, uid]);
 
   const getStatus = (call: Call): { text: string; cls: StatusClass } => {
-    if (!isInTerm(call.acceptStartDate, call.acceptEndDate)) {
-      return { text: "期間外", cls: "closed" };
+    const now = Date.now();
+    const start = call.acceptStartDate ? new Date(call.acceptStartDate.replace(/\./g, "/") + " 00:00:00").getTime() : 0;
+    const end = call.acceptEndDate ? new Date(call.acceptEndDate.replace(/\./g, "/") + " 23:59:59").getTime() : Infinity;
+
+    if (now < start) {
+      return { text: "開始前", cls: "closed" }; // 見た目はclosedと同じか適宜調整
+    }
+    if (now > end) {
+      return { text: "終了", cls: "closed" };
     }
     const answered = uid ? callAnswerIds.includes(`${call.id}_${uid}`) : false;
     return answered
@@ -96,10 +114,20 @@ export function CallListClient({ initialData }: Props) {
           </SimpleTable>
         </div>
 
-        {/* 期間外（1件以上ある場合のみ表示） */}
+        {/* 開始前（1件以上ある場合のみ表示） */}
+        {upcoming.length > 0 && (
+          <div className="container" id="upcoming-container">
+            <h3>⏳ 開始前</h3>
+            <SimpleTable headers={TABLE_HEADERS} hasData={upcoming.length > 0}>
+              {upcoming.map(renderRow)}
+            </SimpleTable>
+          </div>
+        )}
+
+        {/* 終了（1件以上ある場合のみ表示） */}
         {closed.length > 0 && (
           <div className="container" id="closed-container">
-            <h3>🏁 期間外</h3>
+            <h3>🏁 終了</h3>
             <SimpleTable headers={TABLE_HEADERS} hasData={closed.length > 0}>
               {closed.map(renderRow)}
             </SimpleTable>

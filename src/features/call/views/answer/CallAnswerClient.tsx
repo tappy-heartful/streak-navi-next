@@ -36,7 +36,7 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
   const [mode, setMode] = useState<"new" | "edit">("new");
   const [isLoading, setIsLoading] = useState(true);
   const [answers, setAnswers] = useState<AnswersState>(() =>
-    Object.fromEntries((callData.items || []).map(genre => [genre, [emptySong()]]))
+    Object.fromEntries((callData.items || []).map(genre => [genre, []]))
   );
 
   // 既存回答の読み込み
@@ -58,7 +58,7 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
                   purchase: s.purchase || "",
                   note: s.note || "",
                 }))
-              : [emptySong()];
+              : [];
           }
           setAnswers(loaded);
         }
@@ -83,7 +83,7 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
   const removeSong = (genre: string, idx: number) => {
     setAnswers(prev => {
       const songs = prev[genre].filter((_, i) => i !== idx);
-      return { ...prev, [genre]: songs.length > 0 ? songs : [emptySong()] };
+      return { ...prev, [genre]: songs };
     });
   };
 
@@ -166,43 +166,43 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
                 <div className="genre-title">
                   🎵 {genre}
                 </div>
-                <div className="songs-container">
-                  {(answers[genre] || []).map((song, idx) => (
-                    <div key={idx} className="song-item">
-                      <input
-                        type="text"
-                        placeholder="曲名(必須)"
-                        value={song.title}
-                        onChange={e => updateSong(genre, idx, "title", e.target.value)}
-                      />
-                      <input
-                        type="text"
-                        placeholder="参考音源URL(必須)"
-                        value={song.url}
-                        onChange={e => updateSong(genre, idx, "url", e.target.value)}
-                      />
-                      <select
-                        value={song.scorestatus}
-                        onChange={e => updateSong(genre, idx, "scorestatus", e.target.value)}
-                      >
-                        <option value="">譜面状況(必須)</option>
-                        {scoreStatuses.map(s => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="text"
-                        placeholder="購入先リンク(任意)"
-                        value={song.purchase}
-                        onChange={e => updateSong(genre, idx, "purchase", e.target.value)}
-                      />
-                      <input
-                        type="text"
-                        placeholder="備考(任意)"
-                        value={song.note}
-                        onChange={e => updateSong(genre, idx, "note", e.target.value)}
-                      />
-                      {(answers[genre] || []).length > 1 && (
+                {(answers[genre] || []).length > 0 && (
+                  <div className="songs-container">
+                    {(answers[genre] || []).map((song, idx) => (
+                      <div key={idx} className="song-item">
+                        <input
+                          type="text"
+                          placeholder="曲名(必須)"
+                          value={song.title}
+                          onChange={e => updateSong(genre, idx, "title", e.target.value)}
+                        />
+                        <input
+                          type="text"
+                          placeholder="参考音源URL(必須)"
+                          value={song.url}
+                          onChange={e => updateSong(genre, idx, "url", e.target.value)}
+                        />
+                        <select
+                          value={song.scorestatus}
+                          onChange={e => updateSong(genre, idx, "scorestatus", e.target.value)}
+                        >
+                          <option value="">譜面状況(必須)</option>
+                          {scoreStatuses.map(s => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                          ))}
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="購入先リンク(任意)"
+                          value={song.purchase}
+                          onChange={e => updateSong(genre, idx, "purchase", e.target.value)}
+                        />
+                        <input
+                          type="text"
+                          placeholder="備考(任意)"
+                          value={song.note}
+                          onChange={e => updateSong(genre, idx, "note", e.target.value)}
+                        />
                         <button
                           type="button"
                           className="remove-song"
@@ -210,17 +210,19 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
                         >
                           この曲を削除
                         </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  className="add-song"
-                  onClick={() => addSong(genre)}
-                >
-                  + 曲を追加
-                </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {(!callData.maxSongsPerGenre || (answers[genre] || []).length < callData.maxSongsPerGenre) && (
+                  <button
+                    type="button"
+                    className="add-song"
+                    onClick={() => addSong(genre)}
+                  >
+                    + 曲を追加
+                  </button>
+                )}
               </div>
             ))}
           </div>

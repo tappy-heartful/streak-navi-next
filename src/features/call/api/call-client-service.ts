@@ -9,6 +9,7 @@ export type CallFormData = {
   acceptStartDate: string; // "yyyy-MM-dd" (HTML date input形式)
   acceptEndDate: string;   // "yyyy-MM-dd" (HTML date input形式)
   items: string[];         // 募集ジャンル一覧
+  maxSongsPerGenre: number;
   isAnonymous: boolean;
 };
 
@@ -28,6 +29,7 @@ export const saveCall = async (
     acceptStartDate: data.acceptStartDate.replace(/-/g, "."),
     acceptEndDate: data.acceptEndDate.replace(/-/g, "."),
     items: data.items.filter(i => i.trim() !== ""),
+    maxSongsPerGenre: Number(data.maxSongsPerGenre),
     isAnonymous: data.isAnonymous,
     updatedAt: serverTimestamp(),
   };
