@@ -28,7 +28,7 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
   const participantCount = callAnswers.length;
 
   const statusClass = !isActive ? "closed" : hasAnswered ? "answered" : "pending";
-  const statusText = !isActive ? "期間外" : hasAnswered ? "回答済" : "未回答";
+  const statusText = !isActive ? "終了" : hasAnswered ? "回答済" : "未回答";
 
   const handleAdminDelete = async () => {
     const confirmed = await showDialog("募集と全員の回答を削除しますか？\nこの操作は元に戻せません");
@@ -117,6 +117,9 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
         <DisplayField label="説明" preWrap>{callData.description}</DisplayField>
         <DisplayField label="受付期間">
           {callData.acceptStartDate} ～ {callData.acceptEndDate}
+        </DisplayField>
+        <DisplayField label="1人あたり各ジャンル回答可能数">
+          {callData.maxSongsPerGenre ? `${callData.maxSongsPerGenre}曲` : "無制限"}
         </DisplayField>
         <DisplayField label="作成者">{callData.createdBy}</DisplayField>
 
