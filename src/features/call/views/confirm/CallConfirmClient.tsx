@@ -13,7 +13,7 @@ type Props = {
   callData: Call;
   callId: string;
   callAnswers: CallAnswer[];
-  usersMap: Record<string, string>;
+  usersMap: Record<string, { displayName: string; pictureUrl?: string }>;
   scoreStatusMap: Record<string, string>;
 };
 
@@ -124,74 +124,183 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
         <DisplayField label="作成者">{callData.createdBy}</DisplayField>
 
         {/* 募集ジャンルごとの回答 */}
-        <div id="call-items" style={{ marginTop: "2rem" }}>
-          <h3 style={{ fontSize: "1.2rem", borderBottom: "2px solid #4CAF50", paddingBottom: "8px", marginBottom: "16px" }}>
-            <i className="fas fa-music"></i> 募集ジャンルと回答
+        <div id="call-items" style={{ marginTop: "3rem" }}>
+          <h3 style={{ fontSize: "1.4rem", fontWeight: "800", color: "#333", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "10px" }}>
+            <i className="fas fa-list-ul" style={{ color: "#4CAF50" }}></i> 募集ジャンルと回答
           </h3>
-          {(callData.items || []).map(genre => {
+          {(callData.items || []).map((genre, idx) => {
             const genreAnswers = callAnswers.flatMap(ans => {
               const songs = ans.answers?.[genre] || [];
               if (songs.length === 0) return [];
               return [{ uid: ans.uid, songs }];
             });
 
+            // ジャンルごとに色を変える
+            const colors = [
+              { bg: "#E8F5E9", border: "#4CAF50", text: "#2E7D32" }, // Green
+              { bg: "#E3F2FD", border: "#2196F3", text: "#1565C0" }, // Blue
+              { bg: "#FFF3E0", border: "#FF9800", text: "#E65100" }, // Orange
+              { bg: "#F3E5F5", border: "#9C27B0", text: "#7B1FA2" }, // Purple
+              { bg: "#FFEBEE", border: "#F44336", text: "#C62828" }, // Red
+              { bg: "#E0F2F1", border: "#009688", text: "#00695C" }, // Teal
+            ];
+            const color = colors[idx % colors.length];
+
             return (
-              <div key={genre} className="genre-block" style={{ marginBottom: "2rem", backgroundColor: "#fff", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", overflow: "hidden" }}>
-                <div className="genre-title" style={{ fontWeight: "bold", padding: "12px 16px", backgroundColor: "#f4f4f4", borderBottom: "1px solid #ddd", fontSize: "1.1rem" }}>
-                  🎵 {genre}
+              <div key={genre} className="genre-card-new" style={{ 
+                marginBottom: "2.5rem", 
+                backgroundColor: "#fff", 
+                borderRadius: "16px", 
+                boxShadow: "0 10px 25px rgba(0,0,0,0.05)", 
+                border: `1px solid ${color.border}22`,
+                overflow: "hidden" 
+              }}>
+                <div className="genre-header" style={{ 
+                  padding: "16px 24px", 
+                  backgroundColor: color.bg, 
+                  borderBottom: `2px solid ${color.border}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between"
+                }}>
+                  <span style={{ 
+                    fontWeight: "900", 
+                    fontSize: "1.2rem", 
+                    color: color.text,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}>
+                    <i className="fas fa-music"></i> {genre}
+                  </span>
+                  <span style={{ fontSize: "0.85rem", color: color.text, fontWeight: "bold", opacity: 0.8 }}>
+                    {genreAnswers.length}人が回答中
+                  </span>
                 </div>
-                <div className="genre-answers" style={{ padding: "16px" }}>
-                  {genreAnswers.length > 0 ? genreAnswers.map(({ uid: ansUid, songs }, i) => (
-                    <div key={i} style={{ marginBottom: i < genreAnswers.length - 1 ? "24px" : "0", borderBottom: i < genreAnswers.length - 1 ? "1px dashed #ccc" : "none", paddingBottom: i < genreAnswers.length - 1 ? "16px" : "0" }}>
+                <div className="genre-body" style={{ padding: "20px" }}>
+                  {genreAnswers.length > 0 ? genreAnswers.map(({ uid: ansUid, songs }, i) => {
+                    const user = usersMap[ansUid];
+                    const displayName = user?.displayName || "(不明)";
+                    const pictureUrl = user?.pictureUrl || "https://tappy-heartful.github.io/streak-images/navi/line-profile-unset.png";
+
+                    return (
+                    <div key={i} style={{ 
+                      marginBottom: i < genreAnswers.length - 1 ? "24px" : "0", 
+                      paddingBottom: i < genreAnswers.length - 1 ? "24px" : "0",
+                      borderBottom: i < genreAnswers.length - 1 ? "1px solid #eee" : "none"
+                    }}>
                       {!callData.isAnonymous && (
-                        <div className="answer-user" style={{ color: "#4CAF50", fontSize: "0.95em", fontWeight: "bold", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
-                          <i className="fas fa-user-circle"></i> {usersMap[ansUid] || "(不明)"}
+                        <div className="answer-user-header" style={{ 
+                          display: "flex", 
+                          alignItems: "center", 
+                          gap: "10px", 
+                          marginBottom: "14px"
+                        }}>
+                          <img 
+                            src={pictureUrl} 
+                            alt={displayName} 
+                            style={{ width: "32px", height: "32px", borderRadius: "50%", border: "2px solid #fff", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }} 
+                          />
+                          <span style={{ fontWeight: "700", color: "#333", fontSize: "1rem" }}>{displayName}</span>
                         </div>
                       )}
-                      {(songs as CallAnswerSong[]).map((song, j) => {
-                        const scoreName = song.scorestatus ? scoreStatusMap[song.scorestatus] : "";
-                        const youtubeHtml = song.url ? buildYouTubeHtml(song.url, true, false) : "";
+                      <div className="songs-list" style={{ display: "grid", gap: "12px", marginLeft: callData.isAnonymous ? "0" : "4px" }}>
+                        {(songs as CallAnswerSong[]).map((song, j) => {
+                          const scoreName = song.scorestatus ? scoreStatusMap[song.scorestatus] : "";
+                          const youtubeHtml = song.url ? buildYouTubeHtml(song.url, true, false) : "";
 
-                        return (
-                          <div key={j} className="song-item" style={{ marginBottom: j < songs.length - 1 ? "12px" : "0", borderLeft: "3px solid #4CAF50", backgroundColor: "#fafafa", padding: "12px", borderRadius: "0 6px 6px 0" }}>
-                            <div style={{ fontSize: "1.1em", marginBottom: "8px" }}><strong>{song.title}</strong></div>
-                            {song.url && (
-                              <div style={{ marginBottom: "6px" }}>
-                                <span style={{ fontSize: "0.85em", color: "#666" }}>参考音源: </span>
-                                {youtubeHtml ? (
-                                  <div
-                                    className="youtube-display-area"
-                                    style={{ marginTop: "8px", maxWidth: "480px", padding: "0 4px" }}
-                                    dangerouslySetInnerHTML={{ __html: youtubeHtml }}
-                                  />
-                                ) : (
-                                  <a href={song.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.9em", color: "#1a73e8" }}>
-                                    リンクを開く <i className="fas fa-arrow-up-right-from-square"></i>
-                                  </a>
+                          return (
+                            <div key={j} className="song-detail-card" style={{ 
+                              padding: "16px", 
+                              backgroundColor: "#f9f9f9", 
+                              borderRadius: "12px",
+                              borderLeft: `4px solid ${color.border}`,
+                              position: "relative"
+                            }}>
+                              <div style={{ fontSize: "1.1rem", fontWeight: "800", marginBottom: "10px", color: "#222" }}>
+                                {song.title}
+                              </div>
+                              
+                              {song.url && (
+                                <div className="song-media" style={{ marginBottom: "12px" }}>
+                                  {youtubeHtml ? (
+                                    <div
+                                      className="youtube-container"
+                                      style={{ marginTop: "8px", borderRadius: "8px", overflow: "hidden", maxWidth: "100%" }}
+                                      dangerouslySetInnerHTML={{ __html: youtubeHtml }}
+                                    />
+                                  ) : (
+                                    <a href={song.url} target="_blank" rel="noopener noreferrer" style={{ 
+                                      display: "inline-flex", 
+                                      alignItems: "center", 
+                                      gap: "6px",
+                                      fontSize: "0.9rem", 
+                                      color: "#1a73e8",
+                                      fontWeight: "600",
+                                      textDecoration: "none",
+                                      backgroundColor: "#e8f0fe",
+                                      padding: "6px 12px",
+                                      borderRadius: "20px"
+                                    }}>
+                                      <i className="fas fa-play-circle"></i> 参考音源を聴く
+                                    </a>
+                                  )}
+                                </div>
+                              )}
+
+                              <div className="song-meta-info" style={{ display: "flex", flexWrap: "wrap", gap: "15px", fontSize: "0.85rem" }}>
+                                {scoreName && (
+                                  <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#555" }}>
+                                    <i className="fas fa-file-alt" style={{ color: color.border }}></i>
+                                    <span style={{ fontWeight: "bold" }}>譜面:</span> {scoreName}
+                                  </div>
+                                )}
+                                {song.purchase && (
+                                  <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                    <i className="fas fa-shopping-cart" style={{ color: color.border }}></i>
+                                    <span style={{ fontWeight: "bold", color: "#555" }}>購入先:</span>
+                                    <a href={song.purchase} target="_blank" rel="noopener noreferrer" style={{ color: "#1a73e8", fontWeight: "600" }}>
+                                      リンク <i className="fas fa-external-link-alt" style={{ fontSize: "0.7rem" }}></i>
+                                    </a>
+                                  </div>
                                 )}
                               </div>
-                            )}
-                            {scoreName && <div style={{ marginBottom: "6px", fontSize: "0.9em" }}><span style={{ color: "#666" }}>譜面: </span>{scoreName}</div>}
-                            {song.purchase && (
-                              <div style={{ marginBottom: "6px", fontSize: "0.9em" }}>
-                                <span style={{ color: "#666" }}>購入先: </span>
-                                <a href={song.purchase} target="_blank" rel="noopener noreferrer" style={{ color: "#1a73e8" }}>
-                                  リンクを開く <i className="fas fa-arrow-up-right-from-square"></i>
-                                </a>
-                              </div>
-                            )}
-                            {song.note && (
-                              <div style={{ fontSize: "0.9em", marginTop: "8px", padding: "8px", backgroundColor: "#fff", border: "1px solid #eee", borderRadius: "4px", whiteSpace: "pre-wrap" }}>
-                                <span style={{ color: "#666", display: "block", marginBottom: "2px", fontSize: "0.85em", fontWeight: "bold" }}>備考:</span>
-                                {song.note}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+
+                              {song.note && (
+                                <div style={{ 
+                                  marginTop: "12px", 
+                                  padding: "10px 14px", 
+                                  backgroundColor: "#fff", 
+                                  border: "1px solid #eee", 
+                                  borderRadius: "8px", 
+                                  fontSize: "0.9rem", 
+                                  lineHeight: "1.5",
+                                  color: "#444",
+                                  whiteSpace: "pre-wrap"
+                                }}>
+                                  <div style={{ fontSize: "0.75rem", fontWeight: "900", color: "#999", textTransform: "uppercase", marginBottom: "4px" }}>Note</div>
+                                  {song.note}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  )) : (
-                    <div className="no-answer" style={{ color: "#aaa", textAlign: "center", padding: "16px 0" }}>このジャンルへの回答はまだありません</div>
+                  );}) : (
+                    <div className="no-answer-empty" style={{ 
+                      padding: "40px 0", 
+                      textAlign: "center", 
+                      color: "#aaa", 
+                      fontSize: "0.95rem",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "10px"
+                    }}>
+                      <i className="fas fa-comment-slash" style={{ fontSize: "2rem", opacity: 0.3 }}></i>
+                      このジャンルへの回答はまだありません
+                    </div>
                   )}
                 </div>
               </div>
