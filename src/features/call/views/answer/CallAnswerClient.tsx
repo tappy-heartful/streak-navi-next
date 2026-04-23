@@ -193,7 +193,7 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
                         </select>
                         <input
                           type="text"
-                          placeholder="購入先リンク(任意)"
+                          placeholder="購入/入手先リンク(任意)"
                           value={song.purchase}
                           onChange={e => updateSong(genre, idx, "purchase", e.target.value)}
                         />
