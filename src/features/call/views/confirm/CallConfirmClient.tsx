@@ -295,10 +295,10 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                                 )}
                                 {song.purchase && (
                                   <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                    <i className="fas fa-shopping-cart" style={{ color: color.border }}></i>
-                                    <span style={{ fontWeight: "bold", color: "#555" }}>購入先:</span>
+                                    <i className="fas fa-link" style={{ color: color.border }}></i>
+                                    <span style={{ fontWeight: "bold", color: "#555" }}>購入/入手先:</span>
                                     <a href={song.purchase} target="_blank" rel="noopener noreferrer" style={{ color: "#1a73e8", fontWeight: "600" }}>
-                                      リンク <i className="fas fa-external-link-alt" style={{ fontSize: "0.7rem" }}></i>
+                                      リンクを表示
                                     </a>
                                   </div>
                                 )}
