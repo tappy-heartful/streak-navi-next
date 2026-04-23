@@ -1,12 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { AnswerConfirmLayout } from "@/src/components/Layout/AnswerConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { Call, CallAnswer, CallAnswerSong } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { isInTerm, buildYouTubeHtml, showDialog, showSpinner, hideSpinner } from "@/src/lib/functions";
+import { isInTerm, buildYouTubeHtml, extractYouTubeId, showDialog, showSpinner, hideSpinner } from "@/src/lib/functions";
 import { deleteCallWithAnswers, deleteMyCallAnswer } from "@/src/features/call/api/call-client-service";
 
 type Props = {
@@ -21,6 +22,29 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
   const router = useRouter();
   const { userData } = useAuth();
   const uid = userData?.id;
+
+  // 全回答からYouTube IDを収集（表示順：ジャンル順 → 回答者順）
+  const allVideoIds = useMemo(() => {
+    const ids = new Set<string>();
+    (callData.items || []).forEach(genre => {
+      callAnswers.forEach(ans => {
+        const songs = ans.answers?.[genre] || [];
+        songs.forEach((song: CallAnswerSong) => {
+          if (song.url) {
+            const id = extractYouTubeId(song.url);
+            if (id && id.length === 11) ids.add(id);
+          }
+        });
+      });
+    });
+    return Array.from(ids);
+  }, [callData.items, callAnswers]);
+
+  const playlistUrl = allVideoIds.length > 0
+    ? allVideoIds.length === 1
+      ? `https://www.youtube.com/watch?v=${allVideoIds[0]}`
+      : `https://www.youtube.com/watch_videos?video_ids=${allVideoIds.join(",")}`
+    : "";
 
   const isActive = isInTerm(callData.acceptStartDate, callData.acceptEndDate);
   const myAnswer = callAnswers.find(a => a.uid === uid);
@@ -125,9 +149,16 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
 
         {/* 募集ジャンルごとの回答 */}
         <div id="call-items" style={{ marginTop: "3rem" }}>
-          <h3 style={{ fontSize: "1.4rem", fontWeight: "800", color: "#333", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "10px" }}>
-            <i className="fas fa-list-ul" style={{ color: "#4CAF50" }}></i> 募集ジャンルと回答
-          </h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "10px" }}>
+            <h3 style={{ fontSize: "1.4rem", fontWeight: "800", color: "#333", margin: 0, display: "flex", alignItems: "center", gap: "10px" }}>
+              <i className="fas fa-list-ul" style={{ color: "#4CAF50" }}></i> 募集ジャンルと回答
+            </h3>
+            {playlistUrl && (
+              <a href={playlistUrl} target="_blank" rel="noreferrer" className="list-badge-button" style={{ backgroundColor: "#ff0000", marginLeft: "auto" }}>
+                <i className="fa-brands fa-youtube"></i> 参考音源プレイリスト
+              </a>
+            )}
+          </div>
           {(callData.items || []).map((genre, idx) => {
             const genreAnswers = callAnswers.flatMap(ans => {
               const songs = ans.answers?.[genre] || [];
