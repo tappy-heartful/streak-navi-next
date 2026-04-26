@@ -157,6 +157,13 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
       >
         <DisplayField label="募集名">{callData.title}</DisplayField>
         <DisplayField label="募集説明" preWrap>{callData.description}</DisplayField>
+        <DisplayField label="受付期間">
+          {callData.acceptStartDate} ～ {callData.acceptEndDate}
+        </DisplayField>
+        <DisplayField label="1人あたり各ジャンル回答可能数">
+          {callData.maxSongsPerGenre ? `${callData.maxSongsPerGenre}曲` : "無制限"}
+        </DisplayField>
+        <DisplayField label="作成者">{callData.createdBy}</DisplayField>
 
         <div className="form-group" style={{ marginTop: "1.5rem" }}>
           <label>募集ジャンル</label>
