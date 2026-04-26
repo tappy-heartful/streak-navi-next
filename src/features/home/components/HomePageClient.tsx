@@ -15,11 +15,25 @@ import { InstagramEmbed } from "@/src/components/InstagramEmbed";
 const AnnouncementSection = memo(({ data }: { data: Announcement[] }) => (
   <main className="container">
     <section className={styles.announcementContainer}>
-      <div className={styles.announcementHeader}><h3>お知らせ</h3></div>
+      <div className={styles.announcementHeader}>
+        <h3>お知らせ</h3>
+      </div>
       <ul className={styles.notificationList}>
         {data.map((a, i) => (
-          <li key={i} className={styles[a.type === "pending" ? "pendingMessage" : a.type === "empty" ? "emptyMessage" : ""]}>
-            {a.type === "item" ? <Link prefetch={true} href={a.link || "#"} className={styles.notificationLink}>{a.label}</Link> : <div className={styles.notificationLink}>{a.message}</div>}
+          <li key={i}>
+            {a.type === "item" ? (
+              <Link prefetch={true} href={a.link || "#"} className={styles.notificationLink}>
+                {a.label}
+              </Link>
+            ) : a.type === "pending" ? (
+              <div className={styles.pendingMessage}>
+                {a.message}
+              </div>
+            ) : (
+              <div className={styles.emptyMessage}>
+                {a.message || "お知らせはありません🍀"}
+              </div>
+            )}
           </li>
         ))}
       </ul>
