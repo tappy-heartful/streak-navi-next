@@ -46,6 +46,16 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
       : `https://www.youtube.com/watch_videos?video_ids=${allVideoIds.join(",")}`
     : "";
 
+  const totalSongs = useMemo(() => {
+    let count = 0;
+    callAnswers.forEach(ans => {
+      Object.values(ans.answers || {}).forEach(songs => {
+        count += (songs as any[]).length;
+      });
+    });
+    return count;
+  }, [callAnswers]);
+
   const isActive = isInTerm(callData.acceptStartDate, callData.acceptEndDate);
   const myAnswer = callAnswers.find(a => a.uid === uid);
   const hasAnswered = !!myAnswer && Object.keys(myAnswer.answers).length > 0;
@@ -150,9 +160,14 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
         {/* 募集ジャンルごとの回答 */}
         <div id="call-items" style={{ marginTop: "3rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "10px" }}>
-            <h3 style={{ fontSize: "1.4rem", fontWeight: "800", color: "#333", margin: 0, display: "flex", alignItems: "center", gap: "10px" }}>
-              <i className="fas fa-list-ul" style={{ color: "#4CAF50" }}></i> 募集ジャンルと回答
-            </h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <h3 style={{ fontSize: "1.4rem", fontWeight: "800", color: "#333", margin: 0, display: "flex", alignItems: "center", gap: "10px" }}>
+                <i className="fas fa-list-ul" style={{ color: "#4CAF50" }}></i> 募集ジャンルと回答
+              </h3>
+              <div style={{ fontSize: "0.9rem", color: "#666", fontWeight: "600", marginLeft: "34px" }}>
+                回答人数: {participantCount}人 / 総候補曲数: {totalSongs}曲
+              </div>
+            </div>
             {playlistUrl && (
               <a href={playlistUrl} target="_blank" rel="noreferrer" className="list-badge-button" style={{ backgroundColor: "#ff0000", marginLeft: "auto" }}>
                 <i className="fa-brands fa-youtube"></i> 参考音源プレイリスト
@@ -178,25 +193,25 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
             const color = colors[idx % colors.length];
 
             return (
-              <div key={genre} className="genre-card-new" style={{ 
-                marginBottom: "2.5rem", 
-                backgroundColor: "#fff", 
-                borderRadius: "16px", 
-                boxShadow: "0 10px 25px rgba(0,0,0,0.05)", 
+              <div key={genre} className="genre-card-new" style={{
+                marginBottom: "2.5rem",
+                backgroundColor: "#fff",
+                borderRadius: "16px",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
                 border: `1px solid ${color.border}22`,
-                overflow: "hidden" 
+                overflow: "hidden"
               }}>
-                <div className="genre-header" style={{ 
-                  padding: "16px 24px", 
-                  backgroundColor: color.bg, 
+                <div className="genre-header" style={{
+                  padding: "16px 24px",
+                  backgroundColor: color.bg,
                   borderBottom: `2px solid ${color.border}`,
                   display: "flex",
                   flexDirection: "column",
                   gap: "4px"
                 }}>
-                  <span style={{ 
-                    fontWeight: "900", 
-                    fontSize: "1.2rem", 
+                  <span style={{
+                    fontWeight: "900",
+                    fontSize: "1.2rem",
                     color: color.text,
                     display: "flex",
                     alignItems: "center",
@@ -205,10 +220,10 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                   }}>
                     <i className="fas fa-music"></i> {genre}
                   </span>
-                  <span style={{ 
-                    fontSize: "0.85rem", 
-                    color: color.text, 
-                    fontWeight: "bold", 
+                  <span style={{
+                    fontSize: "0.85rem",
+                    color: color.text,
+                    fontWeight: "bold",
                     opacity: 0.8,
                     marginLeft: "28px" // アイコン(16px) + gap(8px) + 余裕
                   }}>
@@ -222,114 +237,115 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                     const pictureUrl = user?.pictureUrl || "https://tappy-heartful.github.io/streak-images/navi/line-profile-unset.png";
 
                     return (
-                    <div key={i} style={{ 
-                      marginBottom: i < genreAnswers.length - 1 ? "24px" : "0", 
-                      paddingBottom: i < genreAnswers.length - 1 ? "24px" : "0",
-                      borderBottom: i < genreAnswers.length - 1 ? "1px solid #eee" : "none"
-                    }}>
-                      {!callData.isAnonymous && (
-                        <div className="answer-user-header" style={{ 
-                          display: "flex", 
-                          alignItems: "center", 
-                          gap: "10px", 
-                          marginBottom: "14px"
-                        }}>
-                          <img 
-                            src={pictureUrl} 
-                            alt={displayName} 
-                            style={{ width: "32px", height: "32px", borderRadius: "50%", border: "2px solid #fff", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }} 
-                          />
-                          <span style={{ fontWeight: "700", color: "#333", fontSize: "1rem" }}>{displayName}</span>
-                        </div>
-                      )}
-                      <div className="songs-list" style={{ display: "grid", gap: "12px", marginLeft: callData.isAnonymous ? "0" : "4px" }}>
-                        {(songs as CallAnswerSong[]).map((song, j) => {
-                          const scoreName = song.scorestatus ? scoreStatusMap[song.scorestatus] : "";
-                          const youtubeHtml = song.url ? buildYouTubeHtml(song.url, true, false) : "";
+                      <div key={i} style={{
+                        marginBottom: i < genreAnswers.length - 1 ? "24px" : "0",
+                        paddingBottom: i < genreAnswers.length - 1 ? "24px" : "0",
+                        borderBottom: i < genreAnswers.length - 1 ? "1px solid #eee" : "none"
+                      }}>
+                        {!callData.isAnonymous && (
+                          <div className="answer-user-header" style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            marginBottom: "14px"
+                          }}>
+                            <img
+                              src={pictureUrl}
+                              alt={displayName}
+                              style={{ width: "32px", height: "32px", borderRadius: "50%", border: "2px solid #fff", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }}
+                            />
+                            <span style={{ fontWeight: "700", color: "#333", fontSize: "1rem" }}>{displayName}</span>
+                          </div>
+                        )}
+                        <div className="songs-list" style={{ display: "grid", gap: "12px", marginLeft: callData.isAnonymous ? "0" : "4px" }}>
+                          {(songs as CallAnswerSong[]).map((song, j) => {
+                            const scoreName = song.scorestatus ? scoreStatusMap[song.scorestatus] : "";
+                            const youtubeHtml = song.url ? buildYouTubeHtml(song.url, true, false) : "";
 
-                          return (
-                            <div key={j} className="song-detail-card" style={{ 
-                              padding: "16px", 
-                              backgroundColor: "#f9f9f9", 
-                              borderRadius: "12px",
-                              borderLeft: `4px solid ${color.border}`,
-                              position: "relative"
-                            }}>
-                              <div style={{ fontSize: "1.1rem", fontWeight: "800", marginBottom: "10px", color: "#222" }}>
-                                {song.title}
-                              </div>
-                              
-                              {song.url && (
-                                <div className="song-media" style={{ marginBottom: "12px" }}>
-                                  {youtubeHtml ? (
-                                    <div
-                                      className="youtube-container"
-                                      style={{ marginTop: "8px", borderRadius: "8px", overflow: "hidden", maxWidth: "100%" }}
-                                      dangerouslySetInnerHTML={{ __html: youtubeHtml }}
-                                    />
-                                  ) : (
-                                    <a href={song.url} target="_blank" rel="noopener noreferrer" style={{ 
-                                      display: "inline-flex", 
-                                      alignItems: "center", 
-                                      gap: "6px",
-                                      fontSize: "0.9rem", 
-                                      color: "#1a73e8",
-                                      fontWeight: "600",
-                                      textDecoration: "none",
-                                      backgroundColor: "#e8f0fe",
-                                      padding: "6px 12px",
-                                      borderRadius: "20px"
-                                    }}>
-                                      <i className="fas fa-play-circle"></i> 参考音源を聴く
-                                    </a>
+                            return (
+                              <div key={j} className="song-detail-card" style={{
+                                padding: "16px",
+                                backgroundColor: "#f9f9f9",
+                                borderRadius: "12px",
+                                borderLeft: `4px solid ${color.border}`,
+                                position: "relative"
+                              }}>
+                                <div style={{ fontSize: "1.1rem", fontWeight: "800", marginBottom: "10px", color: "#222" }}>
+                                  {song.title}
+                                </div>
+
+                                {song.url && (
+                                  <div className="song-media" style={{ marginBottom: "12px" }}>
+                                    {youtubeHtml ? (
+                                      <div
+                                        className="youtube-container"
+                                        style={{ marginTop: "8px", borderRadius: "8px", overflow: "hidden", maxWidth: "100%" }}
+                                        dangerouslySetInnerHTML={{ __html: youtubeHtml }}
+                                      />
+                                    ) : (
+                                      <a href={song.url} target="_blank" rel="noopener noreferrer" style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "6px",
+                                        fontSize: "0.9rem",
+                                        color: "#1a73e8",
+                                        fontWeight: "600",
+                                        textDecoration: "none",
+                                        backgroundColor: "#e8f0fe",
+                                        padding: "6px 12px",
+                                        borderRadius: "20px"
+                                      }}>
+                                        <i className="fas fa-play-circle"></i> 参考音源を聴く
+                                      </a>
+                                    )}
+                                  </div>
+                                )}
+
+                                <div className="song-meta-info" style={{ display: "flex", flexWrap: "wrap", gap: "15px", fontSize: "0.85rem" }}>
+                                  {scoreName && (
+                                    <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#555" }}>
+                                      <i className="fas fa-file-alt" style={{ color: color.border }}></i>
+                                      <span style={{ fontWeight: "bold" }}>譜面:</span> {scoreName}
+                                    </div>
+                                  )}
+                                  {song.purchase && (
+                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                      <i className="fas fa-link" style={{ color: color.border }}></i>
+                                      <span style={{ fontWeight: "bold", color: "#555" }}>購入/入手先:</span>
+                                      <a href={song.purchase} target="_blank" rel="noopener noreferrer" style={{ color: "#1a73e8", fontWeight: "600" }}>
+                                        リンクを表示
+                                      </a>
+                                    </div>
                                   )}
                                 </div>
-                              )}
 
-                              <div className="song-meta-info" style={{ display: "flex", flexWrap: "wrap", gap: "15px", fontSize: "0.85rem" }}>
-                                {scoreName && (
-                                  <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#555" }}>
-                                    <i className="fas fa-file-alt" style={{ color: color.border }}></i>
-                                    <span style={{ fontWeight: "bold" }}>譜面:</span> {scoreName}
-                                  </div>
-                                )}
-                                {song.purchase && (
-                                  <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                    <i className="fas fa-link" style={{ color: color.border }}></i>
-                                    <span style={{ fontWeight: "bold", color: "#555" }}>購入/入手先:</span>
-                                    <a href={song.purchase} target="_blank" rel="noopener noreferrer" style={{ color: "#1a73e8", fontWeight: "600" }}>
-                                      リンクを表示
-                                    </a>
+                                {song.note && (
+                                  <div style={{
+                                    marginTop: "12px",
+                                    padding: "10px 14px",
+                                    backgroundColor: "#fff",
+                                    border: "1px solid #eee",
+                                    borderRadius: "8px",
+                                    fontSize: "0.9rem",
+                                    lineHeight: "1.5",
+                                    color: "#444",
+                                    whiteSpace: "pre-wrap"
+                                  }}>
+                                    <div style={{ fontSize: "0.75rem", fontWeight: "900", color: "#999", textTransform: "uppercase", marginBottom: "4px" }}>Note</div>
+                                    {song.note}
                                   </div>
                                 )}
                               </div>
-
-                              {song.note && (
-                                <div style={{ 
-                                  marginTop: "12px", 
-                                  padding: "10px 14px", 
-                                  backgroundColor: "#fff", 
-                                  border: "1px solid #eee", 
-                                  borderRadius: "8px", 
-                                  fontSize: "0.9rem", 
-                                  lineHeight: "1.5",
-                                  color: "#444",
-                                  whiteSpace: "pre-wrap"
-                                }}>
-                                  <div style={{ fontSize: "0.75rem", fontWeight: "900", color: "#999", textTransform: "uppercase", marginBottom: "4px" }}>Note</div>
-                                  {song.note}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  );}) : (
-                    <div className="no-answer-empty" style={{ 
-                      padding: "40px 0", 
-                      textAlign: "center", 
-                      color: "#aaa", 
+                    );
+                  }) : (
+                    <div className="no-answer-empty" style={{
+                      padding: "40px 0",
+                      textAlign: "center",
+                      color: "#aaa",
                       fontSize: "0.95rem",
                       display: "flex",
                       flexDirection: "column",
