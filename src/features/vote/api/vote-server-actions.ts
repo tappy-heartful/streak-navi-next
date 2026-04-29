@@ -19,6 +19,8 @@ export async function fetchVotes(): Promise<Vote[]> {
       createdAt: data.createdAt?.toMillis() || 0,
       updatedAt: data.updatedAt?.toMillis() || 0,
       items: data.items || [],
+      type: data.type || "single",
+      bordaConfig: data.bordaConfig || undefined,
     };
   });
 }
@@ -40,6 +42,8 @@ export async function fetchVote(id: string): Promise<Vote | null> {
     createdAt: data.createdAt?.toMillis() || 0,
     updatedAt: data.updatedAt?.toMillis() || 0,
     items: data.items || [],
+    type: data.type || "single",
+    bordaConfig: data.bordaConfig || null,
   };
 }
 

@@ -22,7 +22,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
   const { userData } = useAuth();
   const uid = userData?.id;
 
-  const [answers, setAnswers] = useState<Record<string, string | null>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[] | null>>({});
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
@@ -35,7 +35,19 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
       const snap = await getDoc(doc(db, "voteAnswers", `${voteId}_${uid}`));
       if (snap.exists()) {
         const data = snap.data();
-        setAnswers(data.answers || {});
+        const loadedAnswers = data.answers || {};
+        
+        // 投票形式が変更されていた場合の型調整
+        vote.items.forEach(item => {
+          const ans = loadedAnswers[item.name];
+          if (vote.type === "borda" && typeof ans === "string") {
+            loadedAnswers[item.name] = [ans];
+          } else if (vote.type !== "borda" && Array.isArray(ans)) {
+            loadedAnswers[item.name] = ans[0] || null;
+          }
+        });
+        
+        setAnswers(loadedAnswers);
         setIsEdit(true);
       }
       setIsLoading(false);
@@ -45,6 +57,18 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
 
   const handleChange = (itemName: string, choiceName: string) => {
     setAnswers(prev => ({ ...prev, [itemName]: choiceName }));
+  };
+  
+  const handleBordaClick = (itemName: string, choiceName: string, maxRanks: number) => {
+    const current = (answers[itemName] as string[]) || [];
+    if (current.includes(choiceName)) return; // Already selected
+    if (current.length >= maxRanks) return; // Full
+    
+    setAnswers(prev => ({ ...prev, [itemName]: [...current, choiceName] }));
+  };
+
+  const handleClearBorda = (itemName: string) => {
+    setAnswers(prev => ({ ...prev, [itemName]: [] }));
   };
 
   const handleYoutubeModal = (url: string, title: string) => {
@@ -58,7 +82,12 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
     // validation
     const errorItems: string[] = [];
     vote.items.forEach(item => {
-      if (!answers[item.name]) errorItems.push(item.name);
+      const ans = answers[item.name];
+      if (vote.type === "borda") {
+        if (!ans || (ans as string[]).length === 0) errorItems.push(item.name);
+      } else {
+        if (!ans) errorItems.push(item.name);
+      }
     });
 
     if (errorItems.length > 0) {
@@ -129,33 +158,82 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
         </div>
 
         <div>
-          {vote.items.map((item, i) => (
-            <div key={item.name} className="vote-item">
-              <div className="vote-item-title">{item.name}</div>
-              <div className="vote-choices">
-                {item.choices.map((choice, j) => {
-                  const id = `choice-${i}-${j}`;
-                  const isChecked = answers[item.name] === choice.name;
-                  return (
-                    <div key={choice.name} className="vote-choice-wrapper">
-                      <label className={`vote-choice-label${isChecked ? " selected" : ""}`} htmlFor={id}>
-                        <input
-                          type="radio"
-                          name={item.name}
-                          id={id}
-                          value={choice.name}
-                          checked={isChecked}
-                          onChange={() => handleChange(item.name, choice.name)}
-                        />
-                        {choice.name}
-                      </label>
-                      {renderLinkIcon(choice.link, choice.name)}
-                    </div>
-                  );
-                })}
+          {vote.items.map((item, i) => {
+            const isBorda = vote.type === "borda";
+            const bordaAns = isBorda ? (answers[item.name] as string[]) || [] : [];
+            const maxRanks = vote.bordaConfig?.maxRanks || 3;
+
+            return (
+              <div key={item.name} className="vote-item" style={{ marginBottom: "2rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                  <div className="vote-item-title" style={{ margin: 0 }}>{item.name}</div>
+                  {isBorda && (
+                    <button type="button" onClick={() => handleClearBorda(item.name)} style={{
+                      fontSize: "0.8rem", padding: "4px 10px", backgroundColor: "#f0f0f0", border: "1px solid #ccc", borderRadius: "4px", color: "#666"
+                    }}>
+                      選びなおす
+                    </button>
+                  )}
+                </div>
+                {isBorda && (
+                  <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "10px" }}>
+                    タップした順に順位が付きます（最大{maxRanks}位まで）
+                  </p>
+                )}
+                <div className="vote-choices">
+                  {item.choices.map((choice, j) => {
+                    const id = `choice-${i}-${j}`;
+                    const rankIdx = isBorda ? bordaAns.indexOf(choice.name) : -1;
+                    const isChecked = isBorda ? rankIdx !== -1 : answers[item.name] === choice.name;
+
+                    return (
+                      <div key={choice.name} className="vote-choice-wrapper">
+                        <label
+                          className={`vote-choice-label${isChecked ? " selected" : ""}`}
+                          htmlFor={id}
+                          style={isBorda ? { position: "relative" } : undefined}
+                          onClick={() => isBorda && handleBordaClick(item.name, choice.name, maxRanks)}
+                        >
+                          {!isBorda && (
+                            <input
+                              type="radio"
+                              name={item.name}
+                              id={id}
+                              value={choice.name}
+                              checked={isChecked}
+                              onChange={() => handleChange(item.name, choice.name)}
+                            />
+                          )}
+                          {isBorda && isChecked && (
+                            <span style={{
+                              position: "absolute",
+                              left: "10px",
+                              backgroundColor: "#ff0000",
+                              color: "#fff",
+                              width: "22px",
+                              height: "22px",
+                              borderRadius: "50%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "0.8rem",
+                              fontWeight: "bold"
+                            }}>
+                              {rankIdx + 1}
+                            </span>
+                          )}
+                          <span style={isBorda && isChecked ? { paddingLeft: "26px" } : undefined}>
+                            {choice.name}
+                          </span>
+                        </label>
+                        {renderLinkIcon(choice.link, choice.name)}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {modalOpen && (
