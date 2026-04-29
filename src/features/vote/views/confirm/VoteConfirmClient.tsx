@@ -205,7 +205,22 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
           {voteData.type === "borda" ? (
             <span style={{ color: "#E91E63", fontWeight: "bold" }}>
               <i className="fas fa-list-ol" style={{ marginRight: "6px" }} />
-              ボルダルール（最大{voteData.bordaConfig?.maxRanks}位まで選択 / {voteData.bordaConfig?.scoring === "weighted" ? "傾斜" : "線形"}配点）
+              ボルダルール（最大{voteData.bordaConfig?.maxRanks}位 / {voteData.bordaConfig?.scoring === "weighted" ? "傾斜" : "線形"}配点: {(() => {
+                const max = voteData.bordaConfig?.maxRanks || 3;
+                const scoring = voteData.bordaConfig?.scoring || "linear";
+                const pts = [];
+                for (let i = 0; i < max; i++) {
+                  let p = 0;
+                  if (scoring === "linear") p = max - i;
+                  else {
+                    const weights = [10, 6, 4, 3, 2, 1];
+                    if (max === 3) p = [5, 3, 1][i];
+                    else p = weights[i] || 1;
+                  }
+                  pts.push(`${i + 1}位:${p}pt`);
+                }
+                return pts.join(", ");
+              })()}）
             </span>
           ) : (
             <span>

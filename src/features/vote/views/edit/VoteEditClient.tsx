@@ -342,6 +342,28 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
                     傾斜（3位なら 5, 3, 1点）
                   </label>
                 </div>
+                <div style={{ marginTop: "12px", fontSize: "0.85rem", color: "#666", padding: "10px", backgroundColor: "#f8f9fa", borderRadius: "6px", border: "1px solid #e9ecef" }}>
+                  <i className="fas fa-info-circle" style={{ marginRight: "6px", color: "#1a73e8" }}></i>
+                  <strong>配点のプレビュー:</strong>
+                  <div style={{ marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                    {(() => {
+                      const max = Number(values.maxRanks);
+                      const scoring = values.scoring;
+                      const pts = [];
+                      for (let i = 0; i < max; i++) {
+                        let p = 0;
+                        if (scoring === "linear") p = max - i;
+                        else {
+                          const weights = [10, 6, 4, 3, 2, 1];
+                          if (max === 3) p = [5, 3, 1][i];
+                          else p = weights[i] || 1;
+                        }
+                        pts.push(<span key={i} style={{ backgroundColor: "#fff", padding: "2px 6px", borderRadius: "4px", border: "1px solid #dee2e6" }}>{i + 1}位: {p}pt</span>);
+                      }
+                      return pts;
+                    })()}
+                  </div>
+                </div>
               </div>
             </div>
           )}

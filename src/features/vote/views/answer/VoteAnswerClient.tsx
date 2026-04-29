@@ -177,7 +177,21 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
                 </div>
                 {isBorda && (
                   <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "10px" }}>
-                    タップした順に順位が付きます（最大{maxRanks}位まで）
+                    タップした順に順位が付きます（最大{maxRanks}位まで / {(() => {
+                      const pts = [];
+                      const scoring = vote.bordaConfig?.scoring || "linear";
+                      for (let i = 0; i < maxRanks; i++) {
+                        let p = 0;
+                        if (scoring === "linear") p = maxRanks - i;
+                        else {
+                          const weights = [10, 6, 4, 3, 2, 1];
+                          if (maxRanks === 3) p = [5, 3, 1][i];
+                          else p = weights[i] || 1;
+                        }
+                        pts.push(`${i + 1}位:${p}pt`);
+                      }
+                      return pts.join(", ");
+                    })()}）
                   </p>
                 )}
                 <div className="vote-choices">
