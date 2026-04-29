@@ -216,7 +216,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
             </div>
             {playlistUrl && (
               <a href={playlistUrl} target="_blank" rel="noreferrer" className="list-badge-button" style={{ backgroundColor: "#ff0000", marginLeft: "auto" }}>
-                <i className="fa-brands fa-youtube"></i> 参考音源プレイリスト
+                <i className="fa-brands fa-youtube"></i> 全曲プレイリスト
               </a>
             )}
           </div>
@@ -265,7 +265,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                 }}>
                   <i className="fas fa-question-circle"></i> {renderLink(item.link, item.name)}
                 </div>
-                <div className="vote-results" style={{ padding: "20px", marginTop: 0 }}>
+                <div className="vote-results" style={{ padding: "20px", marginTop: 0, position: "relative" }}>
                   {item.choices.map(choice => {
                     const count = results[choice.name] || 0;
                     const percent = canViewResults ? (count / maxVotes) * 100 : 0;
@@ -304,6 +304,41 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                       </div>
                     );
                   })}
+                  {(() => {
+                    const itemVideoIds = new Set<string>();
+                    if (item.link) {
+                      const id = extractYouTubeId(item.link);
+                      if (id && id.length === 11) itemVideoIds.add(id);
+                    }
+                    item.choices.forEach(c => {
+                      if (c.link) {
+                        const id = extractYouTubeId(c.link);
+                        if (id && id.length === 11) itemVideoIds.add(id);
+                      }
+                    });
+                    const itemPlaylistUrl = itemVideoIds.size > 0
+                      ? itemVideoIds.size === 1
+                        ? `https://www.youtube.com/watch?v=${Array.from(itemVideoIds)[0]}`
+                        : `https://www.youtube.com/watch_videos?video_ids=${Array.from(itemVideoIds).join(",")}`
+                      : "";
+
+                    return itemPlaylistUrl && (
+                      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+                        <a
+                          href={itemPlaylistUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="list-badge-button"
+                          style={{
+                            backgroundColor: "#ff0000",
+                            margin: 0
+                          }}
+                        >
+                          <i className="fa-brands fa-youtube"></i> このジャンルのプレイリスト
+                        </a>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             );
