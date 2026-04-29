@@ -170,7 +170,7 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
             </div>
             {playlistUrl && (
               <a href={playlistUrl} target="_blank" rel="noreferrer" className="list-badge-button" style={{ backgroundColor: "#ff0000", marginLeft: "auto" }}>
-                <i className="fa-brands fa-youtube"></i> 参考音源プレイリスト
+                <i className="fa-brands fa-youtube"></i> 全曲プレイリスト
               </a>
             )}
           </div>
@@ -225,7 +225,7 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                     color: color.text,
                     fontWeight: "bold",
                     opacity: 0.8,
-                    marginLeft: "28px" // アイコン(16px) + gap(8px) + 余裕
+                    marginLeft: "28px"
                   }}>
                     {genreAnswers.length}人が回答中
                   </span>
@@ -356,6 +356,39 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                       このジャンルへの回答はまだありません
                     </div>
                   )}
+                  {(() => {
+                    const genreVideoIds = new Set<string>();
+                    genreAnswers.forEach(ans => {
+                      ans.songs.forEach((song: CallAnswerSong) => {
+                        if (song.url) {
+                          const id = extractYouTubeId(song.url);
+                          if (id && id.length === 11) genreVideoIds.add(id);
+                        }
+                      });
+                    });
+                    const genrePlaylistUrl = genreVideoIds.size > 0
+                      ? genreVideoIds.size === 1
+                        ? `https://www.youtube.com/watch?v=${Array.from(genreVideoIds)[0]}`
+                        : `https://www.youtube.com/watch_videos?video_ids=${Array.from(genreVideoIds).join(",")}`
+                      : "";
+
+                    return genrePlaylistUrl && (
+                      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+                        <a
+                          href={genrePlaylistUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="list-badge-button"
+                          style={{
+                            backgroundColor: "#ff0000",
+                            margin: 0
+                          }}
+                        >
+                          <i className="fa-brands fa-youtube"></i> このジャンルのプレイリスト
+                        </a>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             );
