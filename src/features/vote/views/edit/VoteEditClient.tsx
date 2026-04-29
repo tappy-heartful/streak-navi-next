@@ -311,16 +311,16 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
           <AppInput label="投票説明" field="description" required placeholder="投票の説明を入力してください" value={values.description} updateField={handleChange} />
         </div>
 
-        <div className="form-group" style={{ backgroundColor: "#f8f9fa", padding: "1.5rem", borderRadius: "8px", border: "1px solid #dee2e6" }}>
-          <label className="form-label" style={{ fontWeight: "bold", fontSize: "1.1rem" }}>投票形式</label>
-          <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
-              <input type="radio" checked={values.type === "single"} onChange={() => handleChange("type", "single")} />
-              シンプル（1人1票）
+        <div className="form-group" style={{ backgroundColor: "#f8f9fa", padding: "1.2rem", borderRadius: "8px", border: "1px solid #dee2e6" }}>
+          <label className="form-label" style={{ fontWeight: "bold", fontSize: "1rem", marginBottom: "12px", display: "block" }}>投票形式</label>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "8px 12px", backgroundColor: "#fff", borderRadius: "6px", border: "1px solid #e9ecef" }}>
+              <input type="radio" style={{ width: "18px", height: "18px" }} checked={values.type === "single"} onChange={() => handleChange("type", "single")} />
+              <span>シンプル（1人1票）</span>
             </label>
-            <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
-              <input type="radio" checked={values.type === "borda"} onChange={() => handleChange("type", "borda")} />
-              ボルダルール（順位付け投票）
+            <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "8px 12px", backgroundColor: "#fff", borderRadius: "6px", border: "1px solid #e9ecef" }}>
+              <input type="radio" style={{ width: "18px", height: "18px" }} checked={values.type === "borda"} onChange={() => handleChange("type", "borda")} />
+              <span>ボルダルール（順位付け投票）</span>
             </label>
           </div>
 
@@ -331,15 +331,15 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
                 <input type="number" className="form-control" style={{ width: "100px" }} value={values.maxRanks} onChange={e => handleChange("maxRanks", e.target.value)} min="2" max="10" />
               </div>
               <div>
-                <label className="form-label" style={{ fontWeight: "bold" }}>配点方式</label>
-                <div style={{ display: "flex", gap: "20px", marginTop: "5px" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
-                    <input type="radio" checked={values.scoring === "linear"} onChange={() => handleChange("scoring", "linear")} />
-                    線形（3位なら 3, 2, 1点）
+                <label className="form-label" style={{ fontWeight: "bold", marginBottom: "8px", display: "block" }}>配点方式</label>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "8px 12px", backgroundColor: "#fff", borderRadius: "6px", border: "1px solid #e9ecef" }}>
+                    <input type="radio" style={{ width: "16px", height: "16px" }} checked={values.scoring === "linear"} onChange={() => handleChange("scoring", "linear")} />
+                    <span>線形（3位なら 3, 2, 1点）</span>
                   </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
-                    <input type="radio" checked={values.scoring === "weighted"} onChange={() => handleChange("scoring", "weighted")} />
-                    傾斜（3位なら 5, 3, 1点）
+                  <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "8px 12px", backgroundColor: "#fff", borderRadius: "6px", border: "1px solid #e9ecef" }}>
+                    <input type="radio" style={{ width: "16px", height: "16px" }} checked={values.scoring === "weighted"} onChange={() => handleChange("scoring", "weighted")} />
+                    <span>傾斜（3位なら 5, 3, 1点）</span>
                   </label>
                 </div>
                 <div style={{ marginTop: "12px", fontSize: "0.85rem", color: "#666", padding: "10px", backgroundColor: "#f8f9fa", borderRadius: "6px", border: "1px solid #e9ecef" }}>
