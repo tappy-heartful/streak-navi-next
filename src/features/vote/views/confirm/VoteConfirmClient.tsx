@@ -349,19 +349,20 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                               {isBorda && myRank !== -1 && (
                                 <span style={{
                                   fontSize: "0.75rem",
-                                  backgroundColor: "#ff0000",
+                                  background: (() => {
+                                    if (myRank === 0) return "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)"; // Gold
+                                    if (myRank === 1) return "linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%)"; // Silver
+                                    if (myRank === 2) return "linear-gradient(135deg, #CD7F32 0%, #8B4513 100%)"; // Bronze
+                                    return "linear-gradient(135deg, #4A90E2 0%, #357ABD 100%)"; // Default Blue
+                                  })(),
                                   color: "#fff",
-                                  padding: "1px 5px",
+                                  padding: "2px 6px",
                                   borderRadius: "4px",
                                   fontWeight: "bold",
-                                  lineHeight: "1"
+                                  lineHeight: "1",
+                                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
                                 }}>
-                                  {(() => {
-                                    if (scoring === "linear") return maxRanks - myRank;
-                                    const weights = [10, 6, 4, 3, 2, 1];
-                                    if (maxRanks === 3) return [5, 3, 1][myRank];
-                                    return weights[myRank] || 1;
-                                  })()}pt
+                                  {myRank + 1}位
                                 </span>
                               )}
                             </div>
