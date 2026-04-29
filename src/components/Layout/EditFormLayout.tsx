@@ -55,7 +55,7 @@ export const EditFormLayout = <T extends Record<string, any>>({
     if (Object.keys(errors).length > 0) return showDialog("入力内容を確認してください", true);
     if (!(await showDialog(`${mode === "edit" ? "更新" : "登録"}しますか？`))) return;
 
-    const { showSpinner, hideSpinner } = await import("@/src/lib/functions");
+    const { showSpinner, hideSpinner, writeLog } = await import("@/src/lib/functions");
     showSpinner();
     try {
       const finalId = await onSaveApi(form.formData);
@@ -67,6 +67,7 @@ export const EditFormLayout = <T extends Record<string, any>>({
     } catch (error) {
       hideSpinner();
       const msg = error instanceof Error ? error.message : "";
+      await writeLog({ dataId: dataId || "new", action: `${featureName}${mode === "edit" ? "更新" : "登録"}`, status: "error", errorDetail: { message: msg } });
       if (msg.startsWith("validation:")) {
         await showDialog(msg.slice("validation:".length), true);
       } else {

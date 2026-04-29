@@ -13,6 +13,7 @@ import {
   showSpinner,
   hideSpinner,
   showDialog,
+  writeLog,
 } from "@/src/lib/functions";
 import React from "react";
 
@@ -45,6 +46,7 @@ export default function Header() {
       router.push("/login");
     } catch (error) {
       console.error("Logout Error:", error);
+      await writeLog({ dataId: uid, action: "ログアウト", status: "error", errorDetail: { message: (error as Error).message } });
       await showDialog("ログアウトに失敗しました", true);
     } finally {
       hideSpinner();
@@ -55,7 +57,10 @@ export default function Header() {
   const handleShare = () => {
     const url = window.location.href;
     if (navigator.share) {
-      navigator.share({ title: document.title, url }).catch(console.error);
+      navigator.share({ title: document.title, url }).catch(async (error) => {
+        console.error(error);
+        await writeLog({ dataId: uid, action: "シェア", status: "error", errorDetail: { message: (error as Error).message } });
+      });
     } else {
       navigator.clipboard.writeText(url).then(() => showDialog("URLをコピーしました", true));
     }

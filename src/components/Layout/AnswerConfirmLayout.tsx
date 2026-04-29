@@ -6,7 +6,7 @@ import { FormFooter } from "../Form/FormFooter";
 import { DetailActionButtons } from "../Form/DetailActionButtons";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
-import { showDialog, archiveAndDeleteDoc } from "@/src/lib/functions";
+import { showDialog, archiveAndDeleteDoc, writeLog } from "@/src/lib/functions";
 
 export type AnswerStatusType = "answered" | "pending" | "closed";
 
@@ -56,25 +56,28 @@ export const AnswerConfirmLayout = ({
   }, [setBreadcrumbs, name, basePath]);
 
   const handleDelete = async () => {
-    if (onDelete) {
-      await onDelete();
-      return;
-    }
-    if (!collectionName) return;
-    const confirmed = await showDialog(`この${name}を削除しますか？\nこの操作は元に戻せません。`);
-    if (!confirmed) return;
-    
     const { showSpinner, hideSpinner } = await import("@/src/lib/functions");
-    showSpinner();
     try {
+      if (onDelete) {
+        showSpinner();
+        await onDelete();
+        hideSpinner();
+        return;
+      }
+      if (!collectionName) return;
+      const confirmed = await showDialog(`この${name}を削除しますか？\nこの操作は元に戻せません。`);
+      if (!confirmed) return;
+      
+      showSpinner();
       await archiveAndDeleteDoc(collectionName, dataId);
       hideSpinner();
       await showDialog("削除しました", true);
       
       showSpinner(); // 遷移用スピナー
       router.push(afterDeletePath ?? basePath);
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId, action: `${name}削除`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };

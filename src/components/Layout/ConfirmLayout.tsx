@@ -65,7 +65,7 @@ export const ConfirmLayout = ({
     const confirmed = await showDialog(`この${name}を削除しますか？\nこの操作は元に戻せません。`);
     if (!confirmed) return;
 
-    const { showSpinner, hideSpinner, archiveAndDeleteDoc } = await import("@/src/lib/functions");
+    const { showSpinner, hideSpinner, archiveAndDeleteDoc, writeLog } = await import("@/src/lib/functions");
     showSpinner();
     try {
       await archiveAndDeleteDoc(collectionName, dataId);
@@ -75,6 +75,7 @@ export const ConfirmLayout = ({
     } catch (e) {
       console.error(e);
       hideSpinner();
+      await writeLog({ dataId, action: `${name}削除`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };
