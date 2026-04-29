@@ -12,7 +12,7 @@ import { FormButtons } from "@/src/components/Form/FormButtons";
 import { FormFooter } from "@/src/components/Form/FormFooter";
 import { Vote, Call, VoteItem, VoteChoice, CallAnswerSong } from "@/src/lib/firestore/types";
 import { addVote, updateVote } from "@/src/features/vote/api/vote-client-service";
-import { showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
+import { showSpinner, hideSpinner, showDialog, writeLog } from "@/src/lib/functions";
 
 type Mode = "new" | "edit" | "copy" | "createFromCall";
 
@@ -284,6 +284,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       }
 
       hideSpinner();
+      await writeLog({ dataId: newVoteId || "new", action: `投票${isEdit ? "更新" : "登録"}` });
       await showDialog("保存しました", true);
 
       router.refresh();
@@ -292,8 +293,9 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       } else {
         router.push(`/vote/confirm?voteId=${newVoteId}`);
       }
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: voteId || "new", action: `投票${isEdit ? "更新" : "登録"}`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("保存に失敗しました", true);
     }
   };

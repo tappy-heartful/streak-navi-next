@@ -7,7 +7,7 @@ import { AnswerConfirmLayout } from "@/src/components/Layout/AnswerConfirmLayout
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { Call, CallAnswer, CallAnswerSong } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { isInTerm, buildYouTubeHtml, extractYouTubeId, showDialog, showSpinner, hideSpinner } from "@/src/lib/functions";
+import { isInTerm, buildYouTubeHtml, extractYouTubeId, showDialog, showSpinner, hideSpinner, writeLog } from "@/src/lib/functions";
 import { deleteCallWithAnswers, deleteMyCallAnswer } from "@/src/features/call/api/call-client-service";
 
 type Props = {
@@ -74,13 +74,15 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
     try {
       await deleteCallWithAnswers(callId);
       hideSpinner();
+      await writeLog({ dataId: callId, action: "曲募集削除" });
       await showDialog("削除しました", true);
 
       router.refresh();
       showSpinner();
       router.push("/call");
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: callId, action: "曲募集削除", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };
@@ -94,10 +96,12 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
     try {
       await deleteMyCallAnswer(callId, uid);
       hideSpinner();
+      await writeLog({ dataId: callId, action: "曲募集回答取消" });
       await showDialog("回答を取り消しました", true);
       router.refresh();
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: callId, action: "曲募集回答取消", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };

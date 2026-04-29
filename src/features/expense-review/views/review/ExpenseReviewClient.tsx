@@ -6,7 +6,7 @@ import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { FormField } from "@/src/components/Form/FormField";
 import { ExpenseApply, Prefecture, ExpenseApplyHistory } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { showSpinner, hideSpinner, showDialog, format } from "@/src/lib/functions";
+import { showSpinner, hideSpinner, showDialog, format, writeLog } from "@/src/lib/functions";
 import { judgeExpenseApply, undoReview } from "@/src/features/expense-review/api/expense-review-client-service";
 import { useRouter } from "next/navigation";
 import { ExpenseHistoryList } from "@/src/components/ExpenseHistoryList";
@@ -70,10 +70,14 @@ export function ExpenseReviewClient({
         commentStr,
         userData?.displayName || "不明"
       );
+      hideSpinner();
+      await writeLog({ dataId: expenseId, action: `経費審査${action}` });
       await showDialog(`${action}しました`, true);
       router.refresh();
     } catch (e) {
+      hideSpinner();
       console.error(e);
+      await writeLog({ dataId: expenseId, action: `経費審査${action}`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("処理に失敗しました", true);
     } finally {
       hideSpinner();
@@ -98,10 +102,14 @@ export function ExpenseReviewClient({
     showSpinner();
     try {
       await undoReview(expenseId, commentStr, userData?.displayName || "不明");
+      hideSpinner();
+      await writeLog({ dataId: expenseId, action: "経費審査取消" });
       await showDialog("審査待ちに戻しました", true);
       router.refresh();
     } catch (e) {
+      hideSpinner();
       console.error(e);
+      await writeLog({ dataId: expenseId, action: "経費審査取消", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("処理に失敗しました", true);
     } finally {
       hideSpinner();

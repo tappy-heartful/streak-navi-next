@@ -7,7 +7,7 @@ import { AnswerEditLayout } from "@/src/components/Layout/AnswerEditLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { Call, ScoreStatus } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { showDialog, showSpinner, hideSpinner } from "@/src/lib/functions";
+import { showDialog, showSpinner, hideSpinner, writeLog } from "@/src/lib/functions";
 import { getMyCallAnswer, saveCallAnswer } from "@/src/features/call/api/call-client-service";
 
 type SongInput = {
@@ -132,13 +132,15 @@ export function CallAnswerClient({ callData, callId, scoreStatuses }: Props) {
     try {
       await saveCallAnswer(callId, uid, filteredAnswers);
       hideSpinner();
+      await writeLog({ dataId: callId, action: `曲募集回答${mode === "edit" ? "修正" : "登録"}` });
       await showDialog(`回答を${mode === "edit" ? "修正" : "登録"}しました`, true);
       
       router.refresh();
       showSpinner();
       router.push(`/call/confirm?callId=${callId}`);
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: callId, action: `曲募集回答${mode === "edit" ? "修正" : "登録"}`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("保存に失敗しました", true);
     }
   };

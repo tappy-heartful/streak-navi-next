@@ -60,6 +60,7 @@ export const EditFormLayout = <T extends Record<string, any>>({
     try {
       const finalId = await onSaveApi(form.formData);
       hideSpinner();
+      await writeLog({ dataId: finalId || dataId || "new", action: `${featureName}${mode === "edit" ? "更新" : "登録"}` });
       await showDialog("保存しました", true);
       
       showSpinner(); // 遷移用スピナー

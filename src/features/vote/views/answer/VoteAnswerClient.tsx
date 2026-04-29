@@ -6,7 +6,7 @@ import { Vote } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { AnswerEditLayout } from "@/src/components/Layout/AnswerEditLayout";
-import { buildYouTubeHtml, showDialog, showSpinner, hideSpinner } from "@/src/lib/functions";
+import { buildYouTubeHtml, showDialog, showSpinner, hideSpinner, writeLog } from "@/src/lib/functions";
 import { submitVoteAnswer } from "@/src/features/vote/api/vote-client-service";
 import { db } from "@/src/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -104,11 +104,13 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
     try {
       await submitVoteAnswer(voteId, uid, answers);
       hideSpinner();
+      await writeLog({ dataId: voteId, action: `投票回答${isEdit ? "修正" : "登録"}` });
       await showDialog(`回答を${isEdit ? "修正" : "登録"}しました`, true);
       router.refresh();
       router.push(`/vote/confirm?voteId=${voteId}`);
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: voteId, action: `投票回答${isEdit ? "修正" : "登録"}`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("保存に失敗しました", true);
     }
   };

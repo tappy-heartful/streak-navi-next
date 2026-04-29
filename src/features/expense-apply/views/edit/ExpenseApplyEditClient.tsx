@@ -22,7 +22,7 @@ import { getTravelSubsidyAmountClient } from "@/src/features/travel-subsidy/api/
 import { ExpenseApply, Prefecture, Municipality, ExpenseType, ExpenseCategory, ExpenseItem, ExpenseApplyFormData } from "@/src/lib/firestore/types";
 import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
+import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot, writeLog } from "@/src/lib/functions";
 import { compressImage } from "@/src/lib/image-compression";
 import { TravelRouteMap } from "@/src/components/TravelRouteMap";
 import styles from "./ExpenseApplyEdit.module.css";
@@ -228,10 +228,11 @@ export function ExpenseApplyEditClient({
 
       const snapshot = await uploadBytes(storageRef, uploadFile);
       const url = await getDownloadURL(snapshot.ref);
-
+      await writeLog({ dataId: storagePath, action: "経費申請ファイルアップロード" });
       setFiles(prev => [...prev, { name: file.name, url, path: storagePath }]);
     } catch (e) {
       console.error(e);
+      await writeLog({ dataId: "upload", action: "経費申請ファイルアップロード", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("ファイルのアップロードに失敗しました。");
     } finally {
       hideSpinner();
@@ -246,8 +247,10 @@ export function ExpenseApplyEditClient({
       try {
         const storageRef = ref(storage, file.path);
         await deleteObject(storageRef);
+        await writeLog({ dataId: file.path, action: "経費申請ファイル削除" });
       } catch (e) {
         console.error(e);
+        await writeLog({ dataId: file.path, action: "経費申請ファイル削除", status: "error", errorDetail: { message: (e as Error).message } });
       } finally {
         hideSpinner();
       }

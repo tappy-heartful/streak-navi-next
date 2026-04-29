@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Vote } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { isInTerm } from "@/src/lib/functions";
+import { isInTerm, writeLog } from "@/src/lib/functions";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ListBaseLayout } from "@/src/components/Layout/ListBaseLayout";
 import { db } from "@/src/lib/firebase";
@@ -59,6 +59,7 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
         setAnsweredVoteIds(results);
       } catch (e) {
         console.error("Failed to fetch vote answers", e);
+        await writeLog({ dataId: uid || "unknown", action: "投票回答状況取得", status: "error", errorDetail: { message: (e as Error).message } });
       }
     };
     fetchAnswers();

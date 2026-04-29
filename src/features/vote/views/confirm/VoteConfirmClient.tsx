@@ -7,7 +7,7 @@ import { AnswerConfirmLayout } from "@/src/components/Layout/AnswerConfirmLayout
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { Vote, VoteAnswer } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { isInTerm, buildYouTubeHtml, extractYouTubeId, showDialog, showSpinner, hideSpinner, globalLineDefaultImage } from "@/src/lib/functions";
+import { isInTerm, buildYouTubeHtml, extractYouTubeId, showDialog, showSpinner, hideSpinner, globalLineDefaultImage, writeLog } from "@/src/lib/functions";
 import { deleteVoteWithAnswers, deleteMyVoteAnswer } from "@/src/features/vote/api/vote-client-service";
 import { Modal } from "@/src/components/Modal";
 
@@ -68,12 +68,14 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
     try {
       await deleteVoteWithAnswers(voteId);
       hideSpinner();
+      await writeLog({ dataId: voteId, action: "投票削除" });
       await showDialog("削除しました", true);
       router.refresh();
       showSpinner();
       router.push("/vote");
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: voteId, action: "投票削除", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };
@@ -87,10 +89,12 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
     try {
       await deleteMyVoteAnswer(voteId, uid);
       hideSpinner();
+      await writeLog({ dataId: voteId, action: "投票回答取消" });
       await showDialog("回答を取り消しました", true);
       router.refresh();
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: voteId, action: "投票回答取消", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };

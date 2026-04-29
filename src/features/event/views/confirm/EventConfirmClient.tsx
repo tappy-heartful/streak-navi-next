@@ -23,6 +23,7 @@ import {
   hideSpinner,
   globalLineDefaultImage,
   extractYouTubeId,
+  writeLog,
 } from "@/src/lib/functions";
 import {
   deleteEventWithAnswers,
@@ -101,12 +102,14 @@ export function EventConfirmClient({ eventId, data }: Props) {
     try {
       await deleteEventWithAnswers(eventId);
       hideSpinner();
+      await writeLog({ dataId: eventId, action: "イベント削除" });
       await showDialog("削除しました", true);
       router.refresh();
       showSpinner();
       router.push("/event");
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: eventId, action: "イベント削除", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };
@@ -124,10 +127,12 @@ export function EventConfirmClient({ eventId, data }: Props) {
         await deleteMyAttendanceAnswer(eventId, uid);
       }
       hideSpinner();
+      await writeLog({ dataId: eventId, action: `イベント回答${isSchedule ? "（調整）" : "（出欠）"}取消` });
       await showDialog("回答を取り消しました", true);
       router.refresh();
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: eventId, action: `イベント回答${isSchedule ? "（調整）" : "（出欠）"}取消`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };
@@ -148,10 +153,12 @@ export function EventConfirmClient({ eventId, data }: Props) {
     try {
       const newRec = await addRecording(eventId, uid, recordingForm.title, recordingForm.url);
       hideSpinner();
+      await writeLog({ dataId: eventId, action: "イベント録音リンク追加" });
       await showDialog("リンクを追加しました", true);
       setRecordings(prev => [...prev, newRec]);
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: eventId, action: "イベント録音リンク追加", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("追加に失敗しました", true);
     }
   };
@@ -169,10 +176,12 @@ export function EventConfirmClient({ eventId, data }: Props) {
     try {
       await deleteRecording(rec.id);
       hideSpinner();
+      await writeLog({ dataId: rec.id, action: "イベント録音リンク削除" });
       await showDialog("リンクを削除しました", true);
       setRecordings(prev => prev.filter(r => r.id !== rec.id));
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: rec.id, action: "イベント録音リンク削除", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };

@@ -6,7 +6,7 @@ import { Event, EventAdjustStatus } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { AnswerEditLayout } from "@/src/components/Layout/AnswerEditLayout";
-import { getDayOfWeek, showDialog, showSpinner, hideSpinner } from "@/src/lib/functions";
+import { getDayOfWeek, showDialog, showSpinner, hideSpinner, writeLog } from "@/src/lib/functions";
 import { submitAdjustAnswer } from "@/src/features/event/api/event-client-service";
 import { db } from "@/src/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -61,12 +61,14 @@ export function EventAdjustAnswerClient({ eventId, event, adjustStatuses }: Prop
     try {
       await submitAdjustAnswer(eventId, uid, answers);
       hideSpinner();
+      await writeLog({ dataId: eventId, action: `イベント回答（調整）${isEdit ? "修正" : "登録"}` });
       await showDialog(`回答を${isEdit ? "修正" : "登録"}しました`, true);
       router.refresh();
       showSpinner();
       router.push(`/event/confirm?eventId=${eventId}`);
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: eventId, action: `イベント回答（調整）${isEdit ? "修正" : "登録"}`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("登録に失敗しました", true);
     }
   };

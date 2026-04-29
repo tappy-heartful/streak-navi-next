@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
-import { showDialog, showSpinner, hideSpinner } from "@/src/lib/functions";
+import { showDialog, showSpinner, hideSpinner, writeLog } from "@/src/lib/functions";
 import Link from "next/link";
 import { TravelSubsidy, Prefecture, Municipality, TravelConfig, TravelPoint } from "@/src/lib/firestore/types";
 import {
@@ -37,6 +37,7 @@ const getCoords = async (prefecture: string, city: string): Promise<{ lat: numbe
     }
   } catch (e) {
     console.error("Geocoding error:", e);
+    // Don't log to writeLog here as it might be too frequent and it's not a critical application error
   }
   return null;
 };
@@ -211,8 +212,10 @@ export function TravelSubsidyClient({
       if (munName) {
         setMunNamesMap(prev => ({ ...prev, [dMun]: munName }));
       }
+      await writeLog({ dataId: newId, action: "旅費補助額追加" });
       setAddAmount("");
-    } catch {
+    } catch (e) {
+      await writeLog({ dataId: "new", action: "旅費補助額追加", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("保存に失敗しました", true);
     } finally {
       hideSpinner();
@@ -261,8 +264,10 @@ export function TravelSubsidyClient({
           amount,
         }]);
       }
+      await writeLog({ dataId: id || "new", action: "旅費補助額編集" });
       setEditingId(null);
-    } catch {
+    } catch (e) {
+      await writeLog({ dataId: id || "new", action: "旅費補助額編集", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("保存に失敗しました", true);
     } finally {
       hideSpinner();
@@ -275,8 +280,10 @@ export function TravelSubsidyClient({
     showSpinner();
     try {
       await deleteTravelSubsidy(id);
+      await writeLog({ dataId: id, action: "旅費補助額削除" });
       setSubsidies(prev => prev.filter(s => s.id !== id));
-    } catch {
+    } catch (e) {
+      await writeLog({ dataId: id, action: "旅費補助額削除", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     } finally {
       hideSpinner();
