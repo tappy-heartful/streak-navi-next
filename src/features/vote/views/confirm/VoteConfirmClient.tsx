@@ -205,7 +205,22 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
           {voteData.type === "borda" ? (
             <span style={{ color: "#E91E63", fontWeight: "bold" }}>
               <i className="fas fa-list-ol" style={{ marginRight: "6px" }} />
-              ボルダルール（最大{voteData.bordaConfig?.maxRanks}位まで選択 / {voteData.bordaConfig?.scoring === "weighted" ? "傾斜" : "線形"}配点）
+              ボルダルール（最大{voteData.bordaConfig?.maxRanks}位 / {voteData.bordaConfig?.scoring === "weighted" ? "傾斜" : "線形"}配点: {(() => {
+                const max = voteData.bordaConfig?.maxRanks || 3;
+                const scoring = voteData.bordaConfig?.scoring || "linear";
+                const pts = [];
+                for (let i = 0; i < max; i++) {
+                  let p = 0;
+                  if (scoring === "linear") p = max - i;
+                  else {
+                    const weights = [10, 6, 4, 3, 2, 1];
+                    if (max === 3) p = [5, 3, 1][i];
+                    else p = weights[i] || 1;
+                  }
+                  pts.push(`${i + 1}位:${p}pt`);
+                }
+                return pts.join(", ");
+              })()}）
             </span>
           ) : (
             <span>
@@ -313,38 +328,41 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
 
                     return (
                       <div key={choice.name} className={`result-bar${isMyChoice ? " my-choice" : ""}`}>
-                        <div className="label" style={!canViewResults ? { width: "100%" } : undefined}>
+                        <div className="label" style={{ 
+                          ...( !canViewResults ? { width: "100%" } : {} ),
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px"
+                        }}>
                           {isMyChoice && (
-                            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
                               <img
                                 src={myPic}
                                 alt="あなたの選択"
-                                className="my-choice-icon"
+                                style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #ddd" }}
                                 onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }}
                               />
                               {isBorda && myRank !== -1 && (
                                 <span style={{
-                                  position: "absolute",
-                                  bottom: "-4px",
-                                  right: "-4px",
+                                  fontSize: "0.75rem",
                                   backgroundColor: "#ff0000",
                                   color: "#fff",
-                                  fontSize: "0.6rem",
-                                  width: "14px",
-                                  height: "14px",
-                                  borderRadius: "50%",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
+                                  padding: "1px 5px",
+                                  borderRadius: "4px",
                                   fontWeight: "bold",
-                                  border: "1px solid #fff"
+                                  lineHeight: "1"
                                 }}>
-                                  {myRank + 1}
+                                  {(() => {
+                                    if (scoring === "linear") return maxRanks - myRank;
+                                    const weights = [10, 6, 4, 3, 2, 1];
+                                    if (maxRanks === 3) return [5, 3, 1][myRank];
+                                    return weights[myRank] || 1;
+                                  })()}pt
                                 </span>
                               )}
                             </div>
                           )}
-                          {renderLink(choice.link, choice.name)}
+                          <span style={{ flex: 1 }}>{renderLink(choice.link, choice.name)}</span>
                         </div>
                         {canViewResults && (
                           <>
