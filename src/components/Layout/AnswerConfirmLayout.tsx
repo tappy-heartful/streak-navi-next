@@ -71,6 +71,7 @@ export const AnswerConfirmLayout = ({
       showSpinner();
       await archiveAndDeleteDoc(collectionName, dataId);
       hideSpinner();
+      await writeLog({ dataId, action: `${name}削除` });
       await showDialog("削除しました", true);
       
       showSpinner(); // 遷移用スピナー

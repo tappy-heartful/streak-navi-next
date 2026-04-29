@@ -10,6 +10,7 @@ import { FormField } from "@/src/components/Form/FormField";
 import { globalLineDefaultImage } from "@/src/lib/functions";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useState, useEffect } from "react";
+import { writeLog } from "@/src/lib/functions";
 
 type Props = {
   uid: string;
@@ -88,6 +89,7 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
         }
       } catch (e) {
         console.error("Failed to load municipalities:", e);
+        await writeLog({ dataId: form.formData.prefectureId, action: "市区町村リスト取得", status: "error", errorDetail: { message: (e as Error).message } });
       } finally {
         setLoadingMun(false);
       }

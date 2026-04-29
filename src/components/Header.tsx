@@ -62,7 +62,12 @@ export default function Header() {
         await writeLog({ dataId: uid, action: "シェア", status: "error", errorDetail: { message: (error as Error).message } });
       });
     } else {
-      navigator.clipboard.writeText(url).then(() => showDialog("URLをコピーしました", true));
+      navigator.clipboard.writeText(url)
+        .then(() => showDialog("URLをコピーしました", true))
+        .catch(async (error) => {
+          console.error(error);
+          await writeLog({ dataId: uid, action: "URLコピー", status: "error", errorDetail: { message: (error as Error).message } });
+        });
     }
   };
 

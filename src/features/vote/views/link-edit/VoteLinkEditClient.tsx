@@ -9,7 +9,7 @@ import { FormButtons } from "@/src/components/Form/FormButtons";
 import { FormFooter } from "@/src/components/Form/FormFooter";
 import { AppInput } from "@/src/components/Form/AppInput";
 import { updateVote } from "@/src/features/vote/api/vote-client-service";
-import { showDialog, showSpinner, hideSpinner } from "@/src/lib/functions";
+import { showDialog, showSpinner, hideSpinner, writeLog } from "@/src/lib/functions";
 import { useAuth } from "@/src/contexts/AuthContext";
 
 type Props = {
@@ -85,11 +85,13 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
         items
       });
       hideSpinner();
+      await writeLog({ dataId: voteId, action: "投票リンク更新" });
       await showDialog("保存しました", true);
       router.refresh();
       router.push(`/vote/confirm?voteId=${voteId}`);
-    } catch {
+    } catch (e) {
       hideSpinner();
+      await writeLog({ dataId: voteId, action: "投票リンク更新", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("保存に失敗しました", true);
     }
   };

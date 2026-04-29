@@ -266,7 +266,9 @@ function QrScannerModal({
           animRef.current = requestAnimationFrame(scan);
         };
         animRef.current = requestAnimationFrame(scan);
-      } catch {
+      } catch (e) {
+        console.error("Camera start error:", e);
+        await writeLog({ dataId: "camera", action: "QRカメラ起動", status: "error", errorDetail: { message: (e as Error).message } });
         showDialog("カメラの起動に失敗しました", true);
         onClose();
       }
@@ -480,6 +482,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
 
       await Promise.all(promises);
       hideSpinner();
+      await writeLog({ dataId: ticket.id, action: "チェックイン更新" });
       setCheckInModalState(null);
       await showDialog("チェックイン情報を更新しました", true);
       await loadData();
@@ -500,6 +503,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
       const resNo = `D${randomId}`;
       await addDoorCheckIn({ reservationNo: resNo, liveId: selectedLiveId, count });
       hideSpinner();
+      await writeLog({ dataId: selectedLiveId, action: "当日受付登録" });
       setDoorModalOpen(false);
       await showDialog(`${count}名のチェックインを登録しました`, true);
       await loadData();
@@ -519,6 +523,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
     try {
       await deleteDoorCheckIn(checkInId);
       hideSpinner();
+      await writeLog({ dataId: checkInId, action: "当日受付削除" });
       await showDialog("削除しました", true);
       await loadData();
     } catch (e) {
