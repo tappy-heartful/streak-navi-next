@@ -197,13 +197,18 @@ export interface Vote {
   createdAt?: number;
   updatedAt?: number;
   items: VoteItem[];
+  type?: "single" | "borda"; // 投票形式 (デフォルトは single)
+  bordaConfig?: {
+    maxRanks: number;         // 何位まで選べるか
+    scoring: "linear" | "weighted"; // linear: 3,2,1 / weighted: 5,3,1
+  };
 }
 
 export interface VoteAnswer {
   id: string;
   voteId: string;
   uid: string;
-  answers: Record<string, string | null>;
+  answers: Record<string, string | string[] | null>; // borda の場合は string[]
   updatedAt?: number;
 }
 

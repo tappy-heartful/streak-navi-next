@@ -42,6 +42,9 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
     acceptEndDate: "",
     isAnonymous: false,
     hideVotes: false,
+    type: "single" as "single" | "borda",
+    maxRanks: 3,
+    scoring: "linear" as "linear" | "weighted",
   });
 
   const handleChange = (k: string, v: string | boolean) => setValues(prev => ({ ...prev, [k]: v }));
@@ -82,6 +85,9 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
         acceptEndDate: initialVote.acceptEndDate?.replace(/\./g, "-") || ymdEnd,
         isAnonymous: initialVote.isAnonymous || false,
         hideVotes: initialVote.hideVotes || false,
+        type: initialVote.type || "single",
+        maxRanks: initialVote.bordaConfig?.maxRanks || 3,
+        scoring: initialVote.bordaConfig?.scoring || "linear",
       });
       setItems(initialVote.items || []);
     } else if (mode === "createFromCall" && callData) {
@@ -92,6 +98,9 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
         acceptEndDate: ymdEnd,
         isAnonymous: false,
         hideVotes: false,
+        type: "single",
+        maxRanks: 3,
+        scoring: "linear",
       });
 
       // Construct items from callData
@@ -124,6 +133,9 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
         acceptEndDate: ymdEnd,
         isAnonymous: false,
         hideVotes: false,
+        type: "single",
+        maxRanks: 3,
+        scoring: "linear",
       });
       setItems([{ name: "", choices: [{ name: "" }, { name: "" }] }]);
     }
@@ -255,6 +267,11 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
         isAnonymous: values.isAnonymous,
         hideVotes: values.hideVotes,
         items: dbItems,
+        type: values.type,
+        bordaConfig: values.type === "borda" ? {
+          maxRanks: Number(values.maxRanks),
+          scoring: values.scoring
+        } : undefined,
       };
 
       let newVoteId = voteId;
@@ -292,6 +309,42 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
         <div className="form-group">
           <AppInput label="投票名" field="name" required placeholder="投票名を入力してください" value={values.name} updateField={handleChange} />
           <AppInput label="投票説明" field="description" required placeholder="投票の説明を入力してください" value={values.description} updateField={handleChange} />
+        </div>
+
+        <div className="form-group" style={{ backgroundColor: "#f8f9fa", padding: "1.5rem", borderRadius: "8px", border: "1px solid #dee2e6" }}>
+          <label className="form-label" style={{ fontWeight: "bold", fontSize: "1.1rem" }}>投票形式</label>
+          <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+              <input type="radio" checked={values.type === "single"} onChange={() => handleChange("type", "single")} />
+              シンプル（1人1票）
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+              <input type="radio" checked={values.type === "borda"} onChange={() => handleChange("type", "borda")} />
+              ボルダルール（順位付け投票）
+            </label>
+          </div>
+
+          {values.type === "borda" && (
+            <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#fff", borderRadius: "6px", border: "1px solid #e9ecef" }}>
+              <div style={{ marginBottom: "15px" }}>
+                <label className="form-label" style={{ fontWeight: "bold" }}>何位まで選べるか</label>
+                <input type="number" className="form-control" style={{ width: "100px" }} value={values.maxRanks} onChange={e => handleChange("maxRanks", e.target.value)} min="2" max="10" />
+              </div>
+              <div>
+                <label className="form-label" style={{ fontWeight: "bold" }}>配点方式</label>
+                <div style={{ display: "flex", gap: "20px", marginTop: "5px" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+                    <input type="radio" checked={values.scoring === "linear"} onChange={() => handleChange("scoring", "linear")} />
+                    線形（3位なら 3, 2, 1点）
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+                    <input type="radio" checked={values.scoring === "weighted"} onChange={() => handleChange("scoring", "weighted")} />
+                    傾斜（3位なら 5, 3, 1点）
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="form-group">

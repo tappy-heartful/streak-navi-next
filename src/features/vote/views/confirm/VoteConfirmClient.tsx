@@ -201,6 +201,19 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
         <DisplayField label="回答数">
           {isActive ? "受付中" : "期間外"}（{participantCount}人が回答済）
         </DisplayField>
+        <DisplayField label="投票形式">
+          {voteData.type === "borda" ? (
+            <span style={{ color: "#E91E63", fontWeight: "bold" }}>
+              <i className="fas fa-list-ol" style={{ marginRight: "6px" }} />
+              ボルダルール（最大{voteData.bordaConfig?.maxRanks}位まで選択 / {voteData.bordaConfig?.scoring === "weighted" ? "傾斜" : "線形"}配点）
+            </span>
+          ) : (
+            <span>
+              <i className="fas fa-check-circle" style={{ marginRight: "6px", color: "#4CAF50" }} />
+              シンプル（1人1票）
+            </span>
+          )}
+        </DisplayField>
 
         {isAdmin && voteData.hideVotes && (
           <p className="vote-msg">※「票数を非公開」のため投票結果は一般メンバーには見えていません</p>
@@ -222,13 +235,36 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
           </div>
 
           {(voteData.items || []).map((item, idx) => {
+            const isBorda = voteData.type === "borda";
+            const maxRanks = voteData.bordaConfig?.maxRanks || 3;
+            const scoring = voteData.bordaConfig?.scoring || "linear";
+
             const results: Record<string, number> = {};
             item.choices.forEach(c => { results[c.name] = 0; });
+
             voteAnswers.forEach(ans => {
-              const choiceName = ans.answers[item.name];
-              if (choiceName && results[choiceName] !== undefined) results[choiceName]++;
+              const answer = ans.answers[item.name];
+              if (isBorda && Array.isArray(answer)) {
+                answer.forEach((choiceName, rankIdx) => {
+                  if (results[choiceName] !== undefined) {
+                    let pts = 0;
+                    if (scoring === "linear") {
+                      pts = maxRanks - rankIdx;
+                    } else {
+                      // Weighted: 1st gets 5, 2nd gets 3, 3rd gets 1 (if maxRanks=3)
+                      // Generalized weighted: 1st=10, 2nd=6, 3rd=4, 4th=2, 5th=1...
+                      const weights = [10, 6, 4, 3, 2, 1]; 
+                      if (maxRanks === 3) pts = [5, 3, 1][rankIdx];
+                      else pts = weights[rankIdx] || 1;
+                    }
+                    results[choiceName] += pts;
+                  }
+                });
+              } else if (!isBorda && typeof answer === "string") {
+                if (answer && results[answer] !== undefined) results[answer]++;
+              }
             });
-            const maxVotes = Math.max(...Object.values(results), 1);
+            const maxVal = Math.max(...Object.values(results), 1);
 
             const colors = [
               { bg: "#E8F5E9", border: "#4CAF50", text: "#2E7D32" }, // Green
@@ -267,21 +303,46 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                 </div>
                 <div className="vote-results" style={{ padding: "20px", marginTop: 0, position: "relative" }}>
                   {item.choices.map(choice => {
-                    const count = results[choice.name] || 0;
-                    const percent = canViewResults ? (count / maxVotes) * 100 : 0;
-                    const isMyChoice = myAnswer[item.name] === choice.name;
-                    const canVoterLink = showVoterLink && count > 0;
+                    const val = results[choice.name] || 0;
+                    const percent = canViewResults ? (val / maxVal) * 100 : 0;
+                    const isMyChoice = isBorda
+                      ? ((myAnswer[item.name] as string[]) || []).includes(choice.name)
+                      : myAnswer[item.name] === choice.name;
+                    const myRank = isBorda ? ((myAnswer[item.name] as string[]) || []).indexOf(choice.name) : -1;
+                    const canVoterLink = !isBorda && showVoterLink && val > 0;
 
                     return (
                       <div key={choice.name} className={`result-bar${isMyChoice ? " my-choice" : ""}`}>
                         <div className="label" style={!canViewResults ? { width: "100%" } : undefined}>
                           {isMyChoice && (
-                            <img
-                              src={myPic}
-                              alt="あなたの選択"
-                              className="my-choice-icon"
-                              onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }}
-                            />
+                            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                              <img
+                                src={myPic}
+                                alt="あなたの選択"
+                                className="my-choice-icon"
+                                onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }}
+                              />
+                              {isBorda && myRank !== -1 && (
+                                <span style={{
+                                  position: "absolute",
+                                  bottom: "-4px",
+                                  right: "-4px",
+                                  backgroundColor: "#ff0000",
+                                  color: "#fff",
+                                  fontSize: "0.6rem",
+                                  width: "14px",
+                                  height: "14px",
+                                  borderRadius: "50%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontWeight: "bold",
+                                  border: "1px solid #fff"
+                                }}>
+                                  {myRank + 1}
+                                </span>
+                              )}
+                            </div>
                           )}
                           {renderLink(choice.link, choice.name)}
                         </div>
@@ -293,10 +354,10 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                             <div className="vote-count">
                               {canVoterLink ? (
                                 <a href="#" onClick={(e) => { e.preventDefault(); handleVoterModal(item.name, choice.name); }}>
-                                  {count}票
+                                  {val}票
                                 </a>
                               ) : (
-                                <span>{count}票</span>
+                                <span>{val}{isBorda ? " Pt" : "票"}</span>
                               )}
                             </div>
                           </>
