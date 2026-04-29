@@ -36,6 +36,19 @@ export const AnswerEditLayout = ({
   const title = mode === "edit" ? "回答修正" : "回答登録";
   const saveButtonText = mode === "edit" ? "回答を修正する" : "回答を登録する";
 
+  const handleSave = async () => {
+    const { showSpinner, hideSpinner, writeLog, showDialog } = await import("@/src/lib/functions");
+    showSpinner();
+    try {
+      await onSave();
+      hideSpinner();
+    } catch (e) {
+      hideSpinner();
+      await writeLog({ dataId, action: `${featureName}${title}`, status: "error", errorDetail: { message: (e as Error).message } });
+      await showDialog("保存に失敗しました", true);
+    }
+  };
+
   useEffect(() => {
     setBreadcrumbs([
       { title: `${featureName}一覧`, href: basePath },
@@ -63,7 +76,7 @@ export const AnswerEditLayout = ({
         {children}
 
         <div className="confirm-buttons" style={{ marginTop: "1.5rem" }}>
-          <button type="button" className="save-button" onClick={onSave}>
+          <button type="button" className="save-button" onClick={handleSave}>
             {saveButtonText}
           </button>
         </div>

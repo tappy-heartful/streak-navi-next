@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { getAuth } from "firebase/auth";
+import { writeLog } from "@/src/lib/functions";
 import styles from "./ChatBot.module.css";
 
 /** AIレスポンスを本文とリンクカードに分割してレンダリング */
@@ -104,6 +105,7 @@ export function ChatBot() {
         const errMsg = typeof data.error === "object"
           ? (data.error?.message ?? "不明なエラー")
           : (data.error ?? "不明なエラー");
+        await writeLog({ dataId: "chatbot", action: "AIチャット送信", status: "error", errorDetail: { message: errMsg } });
         setMessages((prev) => [
           ...prev,
           { role: "model", text: `申し訳ありません、エラーが発生しました。\n${errMsg}` },
@@ -115,9 +117,11 @@ export function ChatBot() {
         { role: "model", text: data.reply ?? "エラーが発生しました。もう一度試してください。" },
       ]);
     } catch (e) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      await writeLog({ dataId: "chatbot", action: "AIチャット送信", status: "error", errorDetail: { message: errMsg } });
       setMessages((prev) => [
         ...prev,
-        { role: "model", text: `通信エラー: ${e instanceof Error ? e.message : String(e)}` },
+        { role: "model", text: `通信エラー: ${errMsg}` },
       ]);
     } finally {
       setLoading(false);
