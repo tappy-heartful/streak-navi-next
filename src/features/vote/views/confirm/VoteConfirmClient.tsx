@@ -7,7 +7,7 @@ import { AnswerConfirmLayout } from "@/src/components/Layout/AnswerConfirmLayout
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { Vote, VoteAnswer } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { isInTerm, buildYouTubeHtml, showDialog, showSpinner, hideSpinner, globalLineDefaultImage } from "@/src/lib/functions";
+import { isInTerm, buildYouTubeHtml, extractYouTubeId, showDialog, showSpinner, hideSpinner, globalLineDefaultImage } from "@/src/lib/functions";
 import { deleteVoteWithAnswers, deleteMyVoteAnswer } from "@/src/features/vote/api/vote-client-service";
 import { Modal } from "@/src/components/Modal";
 
@@ -26,6 +26,29 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+
+  const allVideoIds = React.useMemo(() => {
+    const ids = new Set<string>();
+    (voteData.items || []).forEach(item => {
+      if (item.link) {
+        const id = extractYouTubeId(item.link);
+        if (id && id.length === 11) ids.add(id);
+      }
+      item.choices.forEach(c => {
+        if (c.link) {
+          const id = extractYouTubeId(c.link);
+          if (id && id.length === 11) ids.add(id);
+        }
+      });
+    });
+    return Array.from(ids);
+  }, [voteData.items]);
+
+  const playlistUrl = allVideoIds.length > 0
+    ? allVideoIds.length === 1
+      ? `https://www.youtube.com/watch?v=${allVideoIds[0]}`
+      : `https://www.youtube.com/watch_videos?video_ids=${allVideoIds.join(",")}`
+    : "";
 
   const isActive = isInTerm(voteData.acceptStartDate, voteData.acceptEndDate);
   const myAnswer = voteAnswers.find(a => a.uid === uid)?.answers || {};
@@ -184,8 +207,21 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
         )}
 
         {/* 投票結果 */}
-        <div id="vote-items-container" style={{ marginTop: "1.5rem" }}>
-          {(voteData.items || []).map(item => {
+        <div id="vote-items-container" style={{ marginTop: "3rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <h3 style={{ fontSize: "1.4rem", fontWeight: "800", color: "#333", margin: 0, display: "flex", alignItems: "center", gap: "10px", borderLeft: "none", paddingLeft: 0 }}>
+                <i className="fas fa-poll" style={{ color: "#4CAF50" }}></i> 投票項目と結果
+              </h3>
+            </div>
+            {playlistUrl && (
+              <a href={playlistUrl} target="_blank" rel="noreferrer" className="list-badge-button" style={{ backgroundColor: "#ff0000", marginLeft: "auto" }}>
+                <i className="fa-brands fa-youtube"></i> 参考音源プレイリスト
+              </a>
+            )}
+          </div>
+
+          {(voteData.items || []).map((item, idx) => {
             const results: Record<string, number> = {};
             item.choices.forEach(c => { results[c.name] = 0; });
             voteAnswers.forEach(ans => {
@@ -194,12 +230,42 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
             });
             const maxVotes = Math.max(...Object.values(results), 1);
 
+            const colors = [
+              { bg: "#E8F5E9", border: "#4CAF50", text: "#2E7D32" }, // Green
+              { bg: "#E3F2FD", border: "#2196F3", text: "#1565C0" }, // Blue
+              { bg: "#FFF3E0", border: "#FF9800", text: "#E65100" }, // Orange
+              { bg: "#F3E5F5", border: "#9C27B0", text: "#7B1FA2" }, // Purple
+              { bg: "#FFEBEE", border: "#F44336", text: "#C62828" }, // Red
+              { bg: "#E0F2F1", border: "#009688", text: "#00695C" }, // Teal
+            ];
+            const color = colors[idx % colors.length];
+
             return (
-              <div key={item.name} className="vote-item">
-                <div className="vote-item-title">
-                  {renderLink(item.link, item.name)}
+              <div key={item.name} className="vote-item" style={{
+                marginBottom: "2.5rem",
+                backgroundColor: "#fff",
+                borderRadius: "16px",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+                border: `1px solid ${color.border}22`,
+                overflow: "hidden",
+                padding: 0
+              }}>
+                <div className="vote-item-title" style={{
+                  padding: "16px 24px",
+                  backgroundColor: color.bg,
+                  borderBottom: `2px solid ${color.border}`,
+                  fontWeight: "900",
+                  fontSize: "1.2rem",
+                  color: color.text,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  lineHeight: "1.3",
+                  margin: 0
+                }}>
+                  <i className="fas fa-question-circle"></i> {renderLink(item.link, item.name)}
                 </div>
-                <div className="vote-results">
+                <div className="vote-results" style={{ padding: "20px", marginTop: 0 }}>
                   {item.choices.map(choice => {
                     const count = results[choice.name] || 0;
                     const percent = canViewResults ? (count / maxVotes) * 100 : 0;
