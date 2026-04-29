@@ -130,17 +130,14 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
 
               <div style={{ marginLeft: "16px" }}>
                 {item.choices.map((choice: VoteChoice, j: number) => (
-                  <div key={choice.name} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-                    <span style={{ marginRight: "8px", width: "120px" }}>・{choice.name}</span>
-                    <div style={{ flex: 1 }}>
-                      <AppInput
-                        field={`choice-link-${i}-${j}`}
-                        label={`${choice.name} のリンク`}
-                        value={choice.link || ""}
-                        placeholder="https://..."
-                        updateField={(_, val) => handleChoiceChange(i, j, val)}
-                      />
-                    </div>
+                  <div key={choice.name} style={{ marginBottom: "12px" }}>
+                    <AppInput
+                      field={`choice-link-${i}-${j}`}
+                      label={`・${choice.name}`}
+                      value={choice.link || ""}
+                      placeholder="https://..."
+                      updateField={(_, val) => handleChoiceChange(i, j, val)}
+                    />
                   </div>
                 ))}
               </div>
