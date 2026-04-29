@@ -305,9 +305,40 @@ body.fixed {
 }
 
 /* アイコン調整 */
-.share-button i {
+.share-button i, .refresh-button i {
   font-size: 14px;
 }
+
+.breadcrumb-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.refresh-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #fff;
+  background-color: #2196F3; /* 青系 */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.refresh-button:hover {
+  background-color: #1976D2;
+  transform: translateY(-1px);
+}
+
+.refresh-button:active {
+  background-color: #1565C0;
+  transform: translateY(1px);
+}
+
+
 
 /* ホバー時 */
 .share-button:hover {

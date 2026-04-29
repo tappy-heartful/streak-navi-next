@@ -21,8 +21,27 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
 
   const [answeredVoteIds, setAnsweredVoteIds] = useState<Record<string, boolean>>({});
 
-  const activeList = votes.filter((v) => isInTerm(v.acceptStartDate, v.acceptEndDate));
-  const closedList = votes.filter((v) => !isInTerm(v.acceptStartDate, v.acceptEndDate));
+  const { upcomingList, activeList, closedList } = React.useMemo(() => {
+    const upcoming: Vote[] = [];
+    const active: Vote[] = [];
+    const closed: Vote[] = [];
+    const now = Date.now();
+
+    votes.forEach((v) => {
+      const start = v.acceptStartDate ? new Date(v.acceptStartDate.replace(/\./g, "/") + " 00:00:00").getTime() : 0;
+      const end = v.acceptEndDate ? new Date(v.acceptEndDate.replace(/\./g, "/") + " 23:59:59").getTime() : Infinity;
+
+      if (now < start) {
+        upcoming.push(v);
+      } else if (now > end) {
+        closed.push(v);
+      } else {
+        active.push(v);
+      }
+    });
+
+    return { upcomingList: upcoming, activeList: active, closedList: closed };
+  }, [votes]);
 
   useEffect(() => {
     if (!uid) return;
@@ -53,6 +72,53 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
         basePath="/vote"
         hideAddButton={!isAdmin}
       >
+        {upcomingList.length > 0 && (
+          <div className="container" id="upcoming-container">
+            <h3>⏳ 開始前</h3>
+            <div className="table-wrapper">
+              <table className="list-table">
+                <thead>
+                  <tr>
+                    <th>投票名</th>
+                    <th>状況</th>
+                    <th>回答数</th>
+                    <th>受付期間</th>
+                    <th>投票項目</th>
+                  </tr>
+                </thead>
+                <tbody id="upcoming-list-body">
+                  {upcomingList.map((vote) => {
+                    const participantCount = participantCountMap[vote.id] || 0;
+
+                    return (
+                      <tr key={vote.id}>
+                        <td className="list-table-row-header">
+                          <Link href={`/vote/confirm?voteId=${vote.id}`}>{vote.name}</Link>
+                        </td>
+                        <td>
+                          <span className="answer-status closed">開始前</span>
+                        </td>
+                        <td className="count-col">{participantCount}人</td>
+                        <td className="term-col">
+                          {vote.acceptStartDate} ～ <br/> {vote.acceptEndDate}
+                        </td>
+                        <td className="items-col">
+                          {vote.items.length === 0 ? "-" : vote.items.map((i, idx) => (
+                            <React.Fragment key={idx}>
+                              ・{i.name}
+                              {idx < vote.items.length - 1 && <br />}
+                            </React.Fragment>
+                          ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         <div className="container" id="active-container">
           <h3>📢 受付中</h3>
           <div className="table-wrapper">
