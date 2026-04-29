@@ -61,6 +61,15 @@ export default function Header() {
     }
   };
 
+  const handleRefresh = () => {
+    showSpinner();
+    router.refresh();
+    // 少し待ってからスピナーを消す
+    setTimeout(() => {
+      hideSpinner();
+    }, 800);
+  };
+
   // メニュー用リンクコンポーネント
   const menuLink = (href: string, label: string, icon?: string) => (
     <Link prefetch={true} href={href} onClick={closeMenu}>
@@ -191,9 +200,14 @@ export default function Header() {
             ))}
           </nav>
         </div>
-        <button id="share-button" className="share-button" onClick={handleShare}>
-          <i className="fas fa-share-alt"></i>
-        </button>
+        <div className="breadcrumb-actions">
+          <button id="refresh-button" className="refresh-button" onClick={handleRefresh} title="画面を更新">
+            <i className="fas fa-sync-alt"></i>
+          </button>
+          <button id="share-button" className="share-button" onClick={handleShare} title="共有">
+            <i className="fas fa-share-alt"></i>
+          </button>
+        </div>
       </div>
     </>
   );

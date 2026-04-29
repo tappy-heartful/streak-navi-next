@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AuthProvider, useAuth } from "@/src/contexts/AuthContext";
 import { BreadcrumbProvider } from "@/src/contexts/BreadcrumbContext";
-import { useEffect, useTransition, Suspense } from "react"; // useTransitionを追加
+import { useEffect, useState, useRef, useTransition, Suspense } from "react"; // useTransitionを追加
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -100,6 +100,68 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
+  // Pull to Refresh state
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const touchStartRef = useRef(0);
+  const PULL_THRESHOLD = 80;
+
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      if (window.scrollY === 0) {
+        touchStartRef.current = e.touches[0].clientY;
+      } else {
+        touchStartRef.current = 0;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (touchStartRef.current === 0 || isRefreshing) return;
+
+      const currentY = e.touches[0].clientY;
+      const distance = currentY - touchStartRef.current;
+
+      if (distance > 0 && window.scrollY === 0) {
+        // 抵抗感を持たせるために 0.5 を掛ける
+        const constrainedDistance = Math.min(distance * 0.5, PULL_THRESHOLD + 20);
+        setPullDistance(constrainedDistance);
+        
+        // ブラウザのデフォルトの挙動（オーバースクロールなど）を抑制したい場合は preventDefault()
+        // ただし、スクロール自体は window.scrollY === 0 なので基本は大丈夫
+      }
+    };
+
+    const handleTouchEnd = async () => {
+      if (pullDistance > PULL_THRESHOLD && !isRefreshing) {
+        setIsRefreshing(true);
+        setPullDistance(PULL_THRESHOLD);
+        
+        const { showSpinner, hideSpinner } = await import("@/src/lib/functions");
+        showSpinner();
+        router.refresh();
+        
+        setTimeout(() => {
+          setIsRefreshing(false);
+          setPullDistance(0);
+          hideSpinner();
+        }, 1000);
+      } else {
+        setPullDistance(0);
+      }
+      touchStartRef.current = 0;
+    };
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [pullDistance, isRefreshing, router]);
+
   useEffect(() => {
     const noLayoutPaths = ["/login", "/callback", "/agreement"];
     const isNoLayout = noLayoutPaths.includes(pathname);
@@ -172,6 +234,21 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <BreadcrumbProvider>
         <AuthGuard isPending={isPending}>
           {!isNoLayout && <Header />}
+          
+          {/* Pull to Refresh UI */}
+          {!isNoLayout && (
+            <div 
+              className={`pull-to-refresh-overlay ${pullDistance > 0 ? 'visible' : ''}`}
+              style={{ height: `${pullDistance}px`, opacity: pullDistance / PULL_THRESHOLD }}
+            >
+              <div className="pull-to-refresh-content">
+                <i className={`fas fa-sync-alt pull-to-refresh-icon ${isRefreshing ? 'spinning' : ''}`} 
+                   style={{ transform: `rotate(${pullDistance * 2}deg)` }}></i>
+                <span>{pullDistance > PULL_THRESHOLD ? '離して更新' : '引っ張って更新'}</span>
+              </div>
+            </div>
+          )}
+
           {children}
           {!isNoLayout && <Footer />}
         </AuthGuard>
