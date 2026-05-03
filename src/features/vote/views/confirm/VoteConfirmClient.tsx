@@ -59,7 +59,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
   const statusText = !isActive ? "期間外" : hasAnswered ? "回答済" : "未回答";
 
   const handleAdminDelete = async () => {
-    const confirmed = await showDialog("投票と全員の回答を削除しますか？\nこの操作は元に戻せません");
+    const confirmed = await showDialog("曲投票と全員の回答を削除しますか？\nこの操作は元に戻せません");
     if (!confirmed) return;
     const confirmedAgain = await showDialog("本当に削除しますか？");
     if (!confirmedAgain) return;
@@ -68,14 +68,14 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
     try {
       await deleteVoteWithAnswers(voteId);
       hideSpinner();
-      await writeLog({ dataId: voteId, action: "投票削除" });
+      await writeLog({ dataId: voteId, action: "曲投票削除" });
       await showDialog("削除しました", true);
       router.refresh();
       showSpinner();
       router.push("/vote");
     } catch (e) {
       hideSpinner();
-      await writeLog({ dataId: voteId, action: "投票削除", status: "error", errorDetail: { message: (e as Error).message } });
+      await writeLog({ dataId: voteId, action: "曲投票削除", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };
@@ -89,12 +89,12 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
     try {
       await deleteMyVoteAnswer(voteId, uid);
       hideSpinner();
-      await writeLog({ dataId: voteId, action: "投票回答取消" });
+      await writeLog({ dataId: voteId, action: "曲投票回答取消" });
       await showDialog("回答を取り消しました", true);
       router.refresh();
     } catch (e) {
       hideSpinner();
-      await writeLog({ dataId: voteId, action: "投票回答取消", status: "error", errorDetail: { message: (e as Error).message } });
+      await writeLog({ dataId: voteId, action: "曲投票回答取消", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("削除に失敗しました", true);
     }
   };
@@ -117,7 +117,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
       );
     });
 
-    setModalTitle(`${choiceName} に投票した人`);
+    setModalTitle(`${choiceName} に曲投票した人`);
     setModalContent(<div>{votersContent}</div>);
     setModalOpen(true);
   };
@@ -169,7 +169,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
       className="edit-button"
       onClick={() => { showSpinner(); router.push(`/vote/link-edit?voteId=${voteId}`); }}
     >
-      投票リンク設定
+      曲投票リンク設定
     </button>
   );
 
@@ -182,7 +182,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
   return (
     <BaseLayout>
       <AnswerConfirmLayout
-        name="投票"
+        name="曲投票"
         icon="fas fa-vote-yea"
         basePath="/vote"
         dataId={voteId}
@@ -205,7 +205,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
         <DisplayField label="回答数">
           {isActive ? "受付中" : "期間外"}（{participantCount}人が回答済）
         </DisplayField>
-        <DisplayField label="投票形式">
+        <DisplayField label="曲投票形式">
           {voteData.type === "borda" ? (
             <span style={{ color: "#E91E63", fontWeight: "bold" }}>
               <i className="fas fa-list-ol" style={{ marginRight: "6px" }} />
@@ -235,7 +235,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
         </DisplayField>
 
         {isAdmin && voteData.hideVotes && (
-          <p className="vote-msg">※「票数を非公開」のため投票結果は一般メンバーには見えていません</p>
+          <p className="vote-msg">※「票数を非公開」のため曲投票結果は一般メンバーには見えていません</p>
         )}
 
         {/* 投票結果 */}
@@ -243,7 +243,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", flexWrap: "wrap", gap: "10px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               <h3 style={{ fontSize: "1.4rem", fontWeight: "800", color: "#333", margin: 0, display: "flex", alignItems: "center", gap: "10px", borderLeft: "none", paddingLeft: 0 }}>
-                <i className="fas fa-poll" style={{ color: "#4CAF50" }}></i> 投票項目と結果
+                <i className="fas fa-poll" style={{ color: "#4CAF50" }}></i> 曲投票項目と結果
               </h3>
             </div>
             {playlistUrl && (

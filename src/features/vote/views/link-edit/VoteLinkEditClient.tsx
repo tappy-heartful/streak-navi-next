@@ -35,9 +35,9 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
     setIsAuthorized(true);
 
     setBreadcrumbs([
-      { title: "投票一覧", href: "/vote" },
-      { title: "投票確認", href: `/vote/confirm?voteId=${voteId}` },
-      { title: "投票リンク設定", href: "" }
+      { title: "曲投票一覧", href: "/vote" },
+      { title: "曲投票確認", href: `/vote/confirm?voteId=${voteId}` },
+      { title: "曲投票リンク設定", href: "" }
     ]);
   }, [setBreadcrumbs, voteId, isAdmin, loading, router]);
 
@@ -85,13 +85,13 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
         items
       });
       hideSpinner();
-      await writeLog({ dataId: voteId, action: "投票リンク更新" });
+      await writeLog({ dataId: voteId, action: "曲投票リンク更新" });
       await showDialog("保存しました", true);
       router.refresh();
       router.push(`/vote/confirm?voteId=${voteId}`);
     } catch (e) {
       hideSpinner();
-      await writeLog({ dataId: voteId, action: "投票リンク更新", status: "error", errorDetail: { message: (e as Error).message } });
+      await writeLog({ dataId: voteId, action: "曲投票リンク更新", status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("保存に失敗しました", true);
     }
   };
@@ -101,14 +101,14 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
   return (
     <BaseLayout>
       <div className="page-header">
-        <h1><i className="fas fa-vote-yea" /> 投票リンク設定</h1>
+        <h1><i className="fas fa-vote-yea" /> 曲投票リンク設定</h1>
       </div>
       <div className="container">
         <div style={{ marginBottom: "24px" }}>
           <h2>{vote.name} のリンク設定</h2>
           <AppInput
             field="desc-link"
-            label="投票説明のリンク"
+            label="曲投票説明のリンク"
             value={descriptionLink}
             placeholder="https://..."
             updateField={(_, val) => setDescriptionLink(val)}
@@ -153,7 +153,7 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
       </div>
       <FormFooter
         backHref={`/vote/confirm?voteId=${voteId}`}
-        backText="投票確認"
+        backText="曲投票確認"
       />
     </BaseLayout>
   );

@@ -58,14 +58,14 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
     setIsAuthorized(true);
 
     // Generate Breadcrumbs
-    const paths = [{ title: "投票一覧", href: "/vote" }];
+    const paths = [{ title: "曲投票一覧", href: "/vote" }];
     if (isEdit || mode === "copy") {
-      paths.push({ title: "投票確認", href: `/vote/confirm?voteId=${voteId}` });
-      paths.push({ title: isEdit ? "投票編集" : "投票新規作成(コピー)", href: "" });
+      paths.push({ title: "曲投票確認", href: `/vote/confirm?voteId=${voteId}` });
+      paths.push({ title: isEdit ? "曲投票編集" : "曲投票新規作成(コピー)", href: "" });
     } else if (mode === "createFromCall") {
-      paths.push({ title: "曲募集から投票作成", href: "" });
+      paths.push({ title: "曲募集から曲投票作成", href: "" });
     } else {
-      paths.push({ title: "投票新規作成", href: "" });
+      paths.push({ title: "曲投票新規作成", href: "" });
     }
     setBreadcrumbs(paths);
 
@@ -92,7 +92,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       setItems(initialVote.items || []);
     } else if (mode === "createFromCall" && callData) {
       setValues({
-        name: (callData.title || "") + " の投票",
+        name: (callData.title || "") + " の曲投票",
         description: callData.description || "",
         acceptStartDate: ymdStart,
         acceptEndDate: ymdEnd,
@@ -174,11 +174,11 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
     // Basic validation
     let valid = true;
     if (!values.name) {
-      await showDialog("投票名を入力してください", true);
+      await showDialog("曲投票名を入力してください", true);
       valid = false;
     }
     if (!values.description) {
-      await showDialog("投票説明を入力してください", true);
+      await showDialog("曲投票説明を入力してください", true);
       valid = false;
     }
     if (!values.acceptStartDate || !values.acceptEndDate) {
@@ -207,7 +207,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
 
     // items validation
     if (items.length === 0) {
-      await showDialog("投票項目を１つ以上追加してください", true);
+      await showDialog("曲投票項目を１つ以上追加してください", true);
       valid = false;
     }
     const itemNames = new Set<string>();
@@ -284,7 +284,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       }
 
       hideSpinner();
-      await writeLog({ dataId: newVoteId || "new", action: `投票${isEdit ? "更新" : "登録"}` });
+      await writeLog({ dataId: newVoteId || "new", action: `曲投票${isEdit ? "更新" : "登録"}` });
       await showDialog("保存しました", true);
 
       router.refresh();
@@ -295,7 +295,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       }
     } catch (e) {
       hideSpinner();
-      await writeLog({ dataId: voteId || "new", action: `投票${isEdit ? "更新" : "登録"}`, status: "error", errorDetail: { message: (e as Error).message } });
+      await writeLog({ dataId: voteId || "new", action: `曲投票${isEdit ? "更新" : "登録"}`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("保存に失敗しました", true);
     }
   };
@@ -305,16 +305,16 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
   return (
     <BaseLayout>
       <div className="page-header">
-        <h1><i className="fas fa-vote-yea" /> {isEdit ? "投票編集" : mode === "copy" ? "投票新規作成(コピー)" : mode === "createFromCall" ? "曲募集から投票作成" : "投票新規作成"}</h1>
+        <h1><i className="fas fa-vote-yea" /> {isEdit ? "曲投票編集" : mode === "copy" ? "曲投票新規作成(コピー)" : mode === "createFromCall" ? "曲募集から曲投票作成" : "曲投票新規作成"}</h1>
       </div>
       <div className="container">
         <div className="form-group">
-          <AppInput label="投票名" field="name" required placeholder="投票名を入力してください" value={values.name} updateField={handleChange} />
-          <AppInput label="投票説明" field="description" required placeholder="投票の説明を入力してください" value={values.description} updateField={handleChange} />
+          <AppInput label="曲投票名" field="name" required placeholder="曲投票名を入力してください" value={values.name} updateField={handleChange} />
+          <AppInput label="曲投票説明" field="description" required placeholder="曲投票の説明を入力してください" value={values.description} updateField={handleChange} />
         </div>
 
         <div className="form-group" style={{ backgroundColor: "#f8f9fa", padding: "1.2rem", borderRadius: "8px", border: "1px solid #dee2e6" }}>
-          <label className="form-label" style={{ fontWeight: "bold", fontSize: "1rem", marginBottom: "12px", display: "block" }}>投票形式</label>
+          <label className="form-label" style={{ fontWeight: "bold", fontSize: "1rem", marginBottom: "12px", display: "block" }}>曲投票形式</label>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "8px 12px", backgroundColor: "#fff", borderRadius: "6px", border: "1px solid #e9ecef" }}>
               <input type="radio" style={{ width: "18px", height: "18px" }} checked={values.type === "single"} onChange={() => handleChange("type", "single")} />
@@ -381,7 +381,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
         </div>
 
         <div className="form-group">
-          <label className="form-label" style={{ fontWeight: "bold", marginBottom: "8px", display: "block" }}>投票項目 <span className="required">*</span></label>
+          <label className="form-label" style={{ fontWeight: "bold", marginBottom: "8px", display: "block" }}>曲投票項目 <span className="required">*</span></label>
           <div>
             {items.map((item, i) => (
               <div key={i} className="vote-item">
@@ -401,7 +401,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
                 </div>
               </div>
             ))}
-            <button type="button" onClick={addItem} className="add-item-button">＋ 投票項目を追加</button>
+            <button type="button" onClick={addItem} className="add-item-button">＋ 曲投票項目を追加</button>
           </div>
         </div>
 

@@ -104,13 +104,13 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
     try {
       await submitVoteAnswer(voteId, uid, answers);
       hideSpinner();
-      await writeLog({ dataId: voteId, action: `投票回答${isEdit ? "修正" : "登録"}` });
+      await writeLog({ dataId: voteId, action: `曲投票回答${isEdit ? "修正" : "登録"}` });
       await showDialog(`回答を${isEdit ? "修正" : "登録"}しました`, true);
       router.refresh();
       router.push(`/vote/confirm?voteId=${voteId}`);
     } catch (e) {
       hideSpinner();
-      await writeLog({ dataId: voteId, action: `投票回答${isEdit ? "修正" : "登録"}`, status: "error", errorDetail: { message: (e as Error).message } });
+      await writeLog({ dataId: voteId, action: `曲投票回答${isEdit ? "修正" : "登録"}`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("保存に失敗しました", true);
     }
   };
@@ -139,7 +139,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
   return (
     <BaseLayout>
       <AnswerEditLayout
-        featureName="投票"
+        featureName="曲投票"
         icon="fas fa-vote-yea"
         basePath="/vote"
         featureIdKey="voteId"
@@ -168,7 +168,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
             return (
               <div key={item.name} className="vote-item" style={{ marginBottom: "2rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                  <div className="vote-item-title" style={{ margin: 0 }}>{item.name}</div>
+                  <div className="vote-item-title" style={{ margin: 0 }}>曲投票項目: {item.name}</div>
                   {isBorda && (
                     <button type="button" onClick={() => handleClearBorda(item.name)} style={{
                       fontSize: "0.8rem", padding: "4px 10px", backgroundColor: "#f0f0f0", border: "1px solid #ccc", borderRadius: "4px", color: "#666"
