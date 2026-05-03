@@ -349,9 +349,9 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                       <div key={choice.name} className={`result-bar${isMyChoice ? " my-choice" : ""}`} style={{
                         padding: "16px 20px",
                         marginBottom: "12px",
-                        backgroundColor: isMyChoice ? "#fffef0" : "#fff",
+                        backgroundColor: "#fff",
                         borderRadius: "16px",
-                        border: `1px solid ${isMyChoice ? "#fde68a" : "#eef2f6"}`,
+                        border: "1px solid #eef2f6",
                         boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
                         display: "flex",
                         alignItems: "center",
