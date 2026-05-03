@@ -169,6 +169,11 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
     next[itemIdx].choices = next[itemIdx].choices.filter((_, i) => i !== choiceIdx);
     setItems(next);
   };
+  const updateDifficulty = (itemIdx: number, choiceIdx: number, difficulty: number) => {
+    const next = [...items];
+    next[itemIdx].choices[choiceIdx].difficulty = difficulty;
+    setItems(next);
+  };
 
   const handleSave = async () => {
     // Basic validation
@@ -252,10 +257,18 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
         name: item.name,
         // merge existing links if mode is copy
         link: mode === "copy" ? initialVote?.items?.find(i => i.name === item.name)?.link || "" : item.link || "",
-        choices: item.choices.filter(c => !!c.name).map(c => ({
-          name: c.name,
-          link: mode === "copy" ? initialVote?.items?.find(i => i.name === item.name)?.choices?.find(oc => oc.name === c.name)?.link || "" : c.link || ""
-        }))
+        choices: item.choices.filter(c => !!c.name).map(c => {
+          // 既存のリンクを保持するための検索ロジック
+          const existingItem = initialVote?.items?.find(i => i.name === item.name);
+          const existingChoice = existingItem?.choices?.find(oc => oc.name === c.name);
+          const preservedLink = existingChoice?.link || c.link || "";
+
+          return {
+            name: c.name,
+            link: preservedLink,
+            difficulty: c.difficulty || 0
+          };
+        })
       }));
 
       const payload: Partial<Vote> = {
@@ -388,10 +401,21 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
                 <input type="text" className="form-control" placeholder="項目名（例：演目候補）" value={item.name} onChange={e => updateItem(i, e.target.value)} />
                 <div className="vote-choices" style={{ marginTop: "12px", marginLeft: "16px" }}>
                   {item.choices.map((choice, j) => (
-                    <div key={j} className="choice-wrapper">
-                      <span>・</span>
-                      <input type="text" className="form-control" placeholder={`選択肢${j + 1}`} value={choice.name} onChange={e => updateChoice(i, j, e.target.value)} />
-                      <button type="button" onClick={() => removeChoice(i, j)} className="remove-choice">×</button>
+                    <div key={j} className="choice-wrapper" style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
+                      <span style={{ flexShrink: 0 }}>・</span>
+                      <input type="text" className="form-control" style={{ flex: 1 }} placeholder={`選択肢${j + 1}`} value={choice.name} onChange={e => updateChoice(i, j, e.target.value)} />
+                      <select 
+                        className="form-control" 
+                        style={{ width: "70px", flexShrink: 0, padding: "4px" }} 
+                        value={choice.difficulty || ""} 
+                        onChange={e => updateDifficulty(i, j, e.target.value ? Number(e.target.value) : 0)}
+                      >
+                        <option value="">難</option>
+                        {[...Array(10)].map((_, idx) => (
+                          <option key={idx + 1} value={idx + 1}>{idx + 1}</option>
+                        ))}
+                      </select>
+                      <button type="button" onClick={() => removeChoice(i, j)} className="remove-choice" style={{ flexShrink: 0 }}>×</button>
                     </div>
                   ))}
                 </div>

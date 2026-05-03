@@ -252,6 +252,21 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
               </a>
             )}
           </div>
+          <p style={{ 
+            fontSize: "0.85rem", 
+            color: "#666", 
+            marginBottom: "1.5rem", 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "8px",
+            backgroundColor: "#f8f9fa",
+            padding: "8px 12px",
+            borderRadius: "8px",
+            border: "1px solid #e9ecef"
+          }}>
+            <i className="fas fa-info-circle" style={{ color: "#2196F3" }}></i>
+            <span><strong>難易度 (Lv) について:</strong> 1（易）〜 10（難）の10段階で評価されています。</span>
+          </p>
 
           {(voteData.items || []).map((item, idx) => {
             const isBorda = voteData.type === "borda";
@@ -331,59 +346,119 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                     const canVoterLink = !isBorda && showVoterLink && val > 0;
 
                     return (
-                      <div key={choice.name} className={`result-bar${isMyChoice ? " my-choice" : ""}`}>
-                        <div className="label" style={{ 
-                          ...( !canViewResults ? { width: "100%" } : {} ),
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px"
-                        }}>
-                          {isMyChoice && (
-                            <div style={{ display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
+                      <div key={choice.name} className={`result-bar${isMyChoice ? " my-choice" : ""}`} style={{
+                        padding: "16px 20px",
+                        marginBottom: "12px",
+                        backgroundColor: isMyChoice ? "#fffef0" : "#fff",
+                        borderRadius: "16px",
+                        border: `1px solid ${isMyChoice ? "#fde68a" : "#eef2f6"}`,
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "16px",
+                        position: "relative"
+                      }}>
+                        {/* Column 1: Vote Status */}
+                        <div style={{ width: "45px", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                          {isMyChoice ? (
+                            <>
                               <img
                                 src={myPic}
-                                alt="あなたの選択"
-                                style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #ddd" }}
+                                alt="あなた"
+                                style={{ width: "28px", height: "28px", borderRadius: "50%", border: "2px solid #fff", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
                                 onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }}
                               />
                               {isBorda && myRank !== -1 && (
                                 <span style={{
-                                  fontSize: "0.75rem",
+                                  fontSize: "0.6rem",
                                   background: (() => {
-                                    if (myRank === 0) return "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)"; // Gold
-                                    if (myRank === 1) return "linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%)"; // Silver
-                                    if (myRank === 2) return "linear-gradient(135deg, #CD7F32 0%, #8B4513 100%)"; // Bronze
-                                    return "linear-gradient(135deg, #4A90E2 0%, #357ABD 100%)"; // Default Blue
+                                    if (myRank === 0) return "#FFD700";
+                                    if (myRank === 1) return "#C0C0C0";
+                                    if (myRank === 2) return "#CD7F32";
+                                    return "#4A90E2";
                                   })(),
                                   color: "#fff",
-                                  padding: "2px 6px",
-                                  borderRadius: "4px",
-                                  fontWeight: "bold",
-                                  lineHeight: "1",
-                                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                                  padding: "1px 6px",
+                                  borderRadius: "10px",
+                                  fontWeight: "900",
+                                  boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                                  whiteSpace: "nowrap"
                                 }}>
                                   {myRank + 1}位
                                 </span>
                               )}
+                            </>
+                          ) : (
+                            <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "#f8f9fa", border: "1px solid #eee" }} />
+                          )}
+                        </div>
+
+                        {/* Column 2: Name and Difficulty */}
+                        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "6px" }}>
+                          <div style={{ 
+                            fontWeight: "800", 
+                            color: isMyChoice ? "#1a1a1a" : "#333", 
+                            fontSize: "1.05rem",
+                            lineHeight: "1.4"
+                          }}>
+                            {renderLink(choice.link, choice.name)}
+                          </div>
+                          {choice.difficulty && choice.difficulty > 0 && (
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                              <div style={{ 
+                                fontSize: "0.7rem", 
+                                color: "#718096", 
+                                fontWeight: "700", 
+                                backgroundColor: "#edf2f7", 
+                                padding: "2px 8px", 
+                                borderRadius: "4px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px"
+                              }}>
+                                <i className="fas fa-gauge-high" style={{ fontSize: "0.6rem" }}></i> Lv.{choice.difficulty}
+                              </div>
+                              <div style={{ height: "5px", width: "60px", backgroundColor: "#edf2f7", borderRadius: "3px", overflow: "hidden" }}>
+                                <div style={{ 
+                                  width: `${choice.difficulty * 10}%`, 
+                                  backgroundColor: choice.difficulty >= 8 ? "#f56565" : choice.difficulty >= 5 ? "#ed8936" : "#48bb78",
+                                  height: "100%",
+                                  borderRadius: "3px"
+                                }} />
+                              </div>
                             </div>
                           )}
-                          <span style={{ flex: 1 }}>{renderLink(choice.link, choice.name)}</span>
                         </div>
+
+                        {/* Column 3: Result */}
                         {canViewResults && (
-                          <>
-                            <div className="bar-container">
-                              <div className="bar" style={{ width: `${percent}%` }} />
+                          <div style={{ 
+                            textAlign: "right", 
+                            minWidth: "75px", 
+                            display: "flex", 
+                            flexDirection: "column", 
+                            alignItems: "flex-end",
+                            gap: "2px"
+                          }}>
+                            <div style={{ 
+                              fontSize: "1.4rem", 
+                              fontWeight: "900", 
+                              color: isMyChoice ? "#2d3748" : "#4a5568",
+                              lineHeight: "1"
+                            }}>
+                              {val}
+                              <span style={{ fontSize: "0.75rem", fontWeight: "700", marginLeft: "2px", color: "#718096" }}>
+                                {isBorda ? "Pt" : "票"}
+                              </span>
                             </div>
-                            <div className="vote-count">
-                              {canVoterLink ? (
-                                <a href="#" onClick={(e) => { e.preventDefault(); handleVoterModal(item.name, choice.name); }}>
-                                  {val}票
-                                </a>
-                              ) : (
-                                <span>{val}{isBorda ? " Pt" : "票"}</span>
-                              )}
-                            </div>
-                          </>
+                            {canVoterLink && (
+                              <a href="#" onClick={(e) => { e.preventDefault(); handleVoterModal(item.name, choice.name); }} style={{
+                                fontSize: "0.65rem", fontWeight: "700", color: "#3182ce", textDecoration: "underline"
+                              }}>
+                                内訳を見る
+                              </a>
+                            )}
+                          </div>
                         )}
                       </div>
                     );
