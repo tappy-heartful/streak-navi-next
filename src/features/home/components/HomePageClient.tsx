@@ -59,7 +59,7 @@ const MenuSectionList = memo(({ isAdmin }: { isAdmin: boolean }) => (
     <h3>メニュー</h3>
     <div className={styles.menuList}>
       <MenuSection title="演奏メニュー" items={[{ h: "/score", l: "🎼 譜面", c: "perfMenu" }, { h: "/event", l: "🎺 イベント", c: "perfMenu" }, { h: "/assign", l: "🎵 譜割り", c: "perfMenu" }]} />
-      <MenuSection title="活動メニュー" items={[{ h: "/call", l: "🎶 曲募集", c: "actMenu" }, { h: "/vote", l: "📊 投票", c: "actMenu" }, { h: "/studio", l: "📍 スタジオ", c: "actMenu" }]} />
+      <MenuSection title="活動メニュー" items={[{ h: "/call", l: "🎶 曲募集", c: "actMenu" }, { h: "/vote", l: "📊 曲投票", c: "actMenu" }, { h: "/studio", l: "📍 スタジオ", c: "actMenu" }]} />
       <MenuSection title="アプリメニュー" items={[{ h: "/user", l: "👥 ユーザ", c: "appMenu" }, { h: "/notice", l: "📣 通知設定", c: "appMenu" }, { h: "/blue-note", l: "🎧 今日の一曲", c: "appMenu", b: "募集中" }, { h: "/board", l: "📋 掲示板", c: "appMenu" }]} />
       <MenuSection title="ホームページ連携" items={[{ h: "/live", l: "🎷 ライブ", c: "extMenu" }, { h: "/ticket", l: "🎫 予約者一覧", c: "extMenu" }, { h: "/media", l: "🎬 メディア", c: "extMenu" }]} />
       <MenuSection title="経費管理" items={[
@@ -188,7 +188,7 @@ const scorePlaylistIds = useMemo(() => initialData.scores.map((s) => s.youtubeId
             <i className="fa-solid fa-robot" style={{ fontSize: "1.4rem", color: "#fff", flexShrink: 0 }} />
             <div>
               <div style={{ fontWeight: "bold", fontSize: "0.9rem", color: "#fff" }}>AIコンシェルジュに聞く</div>
-              <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.85)", marginTop: "2px" }}>イベント・投票・曲募集など何でも</div>
+              <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.85)", marginTop: "2px" }}>イベント・曲投票・曲募集など何でも</div>
             </div>
             <i className="fa-solid fa-chevron-right" style={{ marginLeft: "auto", color: "rgba(255,255,255,0.8)", fontSize: "0.85rem" }} />
           </button>

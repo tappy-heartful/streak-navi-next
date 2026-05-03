@@ -104,13 +104,13 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
     try {
       await submitVoteAnswer(voteId, uid, answers);
       hideSpinner();
-      await writeLog({ dataId: voteId, action: `投票回答${isEdit ? "修正" : "登録"}` });
+      await writeLog({ dataId: voteId, action: `曲投票回答${isEdit ? "修正" : "登録"}` });
       await showDialog(`回答を${isEdit ? "修正" : "登録"}しました`, true);
       router.refresh();
       router.push(`/vote/confirm?voteId=${voteId}`);
     } catch (e) {
       hideSpinner();
-      await writeLog({ dataId: voteId, action: `投票回答${isEdit ? "修正" : "登録"}`, status: "error", errorDetail: { message: (e as Error).message } });
+      await writeLog({ dataId: voteId, action: `曲投票回答${isEdit ? "修正" : "登録"}`, status: "error", errorDetail: { message: (e as Error).message } });
       await showDialog("保存に失敗しました", true);
     }
   };
@@ -139,7 +139,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
   return (
     <BaseLayout>
       <AnswerEditLayout
-        featureName="投票"
+        featureName="曲投票"
         icon="fas fa-vote-yea"
         basePath="/vote"
         featureIdKey="voteId"
@@ -168,7 +168,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
             return (
               <div key={item.name} className="vote-item" style={{ marginBottom: "2rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                  <div className="vote-item-title" style={{ margin: 0 }}>{item.name}</div>
+                  <div className="vote-item-title" style={{ margin: 0 }}>曲投票項目: {item.name}</div>
                   {isBorda && (
                     <button type="button" onClick={() => handleClearBorda(item.name)} style={{
                       fontSize: "0.8rem", padding: "4px 10px", backgroundColor: "#f0f0f0", border: "1px solid #ccc", borderRadius: "4px", color: "#666"
@@ -203,46 +203,89 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
                     const isChecked = isBorda ? rankIdx !== -1 : answers[item.name] === choice.name;
 
                     return (
-                      <div key={choice.name} className="vote-choice-wrapper">
+                      <div key={choice.name} className="vote-choice-wrapper" style={{
+                        padding: 0,
+                        marginBottom: "10px",
+                        backgroundColor: isChecked ? "#fffef0" : "#fff",
+                        borderRadius: "12px",
+                        border: `1px solid ${isChecked ? "#4caf50" : "#e9edf2"}`,
+                        boxShadow: isChecked ? "0 2px 8px rgba(76, 175, 80, 0.1)" : "0 2px 4px rgba(0,0,0,0.02)",
+                        overflow: "hidden"
+                      }}>
                         <label
                           className={`vote-choice-label${isChecked ? " selected" : ""}`}
                           htmlFor={id}
-                          style={isBorda ? { position: "relative" } : undefined}
-                          onClick={() => isBorda && handleBordaClick(item.name, choice.name, maxRanks)}
+                          style={{ 
+                            display: "flex", 
+                            alignItems: "center", 
+                            padding: "12px 16px", 
+                            cursor: "pointer", 
+                            gap: "12px",
+                            border: "none",
+                            background: "none",
+                            margin: 0,
+                            width: "100%",
+                            boxSizing: "border-box"
+                          }}
+                          onClick={(e) => {
+                            if (isBorda) {
+                              e.preventDefault();
+                              handleBordaClick(item.name, choice.name, maxRanks);
+                            }
+                          }}
                         >
-                          {!isBorda && (
-                            <input
-                              type="radio"
-                              name={item.name}
-                              id={id}
-                              value={choice.name}
-                              checked={isChecked}
-                              onChange={() => handleChange(item.name, choice.name)}
-                            />
-                          )}
-                          {isBorda && isChecked && (
-                            <span style={{
-                              position: "absolute",
-                              left: "10px",
-                              backgroundColor: "#ff0000",
-                              color: "#fff",
-                              width: "22px",
-                              height: "22px",
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "0.8rem",
-                              fontWeight: "bold"
-                            }}>
-                              {rankIdx + 1}
-                            </span>
-                          )}
-                          <span style={isBorda && isChecked ? { paddingLeft: "26px" } : undefined}>
-                            {choice.name}
-                          </span>
+                          {/* Status Column */}
+                          <div style={{ width: "28px", flexShrink: 0, display: "flex", justifyContent: "center" }}>
+                            {isBorda ? (
+                              isChecked ? (
+                                <span style={{
+                                  backgroundColor: "#4caf50",
+                                  color: "#fff",
+                                  width: "24px",
+                                  height: "24px",
+                                  borderRadius: "50%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontSize: "0.85rem",
+                                  fontWeight: "bold",
+                                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                                }}>
+                                  {rankIdx + 1}
+                                </span>
+                              ) : (
+                                <div style={{ width: "22px", height: "22px", borderRadius: "50%", border: "2px solid #cbd5e0" }} />
+                              )
+                            ) : (
+                              <input
+                                type="radio"
+                                name={item.name}
+                                id={id}
+                                value={choice.name}
+                                checked={isChecked}
+                                onChange={() => handleChange(item.name, choice.name)}
+                                style={{ width: "20px", height: "20px", cursor: "pointer", margin: 0 }}
+                              />
+                            )}
+                          </div>
+
+                          {/* Info Column */}
+                          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
+                            <div style={{ fontWeight: "700", fontSize: "1rem", color: isChecked ? "#1a531b" : "#333", lineHeight: "1.4" }}>
+                              {choice.name}
+                            </div>
+                            {choice.difficulty !== undefined && choice.difficulty > 0 && (
+                              <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.65rem", color: "#718096", fontWeight: "600" }}>
+                                <i className="fas fa-gauge-high" style={{ fontSize: "0.6rem" }}></i> Lv.{choice.difficulty}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Link Icon Column */}
+                          <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
+                            {renderLinkIcon(choice.link, choice.name)}
+                          </div>
                         </label>
-                        {renderLinkIcon(choice.link, choice.name)}
                       </div>
                     );
                   })}

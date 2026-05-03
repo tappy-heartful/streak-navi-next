@@ -43,7 +43,7 @@ export async function fetchVote(id: string): Promise<Vote | null> {
     updatedAt: data.updatedAt?.toMillis() || 0,
     items: data.items || [],
     type: data.type || "single",
-    bordaConfig: data.bordaConfig || null,
+    bordaConfig: data.bordaConfig || undefined,
   };
 }
 

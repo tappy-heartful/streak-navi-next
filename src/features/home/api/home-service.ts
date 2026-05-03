@@ -27,8 +27,8 @@ export async function getAnnouncementsServer() {
     });
   };
 
-  // 投票・候補曲
-  checkTerm(votes, "投票、受付中です！", "name", "/vote/confirm?voteId=");
+  // 曲投票・候補曲
+  checkTerm(votes, "曲投票、受付中です！", "name", "/vote/confirm?voteId=");
   checkTerm(calls, "候補曲、募集中です！", "title", "/call/confirm?callId=");
 
   // イベント関連のロジック

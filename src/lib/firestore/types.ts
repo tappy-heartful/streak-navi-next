@@ -176,6 +176,7 @@ export interface Board {
 export interface VoteChoice {
   name: string;
   link?: string;
+  difficulty?: number; // 1-10評価
 }
 
 export interface VoteItem {

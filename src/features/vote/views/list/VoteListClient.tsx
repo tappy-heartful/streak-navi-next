@@ -68,7 +68,7 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
   return (
     <BaseLayout>
       <ListBaseLayout
-        title="投票"
+        title="曲投票"
         icon="fas fa-vote-yea" // optional
         basePath="/vote"
         hideAddButton={!isAdmin}
@@ -80,11 +80,11 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
               <table className="list-table">
                 <thead>
                   <tr>
-                    <th>投票名</th>
+                    <th>曲投票名</th>
                     <th>状況</th>
                     <th>回答数</th>
                     <th>受付期間</th>
-                    <th>投票項目</th>
+                    <th>曲投票項目</th>
                   </tr>
                 </thead>
                 <tbody id="upcoming-list-body">
@@ -126,17 +126,17 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
             <table className="list-table">
               <thead>
                 <tr>
-                  <th>投票名</th>
+                  <th>曲投票名</th>
                   <th>状況</th>
                   <th>回答数</th>
                   <th>受付期間</th>
-                  <th>投票項目</th>
+                  <th>曲投票項目</th>
                 </tr>
               </thead>
               <tbody id="active-list-body">
                 {activeList.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="empty-text">該当する投票はありません🍀</td>
+                    <td colSpan={5} className="empty-text">該当する曲投票はありません🍀</td>
                   </tr>
                 ) : (
                   activeList.map((vote) => {
@@ -181,11 +181,11 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
               <table className="list-table">
                 <thead>
                   <tr>
-                    <th>投票名</th>
+                    <th>曲投票名</th>
                     <th>状況</th>
                     <th>回答数</th>
                     <th>受付期間</th>
-                    <th>投票項目</th>
+                    <th>曲投票項目</th>
                   </tr>
                 </thead>
                 <tbody id="closed-list-body">
