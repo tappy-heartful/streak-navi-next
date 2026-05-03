@@ -403,7 +403,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                           }}>
                             {renderLink(choice.link, choice.name)}
                           </div>
-                          {choice.difficulty && choice.difficulty > 0 && (
+                          {choice.difficulty !== undefined && choice.difficulty > 0 && (
                             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                               <div style={{ 
                                 fontSize: "0.7rem", 

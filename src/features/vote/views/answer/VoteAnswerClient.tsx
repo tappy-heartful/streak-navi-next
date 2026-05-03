@@ -274,7 +274,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
                             <div style={{ fontWeight: "700", fontSize: "1rem", color: isChecked ? "#1a531b" : "#333", lineHeight: "1.4" }}>
                               {choice.name}
                             </div>
-                            {choice.difficulty && choice.difficulty > 0 && (
+                            {choice.difficulty !== undefined && choice.difficulty > 0 && (
                               <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.65rem", color: "#718096", fontWeight: "600" }}>
                                 <i className="fas fa-gauge-high" style={{ fontSize: "0.6rem" }}></i> Lv.{choice.difficulty}
                               </div>
