@@ -423,7 +423,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                               {renderLink(choice.link, choice.name)}
                             </div>
                             {choice.difficulty !== undefined && choice.difficulty > 0 && (
-                              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
                                 <div style={{
                                   fontSize: "0.7rem",
                                   color: "#718096",
@@ -433,11 +433,12 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                                   borderRadius: "4px",
                                   display: "flex",
                                   alignItems: "center",
-                                  gap: "4px"
+                                  gap: "4px",
+                                  flexShrink: 0
                                 }}>
                                   <i className="fas fa-gauge-high" style={{ fontSize: "0.6rem" }}></i> Lv.{choice.difficulty}
                                 </div>
-                                <div style={{ height: "5px", width: "60px", backgroundColor: "#edf2f7", borderRadius: "3px", overflow: "hidden" }}>
+                                <div style={{ height: "5px", width: "60px", backgroundColor: "#edf2f7", borderRadius: "3px", overflow: "hidden", flexShrink: 0 }}>
                                   <div style={{
                                     width: `${choice.difficulty * 10}%`,
                                     backgroundColor: choice.difficulty >= 8 ? "#f56565" : choice.difficulty >= 5 ? "#ed8936" : "#48bb78",
