@@ -252,12 +252,12 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
               </a>
             )}
           </div>
-          <p style={{ 
-            fontSize: "0.85rem", 
-            color: "#666", 
-            marginBottom: "1.5rem", 
-            display: "flex", 
-            alignItems: "center", 
+          <p style={{
+            fontSize: "0.85rem",
+            color: "#666",
+            marginBottom: "1.5rem",
+            display: "flex",
+            alignItems: "center",
             gap: "8px",
             backgroundColor: "#f8f9fa",
             padding: "8px 12px",
@@ -287,7 +287,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                     } else {
                       // Weighted: 1st gets 5, 2nd gets 3, 3rd gets 1 (if maxRanks=3)
                       // Generalized weighted: 1st=10, 2nd=6, 3rd=4, 4th=2, 5th=1...
-                      const weights = [10, 6, 4, 3, 2, 1]; 
+                      const weights = [10, 6, 4, 3, 2, 1];
                       if (maxRanks === 3) pts = [5, 3, 1][rankIdx];
                       else pts = weights[rankIdx] || 1;
                     }
@@ -343,144 +343,144 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                     return item.choices.map(choice => {
                       const val = results[choice.name] || 0;
                       const percent = canViewResults ? (val / itemMaxVal) * 100 : 0;
-                    const isMyChoice = isBorda
-                      ? ((myAnswer[item.name] as string[]) || []).includes(choice.name)
-                      : myAnswer[item.name] === choice.name;
-                    const myRank = isBorda ? ((myAnswer[item.name] as string[]) || []).indexOf(choice.name) : -1;
-                    const canVoterLink = !isBorda && showVoterLink && val > 0;
+                      const isMyChoice = isBorda
+                        ? ((myAnswer[item.name] as string[]) || []).includes(choice.name)
+                        : myAnswer[item.name] === choice.name;
+                      const myRank = isBorda ? ((myAnswer[item.name] as string[]) || []).indexOf(choice.name) : -1;
+                      const canVoterLink = !isBorda && showVoterLink && val > 0;
 
-                    return (
-                      <div key={choice.name} className={`result-bar${isMyChoice ? " my-choice" : ""}`} style={{
-                        padding: "16px 20px",
-                        marginBottom: "12px",
-                        backgroundColor: "#fff",
-                        borderRadius: "16px",
-                        border: "1px solid #eef2f6",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "16px",
-                        position: "relative",
-                        overflow: "hidden"
-                      }}>
-                        {/* Background Gauge */}
-                        {canViewResults && (
-                          <div style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            bottom: 0,
-                            width: `${percent}%`,
-                            backgroundColor: "rgba(76, 175, 80, 0.15)",
-                            zIndex: 0,
-                            transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)"
-                          }} />
-                        )}
-
-                        {/* Column 1: Vote Status */}
-                        <div style={{ width: "45px", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", zIndex: 1 }}>
-                          {isMyChoice ? (
-                            <>
-                              <img
-                                src={myPic}
-                                alt="あなた"
-                                style={{ width: "28px", height: "28px", borderRadius: "50%", border: "2px solid #fff", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
-                                onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }}
-                              />
-                              {isBorda && myRank !== -1 && (
-                                <span style={{
-                                  fontSize: "0.6rem",
-                                  background: (() => {
-                                    if (myRank === 0) return "#FFD700";
-                                    if (myRank === 1) return "#C0C0C0";
-                                    if (myRank === 2) return "#CD7F32";
-                                    return "#4A90E2";
-                                  })(),
-                                  color: "#fff",
-                                  padding: "1px 6px",
-                                  borderRadius: "10px",
-                                  fontWeight: "900",
-                                  boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-                                  whiteSpace: "nowrap"
-                                }}>
-                                  {myRank + 1}位
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "#f8f9fa", border: "1px solid #eee" }} />
+                      return (
+                        <div key={choice.name} className={`result-bar${isMyChoice ? " my-choice" : ""}`} style={{
+                          padding: "16px 20px",
+                          marginBottom: "12px",
+                          backgroundColor: "#fff",
+                          borderRadius: "16px",
+                          border: "1px solid #eef2f6",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "16px",
+                          position: "relative",
+                          overflow: "hidden"
+                        }}>
+                          {/* Background Gauge */}
+                          {canViewResults && (
+                            <div style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              bottom: 0,
+                              width: `${percent}%`,
+                              backgroundColor: "rgba(76, 175, 80, 0.12)",
+                              zIndex: 0,
+                              transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)"
+                            }} />
                           )}
-                        </div>
 
-                        {/* Column 2: Name and Difficulty */}
-                        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "6px", zIndex: 1 }}>
-                          <div style={{ 
-                            fontWeight: "800", 
-                            color: isMyChoice ? "#1a1a1a" : "#333", 
-                            fontSize: "1.05rem",
-                            lineHeight: "1.4"
-                          }}>
-                            {renderLink(choice.link, choice.name)}
-                          </div>
-                          {choice.difficulty !== undefined && choice.difficulty > 0 && (
-                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                              <div style={{ 
-                                fontSize: "0.7rem", 
-                                color: "#718096", 
-                                fontWeight: "700", 
-                                backgroundColor: "#edf2f7", 
-                                padding: "2px 8px", 
-                                borderRadius: "4px",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "4px"
-                              }}>
-                                <i className="fas fa-gauge-high" style={{ fontSize: "0.6rem" }}></i> Lv.{choice.difficulty}
-                              </div>
-                              <div style={{ height: "5px", width: "60px", backgroundColor: "#edf2f7", borderRadius: "3px", overflow: "hidden" }}>
-                                <div style={{ 
-                                  width: `${choice.difficulty * 10}%`, 
-                                  backgroundColor: choice.difficulty >= 8 ? "#f56565" : choice.difficulty >= 5 ? "#ed8936" : "#48bb78",
-                                  height: "100%",
-                                  borderRadius: "3px"
-                                }} />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Column 3: Result */}
-                        {canViewResults && (
-                          <div style={{ 
-                            textAlign: "right", 
-                            minWidth: "75px", 
-                            display: "flex", 
-                            flexDirection: "column", 
-                            alignItems: "flex-end",
-                            gap: "2px",
-                            zIndex: 1
-                          }}>
-                            <div style={{ 
-                              fontSize: "1.4rem", 
-                              fontWeight: "900", 
-                              color: isMyChoice ? "#2d3748" : "#4a5568",
-                              lineHeight: "1"
-                            }}>
-                              {val}
-                              <span style={{ fontSize: "0.75rem", fontWeight: "700", marginLeft: "2px", color: "#718096" }}>
-                                {isBorda ? "Pt" : "票"}
-                              </span>
-                            </div>
-                            {canVoterLink && (
-                              <a href="#" onClick={(e) => { e.preventDefault(); handleVoterModal(item.name, choice.name); }} style={{
-                                fontSize: "0.65rem", fontWeight: "700", color: "#3182ce", textDecoration: "underline"
-                              }}>
-                                内訳を見る
-                              </a>
+                          {/* Column 1: Vote Status */}
+                          <div style={{ width: "45px", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", zIndex: 1 }}>
+                            {isMyChoice ? (
+                              <>
+                                <img
+                                  src={myPic}
+                                  alt="あなた"
+                                  style={{ width: "28px", height: "28px", borderRadius: "50%", border: "2px solid #fff", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
+                                  onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }}
+                                />
+                                {isBorda && myRank !== -1 && (
+                                  <span style={{
+                                    fontSize: "0.6rem",
+                                    background: (() => {
+                                      if (myRank === 0) return "#FFD700";
+                                      if (myRank === 1) return "#C0C0C0";
+                                      if (myRank === 2) return "#CD7F32";
+                                      return "#4A90E2";
+                                    })(),
+                                    color: "#fff",
+                                    padding: "1px 6px",
+                                    borderRadius: "10px",
+                                    fontWeight: "900",
+                                    boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                                    whiteSpace: "nowrap"
+                                  }}>
+                                    {myRank + 1}位
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <div style={{ width: "24px", height: "24px", borderRadius: "50%", backgroundColor: "#f8f9fa", border: "1px solid #eee" }} />
                             )}
                           </div>
-                        )}
-                      </div>
+
+                          {/* Column 2: Name and Difficulty */}
+                          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "6px", zIndex: 1 }}>
+                            <div style={{
+                              fontWeight: "800",
+                              color: isMyChoice ? "#1a1a1a" : "#333",
+                              fontSize: "1.05rem",
+                              lineHeight: "1.4"
+                            }}>
+                              {renderLink(choice.link, choice.name)}
+                            </div>
+                            {choice.difficulty !== undefined && choice.difficulty > 0 && (
+                              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                <div style={{
+                                  fontSize: "0.7rem",
+                                  color: "#718096",
+                                  fontWeight: "700",
+                                  backgroundColor: "#edf2f7",
+                                  padding: "2px 8px",
+                                  borderRadius: "4px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px"
+                                }}>
+                                  <i className="fas fa-gauge-high" style={{ fontSize: "0.6rem" }}></i> Lv.{choice.difficulty}
+                                </div>
+                                <div style={{ height: "5px", width: "60px", backgroundColor: "#edf2f7", borderRadius: "3px", overflow: "hidden" }}>
+                                  <div style={{
+                                    width: `${choice.difficulty * 10}%`,
+                                    backgroundColor: choice.difficulty >= 8 ? "#f56565" : choice.difficulty >= 5 ? "#ed8936" : "#48bb78",
+                                    height: "100%",
+                                    borderRadius: "3px"
+                                  }} />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Column 3: Result */}
+                          {canViewResults && (
+                            <div style={{
+                              textAlign: "right",
+                              minWidth: "75px",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "flex-end",
+                              gap: "2px",
+                              zIndex: 1
+                            }}>
+                              <div style={{
+                                fontSize: "1.4rem",
+                                fontWeight: "900",
+                                color: isMyChoice ? "#2d3748" : "#4a5568",
+                                lineHeight: "1"
+                              }}>
+                                {val}
+                                <span style={{ fontSize: "0.75rem", fontWeight: "700", marginLeft: "2px", color: "#718096" }}>
+                                  {isBorda ? "Pt" : "票"}
+                                </span>
+                              </div>
+                              {canVoterLink && (
+                                <a href="#" onClick={(e) => { e.preventDefault(); handleVoterModal(item.name, choice.name); }} style={{
+                                  fontSize: "0.65rem", fontWeight: "700", color: "#3182ce", textDecoration: "underline"
+                                }}>
+                                  内訳を見る
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       );
                     });
                   })()}
