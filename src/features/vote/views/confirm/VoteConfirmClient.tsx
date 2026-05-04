@@ -371,7 +371,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                               left: 0,
                               bottom: 0,
                               width: `${percent}%`,
-                              backgroundColor: "rgba(76, 175, 80, 0.12)",
+                              backgroundColor: "rgba(76, 175, 80, 0.1)",
                               zIndex: 0,
                               transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)"
                             }} />
