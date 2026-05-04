@@ -404,10 +404,10 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
                     <div key={j} className="choice-wrapper" style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
                       <span style={{ flexShrink: 0 }}>・</span>
                       <input type="text" className="form-control" style={{ flex: 1 }} placeholder={`選択肢${j + 1}`} value={choice.name} onChange={e => updateChoice(i, j, e.target.value)} />
-                      <select 
-                        className="form-control" 
-                        style={{ width: "70px", flexShrink: 0, padding: "4px" }} 
-                        value={choice.difficulty || ""} 
+                      <select
+                        className="form-control"
+                        style={{ width: "54px", flexShrink: 0, padding: "4px" }}
+                        value={choice.difficulty || ""}
                         onChange={e => updateDifficulty(i, j, e.target.value ? Number(e.target.value) : 0)}
                       >
                         <option value="">難</option>
