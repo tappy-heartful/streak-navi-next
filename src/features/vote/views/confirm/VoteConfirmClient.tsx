@@ -336,9 +336,13 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                   <i className="fas fa-question-circle"></i> {renderLink(item.link, item.name)}
                 </div>
                 <div className="vote-results" style={{ padding: "20px", marginTop: 0, position: "relative" }}>
-                  {item.choices.map(choice => {
-                    const val = results[choice.name] || 0;
-                    const percent = canViewResults ? (val / maxVal) * 100 : 0;
+                  {(() => {
+                    const itemChoicesResults = item.choices.map(c => results[c.name] || 0);
+                    const itemMaxVal = Math.max(...itemChoicesResults, 1);
+
+                    return item.choices.map(choice => {
+                      const val = results[choice.name] || 0;
+                      const percent = canViewResults ? (val / itemMaxVal) * 100 : 0;
                     const isMyChoice = isBorda
                       ? ((myAnswer[item.name] as string[]) || []).includes(choice.name)
                       : myAnswer[item.name] === choice.name;
@@ -356,10 +360,25 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                         display: "flex",
                         alignItems: "center",
                         gap: "16px",
-                        position: "relative"
+                        position: "relative",
+                        overflow: "hidden"
                       }}>
+                        {/* Background Gauge */}
+                        {canViewResults && (
+                          <div style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            bottom: 0,
+                            width: `${percent}%`,
+                            backgroundColor: "rgba(76, 175, 80, 0.15)",
+                            zIndex: 0,
+                            transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)"
+                          }} />
+                        )}
+
                         {/* Column 1: Vote Status */}
-                        <div style={{ width: "45px", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                        <div style={{ width: "45px", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", zIndex: 1 }}>
                           {isMyChoice ? (
                             <>
                               <img
@@ -394,7 +413,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                         </div>
 
                         {/* Column 2: Name and Difficulty */}
-                        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "6px", zIndex: 1 }}>
                           <div style={{ 
                             fontWeight: "800", 
                             color: isMyChoice ? "#1a1a1a" : "#333", 
@@ -438,7 +457,8 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                             display: "flex", 
                             flexDirection: "column", 
                             alignItems: "flex-end",
-                            gap: "2px"
+                            gap: "2px",
+                            zIndex: 1
                           }}>
                             <div style={{ 
                               fontSize: "1.4rem", 
@@ -461,8 +481,9 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                           </div>
                         )}
                       </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                   {(() => {
                     const itemVideoIds = new Set<string>();
                     if (item.link) {
