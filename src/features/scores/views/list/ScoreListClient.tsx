@@ -31,7 +31,7 @@ export function ScoreListClient({ initialData }: Props) {
     <SearchableListLayout
       title="譜面" icon="fa fa-music" basePath="/score"
       list={list}
-      tableHeaders={["タイトル", "譜面", "音源", "ジャンル"]}
+      tableHeaders={["タイトル", "譜面", "音源", "ジャンル", "略称"]}
       searchFields={
         <ListFilterGrid>
           <FilterInput
@@ -84,6 +84,10 @@ export function ScoreListClient({ initialData }: Props) {
 
           <ListCellSmall>
             {s.genres?.map((gid: string) => initialData.genres.find((g) => g.id === gid)?.name).filter(Boolean).join("\n")}
+          </ListCellSmall>
+
+          <ListCellSmall>
+            {s.abbreviation}
           </ListCellSmall>
         </ListRow>
       ))}
