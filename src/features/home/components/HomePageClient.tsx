@@ -129,7 +129,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
 
   useEffect(() => {
     if (initialData.scores.length) {
-      setCurrentScoreIdx(Math.floor(Math.random() * Math.min(initialData.scores.length, 4)));
+      setCurrentScoreIdx(Math.floor(Math.random() * Math.min(initialData.scores.length, 6)));
     }
     if (initialData.blueNotes.length) {
       const now = new Date();
@@ -153,7 +153,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
     }
   }, [initialData]);
 
-const scorePlaylistIds = useMemo(() => initialData.scores.map((s) => s.youtubeId).filter(Boolean).join(","), [initialData.scores]);
+  const scorePlaylistIds = useMemo(() => initialData.scores.map((s) => s.youtubeId).filter(Boolean).join(","), [initialData.scores]);
   const bnPlaylistIds = useMemo(() => utils.getWatchVideosOrder(currentBNIdx, initialData.blueNotes)?.join(","), [currentBNIdx, initialData.blueNotes]);
 
   return (
