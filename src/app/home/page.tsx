@@ -21,7 +21,7 @@ export default async function HomePage() {
     getMediasServer(10)
   ]);
 
-  const quickScores = allScores.filter(s => s.isDispTop).slice(0, 4);
+  const quickScores = allScores.filter(s => s.isDispTop).slice(0, 6);
   const videoScores = allScores.filter(s => s.isDispTop && !!s.youtubeId);
   const topMedias = allMedias.filter(m => m.isDispTop).slice(0, 4);
 
