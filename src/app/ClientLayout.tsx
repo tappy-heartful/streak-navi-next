@@ -86,10 +86,25 @@ function AuthGuard({ children, isPending }: { children: React.ReactNode, isPendi
 function RouteChangeListener() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { user, userData, loading } = useAuth();
 
   useEffect(() => {
-    import("@/src/lib/functions").then((mod) => mod.hideSpinner());
-  }, [pathname, searchParams]);
+    const handleRouteEffects = async () => {
+      const { hideSpinner, writeAccessLog } = await import("@/src/lib/functions");
+      hideSpinner();
+
+      if (!loading && user) {
+        writeAccessLog({
+          uid: user.uid,
+          pathname,
+          searchParams: searchParams.toString(),
+          userName: userData?.displayName || userData?.abbreviation || "",
+        });
+      }
+    };
+
+    handleRouteEffects();
+  }, [pathname, searchParams, user, userData, loading]);
 
   return null;
 }
