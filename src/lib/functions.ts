@@ -233,8 +233,16 @@ export function formatDateToYMDDot(dateInput: any): string {
 export async function writeLog({ dataId, action, status = 'success', errorDetail = {} }: any) {
   try {
     const uid = getSession('uid') || 'unknown';
-    const timestamp = new Date().getTime();
-    const logId = `${timestamp}_${uid}`;
+    const now = new Date();
+    const dateStr = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+      String(now.getHours()).padStart(2, '0'),
+      String(now.getMinutes()).padStart(2, '0'),
+      String(now.getSeconds()).padStart(2, '0'),
+    ].join("-");
+    const logId = `${dateStr}_${uid}`;
     const colName = status === 'success' ? 'connectLogs' : 'connectErrorLogs';
     await setDoc(doc(db, colName, logId), {
       uid,
@@ -246,6 +254,30 @@ export async function writeLog({ dataId, action, status = 'success', errorDetail
     });
   } catch (e) {
     console.error("Log failed", e);
+  }
+}
+
+export async function writeAccessLog({ uid, pathname, searchParams, userName }: { uid: string, pathname: string, searchParams: string, userName?: string }) {
+  try {
+    const now = new Date();
+    const dateStr = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+      String(now.getHours()).padStart(2, '0'),
+      String(now.getMinutes()).padStart(2, '0'),
+      String(now.getSeconds()).padStart(2, '0'),
+    ].join("-");
+    const logId = `${dateStr}_${uid}`;
+    await setDoc(doc(db, 'accessLogs', logId), {
+      uid,
+      userName: userName || '',
+      pathname,
+      searchParams,
+      createdAt: serverTimestamp(),
+    });
+  } catch (e) {
+    console.error("Access log failed", e);
   }
 }
 
