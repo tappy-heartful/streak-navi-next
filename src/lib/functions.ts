@@ -234,16 +234,20 @@ export async function writeLog({ dataId, action, status = 'success', errorDetail
   try {
     const uid = getSession('uid') || 'unknown';
     const now = new Date();
-    const dateStr = [
-      now.getFullYear(),
-      String(now.getMonth() + 1).padStart(2, '0'),
-      String(now.getDate()).padStart(2, '0'),
-      String(now.getHours()).padStart(2, '0'),
-      String(now.getMinutes()).padStart(2, '0'),
-      String(now.getSeconds()).padStart(2, '0'),
-    ].join("-");
+    const dateStr =
+      now.getFullYear() +
+      String(now.getMonth() + 1).padStart(2, '0') +
+      String(now.getDate()).padStart(2, '0') +
+      "_" +
+      String(now.getHours()).padStart(2, '0') +
+      "-" +
+      String(now.getMinutes()).padStart(2, '0') +
+      "-" +
+      String(now.getSeconds()).padStart(2, '0') +
+      "-" +
+      String(now.getMilliseconds()).padStart(3, '0');
     const logId = `${dateStr}_${uid}`;
-    const colName = status === 'success' ? 'connectLogs' : 'connectErrorLogs';
+    const colName = status === 'success' ? 'logs' : 'errorLogs';
     await setDoc(doc(db, colName, logId), {
       uid,
       action,
@@ -260,14 +264,18 @@ export async function writeLog({ dataId, action, status = 'success', errorDetail
 export async function writeAccessLog({ uid, pathname, searchParams, userName }: { uid: string, pathname: string, searchParams: string, userName?: string }) {
   try {
     const now = new Date();
-    const dateStr = [
-      now.getFullYear(),
-      String(now.getMonth() + 1).padStart(2, '0'),
-      String(now.getDate()).padStart(2, '0'),
-      String(now.getHours()).padStart(2, '0'),
-      String(now.getMinutes()).padStart(2, '0'),
-      String(now.getSeconds()).padStart(2, '0'),
-    ].join("-");
+    const dateStr =
+      now.getFullYear() +
+      String(now.getMonth() + 1).padStart(2, '0') +
+      String(now.getDate()).padStart(2, '0') +
+      "_" +
+      String(now.getHours()).padStart(2, '0') +
+      "-" +
+      String(now.getMinutes()).padStart(2, '0') +
+      "-" +
+      String(now.getSeconds()).padStart(2, '0') +
+      "-" +
+      String(now.getMilliseconds()).padStart(3, '0');
     const logId = `${dateStr}_${uid}`;
     await setDoc(doc(db, 'accessLogs', logId), {
       uid,
