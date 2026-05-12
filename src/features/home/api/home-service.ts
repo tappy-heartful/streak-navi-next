@@ -36,10 +36,11 @@ export async function getAnnouncementsServer() {
     const d = eDoc.data();
     if (d.date < todayStr) return null;
     const diffDays = d.date ? Math.ceil((new Date(d.date.replace(/\./g, "/")).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000) : 0;
-    return { id: eDoc.id, title: d.title, date: d.date, attendanceType: d.attendanceType, allowAssign: d.allowAssign, isUnanswered: false, diffDays };
+    const isInAcceptTerm = utils.isInTerm(d.acceptStartDate, d.acceptEndDate);
+    return { id: eDoc.id, title: d.title, date: d.date, attendanceType: d.attendanceType, allowAssign: d.allowAssign, isUnanswered: false, diffDays, isInAcceptTerm };
   });
 
-  type UpcomingEvent = { id: string; title: string; date: string; attendanceType: string; allowAssign: boolean; isUnanswered: boolean; diffDays: number };
+  type UpcomingEvent = { id: string; title: string; date: string; attendanceType: string; allowAssign: boolean; isUnanswered: boolean; diffDays: number; isInAcceptTerm: boolean };
   const upcoming = eventResults.filter((e): e is UpcomingEvent => e !== null);
 
   // 日程調整
@@ -52,7 +53,10 @@ export async function getAnnouncementsServer() {
   // 次のイベント
   const target = upcoming[0];
   if (target) {
-    const header = target.diffDays === 0 ? "今日はイベント当日です！" : `次のイベントまで、あと${target.diffDays}日！`;
+    const isAccepting = target.attendanceType === "attendance" && target.isInAcceptTerm;
+    const header = isAccepting 
+      ? `イベントまであと${target.diffDays}日です！\n出欠確認、受付中です！`
+      : (target.diffDays === 0 ? "今日はイベント当日です！" : `次のイベントまで、あと${target.diffDays}日！`);
     items.push({ type: "pending", message: header }, { type: "item", label: `📅${target.date} ${target.title}`, link: `/event/confirm?eventId=${target.id}` });
   }
 
