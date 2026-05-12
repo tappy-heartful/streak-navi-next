@@ -340,22 +340,22 @@
 .calendarNav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 15px; /* ボタン間隔を広げる */
 }
 
 .navButtonIcon {
   background: none;
   border: 1px solid #ddd;
   color: #888;
-  width: 28px;
-  height: 28px;
+  width: 40px; /* 大きくする */
+  height: 40px; /* 大きくする */
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.8rem;
+  font-size: 1rem; /* 大きくする */
 }
 
 .navButtonIcon:hover {
