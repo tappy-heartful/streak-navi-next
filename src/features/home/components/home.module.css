@@ -310,3 +310,187 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
+/* カレンダー */
+.calendarContainer {
+  background: linear-gradient(to bottom, #fdfbfb 0%, #ebedee 100%);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  margin-top: 10px;
+  margin-bottom: 30px;
+  border: 1px solid rgba(255,255,255,0.8);
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendarHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #4caf50;
+}
+
+.calendarHeader h3::before {
+  content: '\f133'; /* fa-calendar-days */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  margin-right: 8px;
+}
+
+.calendarSelectors {
+  display: flex;
+  gap: 8px;
+}
+
+.calendarSelectors select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-size: 0.85rem;
+  color: #555;
+  outline: none;
+  cursor: pointer;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  background-color: #eee;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.weekdayHeader {
+  background-color: #f8f9fa;
+  padding: 8px 0;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #777;
+}
+
+.weekdayHeader:nth-child(7n+1) { color: #f44336; } /* Sunday */
+.weekdayHeader:nth-child(7n) { color: #2196f3; } /* Saturday */
+
+.calendarDay {
+  background-color: #fff;
+  min-height: 70px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.calendarDayEmpty {
+  background-color: #fafafa;
+}
+
+.today {
+  background-color: #f1f8f1;
+}
+
+.today .dayNumber {
+  background-color: #4caf50;
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayNumber {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.dayItems {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: visible; /* 改行を許容するため */
+}
+
+.calendarItem {
+  font-size: 0.6rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  text-decoration: none;
+  display: block;
+  font-weight: 500;
+  line-height: 1.2;
+  word-break: break-all;
+  border-left: 2px solid transparent;
+}
+
+.event { background-color: #e3f2fd; color: #1976d2; border-left-color: #1976d2; }
+.vote { background-color: #fff3e0; color: #f57c00; border-left-color: #f57c00; }
+.call { background-color: #f3e5f5; color: #7b1fa2; border-left-color: #7b1fa2; }
+
+/* 期間バーの連結スタイル */
+.start {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-right: -3px; /* 隙間を埋める */
+  z-index: 1;
+}
+
+.middle {
+  border-radius: 0;
+  margin-left: -3px;
+  margin-right: -3px;
+  border-left-width: 0;
+  z-index: 1;
+}
+
+.end {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -3px;
+  border-left-width: 0;
+  z-index: 1;
+}
+
+/* カレンダーフッター */
+.calendarFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #ddd;
+}
+
+.navButton {
+  background-color: #fff;
+  border: 1px solid #4caf50;
+  color: #4caf50;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navButton:hover {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.navButton:active {
+  transform: scale(0.95);
+}
