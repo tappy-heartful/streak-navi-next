@@ -102,7 +102,7 @@ export function VoteAnswerClient({ vote, voteId }: Props) {
 
     showSpinner();
     try {
-      await submitVoteAnswer(voteId, uid, answers);
+      await submitVoteAnswer(voteId, uid, answers, userData?.displayName);
       hideSpinner();
       await writeLog({ dataId: voteId, action: `曲投票回答${isEdit ? "修正" : "登録"}` });
       await showDialog(`回答を${isEdit ? "修正" : "登録"}しました`, true);
