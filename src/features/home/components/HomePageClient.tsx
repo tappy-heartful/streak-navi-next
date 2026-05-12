@@ -111,7 +111,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   const [currentDate, setCurrentDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  
+
   // スワイプの閾値（ピクセル）
   const minSwipeDistance = 50;
 
@@ -215,6 +215,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   return (
     <main className="container">
       <section className={styles.calendarContainer}>
+        <h3>カレンダー</h3>
         <div className={styles.calendarHeader}>
           <div className={styles.calendarNav}>
             <button onClick={handlePrevMonth} className={styles.navButtonIcon}>
@@ -233,7 +234,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
             </button>
           </div>
         </div>
-        <div 
+        <div
           className={styles.calendarGrid}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
