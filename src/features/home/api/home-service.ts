@@ -90,3 +90,17 @@ export async function getMediasServer(count = 10) {
   const snap = await adminDb.collection("medias").orderBy("date", "desc").limit(count).get();
   return snap.docs.map(toPlainObject) as unknown as Media[];
 }
+
+export async function getCalendarDataServer() {
+  const [eventsSnap, votesSnap, callsSnap] = await Promise.all([
+    adminDb.collection("events").get(),
+    adminDb.collection("votes").get(),
+    adminDb.collection("calls").get(),
+  ]);
+
+  const events = eventsSnap.docs.map(toPlainObject);
+  const votes = votesSnap.docs.map(toPlainObject);
+  const calls = callsSnap.docs.map(toPlainObject);
+
+  return { events, votes, calls };
+}

@@ -209,6 +209,7 @@ export interface VoteAnswer {
   id: string;
   voteId: string;
   uid: string;
+  displayName?: string;
   answers: Record<string, string | string[] | null>; // borda の場合は string[]
   updatedAt?: number;
 }

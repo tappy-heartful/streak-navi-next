@@ -35,12 +35,13 @@ export async function deleteVoteWithAnswers(voteId: string): Promise<void> {
   }
 }
 
-export async function submitVoteAnswer(voteId: string, uid: string, answers: Record<string, string | string[] | null>): Promise<void> {
+export async function submitVoteAnswer(voteId: string, uid: string, answers: Record<string, string | string[] | null>, displayName?: string): Promise<void> {
   const answerId = `${voteId}_${uid}`;
   const answerRef = doc(db, "voteAnswers", answerId);
   await setDoc(answerRef, {
     voteId,
     uid,
+    displayName: displayName || "",
     answers,
     updatedAt: serverTimestamp(),
   }, { merge: true });
