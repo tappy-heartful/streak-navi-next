@@ -109,6 +109,11 @@ Player.displayName = "Player";
 const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], votes: Vote[], calls: Call[] } }) => {
   const now = new Date();
   const [currentDate, setCurrentDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  
+  // スワイプの閾値（ピクセル）
+  const minSwipeDistance = 50;
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -130,6 +135,26 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
 
   const handlePrevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const handleNextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      handleNextMonth();
+    } else if (isRightSwipe) {
+      handlePrevMonth();
+    }
+  };
 
   const truncate = (str: string, len: number) => {
     if (!str) return "";
@@ -208,7 +233,12 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
             </button>
           </div>
         </div>
-        <div className={styles.calendarGrid}>
+        <div 
+          className={styles.calendarGrid}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
           {['日', '月', '火', '水', '木', '金', '土'].map(d => (
             <div key={d} className={styles.weekdayHeader}>{d}</div>
           ))}
