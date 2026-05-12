@@ -105,38 +105,43 @@ const Player = memo(({ title, subtitle, data, idx, setIdx, onRandom }: { title?:
   </div>
 ));
 Player.displayName = "Player";
- 
+
 const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], votes: Vote[], calls: Call[] } }) => {
   const now = new Date();
   const [currentDate, setCurrentDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
- 
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
- 
+
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
- 
+
   const years = [];
   for (let y = now.getFullYear() - 1; y <= now.getFullYear() + 2; y++) years.push(y);
   const months = Array.from({ length: 12 }, (_, i) => i);
- 
+
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCurrentDate(new Date(parseInt(e.target.value), month, 1));
   };
- 
+
   const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCurrentDate(new Date(year, parseInt(e.target.value), 1));
   };
 
   const handlePrevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const handleNextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
- 
+
+  const truncate = (str: string, len: number) => {
+    if (!str) return "";
+    return str.length <= len ? str : str.slice(0, len) + "...";
+  };
+
   const getItemsForDay = (day: number) => {
     const dateStr = `${year}.${String(month + 1).padStart(2, '0')}.${String(day).padStart(2, '0')}`;
     const items: { type: 'event' | 'vote' | 'call', label: string, link: string, id: string, position?: 'start' | 'middle' | 'end' }[] = [];
     const dayOfWeek = new Date(year, month, day).getDay();
     const isSunday = dayOfWeek === 0;
- 
+
     data.events.forEach(e => {
       if (e.date === dateStr) {
         items.push({ type: 'event', label: `📅 ${e.title}`, link: `/event/confirm?eventId=${e.id}`, id: e.id });
@@ -144,18 +149,18 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
         items.push({ type: 'event', label: `🗓️ ${e.title}`, link: `/event/confirm?eventId=${e.id}`, id: e.id });
       }
     });
- 
+
     data.votes.forEach(v => {
       const isStart = v.acceptStartDate === dateStr;
       const isEnd = v.acceptEndDate === dateStr;
       const isInPeriod = v.acceptStartDate <= dateStr && dateStr <= v.acceptEndDate;
 
       if (isInPeriod) {
-        const label = (isStart || isSunday) ? `📊 ${v.name}${isEnd ? "締切" : "受付中"}` : "";
-        items.push({ 
-          type: 'vote', 
-          label, 
-          link: `/vote/confirm?voteId=${v.id}`, 
+        const label = (isStart || isSunday) ? `📊 ${v.name}` : "";
+        items.push({
+          type: 'vote',
+          label,
+          link: `/vote/confirm?voteId=${v.id}`,
           id: v.id,
           position: isStart ? 'start' : isEnd ? 'end' : 'middle'
         });
@@ -168,32 +173,39 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
       const isInPeriod = c.acceptStartDate <= dateStr && dateStr <= c.acceptEndDate;
 
       if (isInPeriod) {
-        const label = (isStart || isSunday) ? `🎶 ${c.title}${isEnd ? "締切" : "募集中"}` : "";
-        items.push({ 
-          type: 'call', 
-          label, 
-          link: `/call/confirm?callId=${c.id}`, 
+        const label = (isStart || isSunday) ? `🎶 ${c.title}` : "";
+        items.push({
+          type: 'call',
+          label,
+          link: `/call/confirm?callId=${c.id}`,
           id: c.id,
           position: isStart ? 'start' : isEnd ? 'end' : 'middle'
         });
       }
     });
- 
+
     return items;
   };
- 
+
   return (
     <main className="container">
       <section className={styles.calendarContainer}>
         <div className={styles.calendarHeader}>
-          <h3>カレンダー</h3>
-          <div className={styles.calendarSelectors}>
-            <select value={year} onChange={handleYearChange}>
-              {years.map(y => <option key={y} value={y}>{y}年</option>)}
-            </select>
-            <select value={month} onChange={handleMonthChange}>
-              {months.map(m => <option key={m} value={m}>{m + 1}月</option>)}
-            </select>
+          <div className={styles.calendarNav}>
+            <button onClick={handlePrevMonth} className={styles.navButtonIcon}>
+              <i className="fa-solid fa-chevron-left" />
+            </button>
+            <div className={styles.calendarSelectors}>
+              <select value={year} onChange={handleYearChange}>
+                {years.map(y => <option key={y} value={y}>{y}年</option>)}
+              </select>
+              <select value={month} onChange={handleMonthChange}>
+                {months.map(m => <option key={m} value={m}>{m + 1}月</option>)}
+              </select>
+            </div>
+            <button onClick={handleNextMonth} className={styles.navButtonIcon}>
+              <i className="fa-solid fa-chevron-right" />
+            </button>
           </div>
         </div>
         <div className={styles.calendarGrid}>
@@ -212,26 +224,18 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
                 <div className={styles.dayNumber}>{day}</div>
                 <div className={styles.dayItems}>
                   {items.map((item, idx) => (
-                    <Link 
-                      key={`${item.type}-${item.id}-${idx}`} 
-                      href={item.link} 
+                    <Link
+                      key={`${item.type}-${item.id}-${idx}`}
+                      href={item.link}
                       className={`${styles.calendarItem} ${styles[item.type]} ${item.position ? styles[item.position] : ""}`}
                     >
-                      {item.label || "\u00A0"}
+                      {item.label ? truncate(item.label, 13) : "\u00A0"}
                     </Link>
                   ))}
                 </div>
               </div>
             );
           })}
-        </div>
-        <div className={styles.calendarFooter}>
-          <button onClick={handlePrevMonth} className={styles.navButton}>
-            <i className="fa-solid fa-chevron-left" /> 前の月
-          </button>
-          <button onClick={handleNextMonth} className={styles.navButton}>
-            次の月 <i className="fa-solid fa-chevron-right" />
-          </button>
         </div>
       </section>
     </main>

@@ -313,20 +313,15 @@
 
 /* カレンダー */
 .calendarContainer {
-  background: linear-gradient(to bottom, #fdfbfb 0%, #ebedee 100%);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
   margin-top: 10px;
   margin-bottom: 30px;
-  border: 1px solid rgba(255,255,255,0.8);
 }
 
 .calendarHeader {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .calendarHeader h3 {
@@ -342,13 +337,40 @@
   margin-right: 8px;
 }
 
-.calendarSelectors {
+.calendarNav {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
+.navButtonIcon {
+  background: none;
+  border: 1px solid #ddd;
+  color: #888;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.8rem;
+}
+
+.navButtonIcon:hover {
+  border-color: #4caf50;
+  color: #4caf50;
+  background-color: #f1f8f1;
+}
+
+.calendarSelectors {
+  display: flex;
+  gap: 4px;
+}
+
 .calendarSelectors select {
-  padding: 4px 8px;
+  padding: 2px 6px;
   border-radius: 6px;
   border: 1px solid #ddd;
   background: #fff;
@@ -356,6 +378,7 @@
   color: #555;
   outline: none;
   cursor: pointer;
+  min-width: 65px; /* 年表示が切れないように */
 }
 
 .calendarGrid {
@@ -462,14 +485,6 @@
   z-index: 1;
 }
 
-/* カレンダーフッター */
-.calendarFooter {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px dashed #ddd;
-}
 
 .navButton {
   background-color: #fff;
