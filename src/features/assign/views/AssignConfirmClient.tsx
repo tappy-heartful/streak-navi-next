@@ -122,14 +122,15 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
             </Link>
             <span className={styles.eventDate}>{event.date || "日付未定"}</span>
           </div>
-          {playlistUrl && (
-            <div className={styles.referenceTrackLink}>
-              <a href={playlistUrl} target="_blank" rel="noreferrer">
-                <i className="fa-brands fa-youtube" /> 参考音源プレイリスト
-              </a>
-            </div>
-          )}
         </div>
+
+        {playlistUrl && (
+          <div className={styles.referencePlaylistWrapper}>
+            <a href={playlistUrl} target="_blank" rel="noreferrer" className={styles.playlistButton}>
+              <i className="fa-brands fa-youtube" /> 参考音源プレイリスト
+            </a>
+          </div>
+        )}
 
         <div className={styles.tableViewWrapper}>
           <div className={styles.tabButtons}>

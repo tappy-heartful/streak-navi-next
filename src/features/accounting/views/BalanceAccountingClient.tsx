@@ -87,8 +87,8 @@ export function BalanceAccountingClient({ initialData }: Props) {
 
   // 会計計算
   const totals = useMemo(() => {
-    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-    const totalIncomes = incomes.reduce((sum, i) => sum + i.amount, 0);
+    const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const totalIncomes = incomes.reduce((sum, i) => sum + Number(i.amount || 0), 0);
     const netTotal = totalExpenses - totalIncomes;
     const memberCount = season?.memberIds.length || 0;
     const averageBurden = memberCount > 0 ? Math.floor(netTotal / memberCount) : 0;
@@ -100,10 +100,10 @@ export function BalanceAccountingClient({ initialData }: Props) {
     if (!userData) return null;
     const myExpenses = expenses
       .filter(e => e.uid === userData.id)
-      .reduce((s, e) => s + e.amount, 0);
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
     const myIncomes = incomes
       .filter(i => i.uid === userData.id)
-      .reduce((s, i) => s + i.amount, 0);
+      .reduce((s, i) => s + Number(i.amount || 0), 0);
     const myContribution = myExpenses - myIncomes;
     const isTarget = season?.memberIds.includes(userData.id);
     const settlementAmount = (isTarget ? totals.averageBurden : 0) - myContribution;
@@ -118,10 +118,10 @@ export function BalanceAccountingClient({ initialData }: Props) {
         if (!user) return null;
         const userExpenses = expenses
           .filter(e => e.uid === uid)
-          .reduce((s, e) => s + e.amount, 0);
+          .reduce((s, e) => s + Number(e.amount || 0), 0);
         const userIncomes = incomes
           .filter(i => i.uid === uid)
-          .reduce((s, i) => s + i.amount, 0);
+          .reduce((s, i) => s + Number(i.amount || 0), 0);
         return {
           uid,
           name: user.displayName || "不明なユーザー",

@@ -267,17 +267,30 @@
   padding: 0 5px;
 }
 
-.referenceTrackLink {
-  font-size: 14px;
-  text-align: right;
-  white-space: nowrap;
-  margin-left: auto;
-  font-weight: bold;
+.referencePlaylistWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-.referenceTrackLink a {
+.playlistButton {
+  background-color: #ff0000;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
   text-decoration: none;
-  color: #ff0000;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.playlistButton:hover {
+  opacity: 0.9;
+  color: white;
 }
 
 .editButton {
