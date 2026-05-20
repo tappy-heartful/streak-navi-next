@@ -22,7 +22,7 @@ import { getTravelSubsidyAmountClient } from "@/src/features/travel-subsidy/api/
 import { ExpenseApply, Prefecture, Municipality, ExpenseType, ExpenseCategory, ExpenseItem, ExpenseApplyFormData } from "@/src/lib/firestore/types";
 import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot, writeLog } from "@/src/lib/functions";
+import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot, writeLog, getAccountingSeasonTheme } from "@/src/lib/functions";
 import { compressImage } from "@/src/lib/image-compression";
 import { TravelRouteMap } from "@/src/components/TravelRouteMap";
 import styles from "./ExpenseApplyEdit.module.css";
@@ -52,6 +52,7 @@ export function ExpenseApplyEditClient({
 }: Props) {
   const { user, userData, isAdmin } = useAuth();
   const router = useRouter();
+  const seasonTheme = getAccountingSeasonTheme(initialData?.createdAt);
   const [files, setFiles] = useState<{ name: string; url: string; path: string }[]>(
     initialData?.files || []
   );
@@ -288,6 +289,25 @@ export function ExpenseApplyEditClient({
         form={form}
         overrideAdmin={true}
       >
+        <div style={{
+          background: seasonTheme.gradient,
+          color: "white",
+          borderRadius: "12px",
+          padding: "14px 20px",
+          marginBottom: "24px",
+          textAlign: "center",
+          fontWeight: "bold",
+          fontSize: "1.1rem",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px"
+        }}>
+          <i className="fa-solid fa-scale-balanced"></i>
+          <span>計上対象シーズン: {seasonTheme.label}</span>
+        </div>
+
         <FormField label="経費種別" error={form.errors.typeId} required={true}>
           <select
             value={form.formData.typeId}

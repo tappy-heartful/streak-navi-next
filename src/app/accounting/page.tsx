@@ -5,6 +5,7 @@ import {
   getIncomesServer,
   getAccountingUsersServer
 } from "@/src/features/accounting/api/accounting-service";
+import { getSectionsServer, getRolesServer } from "@/src/features/users/api/user-server-actions";
 import { BalanceAccountingClient } from "@/src/features/accounting/views/BalanceAccountingClient";
 import { AccountingSeasonKey } from "@/src/lib/firestore/types";
 import { Metadata } from "next";
@@ -32,12 +33,14 @@ export default async function BalanceAccountingPage() {
   };
   const range = ranges[seasonKey];
 
-  const [config, season, expenses, incomes, users] = await Promise.all([
+  const [config, season, expenses, incomes, users, sections, roles] = await Promise.all([
     getAccountingConfigServer(),
     getAccountingSeasonServer(year, seasonKey),
     getApprovedExpensesServer(range.start, range.end),
     getIncomesServer(range.start, range.end),
     getAccountingUsersServer(),
+    getSectionsServer(),
+    getRolesServer(),
   ]);
 
   return (
@@ -48,9 +51,12 @@ export default async function BalanceAccountingPage() {
         expenses,
         incomes,
         users,
+        sections,
+        roles,
         year,
         seasonKey
       }}
     />
   );
 }
+

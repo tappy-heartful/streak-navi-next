@@ -6,7 +6,7 @@ import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { FormField } from "@/src/components/Form/FormField";
 import { ExpenseApply, Prefecture, ExpenseApplyHistory } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { showSpinner, hideSpinner, showDialog, format, writeLog } from "@/src/lib/functions";
+import { showSpinner, hideSpinner, showDialog, format, writeLog, getAccountingSeasonTheme } from "@/src/lib/functions";
 import { judgeExpenseApply, undoReview } from "@/src/features/expense-review/api/expense-review-client-service";
 import { useRouter } from "next/navigation";
 import { ExpenseHistoryList } from "@/src/components/ExpenseHistoryList";
@@ -34,6 +34,7 @@ export function ExpenseReviewClient({
 }: Props) {
   const { userData } = useAuth();
   const router = useRouter();
+  const seasonTheme = getAccountingSeasonTheme(initialData.createdAt);
 
   const getStatusInfo = (status: ExpenseApply['status']) => {
     switch (status) {
@@ -131,6 +132,25 @@ export function ExpenseReviewClient({
         hideEdit={true}
         hideDelete={true}
       >
+        <div style={{
+          background: seasonTheme.gradient,
+          color: "white",
+          borderRadius: "12px",
+          padding: "14px 20px",
+          marginBottom: "24px",
+          textAlign: "center",
+          fontWeight: "bold",
+          fontSize: "1.1rem",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px"
+        }}>
+          <i className="fa-solid fa-scale-balanced"></i>
+          <span>計上対象シーズン: {seasonTheme.label}</span>
+        </div>
+
         <div className={styles.statusContainer} style={{ background: statusInfo.bg, border: `1px solid ${statusInfo.color}` }}>
           <div className={styles.statusIcon}>{statusInfo.icon}</div>
           <div className={styles.statusLabel} style={{ color: statusInfo.color }}>

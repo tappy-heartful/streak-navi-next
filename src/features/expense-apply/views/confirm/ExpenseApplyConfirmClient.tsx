@@ -6,7 +6,7 @@ import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { FormField } from "@/src/components/Form/FormField";
 import { ExpenseApply, Prefecture, ExpenseApplyHistory } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { format } from "@/src/lib/functions";
+import { format, getAccountingSeasonTheme } from "@/src/lib/functions";
 import { ExpenseHistoryList } from "@/src/components/ExpenseHistoryList";
 import { TravelDetailsArea } from "@/src/components/TravelDetailsArea";
 import styles from "./ExpenseApplyConfirm.module.css";
@@ -29,6 +29,7 @@ export function ExpenseApplyConfirmClient({
   history 
 }: Props) {
   const { user } = useAuth();
+  const seasonTheme = getAccountingSeasonTheme(initialData.createdAt);
   
   // 自分自身の申請であれば編集・削除が可能 (審査中または差し戻しのみ)
   const isOwn = user?.uid === initialData.uid;
@@ -56,6 +57,25 @@ export function ExpenseApplyConfirmClient({
         overrideAdmin={canModify} 
         hideCopy={true}
       >
+        <div style={{
+          background: seasonTheme.gradient,
+          color: "white",
+          borderRadius: "12px",
+          padding: "14px 20px",
+          marginBottom: "24px",
+          textAlign: "center",
+          fontWeight: "bold",
+          fontSize: "1.1rem",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px"
+        }}>
+          <i className="fa-solid fa-scale-balanced"></i>
+          <span>計上対象シーズン: {seasonTheme.label}</span>
+        </div>
+
         <div className={styles.statusContainer} style={{ background: statusInfo.bg, border: `1px solid ${statusInfo.color}` }}>
           <h3 className={styles.statusLabel} style={{ color: statusInfo.color }}>
             {statusInfo.label}

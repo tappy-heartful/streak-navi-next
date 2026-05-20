@@ -1,3 +1,4 @@
+import admin from "firebase-admin";
 import { adminDb } from "@/src/lib/firebase-admin";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 import { 
@@ -60,9 +61,15 @@ export async function getCurrentAccountingSeasonServer() {
  * 特定期間の承認済み経費を取得
  */
 export async function getApprovedExpensesServer(startDate: string, endDate: string) {
+  const startMs = new Date(startDate.replace(/\./g, "/") + " 00:00:00").getTime();
+  const endMs = new Date(endDate.replace(/\./g, "/") + " 23:59:59.999").getTime();
+
+  const startTimestamp = admin.firestore.Timestamp.fromMillis(startMs);
+  const endTimestamp = admin.firestore.Timestamp.fromMillis(endMs);
+
   const snap = await adminDb.collection("expenseApplies")
-    .where("date", ">=", startDate)
-    .where("date", "<=", endDate)
+    .where("createdAt", ">=", startTimestamp)
+    .where("createdAt", "<=", endTimestamp)
     .get();
   
   return snap.docs
@@ -74,9 +81,12 @@ export async function getApprovedExpensesServer(startDate: string, endDate: stri
  * 特定期間の収入を取得
  */
 export async function getIncomesServer(startDate: string, endDate: string) {
+  const startMs = new Date(startDate.replace(/\./g, "/") + " 00:00:00").getTime();
+  const endMs = new Date(endDate.replace(/\./g, "/") + " 23:59:59.999").getTime();
+
   const snap = await adminDb.collection("incomes")
-    .where("date", ">=", startDate)
-    .where("date", "<=", endDate)
+    .where("createdAt", ">=", startMs)
+    .where("createdAt", "<=", endMs)
     .get();
   
   return snap.docs.map(toPlainObject) as Income[];

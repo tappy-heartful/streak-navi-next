@@ -18,10 +18,10 @@ import styles from "../components/BalanceAccounting.module.css";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import * as utils from "@/src/lib/functions";
 import {
-  saveAccountingSeasonAction,
-  addIncomeAction
+  saveAccountingSeasonAction
 } from "../api/accounting-server-actions";
 import { showDialog } from "@/src/lib/functions";
+import { showModal } from "@/src/components/CommonModal";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -57,16 +57,6 @@ export function BalanceAccountingClient({ initialData }: Props) {
   } = initialData;
 
   const [isInitializing, setIsInitializing] = useState(false);
-  const [showMemberSelect, setShowMemberSelect] = useState(false);
-  const [showIncomeModal, setShowIncomeModal] = useState(false);
-  const [incomeForm, setIncomeForm] = useState({
-    title: "",
-    amount: 0,
-    date: utils.format(new Date(), "yyyy.MM.dd")
-  });
-  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>(
-    initialData.season?.memberIds || []
-  );
 
   // mapping tables
   const sectionMap = useMemo(() => {
@@ -116,7 +106,7 @@ export function BalanceAccountingClient({ initialData }: Props) {
       .reduce((s, i) => s + i.amount, 0);
     const myContribution = myExpenses - myIncomes;
     const isTarget = season?.memberIds.includes(userData.id);
-    const settlementAmount = isTarget ? totals.averageBurden - myContribution : 0;
+    const settlementAmount = (isTarget ? totals.averageBurden : 0) - myContribution;
     return { myExpenses, myIncomes, myContribution, isTarget, settlementAmount };
   }, [userData, expenses, incomes, season, totals]);
 
@@ -138,7 +128,8 @@ export function BalanceAccountingClient({ initialData }: Props) {
           pictureUrl: user.pictureUrl,
           sectionId: user.sectionId ?? "unknown",
           roleId: user.roleId ?? "unknown",
-          contribution: userExpenses - userIncomes
+          contribution: userExpenses - userIncomes,
+          paypayId: user.paypayId
         };
       })
       .filter(Boolean) as Array<{
@@ -148,6 +139,7 @@ export function BalanceAccountingClient({ initialData }: Props) {
         sectionId: string;
         roleId: string;
         contribution: number;
+        paypayId?: string;
       }>;
 
     const grouped: Record<string, typeof members> = {};
@@ -169,25 +161,41 @@ export function BalanceAccountingClient({ initialData }: Props) {
   const renderGroupedMembers = () => (
     Object.entries(groupedMembers).map(([sectionId, members]) => (
       <div key={sectionId} className={styles.sectionBlock}>
-        <h3 className={styles.sectionHeader}>セクション: {sectionMap[sectionId] || "未設定"}</h3>
+        <h3 className={styles.sectionHeader}>{sectionMap[sectionId] || "未設定"}</h3>
         <ul className={styles.memberList}>
-          {members.map(m => (
-            <li key={m.uid} className={styles.memberItem}>
-              {m.pictureUrl ? (
-                <img src={m.pictureUrl} alt={m.name} width={40} height={40} className={styles.memberAvatar} />
-              ) : (
-                <div className={styles.memberAvatar} style={{ background: "#eee", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <i className="fa-solid fa-user" style={{ color: "#ccc" }}></i>
+          {members.map(m => {
+            const memberSettlement = totals.averageBurden - m.contribution;
+            return (
+              <li key={m.uid} className={styles.memberItem}>
+                {m.pictureUrl ? (
+                  <img src={m.pictureUrl} alt={m.name} width={40} height={40} className={styles.memberAvatar} />
+                ) : (
+                  <div className={styles.memberAvatar} style={{ background: "#eee", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <i className="fa-solid fa-user" style={{ color: "#ccc" }}></i>
+                  </div>
+                )}
+                <div className={styles.memberName}>
+                  <div>{m.name}</div>
+                  {m.paypayId && (
+                    <div style={{ fontSize: "0.75rem", color: "#666", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px", fontWeight: "normal" }}>
+                      <i className="fa-solid fa-wallet" style={{ fontSize: "0.7rem", color: "#a0aec0" }}></i>
+                      PayPay ID: {m.paypayId}
+                    </div>
+                  )}
                 </div>
-              )}
-              <div className={styles.memberName}>{m.name}</div>
-              <div className={styles.memberInfo}>
-                <div className={styles.roleLabel}>役割: {roleMap[m.roleId] || "未設定"}</div>
-                <div className={styles.contribLabel}>立替・貢献額</div>
-                <div className={styles.contribValue}>¥{m.contribution.toLocaleString()}</div>
-              </div>
-            </li>
-          ))}
+                <div className={styles.memberInfo}>
+                  <div className={styles.contribLabel}>立替・貢献額</div>
+                  <div className={styles.contribValue} style={{ color: "#4a5568" }}>¥{m.contribution.toLocaleString()}</div>
+                  <div className={styles.contribLabel} style={{ marginTop: "4px" }}>精算額</div>
+                  <div className={`${styles.contribValue} ${memberSettlement > 0 ? styles.plus : styles.minus}`}>
+                    {memberSettlement > 0
+                      ? `支払い ¥${memberSettlement.toLocaleString()}`
+                      : `受け取り ¥${Math.abs(memberSettlement).toLocaleString()}`}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </div>
     ))
@@ -216,50 +224,48 @@ export function BalanceAccountingClient({ initialData }: Props) {
     }
   };
 
-  const handleUpdateMembers = async () => {
+  const handleOpenMemberSelectModal = async () => {
     if (!season || !userData?.isSystemAdmin) return;
-    try {
-      await saveAccountingSeasonAction({
-        ...season,
-        memberIds: selectedMemberIds
-      });
-      setShowMemberSelect(false);
-      showDialog("メンバーを更新しました。");
-    } catch (e) {
-      console.error(e);
-      showDialog("更新に失敗しました。");
-    }
-  };
+    
+    const currentMemberIds = season.memberIds || [];
+    const html = users
+      .sort((a, b) => (a.displayName || "").localeCompare(b.displayName || ""))
+      .map(u => {
+        const isChecked = currentMemberIds.includes(u.id);
+        const avatar = u.pictureUrl
+          ? `<img src="${u.pictureUrl}" alt="${u.displayName}" width="24" height="24" style="border-radius: 50%;" />`
+          : `<div style="width: 24px; height: 24px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; overflow: hidden;"><i class="fa-solid fa-user" style="color: #ccc; font-size: 12px;"></i></div>`;
+        return `
+          <label style="display: flex; align-items: center; gap: 12px; padding: 8px 0; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="${u.id}" ${isChecked ? "checked" : ""} style="width: 18px; height: 18px; cursor: pointer;" />
+            ${avatar}
+            <span style="font-size: 16px; color: #333;">${u.displayName}</span>
+          </label>
+        `;
+      }).join("");
 
-  const toggleMember = (uid: string) => {
-    setSelectedMemberIds(prev =>
-      prev.includes(uid) ? prev.filter(id => id !== uid) : [...prev, uid]
+    const result = await showModal(
+      "精算対象メンバーの選択",
+      `<div style="max-height: 50vh; overflow-y: auto; padding: 4px; display: flex; flex-direction: column; gap: 4px;">${html}</div>`,
+      "保存する",
+      "キャンセル"
     );
+
+    if (result && result.success) {
+      const newMemberIds = Object.keys(result.data).filter(uid => result.data[uid] === true);
+      try {
+        await saveAccountingSeasonAction({
+          ...season,
+          memberIds: newMemberIds
+        });
+        showDialog("メンバーを更新しました。");
+      } catch (e) {
+        console.error(e);
+        showDialog("更新に失敗しました。");
+      }
+    }
   };
 
-  const handleAddIncome = async () => {
-    if (!userData) return;
-    if (!incomeForm.title || incomeForm.amount <= 0) {
-      showDialog("タイトルと金額を正しく入力してください。");
-      return;
-    }
-    try {
-      await addIncomeAction({
-        uid: userData.id,
-        userName: userData.displayName,
-        title: incomeForm.title,
-        amount: incomeForm.amount,
-        date: incomeForm.date,
-        status: "approved"
-      });
-      setShowIncomeModal(false);
-      setIncomeForm({ title: "", amount: 0, date: utils.format(new Date(), "yyyy.MM.dd") });
-      showDialog("収入を登録しました。");
-    } catch (e) {
-      console.error(e);
-      showDialog("登録に失敗しました。");
-    }
-  };
 
   return (
     <BaseLayout>
@@ -341,17 +347,10 @@ export function BalanceAccountingClient({ initialData }: Props) {
                     : `受け取り ¥${Math.abs(personal?.settlementAmount!).toLocaleString()}`}
                 </div>
               </div>
-              <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-                <button
-                  className={`${styles.button} ${styles.outlineButton}`}
-                  onClick={() => setShowIncomeModal(true)}
-                  style={{ flex: 1 }}
-                >
-                  <i className="fa-solid fa-hand-holding-dollar"></i> 収入を登録
-                </button>
-                <Link href="/expense-apply?mode=new" style={{ flex: 1, textDecoration: "none" }}>
+              <div style={{ marginTop: "20px" }}>
+                <Link href="/expense-apply?mode=new" style={{ textDecoration: "none" }}>
                   <button className={`${styles.button} ${styles.primaryButton}`} style={{ width: "100%" }}>
-                    <i className="fa-solid fa-receipt"></i> 支出を登録
+                    <i className="fa-solid fa-receipt"></i> 収入/支出を登録する
                   </button>
                 </Link>
               </div>
@@ -367,10 +366,7 @@ export function BalanceAccountingClient({ initialData }: Props) {
                 {userData?.isSystemAdmin && (
                   <button
                     className={`${styles.button} ${styles.outlineButton}`}
-                    onClick={() => {
-                      setSelectedMemberIds(season.memberIds);
-                      setShowMemberSelect(true);
-                    }}
+                    onClick={handleOpenMemberSelectModal}
                     style={{ padding: "6px 12px", fontSize: "0.8rem" }}
                   >
                     <i className="fa-solid fa-user-gear"></i> 管理
@@ -380,117 +376,6 @@ export function BalanceAccountingClient({ initialData }: Props) {
               {renderGroupedMembers()}
             </div>
           </>
-        )}
-
-        {/* メンバー選択ダイアログ */}
-        {showMemberSelect && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "rgba(0,0,0,0.5)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 1000,
-              padding: "20px"
-            }}
-          >
-            <div className={styles.card} style={{ maxWidth: "500px", width: "100%", maxHeight: "80vh", overflow: "auto" }}>
-              <h3>精算対象メンバーの選択</h3>
-              <div style={{ margin: "16px 0" }}>
-                {users
-                  .sort((a, b) => (a.displayName || "").localeCompare(b.displayName || ""))
-                  .map(u => (
-                    <label key={u.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 0", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedMemberIds.includes(u.id)}
-                        onChange={() => toggleMember(u.id)}
-                      />
-                      {u.pictureUrl && (
-                        <img src={u.pictureUrl} alt={u.displayName!} width={24} height={24} style={{ borderRadius: "50%" }} />
-                      )}
-                      <span>{u.displayName}</span>
-                    </label>
-                  ))}
-              </div>
-              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", marginTop: "20px" }}>
-                <button className={`${styles.button} ${styles.outlineButton}`} onClick={() => setShowMemberSelect(false)}>
-                  キャンセル
-                </button>
-                <button className={`${styles.button} ${styles.primaryButton}`} onClick={handleUpdateMembers}>
-                  保存する
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 収入登録モーダル */}
-        {showIncomeModal && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "rgba(0,0,0,0.5)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 1000,
-              padding: "20px"
-            }}
-          >
-            <div className={styles.card} style={{ maxWidth: "400px", width: "100%" }}>
-              <h3>収入の登録</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px", margin: "20px 0" }}>
-                <div>
-                  <label style={{ fontSize: "0.8rem", color: "#666" }}>項目名</label>
-                  <input
-                    type="text"
-                    placeholder="例: チケット売上"
-                    style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
-                    value={incomeForm.title}
-                    onChange={e => setIncomeForm({ ...incomeForm, title: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.8rem", color: "#666" }}>金額</label>
-                  <input
-                    type="number"
-                    placeholder="金額を入力"
-                    style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
-                    value={incomeForm.amount || ""}
-                    onChange={e => setIncomeForm({ ...incomeForm, amount: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.8rem", color: "#666" }}>発生日</label>
-                  <input
-                    type="text"
-                    placeholder="yyyy.mm.dd"
-                    style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
-                    value={incomeForm.date}
-                    onChange={e => setIncomeForm({ ...incomeForm, date: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-                <button className={`${styles.button} ${styles.outlineButton}`} onClick={() => setShowIncomeModal(false)}>
-                  キャンセル
-                </button>
-                <button className={`${styles.button} ${styles.primaryButton}`} onClick={handleAddIncome}>
-                  登録する
-                </button>
-              </div>
-            </div>
-          </div>
         )}
       </div>
     </BaseLayout>
