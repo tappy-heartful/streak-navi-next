@@ -168,6 +168,7 @@ export default function Header() {
             {menuLink("/live", "ライブ")}
             {menuLink("/ticket", "予約者一覧")}
             {menuLink("/media", "メディア")}
+            {menuLink("/accounting", "バランス会計")}
             {menuLink("/travel-subsidy", "旅費補助額")}
             {menuLink("/expense-apply", "経費申請")}
             {userData?.isSystemAdmin && menuLink("/expense-review", "経費審査")}

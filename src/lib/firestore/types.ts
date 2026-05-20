@@ -505,3 +505,41 @@ export interface ExpenseApplyFormData {
   arrivalMunicipalityId?: string;
   files?: { name: string; url: string; path: string }[];
 }
+// ===== 会計 (Accounting) =====
+
+export type AccountingSeasonKey = "winter" | "spring" | "summer" | "autumn";
+export type AccountingStatus = "active" | "locked" | "settled";
+
+export interface AccountingConfig {
+  id: string;
+  seasons: Record<AccountingSeasonKey, {
+    name: string;
+    startMonth: number;
+    endMonth: number;
+  }>;
+  travelUnitRate?: number; // 旅費計算用の単価（将来用）
+}
+
+export interface AccountingSeason {
+  id: string; // e.g. "2026-spring"
+  year: number;
+  seasonKey: AccountingSeasonKey;
+  memberIds: string[];
+  status: AccountingStatus;
+  settledAt?: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface Income {
+  id: string;
+  uid: string;       // 代表受取者
+  userName?: string; // 表示用名前
+  title: string;
+  amount: number;
+  date: string;      // yyyy.MM.dd
+  note?: string;
+  status: 'pending' | 'approved';
+  createdAt: number;
+  updatedAt: number;
+}

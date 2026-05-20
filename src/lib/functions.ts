@@ -466,3 +466,79 @@ export function dotDateToHyphen(dateStr: string): string {
 export function hyphenDateToDot(dateStr: string): string {
   return dateStr?.replace(/-/g, ".") || "";
 }
+
+/**
+ * 作成日時（ミリ秒またはTimestamp）から計上対象シーズンのテーマ情報を返します。
+ */
+export function getAccountingSeasonTheme(createdAtInput?: any) {
+  let date: Date;
+  if (!createdAtInput) {
+    date = new Date();
+  } else if (typeof createdAtInput.toDate === "function") {
+    date = createdAtInput.toDate();
+  } else if (createdAtInput instanceof Date) {
+    date = createdAtInput;
+  } else if (typeof createdAtInput === "number") {
+    date = new Date(createdAtInput);
+  } else if (createdAtInput.seconds !== undefined) {
+    date = new Date(createdAtInput.seconds * 1000);
+  } else {
+    date = new Date(createdAtInput);
+  }
+
+  if (isNaN(date.getTime())) {
+    date = new Date();
+  }
+
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+
+  if (month >= 4 && month <= 6) {
+    return {
+      label: `${year}年春`,
+      seasonKey: "spring",
+      gradient: "linear-gradient(135deg, #ec77ab 0%, #f9c06b 100%)",
+      primary: "#e65b7b",
+      bg: "#fff5f7",
+      border: "#fed7e2",
+      text: "#b83280"
+    };
+  } else if (month >= 7 && month <= 9) {
+    return {
+      label: `${year}年夏`,
+      seasonKey: "summer",
+      gradient: "linear-gradient(135deg, #1fa2ff 0%, #12d6df 100%)",
+      primary: "#12a8df",
+      bg: "#ebf8ff",
+      border: "#bee3f8",
+      text: "#2b6cb0"
+    };
+  } else if (month >= 10 && month <= 12) {
+    return {
+      label: `${year}年秋`,
+      seasonKey: "autumn",
+      gradient: "linear-gradient(135deg, #e65c00 0%, #f9d423 100%)",
+      primary: "#e65c00",
+      bg: "#fffaf0",
+      border: "#feebc8",
+      text: "#dd6b20"
+    };
+  } else {
+    return {
+      label: `${year}年冬`,
+      seasonKey: "winter",
+      gradient: "linear-gradient(135deg, #30496b 0%, #4a90e2 100%)",
+      primary: "#30496b",
+      bg: "#f7fafc",
+      border: "#e2e8f0",
+      text: "#2d3748"
+    };
+  }
+}
+
+/**
+ * 作成日時（ミリ秒またはTimestamp）から計上対象シーズン（例: "2026年春"）を返します。
+ */
+export function getAccountingSeasonLabel(createdAtInput?: any): string {
+  return getAccountingSeasonTheme(createdAtInput).label;
+}
