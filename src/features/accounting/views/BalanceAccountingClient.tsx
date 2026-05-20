@@ -87,8 +87,7 @@ export function BalanceAccountingClient({ initialData }: Props) {
 
   useEffect(() => {
     setBreadcrumbs([
-      { title: "ホーム", href: "/home" },
-      { title: "バランス会計", href: "/accounting" }
+      { title: "バランス会計" }
     ]);
   }, [setBreadcrumbs]);
 
