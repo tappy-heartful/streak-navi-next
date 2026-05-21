@@ -230,3 +230,82 @@
     grid-template-columns: 1fr;
   }
 }
+
+.evidenceContainer {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  align-items: center;
+}
+
+.btnReceiptView {
+  padding: 4px 8px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.2s;
+}
+
+.btnReceiptView:hover {
+  opacity: 0.85;
+}
+
+.btnReceiptUpload {
+  padding: 4px 8px;
+  background: #00c258;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.2s;
+}
+
+.btnReceiptUpload:hover {
+  opacity: 0.85;
+}
+
+.btnReceiptDelete {
+  padding: 4px 8px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.btnReceiptDelete:hover {
+  opacity: 0.85;
+}
+
+.statusBadgeUploaded {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: #e3f2fd;
+  color: #1a73e8;
+  border: 1px solid #1a73e8;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.evidencePlaceholder {
+  font-size: 0.7rem;
+  color: #cbd5e0;
+  font-style: italic;
+}

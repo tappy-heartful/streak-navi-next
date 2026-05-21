@@ -526,6 +526,7 @@ export interface AccountingSeason {
   seasonKey: AccountingSeasonKey;
   memberIds: string[];
   status: AccountingStatus;
+  evidenceUrls?: Record<string, string>; // uid -> downloadUrl
   settledAt?: number;
   createdAt: number;
   updatedAt: number;

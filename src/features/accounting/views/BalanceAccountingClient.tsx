@@ -24,6 +24,9 @@ import { showDialog } from "@/src/lib/functions";
 import { showModal } from "@/src/components/CommonModal";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { storage } from "@/src/lib/firebase";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { compressImage } from "@/src/lib/image-compression";
 
 interface Props {
   initialData: {
@@ -87,10 +90,15 @@ export function BalanceAccountingClient({ initialData }: Props) {
 
   // 会計計算
   const totals = useMemo(() => {
-    const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-    const totalIncomes = incomes.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+    const activeMemberIds = season?.memberIds || [];
+    const totalExpenses = expenses
+      .filter(e => activeMemberIds.includes(e.uid))
+      .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const totalIncomes = incomes
+      .filter(i => activeMemberIds.includes(i.uid))
+      .reduce((sum, i) => sum + Number(i.amount || 0), 0);
     const netTotal = totalExpenses - totalIncomes;
-    const memberCount = season?.memberIds.length || 0;
+    const memberCount = activeMemberIds.length;
     const averageBurden = memberCount > 0 ? Math.floor(netTotal / memberCount) : 0;
     return { totalExpenses, totalIncomes, netTotal, memberCount, averageBurden };
   }, [expenses, incomes, season]);
@@ -158,6 +166,162 @@ export function BalanceAccountingClient({ initialData }: Props) {
     return grouped;
   }, [season, users, expenses, incomes]);
 
+  const isAccountAdmin = userData?.isAccountAdmin || userData?.isSystemAdmin;
+
+  const handleShowExpensesModal = async (uid: string, name: string) => {
+    const userExpenses = expenses.filter(e => e.uid === uid);
+    const userIncomes = incomes.filter(i => i.uid === uid);
+
+    if (userExpenses.length === 0 && userIncomes.length === 0) {
+      showDialog(`${name} さんの承認済み経費・登録収入はありません。`, true);
+      return;
+    }
+
+    let html = `<div style="font-family: sans-serif; max-height: 60vh; overflow-y: auto; padding: 4px;">`;
+
+    if (userExpenses.length > 0) {
+      html += `
+        <h4 style="margin: 0 0 10px 0; border-bottom: 2px solid #3182ce; padding-bottom: 6px; color: #2b6cb0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-receipt"></i> 支出実績 (${userExpenses.length}件)
+        </h4>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9rem;">
+          <thead>
+            <tr style="background: #ebf8ff; border-bottom: 2px solid #bee3f8; text-align: left;">
+              <th style="padding: 8px;">日付</th>
+              <th style="padding: 8px;">品目・経費名</th>
+              <th style="padding: 8px; text-align: right;">金額</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      userExpenses.forEach(e => {
+        html += `
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 8px; color: #4a5568;">${e.date || "-"}</td>
+            <td style="padding: 8px; color: #2d3748; font-weight: 500;">${e.name || e.category || "-"}</td>
+            <td style="padding: 8px; text-align: right; color: #e53e3e; font-weight: 600;">¥${Number(e.amount || 0).toLocaleString()}</td>
+          </tr>
+        `;
+      });
+      html += `</tbody></table>`;
+    }
+
+    if (userIncomes.length > 0) {
+      html += `
+        <h4 style="margin: 0 0 10px 0; border-bottom: 2px solid #319795; padding-bottom: 6px; color: #2c7a7b; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-hand-holding-dollar"></i> 収入実績（代表受取） (${userIncomes.length}件)
+        </h4>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+          <thead>
+            <tr style="background: #e6fffa; border-bottom: 2px solid #b2f5ea; text-align: left;">
+              <th style="padding: 8px;">日付</th>
+              <th style="padding: 8px;">項目・収入名</th>
+              <th style="padding: 8px; text-align: right;">金額</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      userIncomes.forEach(i => {
+        html += `
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 8px; color: #4a5568;">${i.date || "-"}</td>
+            <td style="padding: 8px; color: #2d3748; font-weight: 500;">${i.title || "-"}</td>
+            <td style="padding: 8px; text-align: right; color: #319795; font-weight: 600;">¥${Number(i.amount || 0).toLocaleString()}</td>
+          </tr>
+        `;
+      });
+      html += `</tbody></table>`;
+    }
+
+    html += `</div>`;
+
+    await showModal(`${name} さんの経費申請内訳`, html);
+  };
+
+  const handleUploadEvidence = async (e: React.ChangeEvent<HTMLInputElement>, uid: string, name: string) => {
+    const file = e.target.files?.[0];
+    if (!file || !season) return;
+
+    utils.showSpinner();
+    try {
+      // Delete old file from Storage if it exists
+      const oldUrl = season.evidenceUrls?.[uid];
+      if (oldUrl) {
+        const oldFileRef = ref(storage, oldUrl);
+        await deleteObject(oldFileRef).catch(err => {
+          console.warn("Old storage file delete failed:", err);
+        });
+      }
+
+      const compressed = await compressImage(file);
+      const timestamp = Date.now();
+      const storagePath = `accounting/evidence/${season.id}/${uid}_${timestamp}.png`;
+      const storageRef = ref(storage, storagePath);
+
+      const snapshot = await uploadBytes(storageRef, compressed);
+      const url = await getDownloadURL(snapshot.ref);
+
+      const updatedUrls = { ...(season.evidenceUrls || {}) };
+      updatedUrls[uid] = url;
+
+      await saveAccountingSeasonAction({
+        ...season,
+        evidenceUrls: updatedUrls
+      });
+
+      await utils.showDialog(`${name} さんのエビデンス画像を登録しました。`, true);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      await utils.showDialog("エビデンス画像のアップロードに失敗しました。", true);
+    } finally {
+      utils.hideSpinner();
+      e.target.value = "";
+    }
+  };
+
+  const handleDeleteEvidence = async (uid: string, name: string) => {
+    if (!season) return;
+    const evidenceUrl = season.evidenceUrls?.[uid];
+    if (!evidenceUrl) return;
+
+    const confirm = await utils.showDialog(`${name} さんのエビデンス画像を削除しますか？`);
+    if (!confirm) return;
+
+    utils.showSpinner();
+    try {
+      const fileRef = ref(storage, evidenceUrl);
+      await deleteObject(fileRef).catch(err => {
+        console.warn("Storage delete failed or file not found:", err);
+      });
+
+      const updatedUrls = { ...(season.evidenceUrls || {}) };
+      delete updatedUrls[uid];
+
+      await saveAccountingSeasonAction({
+        ...season,
+        evidenceUrls: updatedUrls
+      });
+
+      await utils.showDialog("エビデンス画像を削除しました。", true);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      await utils.showDialog("エビデンス画像の削除に失敗しました。", true);
+    } finally {
+      utils.hideSpinner();
+    }
+  };
+
+  const handleViewEvidence = async (name: string, url: string) => {
+    await showModal(
+      `${name} さんの精算エビデンス`,
+      `<div style="text-align: center; padding: 10px;">
+        <img src="${url}" alt="evidence" style="max-width: 100%; max-height: 70vh; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      </div>`
+    );
+  };
+
   const renderGroupedMembers = () => (
     Object.entries(groupedMembers).map(([sectionId, members]) => (
       <div key={sectionId} className={styles.sectionBlock}>
@@ -175,7 +339,12 @@ export function BalanceAccountingClient({ initialData }: Props) {
                   </div>
                 )}
                 <div className={styles.memberName}>
-                  <div>{m.name}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>{m.name}</span>
+                    {season?.evidenceUrls?.[m.uid] && (
+                      <span className={styles.statusBadgeUploaded}>済</span>
+                    )}
+                  </div>
                   {m.paypayId && (
                     <div style={{ fontSize: "0.75rem", color: "#666", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px", fontWeight: "normal" }}>
                       <i className="fa-solid fa-wallet" style={{ fontSize: "0.7rem", color: "#a0aec0" }}></i>
@@ -184,13 +353,60 @@ export function BalanceAccountingClient({ initialData }: Props) {
                   )}
                 </div>
                 <div className={styles.memberInfo}>
-                  <div className={styles.contribLabel}>立替・貢献額</div>
-                  <div className={styles.contribValue} style={{ color: "#4a5568" }}>¥{m.contribution.toLocaleString()}</div>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                    <div className={styles.contribLabel}>立替・貢献額</div>
+                    <div
+                      className={styles.contribValue}
+                      onClick={() => handleShowExpensesModal(m.uid, m.name)}
+                      style={{ color: "#3182ce", fontWeight: "bold", textDecoration: "underline", cursor: "pointer" }}
+                      title="クリックして内訳を表示"
+                    >
+                      ¥{m.contribution.toLocaleString()}
+                    </div>
+                  </div>
                   <div className={styles.contribLabel} style={{ marginTop: "4px" }}>精算額</div>
                   <div className={`${styles.contribValue} ${memberSettlement > 0 ? styles.plus : styles.minus}`}>
                     {memberSettlement > 0
-                      ? `支払い ¥${memberSettlement.toLocaleString()}`
-                      : `受け取り ¥${Math.abs(memberSettlement).toLocaleString()}`}
+                      ? `支払 ¥${memberSettlement.toLocaleString()}`
+                      : `受取 ¥${Math.abs(memberSettlement).toLocaleString()}`}
+                  </div>
+                  
+                  {/* エビデンス表示・アップロード部分 */}
+                  <div className={styles.evidenceContainer}>
+                    {season?.evidenceUrls?.[m.uid] && (
+                      <button
+                        type="button"
+                        className={styles.btnReceiptView}
+                        onClick={() => handleViewEvidence(m.name, season.evidenceUrls![m.uid])}
+                        title="エビデンス画像を表示"
+                      >
+                        表示
+                      </button>
+                    )}
+                    {isAccountAdmin && season?.evidenceUrls?.[m.uid] && (
+                      <button
+                        type="button"
+                        className={styles.btnReceiptDelete}
+                        onClick={() => handleDeleteEvidence(m.uid, m.name)}
+                        title="エビデンス画像を削除"
+                      >
+                        <i className="fa-solid fa-trash-can"></i>
+                      </button>
+                    )}
+                    {isAccountAdmin && (
+                      <label className={styles.btnReceiptUpload} title="精算エビデンス画像をアップロード">
+                        <i className="fa-solid fa-upload"></i>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: "none" }}
+                          onChange={(e) => handleUploadEvidence(e, m.uid, m.name)}
+                        />
+                      </label>
+                    )}
+                    {!isAccountAdmin && !season?.evidenceUrls?.[m.uid] && (
+                      <span className={styles.evidencePlaceholder}>エビデンス未登録</span>
+                    )}
                   </div>
                 </div>
               </li>
@@ -215,10 +431,10 @@ export function BalanceAccountingClient({ initialData }: Props) {
         updatedAt: Date.now()
       };
       await saveAccountingSeasonAction(newSeason);
-      showDialog("シーズンを初期化しました。対象メンバーを調整してください。");
+      showDialog("シーズンを初期化しました。対象メンバーを調整してください。", true);
     } catch (e) {
       console.error(e);
-      showDialog("初期化に失敗しました。");
+      showDialog("初期化に失敗しました。", true);
     } finally {
       setIsInitializing(false);
     }
@@ -228,25 +444,70 @@ export function BalanceAccountingClient({ initialData }: Props) {
     if (!season || !userData?.isSystemAdmin) return;
     
     const currentMemberIds = season.memberIds || [];
-    const html = users
-      .sort((a, b) => (a.displayName || "").localeCompare(b.displayName || ""))
-      .map(u => {
+
+    // グループ化
+    const grouped: Record<string, User[]> = {};
+    users.forEach(u => {
+      const sectionId = u.sectionId || "unknown";
+      if (!grouped[sectionId]) grouped[sectionId] = [];
+      grouped[sectionId].push(u);
+    });
+
+    // セクション順に並び替え
+    const sortedSectionIds = sections.map(s => s.id);
+    Object.keys(grouped).forEach(sid => {
+      if (!sortedSectionIds.includes(sid)) {
+        sortedSectionIds.push(sid);
+      }
+    });
+
+    let html = "";
+    sortedSectionIds.forEach(sectionId => {
+      const memberList = grouped[sectionId];
+      if (!memberList || memberList.length === 0) return;
+
+      // セクション内ソート（roleId昇順、displayName昇順）
+      memberList.sort((a, b) => {
+        const roleA = a.roleId || "";
+        const roleB = b.roleId || "";
+        if (roleA !== roleB) return roleA.localeCompare(roleB);
+        return (a.displayName || "").localeCompare(b.displayName || "");
+      });
+
+      const sectionName = sectionMap[sectionId] || "未設定";
+
+      html += `
+        <div style="margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+          <h4 style="margin: 0 0 10px 0; color: #2b6cb0; font-size: 1rem; font-weight: bold; border-left: 4px solid #3182ce; padding-left: 8px; text-align: left;">
+            ${sectionName}
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding-left: 8px;">
+      `;
+
+      memberList.forEach(u => {
         const isChecked = currentMemberIds.includes(u.id);
         const avatar = u.pictureUrl
           ? `<img src="${u.pictureUrl}" alt="${u.displayName}" width="24" height="24" style="border-radius: 50%;" />`
           : `<div style="width: 24px; height: 24px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; overflow: hidden;"><i class="fa-solid fa-user" style="color: #ccc; font-size: 12px;"></i></div>`;
-        return `
-          <label style="display: flex; align-items: center; gap: 12px; padding: 8px 0; cursor: pointer; user-select: none;">
+        
+        html += `
+          <label style="display: flex; align-items: center; gap: 12px; padding: 6px 0; cursor: pointer; user-select: none;">
             <input type="checkbox" id="${u.id}" ${isChecked ? "checked" : ""} style="width: 18px; height: 18px; cursor: pointer;" />
             ${avatar}
-            <span style="font-size: 16px; color: #333;">${u.displayName}</span>
+            <span style="font-size: 15px; color: #2d3748;">${u.displayName}</span>
           </label>
         `;
-      }).join("");
+      });
+
+      html += `
+          </div>
+        </div>
+      `;
+    });
 
     const result = await showModal(
       "精算対象メンバーの選択",
-      `<div style="max-height: 50vh; overflow-y: auto; padding: 4px; display: flex; flex-direction: column; gap: 4px;">${html}</div>`,
+      `<div style="max-height: 60vh; overflow-y: auto; padding: 8px;">${html}</div>`,
       "保存する",
       "キャンセル"
     );
@@ -258,10 +519,10 @@ export function BalanceAccountingClient({ initialData }: Props) {
           ...season,
           memberIds: newMemberIds
         });
-        showDialog("メンバーを更新しました。");
+        showDialog("メンバーを更新しました。", true);
       } catch (e) {
         console.error(e);
-        showDialog("更新に失敗しました。");
+        showDialog("更新に失敗しました。", true);
       }
     }
   };
@@ -343,8 +604,8 @@ export function BalanceAccountingClient({ initialData }: Props) {
                   className={`${styles.resultValue} ${personal?.settlementAmount! > 0 ? styles.plus : styles.minus}`}
                 >
                   {personal?.settlementAmount! > 0
-                    ? `支払い ¥${personal?.settlementAmount.toLocaleString()}`
-                    : `受け取り ¥${Math.abs(personal?.settlementAmount!).toLocaleString()}`}
+                    ? `支払 ¥${personal?.settlementAmount.toLocaleString()}`
+                    : `受取 ¥${Math.abs(personal?.settlementAmount!).toLocaleString()}`}
                 </div>
               </div>
               <div style={{ marginTop: "20px" }}>
