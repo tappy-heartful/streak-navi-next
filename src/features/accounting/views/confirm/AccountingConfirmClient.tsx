@@ -14,12 +14,12 @@ import {
   AccountingSeasonKey,
   AccountingStatus
 } from "@/src/lib/firestore/types";
-import styles from "../components/BalanceAccounting.module.css";
+import styles from "../../components/BalanceAccounting.module.css";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import * as utils from "@/src/lib/functions";
 import {
   saveAccountingSeasonAction
-} from "../api/accounting-server-actions";
+} from "../../api/accounting-server-actions";
 import { showDialog } from "@/src/lib/functions";
 import { showModal } from "@/src/components/CommonModal";
 import { useRouter } from "next/navigation";
@@ -27,7 +27,7 @@ import Link from "next/link";
 import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { compressImage } from "@/src/lib/image-compression";
-import { PersonalSettlementCard } from "../components/PersonalSettlementCard";
+import { PersonalSettlementCard } from "../../components/PersonalSettlementCard";
 
 interface Props {
   initialData: {
@@ -43,7 +43,7 @@ interface Props {
   };
 }
 
-export function BalanceAccountingClient({ initialData }: Props) {
+export function AccountingConfirmClient({ initialData }: Props) {
   const { userData } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
   const router = useRouter();
@@ -80,10 +80,13 @@ export function BalanceAccountingClient({ initialData }: Props) {
   }, [roles]);
 
   useEffect(() => {
+    const seasonInfo = config.seasons[seasonKey];
+    const seasonName = `${year}年 ${seasonInfo?.name || seasonKey}シーズン`;
     setBreadcrumbs([
-      { title: "バランス会計" }
+      { title: "バランス会計一覧", href: "/accounting" },
+      { title: seasonName }
     ]);
-  }, [setBreadcrumbs]);
+  }, [setBreadcrumbs, config, year, seasonKey]);
 
   const seasonInfo = config.seasons[seasonKey];
   const seasonName = `${year}年 ${seasonInfo.name}シーズン`;
@@ -371,7 +374,7 @@ export function BalanceAccountingClient({ initialData }: Props) {
                       ? `支払 ¥${memberSettlement.toLocaleString()}`
                       : `受取 ¥${Math.abs(memberSettlement).toLocaleString()}`}
                   </div>
-                  
+
                   {/* エビデンス表示・アップロード部分 */}
                   <div className={styles.evidenceContainer}>
                     {season?.evidenceUrls?.[m.uid] && (
@@ -443,7 +446,7 @@ export function BalanceAccountingClient({ initialData }: Props) {
 
   const handleOpenMemberSelectModal = async () => {
     if (!season || !userData?.isSystemAdmin) return;
-    
+
     const currentMemberIds = season.memberIds || [];
 
     // グループ化
@@ -490,7 +493,7 @@ export function BalanceAccountingClient({ initialData }: Props) {
         const avatar = u.pictureUrl
           ? `<img src="${u.pictureUrl}" alt="${u.displayName}" width="24" height="24" style="border-radius: 50%;" />`
           : `<div style="width: 24px; height: 24px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; overflow: hidden;"><i class="fa-solid fa-user" style="color: #ccc; font-size: 12px;"></i></div>`;
-        
+
         html += `
           <label style="display: flex; align-items: center; gap: 12px; padding: 6px 0; cursor: pointer; user-select: none;">
             <input type="checkbox" id="${u.id}" ${isChecked ? "checked" : ""} style="width: 18px; height: 18px; cursor: pointer;" />
@@ -534,7 +537,7 @@ export function BalanceAccountingClient({ initialData }: Props) {
       <div className={`${styles.container} ${styles[seasonKey] || ""}`}>
         <div className="page-header">
           <h1>
-            <i className="fa-solid fa-scale-balanced"></i> バランス会計
+            <i className="fa-solid fa-scale-balanced"></i> バランス会計確認
           </h1>
         </div>
 
@@ -615,7 +618,7 @@ export function BalanceAccountingClient({ initialData }: Props) {
       </div>
 
       <div className="page-footer">
-        <Link href="/home" className="back-link">← ホームに戻る</Link>
+        <Link href="/accounting" className="back-link">← 一覧に戻る</Link>
       </div>
     </BaseLayout>
   );

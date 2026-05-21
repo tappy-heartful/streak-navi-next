@@ -32,6 +32,15 @@ export async function getAccountingConfigServer() {
 }
 
 /**
+ * 指定したIDのシーズン情報を取得
+ */
+export async function getAccountingSeasonByIdServer(id: string) {
+  const doc = await adminDb.collection("accountingSeasons").doc(id).get();
+  if (!doc.exists) return null;
+  return toPlainObject(doc) as AccountingSeason;
+}
+
+/**
  * 指定した年・シーズンの情報を取得
  */
 export async function getAccountingSeasonServer(year: number, seasonKey: AccountingSeasonKey) {
@@ -98,6 +107,14 @@ export async function getIncomesServer(startDate: string, endDate: string) {
 export async function getAccountingUsersServer() {
   const snap = await adminDb.collection("users").get();
   return snap.docs.map(toPlainObject) as User[];
+}
+
+/**
+ * 全会計シーズン情報を取得（作成日時降順）
+ */
+export async function getAccountingSeasonsServer() {
+  const snap = await adminDb.collection("accountingSeasons").orderBy("createdAt", "desc").get();
+  return snap.docs.map(toPlainObject) as AccountingSeason[];
 }
 
 /**

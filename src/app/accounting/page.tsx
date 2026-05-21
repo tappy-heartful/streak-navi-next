@@ -1,20 +1,19 @@
 import { 
   getAccountingConfigServer, 
-  getAccountingSeasonServer, 
-  getApprovedExpensesServer, 
-  getIncomesServer,
-  getAccountingUsersServer
+  getAccountingSeasonsServer,
+  getAccountingSeasonServer
 } from "@/src/features/accounting/api/accounting-service";
-import { getSectionsServer, getRolesServer } from "@/src/features/users/api/user-server-actions";
-import { BalanceAccountingClient } from "@/src/features/accounting/views/BalanceAccountingClient";
+import { AccountingListClient } from "@/src/features/accounting/views/list/AccountingListClient";
 import { AccountingSeasonKey } from "@/src/lib/firestore/types";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "バランス会計 | Streak Navi",
+  title: "バランス会計一覧 | Streak Navi",
 };
 
-export default async function BalanceAccountingPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AccountingListPage() {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
@@ -24,39 +23,19 @@ export default async function BalanceAccountingPage() {
   else if (month >= 7 && month <= 9) seasonKey = "summer";
   else if (month >= 10 && month <= 12) seasonKey = "autumn";
 
-  // 期間の算出 (1-3, 4-6, 7-9, 10-12)
-  const ranges = {
-    winter: { start: `${year}.01.01`, end: `${year}.03.31` },
-    spring: { start: `${year}.04.01`, end: `${year}.06.30` },
-    summer: { start: `${year}.07.01`, end: `${year}.09.30` },
-    autumn: { start: `${year}.10.01`, end: `${year}.12.31` },
-  };
-  const range = ranges[seasonKey];
-
-  const [config, season, expenses, incomes, users, sections, roles] = await Promise.all([
+  const [seasons, config, currentSeason] = await Promise.all([
+    getAccountingSeasonsServer(),
     getAccountingConfigServer(),
-    getAccountingSeasonServer(year, seasonKey),
-    getApprovedExpensesServer(range.start, range.end),
-    getIncomesServer(range.start, range.end),
-    getAccountingUsersServer(),
-    getSectionsServer(),
-    getRolesServer(),
+    getAccountingSeasonServer(year, seasonKey)
   ]);
 
   return (
-    <BalanceAccountingClient 
+    <AccountingListClient 
       initialData={{
+        seasons,
         config,
-        season,
-        expenses,
-        incomes,
-        users,
-        sections,
-        roles,
-        year,
-        seasonKey
+        canInitialize: !currentSeason
       }}
     />
   );
 }
-
