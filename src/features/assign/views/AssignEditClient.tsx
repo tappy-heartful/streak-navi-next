@@ -82,6 +82,22 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
     return map;
   }, [masterData.users]);
 
+  // YouTubeプレイリストURL
+  const playlistUrl = useMemo(() => {
+    const videoIds = new Set<string>();
+    event.setlist?.forEach(group => {
+      group.songIds.forEach(songId => {
+        const score = masterData.scores[songId];
+        if (score?.referenceTrack) {
+          const id = utils.extractYouTubeId(score.referenceTrack);
+          if (id) videoIds.add(id);
+        }
+      });
+    });
+    if (videoIds.size === 0) return null;
+    return `https://www.youtube.com/watch_videos?video_ids=${Array.from(videoIds).join(",")}`;
+  }, [event.setlist, masterData.scores]);
+
   // 変更処理
   const handleChange = (songId: string, partName: string, userId: string) => {
     setCurrentMap(prev => ({
@@ -171,6 +187,14 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
             <span className={styles.eventDate}>{event.date || "日付未定"}</span>
           </div>
         </div>
+
+        {playlistUrl && (
+          <div className={styles.referencePlaylistWrapper}>
+            <a href={playlistUrl} target="_blank" rel="noreferrer" className={styles.playlistButton}>
+              <i className="fa-brands fa-youtube" /> 参考音源プレイリスト
+            </a>
+          </div>
+        )}
 
         <div className={styles.tableViewWrapper}>
           <div className={styles.tableResponsive}>

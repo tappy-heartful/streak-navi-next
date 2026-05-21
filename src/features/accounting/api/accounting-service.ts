@@ -1,10 +1,10 @@
 import admin from "firebase-admin";
 import { adminDb } from "@/src/lib/firebase-admin";
 import { toPlainObject } from "@/src/lib/firestore/utils";
-import { 
-  AccountingSeason, 
-  AccountingConfig, 
-  ExpenseApply, 
+import {
+  AccountingSeason,
+  AccountingConfig,
+  ExpenseApply,
   Income,
   User,
   AccountingSeasonKey
@@ -29,6 +29,15 @@ export async function getAccountingConfigServer() {
     } as AccountingConfig;
   }
   return toPlainObject(doc) as AccountingConfig;
+}
+
+/**
+ * 指定したIDのシーズン情報を取得
+ */
+export async function getAccountingSeasonByIdServer(id: string) {
+  const doc = await adminDb.collection("accountingSeasons").doc(id).get();
+  if (!doc.exists) return null;
+  return toPlainObject(doc) as AccountingSeason;
 }
 
 /**
@@ -71,7 +80,7 @@ export async function getApprovedExpensesServer(startDate: string, endDate: stri
     .where("createdAt", ">=", startTimestamp)
     .where("createdAt", "<=", endTimestamp)
     .get();
-  
+
   return snap.docs
     .map(toPlainObject)
     .filter((e: any) => e.status === "approved") as ExpenseApply[];
@@ -88,7 +97,7 @@ export async function getIncomesServer(startDate: string, endDate: string) {
     .where("createdAt", ">=", startMs)
     .where("createdAt", "<=", endMs)
     .get();
-  
+
   return snap.docs.map(toPlainObject) as Income[];
 }
 
@@ -98,4 +107,114 @@ export async function getIncomesServer(startDate: string, endDate: string) {
 export async function getAccountingUsersServer() {
   const snap = await adminDb.collection("users").get();
   return snap.docs.map(toPlainObject) as User[];
+}
+
+/**
+ * 全会計シーズン情報を取得（作成日時降順）
+ * 2026年冬（2026-winter）以降、かつ現シーズンまでのものを表示対象とする
+ */
+export async function getAccountingSeasonsServer() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  let currentSeasonKey: AccountingSeasonKey = "winter";
+  if (month >= 4 && month <= 6) currentSeasonKey = "spring";
+  else if (month >= 7 && month <= 9) currentSeasonKey = "summer";
+  else if (month >= 10 && month <= 12) currentSeasonKey = "autumn";
+
+  const snap = await adminDb.collection("accountingSeasons").orderBy("createdAt", "desc").get();
+  const seasons = snap.docs.map(toPlainObject) as AccountingSeason[];
+
+  const seasonOrder: Record<AccountingSeasonKey, number> = {
+    winter: 1,
+    spring: 2,
+    summer: 3,
+    autumn: 4
+  };
+
+  return seasons.filter(s => {
+    // 2026年冬以降であることをチェック
+    if (s.year < 2026) return false;
+    // 2026年の場合、winter以降（すべてOKだが明示的に）
+
+    // 未来のシーズンでないことをチェック
+    if (s.year > year) return false;
+    if (s.year === year) {
+      if (seasonOrder[s.seasonKey] > seasonOrder[currentSeasonKey]) return false;
+    }
+
+    return true;
+  });
+}
+
+/**
+ * ホーム画面表示用の個人精算サマリーを取得
+ */
+export async function getPersonalSettlementSummaryServer(userId: string) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  let seasonKey: AccountingSeasonKey = "winter";
+  if (month >= 4 && month <= 6) seasonKey = "spring";
+  else if (month >= 7 && month <= 9) seasonKey = "summer";
+  else if (month >= 10 && month <= 12) seasonKey = "autumn";
+
+  // 期間の算出 (1-3, 4-6, 7-9, 10-12)
+  const ranges = {
+    winter: { start: `${year}.01.01`, end: `${year}.03.31` },
+    spring: { start: `${year}.04.01`, end: `${year}.06.30` },
+    summer: { start: `${year}.07.01`, end: `${year}.09.30` },
+    autumn: { start: `${year}.10.01`, end: `${year}.12.31` },
+  };
+  const range = ranges[seasonKey];
+
+   const [config, season] = await Promise.all([
+     getAccountingConfigServer(),
+     getAccountingSeasonServer(year, seasonKey)
+   ]);
+
+   if (!season) return null;
+
+   const seasonInfo = config.seasons[seasonKey];
+   const seasonName = `${year}年 ${seasonInfo.name}シーズン`;
+   const periodStr = `${seasonInfo.startMonth}月〜${seasonInfo.endMonth}月`;
+
+   const expenses = await getApprovedExpensesServer(range.start, range.end);
+  const incomes = await getIncomesServer(range.start, range.end);
+
+  const activeMemberIds = season.memberIds || [];
+
+  // 全体集計
+  const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const totalIncomes = incomes
+    .filter(i => activeMemberIds.includes(i.uid))
+    .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+  const netTotal = totalExpenses - totalIncomes;
+  const memberCount = activeMemberIds.length;
+  const averageBurden = memberCount > 0 ? Math.floor(netTotal / memberCount) : 0;
+
+  // 個人の計算
+  const myExpenses = expenses
+    .filter(e => e.uid === userId)
+    .reduce((s, e) => s + Number(e.amount || 0), 0);
+  const myIncomes = incomes
+    .filter(i => i.uid === userId)
+    .reduce((s, i) => s + Number(i.amount || 0), 0);
+
+  const myContribution = myExpenses - myIncomes;
+  const isTarget = activeMemberIds.includes(userId);
+  const settlementAmount = (isTarget ? averageBurden : 0) - myContribution;
+
+  return {
+     season,
+     seasonName,
+     periodStr,
+     averageBurden,
+     myExpenses,
+     myIncomes,
+     settlementAmount,
+     isTarget
+   };
 }

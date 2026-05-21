@@ -508,7 +508,6 @@ export interface ExpenseApplyFormData {
 // ===== 会計 (Accounting) =====
 
 export type AccountingSeasonKey = "winter" | "spring" | "summer" | "autumn";
-export type AccountingStatus = "active" | "locked" | "settled";
 
 export interface AccountingConfig {
   id: string;
@@ -525,7 +524,7 @@ export interface AccountingSeason {
   year: number;
   seasonKey: AccountingSeasonKey;
   memberIds: string[];
-  status: AccountingStatus;
+  evidenceUrls?: Record<string, string>; // uid -> downloadUrl
   settledAt?: number;
   createdAt: number;
   updatedAt: number;

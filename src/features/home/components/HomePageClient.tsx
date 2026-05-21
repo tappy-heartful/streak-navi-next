@@ -9,6 +9,9 @@ import styles from "./home.module.css";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import type { Announcement, Score, BlueNote, Media, Event as FirestoreEvent, Vote, Call } from "@/src/lib/firestore/types";
 import { InstagramEmbed } from "@/src/components/InstagramEmbed";
+import { getPersonalSettlementSummaryAction } from "@/src/features/accounting/api/accounting-server-actions";
+import { PersonalSettlementCard } from "@/src/features/accounting/components/PersonalSettlementCard";
+import { AccountingSeason, AccountingSeasonKey } from "@/src/lib/firestore/types";
 
 // --- 再描画させないためのメモ化コンポーネント群 ---
 
@@ -293,6 +296,7 @@ type InitialData = {
 export function HomePageClient({ initialData }: { initialData: InitialData }) {
   const [currentScoreIdx, setCurrentScoreIdx] = useState(0);
   const [currentBNIdx, setCurrentBNIdx] = useState(0);
+  const [settlementSummary, setSettlementSummary] = useState<any>(null);
   const { setBreadcrumbs } = useBreadcrumb();
   const { userData } = useAuth();
 
@@ -300,6 +304,12 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
     // ホームに来たらパンくずを空にする
     setBreadcrumbs([]);
   }, [setBreadcrumbs]);
+
+  useEffect(() => {
+    if (userData?.id) {
+      getPersonalSettlementSummaryAction(userData.id).then(setSettlementSummary);
+    }
+  }, [userData?.id]);
 
   useEffect(() => {
     if (initialData.scores.length) {
@@ -342,8 +352,21 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
 
         <AnnouncementSection data={initialData.announcements} />
 
-
         <CalendarSection data={initialData.calendarData} />
+
+        {settlementSummary && (
+          <PersonalSettlementCard
+            season={settlementSummary.season}
+            seasonName={settlementSummary.seasonName}
+            periodStr={settlementSummary.periodStr}
+            averageBurden={settlementSummary.averageBurden}
+            myExpenses={settlementSummary.myExpenses}
+            myIncomes={settlementSummary.myIncomes}
+            settlementAmount={settlementSummary.settlementAmount}
+            isTarget={settlementSummary.isTarget}
+            seasonKey={settlementSummary.season.id.split("-")[1] as AccountingSeasonKey}
+          />
+        )}
 
         <main className="container">
           <div className={styles.scoreHeader}>

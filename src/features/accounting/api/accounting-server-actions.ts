@@ -3,6 +3,14 @@
 import { adminDb } from "@/src/lib/firebase-admin";
 import { AccountingSeason, Income } from "@/src/lib/firestore/types";
 import { revalidatePath } from "next/cache";
+import { getPersonalSettlementSummaryServer } from "./accounting-service";
+
+/**
+ * 個人精算サマリーを取得（サーバーアクション）
+ */
+export async function getPersonalSettlementSummaryAction(userId: string) {
+  return await getPersonalSettlementSummaryServer(userId);
+}
 
 /**
  * 会計シーズンの情報を更新・作成（サーバーサイド）
@@ -14,7 +22,7 @@ export async function saveAccountingSeasonAction(season: Partial<AccountingSeaso
     updatedAt: Date.now(),
     createdAt: season.createdAt || Date.now()
   }, { merge: true });
-  
+
   revalidatePath("/accounting");
 }
 
@@ -28,7 +36,7 @@ export async function addIncomeAction(data: Omit<Income, "id" | "createdAt" | "u
     createdAt: Date.now(),
     updatedAt: Date.now()
   });
-  
+
   revalidatePath("/accounting");
 }
 
@@ -41,7 +49,7 @@ export async function updateIncomeAction(id: string, data: Partial<Income>) {
     ...data,
     updatedAt: Date.now()
   });
-  
+
   revalidatePath("/accounting");
 }
 
@@ -51,6 +59,6 @@ export async function updateIncomeAction(id: string, data: Partial<Income>) {
 export async function deleteIncomeAction(id: string) {
   const docRef = adminDb.collection("incomes").doc(id);
   await docRef.delete();
-  
+
   revalidatePath("/accounting");
 }

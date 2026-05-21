@@ -12,6 +12,17 @@
   --season-primary-hover: #667eea;
 }
 
+.personalCardWrapper {
+  /* Default theme */
+  --season-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --season-primary: #764ba2;
+  --season-primary-hover: #667eea;
+  width: 90%;
+  max-width: 768px;
+  margin: 0 auto 40px auto;
+  box-sizing: border-box;
+}
+
 .spring {
   --season-gradient: linear-gradient(135deg, #ec77ab 0%, #f9c06b 100%);
   --season-primary: #e65b7b;
@@ -94,6 +105,24 @@
 
 .personalSection {
   border-top: 4px solid var(--season-primary);
+}
+
+.cardHeaderInfo {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--season-primary);
+}
+
+.cardSeasonTitle {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--season-primary);
+}
+
+.cardPeriodText {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 2px;
 }
 
 .calculationRow {
@@ -229,4 +258,83 @@
   .statGrid {
     grid-template-columns: 1fr;
   }
+}
+
+.evidenceContainer {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  align-items: center;
+}
+
+.btnReceiptView {
+  padding: 4px 8px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.2s;
+}
+
+.btnReceiptView:hover {
+  opacity: 0.85;
+}
+
+.btnReceiptUpload {
+  padding: 4px 8px;
+  background: #00c258;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.2s;
+}
+
+.btnReceiptUpload:hover {
+  opacity: 0.85;
+}
+
+.btnReceiptDelete {
+  padding: 4px 8px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.btnReceiptDelete:hover {
+  opacity: 0.85;
+}
+
+.statusBadgeUploaded {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: #e3f2fd;
+  color: #1a73e8;
+  border: 1px solid #1a73e8;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.evidencePlaceholder {
+  font-size: 0.7rem;
+  color: #cbd5e0;
+  font-style: italic;
 }
