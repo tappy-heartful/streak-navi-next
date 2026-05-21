@@ -27,6 +27,7 @@ import Link from "next/link";
 import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { compressImage } from "@/src/lib/image-compression";
+import { PersonalSettlementCard } from "../components/PersonalSettlementCard";
 
 interface Props {
   initialData: {
@@ -113,7 +114,7 @@ export function BalanceAccountingClient({ initialData }: Props) {
       .filter(i => i.uid === userData.id)
       .reduce((s, i) => s + Number(i.amount || 0), 0);
     const myContribution = myExpenses - myIncomes;
-    const isTarget = season?.memberIds.includes(userData.id);
+    const isTarget = !!season?.memberIds.includes(userData.id);
     const settlementAmount = (isTarget ? totals.averageBurden : 0) - myContribution;
     return { myExpenses, myIncomes, myContribution, isTarget, settlementAmount };
   }, [userData, expenses, incomes, season, totals]);
@@ -579,46 +580,19 @@ export function BalanceAccountingClient({ initialData }: Props) {
         ) : (
           <>
             {/* 個人の精算見込み */}
-            <div className={`${styles.card} ${styles.personalSection}`}>
-              <h3>自分の精算見込み</h3>
-              {!personal?.isTarget && (
-                <div style={{ color: "#e53e3e", marginBottom: "16px", fontSize: "0.9rem" }}>
-                  <i className="fa-solid fa-circle-exclamation"></i> あなたはこのシーズンの精算対象に含まれていません。
-                </div>
-              )}
-              <div className={styles.calculationRow}>
-                <div className={styles.calcLabel}>バンド平均負担額</div>
-                <div className={styles.calcValue}>¥{totals.averageBurden.toLocaleString()}</div>
-              </div>
-              <div className={styles.calculationRow}>
-                <div className={styles.calcLabel}>自分の支出実績</div>
-                <div className={styles.calcValue}>¥{personal?.myExpenses.toLocaleString()}</div>
-              </div>
-              <div className={styles.calculationRow}>
-                <div className={styles.calcLabel}>自分の収入実績（代表受取）</div>
-                <div className={styles.calcValue}>¥{personal?.myIncomes.toLocaleString()}</div>
-              </div>
-              <div className={styles.resultRow}>
-                <div className={styles.resultLabel}>精算額</div>
-                <div
-                  className={`${styles.resultValue} ${personal?.settlementAmount! > 0 ? styles.plus : styles.minus}`}
-                >
-                  {personal?.settlementAmount! > 0
-                    ? `支払 ¥${personal?.settlementAmount.toLocaleString()}`
-                    : `受取 ¥${Math.abs(personal?.settlementAmount!).toLocaleString()}`}
-                </div>
-              </div>
-              <div style={{ marginTop: "20px" }}>
-                <Link href="/expense-apply?mode=new" style={{ textDecoration: "none" }}>
-                  <button className={`${styles.button} ${styles.primaryButton}`} style={{ width: "100%" }}>
-                    <i className="fa-solid fa-receipt"></i> 収入/支出を登録する
-                  </button>
-                </Link>
-              </div>
-              <p style={{ fontSize: "0.8rem", color: "#666", marginTop: "12px" }}>
-                ※承認済みの経費のみ計上されています。
-              </p>
-            </div>
+            {personal && (
+              <PersonalSettlementCard
+                season={season}
+                seasonName={seasonName}
+                periodStr={periodStr}
+                averageBurden={totals.averageBurden}
+                myExpenses={personal.myExpenses}
+                myIncomes={personal.myIncomes}
+                settlementAmount={personal.settlementAmount}
+                isTarget={personal.isTarget}
+                seasonKey={seasonKey}
+              />
+            )}
 
             {/* メンバー一覧 */}
             <div className={styles.card}>
@@ -638,6 +612,10 @@ export function BalanceAccountingClient({ initialData }: Props) {
             </div>
           </>
         )}
+      </div>
+
+      <div className="page-footer">
+        <Link href="/home" className="back-link">← ホームに戻る</Link>
       </div>
     </BaseLayout>
   );

@@ -3,6 +3,14 @@
 import { adminDb } from "@/src/lib/firebase-admin";
 import { AccountingSeason, Income } from "@/src/lib/firestore/types";
 import { revalidatePath } from "next/cache";
+import { getPersonalSettlementSummaryServer } from "./accounting-service";
+
+/**
+ * 個人精算サマリーを取得（サーバーアクション）
+ */
+export async function getPersonalSettlementSummaryAction(userId: string) {
+  return await getPersonalSettlementSummaryServer(userId);
+}
 
 /**
  * 会計シーズンの情報を更新・作成（サーバーサイド）

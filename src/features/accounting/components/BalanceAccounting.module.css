@@ -12,6 +12,17 @@
   --season-primary-hover: #667eea;
 }
 
+.personalCardWrapper {
+  /* Default theme */
+  --season-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --season-primary: #764ba2;
+  --season-primary-hover: #667eea;
+  width: 90%;
+  max-width: 768px;
+  margin: 0 auto 40px auto;
+  box-sizing: border-box;
+}
+
 .spring {
   --season-gradient: linear-gradient(135deg, #ec77ab 0%, #f9c06b 100%);
   --season-primary: #e65b7b;
@@ -94,6 +105,24 @@
 
 .personalSection {
   border-top: 4px solid var(--season-primary);
+}
+
+.cardHeaderInfo {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--season-primary);
+}
+
+.cardSeasonTitle {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--season-primary);
+}
+
+.cardPeriodText {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 2px;
 }
 
 .calculationRow {
