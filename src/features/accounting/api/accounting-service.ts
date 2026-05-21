@@ -111,10 +111,41 @@ export async function getAccountingUsersServer() {
 
 /**
  * 全会計シーズン情報を取得（作成日時降順）
+ * 2026年冬（2026-winter）以降、かつ現シーズンまでのものを表示対象とする
  */
 export async function getAccountingSeasonsServer() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  let currentSeasonKey: AccountingSeasonKey = "winter";
+  if (month >= 4 && month <= 6) currentSeasonKey = "spring";
+  else if (month >= 7 && month <= 9) currentSeasonKey = "summer";
+  else if (month >= 10 && month <= 12) currentSeasonKey = "autumn";
+
   const snap = await adminDb.collection("accountingSeasons").orderBy("createdAt", "desc").get();
-  return snap.docs.map(toPlainObject) as AccountingSeason[];
+  const seasons = snap.docs.map(toPlainObject) as AccountingSeason[];
+
+  const seasonOrder: Record<AccountingSeasonKey, number> = {
+    winter: 1,
+    spring: 2,
+    summer: 3,
+    autumn: 4
+  };
+
+  return seasons.filter(s => {
+    // 2026年冬以降であることをチェック
+    if (s.year < 2026) return false;
+    // 2026年の場合、winter以降（すべてOKだが明示的に）
+
+    // 未来のシーズンでないことをチェック
+    if (s.year > year) return false;
+    if (s.year === year) {
+      if (seasonOrder[s.seasonKey] > seasonOrder[currentSeasonKey]) return false;
+    }
+
+    return true;
+  });
 }
 
 /**

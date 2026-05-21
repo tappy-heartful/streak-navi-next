@@ -11,8 +11,7 @@ import {
   User,
   Section,
   Role,
-  AccountingSeasonKey,
-  AccountingStatus
+  AccountingSeasonKey
 } from "@/src/lib/firestore/types";
 import styles from "../../components/BalanceAccounting.module.css";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
@@ -59,8 +58,6 @@ export function AccountingConfirmClient({ initialData }: Props) {
     sections = [],
     roles = []
   } = initialData;
-
-  const [isInitializing, setIsInitializing] = useState(false);
 
   // mapping tables
   const sectionMap = useMemo(() => {
@@ -421,29 +418,6 @@ export function AccountingConfirmClient({ initialData }: Props) {
     ))
   );
 
-  const handleInitializeSeason = async () => {
-    if (!userData?.isSystemAdmin) return;
-    setIsInitializing(true);
-    try {
-      const newSeason: AccountingSeason = {
-        id: `${year}-${seasonKey}`,
-        year,
-        seasonKey,
-        memberIds: users.map(u => u.id),
-        status: "active" as AccountingStatus,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      };
-      await saveAccountingSeasonAction(newSeason);
-      showDialog("シーズンを初期化しました。対象メンバーを調整してください。", true);
-    } catch (e) {
-      console.error(e);
-      showDialog("初期化に失敗しました。", true);
-    } finally {
-      setIsInitializing(false);
-    }
-  };
-
   const handleOpenMemberSelectModal = async () => {
     if (!season || !userData?.isSystemAdmin) return;
 
@@ -542,8 +516,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
         </div>
 
         {/* ヘッダーカード */}
-        <div className={`${styles.card} ${styles.headerCard}`}
-          >
+        <div className={`${styles.card} ${styles.headerCard}`}>
           <div className={styles.seasonTitle}>{seasonName}</div>
           <div className={styles.periodText}>{periodStr}</div>
           <div className={styles.statGrid}>
@@ -566,55 +539,37 @@ export function AccountingConfirmClient({ initialData }: Props) {
           </div>
         </div>
 
-        {!season ? (
-          <div className={styles.card} style={{ textAlign: "center" }}>
-            <p>今シーズンの会計はまだ開始されていません。</p>
+        {/* 個人の精算見込み */}
+        {personal && (
+          <PersonalSettlementCard
+            season={season!}
+            seasonName={seasonName}
+            periodStr={periodStr}
+            averageBurden={totals.averageBurden}
+            myExpenses={personal.myExpenses}
+            myIncomes={personal.myIncomes}
+            settlementAmount={personal.settlementAmount}
+            isTarget={personal.isTarget}
+            seasonKey={seasonKey}
+          />
+        )}
+
+        {/* メンバー一覧 */}
+        <div className={styles.card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <h3>精算対象メンバー</h3>
             {userData?.isSystemAdmin && (
               <button
-                className={`${styles.button} ${styles.primaryButton}`}
-                onClick={handleInitializeSeason}
-                disabled={isInitializing}
-                style={{ margin: "20px auto" }}
+                className={`${styles.button} ${styles.outlineButton}`}
+                onClick={handleOpenMemberSelectModal}
+                style={{ padding: "6px 12px", fontSize: "0.8rem" }}
               >
-                <i className="fa-solid fa-plus"></i> 今シーズンを開始する
+                <i className="fa-solid fa-user-gear"></i> 管理
               </button>
             )}
           </div>
-        ) : (
-          <>
-            {/* 個人の精算見込み */}
-            {personal && (
-              <PersonalSettlementCard
-                season={season}
-                seasonName={seasonName}
-                periodStr={periodStr}
-                averageBurden={totals.averageBurden}
-                myExpenses={personal.myExpenses}
-                myIncomes={personal.myIncomes}
-                settlementAmount={personal.settlementAmount}
-                isTarget={personal.isTarget}
-                seasonKey={seasonKey}
-              />
-            )}
-
-            {/* メンバー一覧 */}
-            <div className={styles.card}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h3>精算対象メンバー</h3>
-                {userData?.isSystemAdmin && (
-                  <button
-                    className={`${styles.button} ${styles.outlineButton}`}
-                    onClick={handleOpenMemberSelectModal}
-                    style={{ padding: "6px 12px", fontSize: "0.8rem" }}
-                  >
-                    <i className="fa-solid fa-user-gear"></i> 管理
-                  </button>
-                )}
-              </div>
-              {renderGroupedMembers()}
-            </div>
-          </>
-        )}
+          {renderGroupedMembers()}
+        </div>
       </div>
 
       <div className="page-footer">
