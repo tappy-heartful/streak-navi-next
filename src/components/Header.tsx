@@ -130,6 +130,16 @@ export default function Header() {
               className="menu-user-icon"
               alt="user"
               onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
+              onClick={() => {
+                if (uid) {
+                  const targetPath = `/user/confirm?uid=${uid}`;
+                  if (pathname !== "/user/confirm" || !window.location.search.includes(uid)) {
+                    showSpinner();
+                  }
+                  router.push(targetPath);
+                  closeMenu();
+                }
+              }}
             />
             <div className="menu-user-info">
               <a
@@ -147,6 +157,11 @@ export default function Header() {
               >
                 {displayName}
               </a>
+              <div className="menu-user-actions">
+                <span onClick={handleLogout} className="logout-button-small">
+                  <i className="fa-solid fa-right-from-bracket"></i> ログアウト
+                </span>
+              </div>
             </div>
             <div className="close-menu" onClick={closeMenu}>
               <i className="fa-solid fa-xmark"></i>
@@ -154,38 +169,24 @@ export default function Header() {
           </div>
 
           <div className="slide-menu-section">
-            {menuLink("/home", "ホーム")}
-            {menuLink("/score", "譜面")}
-            {menuLink("/event", "イベント")}
-            {menuLink("/assign", "譜割り")}
-            {menuLink("/call", "曲募集")}
-            {menuLink("/vote", "投票")}
-            {menuLink("/studio", "スタジオ")}
-            {menuLink("/user", "ユーザ")}
-            {menuLink("/notice", "通知設定")}
-            {menuLink("/blue-note", "今日の一曲")}
-            {menuLink("/board", "掲示板")}
-            {menuLink("/live", "ライブ")}
-            {menuLink("/ticket", "予約者一覧")}
-            {menuLink("/media", "メディア")}
-            {menuLink("/accounting", "バランス会計")}
-            {menuLink("/travel-subsidy", "旅費補助額")}
-            {menuLink("/expense-apply", "経費申請")}
-            {userData?.isSystemAdmin && menuLink("/expense-review", "経費審査")}
-          </div>
-
-          <div className="slide-menu-section menu-bottom">
-            <a onClick={() => {
-              if (uid) {
-                const targetPath = `/user/confirm?uid=${uid}`;
-                if (pathname !== "/user/confirm" || !window.location.search.includes(uid)) {
-                  showSpinner();
-                }
-                router.push(targetPath);
-                closeMenu();
-              }
-            }}>ユーザ情報</a>
-            <a onClick={handleLogout} className="logout-text">ログアウト</a>
+            {menuLink("/home", "ホーム", "fa-solid fa-house")}
+            {menuLink("/score", "譜面", "fa-solid fa-music")}
+            {menuLink("/event", "イベント", "fa-solid fa-calendar-days")}
+            {menuLink("/assign", "譜割り", "fa-solid fa-people-group")}
+            {menuLink("/call", "曲募集", "fa-solid fa-bullhorn")}
+            {menuLink("/vote", "投票", "fa-solid fa-check-to-slot")}
+            {menuLink("/studio", "スタジオ", "fa-solid fa-location-dot")}
+            {menuLink("/user", "ユーザ", "fa-solid fa-users")}
+            {menuLink("/notice", "通知設定", "fa-solid fa-bell")}
+            {menuLink("/blue-note", "今日の一曲", "fa-solid fa-record-vinyl")}
+            {menuLink("/board", "掲示板", "fa-solid fa-clipboard-list")}
+            {menuLink("/live", "ライブ", "fa-solid fa-guitar")}
+            {menuLink("/ticket", "予約者一覧", "fa-solid fa-ticket")}
+            {menuLink("/media", "メディア", "fa-solid fa-photo-film")}
+            {menuLink("/accounting", "バランス会計", "fa-solid fa-scale-balanced")}
+            {menuLink("/travel-subsidy", "旅費補助額", "fa-solid fa-train-subway")}
+            {menuLink("/expense-apply", "経費申請", "fa-solid fa-file-invoice-dollar")}
+            {userData?.isSystemAdmin && menuLink("/expense-review", "経費審査", "fa-solid fa-clipboard-check")}
           </div>
         </div>
       </header>
