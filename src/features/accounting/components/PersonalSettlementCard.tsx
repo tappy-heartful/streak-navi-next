@@ -13,6 +13,7 @@ interface PersonalSettlementCardProps {
   settlementAmount: number;
   isTarget: boolean;
   seasonKey: AccountingSeasonKey | "default";
+  isHome?: boolean;
 }
 
 export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
@@ -25,11 +26,12 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
   settlementAmount,
   isTarget,
   seasonKey,
+  isHome = false,
 }) => {
   if (!season) return null;
 
   return (
-    <div className={`${styles.personalCardWrapper} ${styles[seasonKey] || ""}`}>
+    <div className={`${isHome ? styles.homeCardWrapper : styles.personalCardWrapper} ${styles[seasonKey] || ""}`}>
       <div className={`${styles.card} ${styles.personalSection}`}>
         <div className={styles.cardHeaderInfo}>
           <div className={styles.cardSeasonTitle}>{seasonName}</div>
@@ -64,12 +66,20 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
               : `受取 ¥${Math.abs(settlementAmount).toLocaleString()}`}
           </div>
         </div>
-        <div style={{ marginTop: "20px" }}>
+        <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
           <Link href="/expense-apply?mode=new" style={{ textDecoration: "none" }}>
             <button className={`${styles.button} ${styles.primaryButton}`} style={{ width: "100%" }}>
               <i className="fa-solid fa-receipt"></i> 収入/支出を登録する
             </button>
           </Link>
+          
+          {isHome && (
+            <Link href={`/accounting/confirm?seasonId=${season.id}`} style={{ textDecoration: "none" }}>
+              <button className={`${styles.button} ${styles.outlineButton}`} style={{ width: "100%", background: "transparent", border: "1px solid var(--season-primary)", color: "var(--season-primary)" }}>
+                <i className="fa-solid fa-scale-balanced"></i> 会計詳細を確認する
+              </button>
+            </Link>
+          )}
         </div>
         <p style={{ fontSize: "0.8rem", color: "#666", marginTop: "12px" }}>
           ※承認済みの経費のみ計上されています。

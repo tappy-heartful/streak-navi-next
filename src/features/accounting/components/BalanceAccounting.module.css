@@ -17,10 +17,16 @@
   --season-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --season-primary: #764ba2;
   --season-primary-hover: #667eea;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 40px auto;
+  box-sizing: border-box;
+}
+
+.homeCardWrapper {
   width: 90%;
   max-width: 768px;
   margin: 0 auto 40px auto;
-  box-sizing: border-box;
 }
 
 .spring {
