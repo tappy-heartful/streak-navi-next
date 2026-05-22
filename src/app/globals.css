@@ -97,110 +97,161 @@ body.fixed {
 .slide-menu {
   position: fixed;
   top: 0; right: -75%;
-  width: 75%;
-  max-width: 320px;
+  width: 80%;
+  max-width: 340px;
   height: 100vh;
-  background: white;
-  box-shadow: 3px 0 10px rgba(0,0,0,0.2);
+  background: #ffffff;
+  box-shadow: -4px 0 15px rgba(0,0,0,0.1);
   z-index: 100;
-  padding: 16px;
+  padding: 16px 12px;
   box-sizing: border-box;
-  transition: right 0.25s ease, visibility 0.25s; /* visibilityの遷移も追加 */
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   max-height: 100dvh;
-  visibility: hidden; /* ★ デフォルト（閉じている時）は非表示 */
+  visibility: hidden;
 }
 
 /* 開いた状態 */
 .slide-menu.open {
   right: 0;
-  visibility: visible; /* ★ 開いたら表示 */
+  visibility: visible;
 }
 
 .menu-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
   position: relative;
 }
 
 .menu-user-icon {
-  width: 60px; height: 60px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.menu-user-icon:hover {
+  transform: scale(1.05);
+}
+
+.menu-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
 }
 
 .menu-user-name {
   cursor: pointer;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.2;
+  transition: color 0.2s;
+}
+.menu-user-name:hover {
+  color: #4CAF50;
+}
+
+.menu-user-actions {
+  margin-top: 0;
+}
+
+.logout-button-small {
+  font-size: 11px;
+  color: #e53935;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+.logout-button-small:hover {
+  opacity: 1;
+  text-decoration: underline;
 }
 
 .close-menu {
   position: absolute;
-  top: 4px; right: 4px;
-  font-size: 24px;
+  top: -6px; right: -4px;
+  font-size: 18px;
+  color: #bbb;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+  padding: 6px;
+  border-radius: 50%;
+  transition: all 0.2s;
 }
 .close-menu:hover {
-  background: #f2f2f2;
+  background: #f8f8f8;
+  color: #666;
 }
 
 .slide-menu-section {
-  border-top: 1px solid #ddd;
-  padding-top: 10px;
-  margin-top: 10px;
-
-  /* ▼ 追加（縦→2列レイアウト） */
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 8px; /* 行、列の余白 */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
 }
 
 .slide-menu-section a {
   font-weight: 600;
   cursor: pointer;
-  font-size: 14px;
-  color: #222;
+  font-size: 11px;
+  color: #444;
   text-decoration: none;
-  padding: 6px 4px;
-
-  /* ▼ 追加（見た目整える） */
+  padding: 8px 4px;
   text-align: center;
-  background: #f5f5f7;
-  border-radius: 6px;
+  background: #f8f9fa;
+  border-radius: 8px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 38px;
+  gap: 4px;
+  min-height: 60px;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.slide-menu-section a i {
+  width: auto;
+  text-align: center;
+  font-size: 18px;
+  color: #555;
 }
 
 @media (max-width: 380px) {
   .slide-menu-section a {
-    font-size: 13px;
-    padding: 4px 2px;
-    min-height: 34px;
+    font-size: 10px;
+    padding: 6px 2px;
+    min-height: 56px;
   }
   .slide-menu-section {
-    gap: 4px 6px;
+    gap: 4px;
+  }
+  .slide-menu-section a i {
+    font-size: 16px;
   }
 }
 
 .slide-menu-section a:hover {
-  background: #ebebe0;
+  background: #f1f3f5;
+  border-color: #dee2e6;
+  color: #111;
+  transform: translateY(-1px);
 }
 
 /* 下段（設定・ログアウト） */
 .menu-bottom {
-  margin-top: auto;
-  border-top: 1px solid #ccc;
-  padding-top: 16px;
-  grid-template-columns: 1fr;
+  display: none;
 }
 
 .logout-text {

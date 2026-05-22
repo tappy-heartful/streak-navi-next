@@ -365,6 +365,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
             settlementAmount={settlementSummary.settlementAmount}
             isTarget={settlementSummary.isTarget}
             seasonKey={settlementSummary.season.id.split("-")[1] as AccountingSeasonKey}
+            isHome={true}
           />
         )}
 
