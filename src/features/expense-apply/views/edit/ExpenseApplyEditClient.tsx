@@ -265,6 +265,7 @@ export function ExpenseApplyEditClient({
 
     const payload: ExpenseApplyFormData = {
       ...data,
+      expenseTypeId: data.typeId, // ドキュメントIDを明示的に登録
       category: itemName,
       date: isEventRequired && selectedEvent ? selectedEvent.date : hyphenDateToDot(data.date),
       files,

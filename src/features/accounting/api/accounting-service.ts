@@ -76,14 +76,27 @@ export async function getApprovedExpensesServer(startDate: string, endDate: stri
   const startTimestamp = admin.firestore.Timestamp.fromMillis(startMs);
   const endTimestamp = admin.firestore.Timestamp.fromMillis(endMs);
 
-  const snap = await adminDb.collection("expenseApplies")
-    .where("createdAt", ">=", startTimestamp)
-    .where("createdAt", "<=", endTimestamp)
-    .get();
+  const [expenseSnap, typeSnap] = await Promise.all([
+    adminDb.collection("expenseApplies")
+      .where("createdAt", ">=", startTimestamp)
+      .where("createdAt", "<=", endTimestamp)
+      .get(),
+    adminDb.collection("expenseTypes").get()
+  ]);
 
-  return snap.docs
-    .map(toPlainObject)
-    .filter((e: any) => e.status === "approved") as ExpenseApply[];
+  const incomeTypeIds = typeSnap.docs
+    .filter(doc => doc.data().isIncome === true)
+    .map(doc => doc.id);
+
+  return expenseSnap.docs
+    .map(doc => {
+      const data = toPlainObject(doc) as any;
+      // isIncomeフラグを付与（expenseTypeId または typeId で判定）
+      const typeId = data.expenseTypeId || data.typeId;
+      data.isIncome = incomeTypeIds.includes(typeId);
+      return data;
+    })
+    .filter((e: any) => e.status === "approved") as (ExpenseApply & { isIncome: boolean })[];
 }
 
 /**
@@ -187,21 +200,30 @@ export async function getPersonalSettlementSummaryServer(userId: string) {
   const activeMemberIds = season.memberIds || [];
 
   // 全体集計
-  const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-  const totalIncomes = incomes
-    .filter(i => activeMemberIds.includes(i.uid))
-    .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+  const totalExpenses = expenses
+    .filter(e => !e.isIncome)
+    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const totalIncomes = expenses
+    .filter(e => e.isIncome)
+    .reduce((sum, e) => sum + Number(e.amount || 0), 0) +
+    incomes
+      .filter(i => activeMemberIds.includes(i.uid))
+      .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+
   const netTotal = totalExpenses - totalIncomes;
   const memberCount = activeMemberIds.length;
   const averageBurden = memberCount > 0 ? Math.floor(netTotal / memberCount) : 0;
 
   // 個人の計算
   const myExpenses = expenses
-    .filter(e => e.uid === userId)
+    .filter(e => e.uid === userId && !e.isIncome)
     .reduce((s, e) => s + Number(e.amount || 0), 0);
-  const myIncomes = incomes
-    .filter(i => i.uid === userId)
-    .reduce((s, i) => s + Number(i.amount || 0), 0);
+  const myIncomes = expenses
+    .filter(e => e.uid === userId && e.isIncome)
+    .reduce((s, e) => s + Number(e.amount || 0), 0) +
+    incomes
+      .filter(i => i.uid === userId)
+      .reduce((s, i) => s + Number(i.amount || 0), 0);
 
   const myContribution = myExpenses - myIncomes;
   const isTarget = activeMemberIds.includes(userId);

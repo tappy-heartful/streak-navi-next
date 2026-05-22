@@ -427,6 +427,7 @@ export interface Assign {
 export interface ExpenseType {
   id: string; // 001, 002
   name: string;
+  isIncome?: boolean; // 収入か支出か（true = 収入）
 }
 
 export interface ExpenseCategory {
@@ -449,6 +450,7 @@ export interface ExpenseApply {
   id: string;
   uid: string;
   typeId: string;     // 001
+  expenseTypeId?: string; // 経費種別のドキュメントID
   category: string;   // 互換性のため表示名も持つ
   categoryId: string; // 001_001
   itemId: string;     // 001_001_001
@@ -489,6 +491,7 @@ export interface ExpenseApplyHistory {
 // ===== 経費申請フォームデータ (ExpenseApplyFormData) =====
 export interface ExpenseApplyFormData {
   typeId: string;
+  expenseTypeId?: string;
   category: string;
   categoryId: string;
   itemId: string;
