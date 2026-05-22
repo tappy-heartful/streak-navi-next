@@ -408,16 +408,10 @@ export function AccountingConfirmClient({ initialData }: Props) {
                 <div className={styles.memberName}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span>{m.name}</span>
-                    {season?.evidenceUrls?.[m.uid] && (
+                    {m.uid !== season?.managerId && season?.evidenceUrls?.[m.uid] && (
                       <span className={styles.statusBadgeUploaded}>済</span>
                     )}
                   </div>
-                  {m.paypayId && (
-                    <div style={{ fontSize: "0.75rem", color: "#666", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px", fontWeight: "normal" }}>
-                      <i className="fa-solid fa-wallet" style={{ fontSize: "0.7rem", color: "#a0aec0" }}></i>
-                      PayPay ID: {m.paypayId}
-                    </div>
-                  )}
                 </div>
                 <div className={styles.memberInfo}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
@@ -440,39 +434,43 @@ export function AccountingConfirmClient({ initialData }: Props) {
 
                   {/* エビデンス表示・アップロード部分 */}
                   <div className={styles.evidenceContainer}>
-                    {season?.evidenceUrls?.[m.uid] && (
-                      <button
-                        type="button"
-                        className={styles.btnReceiptView}
-                        onClick={() => handleViewEvidence(m.name, season.evidenceUrls![m.uid])}
-                        title="エビデンス画像を表示"
-                      >
-                        表示
-                      </button>
-                    )}
-                    {isAccountAdmin && season?.evidenceUrls?.[m.uid] && (
-                      <button
-                        type="button"
-                        className={styles.btnReceiptDelete}
-                        onClick={() => handleDeleteEvidence(m.uid, m.name)}
-                        title="エビデンス画像を削除"
-                      >
-                        <i className="fa-solid fa-trash-can"></i>
-                      </button>
-                    )}
-                    {isAccountAdmin && (
-                      <label className={styles.btnReceiptUpload} title="精算エビデンス画像をアップロード">
-                        <i className="fa-solid fa-upload"></i>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{ display: "none" }}
-                          onChange={(e) => handleUploadEvidence(e, m.uid, m.name)}
-                        />
-                      </label>
-                    )}
-                    {!isAccountAdmin && !season?.evidenceUrls?.[m.uid] && (
-                      <span className={styles.evidencePlaceholder}>エビデンス未登録</span>
+                    {m.uid !== season?.managerId && (
+                      <>
+                        {season?.evidenceUrls?.[m.uid] && (
+                          <button
+                            type="button"
+                            className={styles.btnReceiptView}
+                            onClick={() => handleViewEvidence(m.name, season.evidenceUrls![m.uid])}
+                            title="エビデンス画像を表示"
+                          >
+                            表示
+                          </button>
+                        )}
+                        {isAccountAdmin && season?.evidenceUrls?.[m.uid] && (
+                          <button
+                            type="button"
+                            className={styles.btnReceiptDelete}
+                            onClick={() => handleDeleteEvidence(m.uid, m.name)}
+                            title="エビデンス画像を削除"
+                          >
+                            <i className="fa-solid fa-trash-can"></i>
+                          </button>
+                        )}
+                        {isAccountAdmin && (
+                          <label className={styles.btnReceiptUpload} title="エビデンス画像をアップロード">
+                            <i className="fa-solid fa-upload"></i>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: "none" }}
+                              onChange={(e) => handleUploadEvidence(e, m.uid, m.name)}
+                            />
+                          </label>
+                        )}
+                        {!isAccountAdmin && !season?.evidenceUrls?.[m.uid] && (
+                          <span className={styles.evidencePlaceholder}>エビデンス未登録</span>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
