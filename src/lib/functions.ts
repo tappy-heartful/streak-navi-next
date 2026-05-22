@@ -162,7 +162,18 @@ export function buildInstagramHtml(url: string, includeWrapper = true): string {
   return includeWrapper ? `<div class="instagram-embed">${html}</div>` : html;
 }
 
-
+// タイムスタンプ文字列(mm:ss)を秒数に変換
+export function timestampToSeconds(timestamp: string): number {
+  if (!timestamp) return 0;
+  const parts = timestamp.split(':').map(Number);
+  if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  }
+  if (parts.length === 1) {
+    return parts[0];
+  }
+  return 0;
+}
 
 // 補助：extractYouTubeId も念のため安全にしておく
 export function extractYouTubeId(input: string): string {

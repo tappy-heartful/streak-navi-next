@@ -77,6 +77,10 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
   const [website, setWebsite] = useState(initialEvent?.website || "");
   const [access, setAccess] = useState(initialEvent?.access || "");
   const [googleMap, setGoogleMap] = useState(initialEvent?.googleMap || "");
+  const [youtubeUrl, setYoutubeUrl] = useState(initialEvent?.youtubeUrl || "");
+  const [youtubeTimestamps, setYoutubeTimestamps] = useState<{ time: string; comment: string }[]>(
+    initialEvent?.youtubeTimestamps || []
+  );
   const [schedule, setSchedule] = useState(initialEvent?.schedule || "");
   const [dress, setDress] = useState(initialEvent?.dress || "");
   const [bring, setBring] = useState(initialEvent?.bring || "");
@@ -134,6 +138,18 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
   const updateCandidateDate = (idx: number, val: string) => {
     setCandidateDates(prev => prev.map((d, i) => i === idx ? val : d));
+  };
+
+  const addYoutubeTimestamp = () => {
+    setYoutubeTimestamps(prev => [...prev, { time: "", comment: "" }]);
+  };
+
+  const updateYoutubeTimestamp = (idx: number, field: "time" | "comment", val: string) => {
+    setYoutubeTimestamps(prev => prev.map((item, i) => i === idx ? { ...item, [field]: val } : item));
+  };
+
+  const removeYoutubeTimestamp = (idx: number) => {
+    setYoutubeTimestamps(prev => prev.filter((_, i) => i !== idx));
   };
 
   // ---- Instrument config helpers ----
@@ -284,6 +300,8 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       website,
       access,
       googleMap,
+      youtubeUrl,
+      youtubeTimestamps: youtubeTimestamps.filter(t => t.time || t.comment),
       schedule,
       dress,
       bring,
@@ -466,6 +484,49 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
             onChange={e => setGoogleMap(e.target.value)}
             placeholder="Google Mapの共有リンクを入力..."
           />
+        </div>
+
+        {/* YouTube */}
+        <div className="form-group">
+          <label className="label-title">YouTube動画リンク</label>
+          <input
+            type="text"
+            value={youtubeUrl}
+            onChange={e => setYoutubeUrl(e.target.value)}
+            placeholder="YouTubeのURLを入力..."
+          />
+          {youtubeUrl && (
+            <div style={{ marginTop: "12px" }}>
+              <label style={{ fontSize: "13px", color: "#666", fontWeight: "bold", display: "block", marginBottom: "8px" }}>
+                <i className="fa-solid fa-clock" style={{ marginRight: "4px" }} />
+                タイムスタンプとコメント
+              </label>
+              {youtubeTimestamps.map((t, idx) => (
+                <div key={idx} className="choice-wrapper" style={{ marginBottom: "8px" }}>
+                  <input
+                    type="text"
+                    value={t.time}
+                    onChange={e => updateYoutubeTimestamp(idx, "time", e.target.value)}
+                    placeholder="分:秒 (例 1:23)"
+                    style={{ width: "100px", flex: "none" }}
+                  />
+                  <input
+                    type="text"
+                    value={t.comment}
+                    onChange={e => updateYoutubeTimestamp(idx, "comment", e.target.value)}
+                    placeholder="コメントを入力してください"
+                    style={{ flex: 1 }}
+                  />
+                  <button type="button" className="remove-choice" onClick={() => removeYoutubeTimestamp(idx)}>
+                    削除
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="add-choice" onClick={addYoutubeTimestamp}>
+                ＋ タイムスタンプを追加
+              </button>
+            </div>
+          )}
         </div>
 
         {/* タイムスケジュール */}

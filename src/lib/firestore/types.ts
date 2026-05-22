@@ -226,6 +226,11 @@ export interface InstrumentPart {
   instrumentId?: string;
 }
 
+export interface EventYouTubeTimestamp {
+  time: string; // "mm:ss"
+  comment: string;
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -238,6 +243,8 @@ export interface Event {
   website?: string;
   access?: string;
   googleMap?: string;
+  youtubeUrl?: string;
+  youtubeTimestamps?: EventYouTubeTimestamp[];
   schedule?: string;
   dress?: string;
   bring?: string;

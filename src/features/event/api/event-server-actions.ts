@@ -27,6 +27,11 @@ function toEventDoc(doc: FirebaseFirestore.DocumentSnapshot): Event {
     website: d.website || "",
     access: d.access || "",
     googleMap: d.googleMap || "",
+    youtubeUrl: d.youtubeUrl || "",
+    youtubeTimestamps: (d.youtubeTimestamps || []).map((t: any) => ({
+      time: t.time || "",
+      comment: t.comment || "",
+    })),
     schedule: d.schedule || "",
     dress: d.dress || "",
     bring: d.bring || "",
