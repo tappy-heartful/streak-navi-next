@@ -97,13 +97,13 @@ body.fixed {
 .slide-menu {
   position: fixed;
   top: 0; right: -75%;
-  width: 75%;
-  max-width: 320px;
+  width: 80%;
+  max-width: 340px;
   height: 100vh;
   background: #ffffff;
   box-shadow: -4px 0 15px rgba(0,0,0,0.1);
   z-index: 100;
-  padding: 20px;
+  padding: 16px 12px;
   box-sizing: border-box;
   transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
   display: flex;
@@ -122,15 +122,15 @@ body.fixed {
 .menu-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid #f0f0f0;
   position: relative;
 }
 
 .menu-user-icon {
-  width: 52px; height: 52px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   object-fit: cover;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
@@ -144,13 +144,13 @@ body.fixed {
 .menu-user-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
 }
 
 .menu-user-name {
   cursor: pointer;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   color: #111;
   line-height: 1.2;
@@ -161,11 +161,11 @@ body.fixed {
 }
 
 .menu-user-actions {
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 .logout-button-small {
-  font-size: 12px;
+  font-size: 11px;
   color: #e53935;
   cursor: pointer;
   display: inline-flex;
@@ -182,11 +182,11 @@ body.fixed {
 
 .close-menu {
   position: absolute;
-  top: -4px; right: -4px;
-  font-size: 20px;
-  color: #aaa;
+  top: -6px; right: -4px;
+  font-size: 18px;
+  color: #bbb;
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
   border-radius: 50%;
   transition: all 0.2s;
 }
@@ -197,44 +197,48 @@ body.fixed {
 
 .slide-menu-section {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
 }
 
 .slide-menu-section a {
   font-weight: 600;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 11px;
   color: #444;
   text-decoration: none;
-  padding: 10px 12px;
-  text-align: left;
+  padding: 8px 4px;
+  text-align: center;
   background: #f8f9fa;
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  min-height: 44px;
+  justify-content: center;
+  gap: 4px;
+  min-height: 60px;
   transition: all 0.2s;
   border: 1px solid transparent;
 }
 
 .slide-menu-section a i {
-  width: 20px;
+  width: auto;
   text-align: center;
-  font-size: 16px;
-  color: #666;
+  font-size: 18px;
+  color: #555;
 }
 
 @media (max-width: 380px) {
   .slide-menu-section a {
-    font-size: 13px;
-    padding: 8px 4px;
-    min-height: 40px;
+    font-size: 10px;
+    padding: 6px 2px;
+    min-height: 56px;
   }
   .slide-menu-section {
-    gap: 8px;
+    gap: 4px;
+  }
+  .slide-menu-section a i {
+    font-size: 16px;
   }
 }
 
