@@ -524,6 +524,7 @@ export interface AccountingSeason {
   year: number;
   seasonKey: AccountingSeasonKey;
   memberIds: string[];
+  managerId?: string; // シーズン担当者（サックスパートから選出）
   evidenceUrls?: Record<string, string>; // uid -> downloadUrl
   settledAt?: number;
   createdAt: number;
