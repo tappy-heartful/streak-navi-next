@@ -89,6 +89,11 @@ export function AccountingConfirmClient({ initialData }: Props) {
   const seasonName = `${year}年 ${seasonInfo.name}シーズン`;
   const periodStr = `${seasonInfo.startMonth}月〜${seasonInfo.endMonth}月`;
 
+  const manager = useMemo(() => {
+    if (!season?.managerId) return null;
+    return users.find(u => u.id === season.managerId);
+  }, [season?.managerId, users]);
+
   // 会計計算
   const totals = useMemo(() => {
     const activeMemberIds = season?.memberIds || [];
@@ -168,6 +173,67 @@ export function AccountingConfirmClient({ initialData }: Props) {
   }, [season, users, expenses, incomes]);
 
   const isAccountAdmin = userData?.isAccountAdmin || userData?.isSystemAdmin;
+  const isSaxPart = userData?.sectionId === "1";
+  const canSetManager = isSaxPart || isAccountAdmin;
+
+  const handleSetManager = async () => {
+    if (!season || !canSetManager) return;
+
+    // サックスパート（sectionId="1"）のユーザーを抽出
+    const saxUsers = users.filter(u => u.sectionId === "1");
+
+    if (saxUsers.length === 0) {
+      showDialog("サックスパートのユーザーが見つかりません。", true);
+      return;
+    }
+
+    let html = `
+      <div style="display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto; padding: 4px;">
+        <label style="display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+          <input type="radio" id="managerId" name="managerId" value="" ${!season.managerId ? "checked" : ""} style="width: 18px; height: 18px;" />
+          <span style="font-size: 15px; color: #4a5568;">担当者なし</span>
+        </label>
+    `;
+
+    saxUsers.forEach(u => {
+      const isSelected = season.managerId === u.id;
+      const avatar = u.pictureUrl
+        ? `<img src="${u.pictureUrl}" alt="${u.displayName}" width="24" height="24" style="border-radius: 50%;" />`
+        : `<div style="width: 24px; height: 24px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc;"><i class="fa-solid fa-user" style="color: #ccc; font-size: 12px;"></i></div>`;
+
+      html += `
+        <label style="display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+          <input type="radio" id="managerId" name="managerId" value="${u.id}" ${isSelected ? "checked" : ""} style="width: 18px; height: 18px;" />
+          ${avatar}
+          <span style="font-size: 15px; color: #2d3748;">${u.displayName}</span>
+        </label>
+      `;
+    });
+
+    html += `</div>`;
+
+    const result = await showModal(
+      "シーズン担当者の設定",
+      html,
+      "設定する",
+      "キャンセル"
+    );
+
+    if (result && result.success) {
+      const newManagerId = result.data.managerId;
+      try {
+        await saveAccountingSeasonAction({
+          id: season.id,
+          managerId: newManagerId
+        });
+        showDialog("シーズン担当者を更新しました。", true);
+        router.refresh();
+      } catch (e) {
+        console.error(e);
+        showDialog("更新に失敗しました。", true);
+      }
+    }
+  };
 
   const handleShowExpensesModal = async (uid: string, name: string) => {
     const userExpenses = expenses.filter(e => e.uid === uid);
@@ -556,17 +622,35 @@ export function AccountingConfirmClient({ initialData }: Props) {
 
         {/* メンバー一覧 */}
         <div className={styles.card}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <h3>精算対象メンバー</h3>
-            {userData?.isSystemAdmin && (
-              <button
-                className={`${styles.button} ${styles.outlineButton}`}
-                onClick={handleOpenMemberSelectModal}
-                style={{ padding: "6px 12px", fontSize: "0.8rem" }}
-              >
-                <i className="fa-solid fa-user-gear"></i> 管理
-              </button>
-            )}
+          <div style={{ marginBottom: "16px" }}>
+            <h3 style={{ marginBottom: "12px" }}>精算対象メンバー</h3>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+              {/* シーズン担当 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#4a5568', background: '#f7fafc', padding: '6px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <i className="fa-solid fa-user-tie" style={{ color: '#718096' }}></i>
+                <span style={{ fontWeight: '500' }}>担当: {manager?.displayName || "未設定"}</span>
+                {canSetManager && (
+                  <button
+                    onClick={handleSetManager}
+                    style={{ border: 'none', background: 'none', color: '#3182ce', cursor: 'pointer', padding: '0 2px', fontSize: '0.75rem', textDecoration: 'underline', marginLeft: '4px' }}
+                  >
+                    変更
+                  </button>
+                )}
+              </div>
+
+              {/* 管理ボタン */}
+              {userData?.isSystemAdmin && (
+                <button
+                  className={`${styles.button} ${styles.outlineButton}`}
+                  onClick={handleOpenMemberSelectModal}
+                  style={{ padding: "6px 12px", fontSize: "0.8rem", whiteSpace: 'nowrap' }}
+                >
+                  <i className="fa-solid fa-user-gear"></i> 精算メンバー管理
+                </button>
+              )}
+            </div>
           </div>
           {renderGroupedMembers()}
         </div>

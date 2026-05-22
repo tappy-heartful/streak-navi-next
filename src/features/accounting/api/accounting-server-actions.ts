@@ -17,13 +17,21 @@ export async function getPersonalSettlementSummaryAction(userId: string) {
  */
 export async function saveAccountingSeasonAction(season: Partial<AccountingSeason> & { id: string }) {
   const docRef = adminDb.collection("accountingSeasons").doc(season.id);
-  await docRef.set({
+
+  const updateData: any = {
     ...season,
-    updatedAt: Date.now(),
-    createdAt: season.createdAt || Date.now()
-  }, { merge: true });
+    updatedAt: Date.now()
+  };
+
+  // createdAt が指定されている場合のみ含める（merge: true なので既存のものは維持される）
+  if (season.createdAt) {
+    updateData.createdAt = season.createdAt;
+  }
+
+  await docRef.set(updateData, { merge: true });
 
   revalidatePath("/accounting");
+  revalidatePath("/accounting/confirm");
 }
 
 /**
