@@ -32,7 +32,7 @@ interface Props {
   initialData: {
     season: AccountingSeason | null;
     config: AccountingConfig;
-    expenses: ExpenseApply[];
+    expenses: (ExpenseApply & { isIncome?: boolean })[];
     incomes: Income[];
     users: User[];
     sections?: Section[];
@@ -98,11 +98,15 @@ export function AccountingConfirmClient({ initialData }: Props) {
   const totals = useMemo(() => {
     const activeMemberIds = season?.memberIds || [];
     const totalExpenses = expenses
-      .filter(e => activeMemberIds.includes(e.uid))
+      .filter(e => activeMemberIds.includes(e.uid) && !e.isIncome)
       .reduce((sum, e) => sum + Number(e.amount || 0), 0);
-    const totalIncomes = incomes
-      .filter(i => activeMemberIds.includes(i.uid))
-      .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+    const totalIncomes = expenses
+      .filter(e => activeMemberIds.includes(e.uid) && e.isIncome)
+      .reduce((sum, e) => sum + Number(e.amount || 0), 0) +
+      incomes
+        .filter(i => activeMemberIds.includes(i.uid))
+        .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+
     const netTotal = totalExpenses - totalIncomes;
     const memberCount = activeMemberIds.length;
     const averageBurden = memberCount > 0 ? Math.floor(netTotal / memberCount) : 0;
@@ -113,11 +117,14 @@ export function AccountingConfirmClient({ initialData }: Props) {
   const personal = useMemo(() => {
     if (!userData) return null;
     const myExpenses = expenses
-      .filter(e => e.uid === userData.id)
+      .filter(e => e.uid === userData.id && !e.isIncome)
       .reduce((s, e) => s + Number(e.amount || 0), 0);
-    const myIncomes = incomes
-      .filter(i => i.uid === userData.id)
-      .reduce((s, i) => s + Number(i.amount || 0), 0);
+    const myIncomes = expenses
+      .filter(e => e.uid === userData.id && e.isIncome)
+      .reduce((s, e) => s + Number(e.amount || 0), 0) +
+      incomes
+        .filter(i => i.uid === userData.id)
+        .reduce((s, i) => s + Number(i.amount || 0), 0);
     const myContribution = myExpenses - myIncomes;
     const isTarget = !!season?.memberIds.includes(userData.id);
     const settlementAmount = (isTarget ? totals.averageBurden : 0) - myContribution;
@@ -131,11 +138,14 @@ export function AccountingConfirmClient({ initialData }: Props) {
         const user = users.find(u => u.id === uid);
         if (!user) return null;
         const userExpenses = expenses
-          .filter(e => e.uid === uid)
+          .filter(e => e.uid === uid && !e.isIncome)
           .reduce((s, e) => s + Number(e.amount || 0), 0);
-        const userIncomes = incomes
-          .filter(i => i.uid === uid)
-          .reduce((s, i) => s + Number(i.amount || 0), 0);
+        const userIncomes = expenses
+          .filter(e => e.uid === uid && e.isIncome)
+          .reduce((s, e) => s + Number(e.amount || 0), 0) +
+          incomes
+            .filter(i => i.uid === uid)
+            .reduce((s, i) => s + Number(i.amount || 0), 0);
         return {
           uid,
           name: user.displayName || "不明なユーザー",
@@ -236,8 +246,11 @@ export function AccountingConfirmClient({ initialData }: Props) {
   };
 
   const handleShowExpensesModal = async (uid: string, name: string) => {
-    const userExpenses = expenses.filter(e => e.uid === uid);
-    const userIncomes = incomes.filter(i => i.uid === uid);
+    const userExpenses = expenses.filter(e => e.uid === uid && !e.isIncome);
+    const userIncomes = [
+      ...expenses.filter(e => e.uid === uid && e.isIncome),
+      ...incomes.filter(i => i.uid === uid)
+    ];
 
     if (userExpenses.length === 0 && userIncomes.length === 0) {
       showDialog(`${name} さんの承認済み経費・登録収入はありません。`, true);
@@ -289,10 +302,11 @@ export function AccountingConfirmClient({ initialData }: Props) {
           <tbody>
       `;
       userIncomes.forEach(i => {
+        const itemName = (i as any).title || (i as any).name || (i as any).category || "-";
         html += `
           <tr style="border-bottom: 1px solid #e2e8f0;">
             <td style="padding: 8px; color: #4a5568;">${i.date || "-"}</td>
-            <td style="padding: 8px; color: #2d3748; font-weight: 500;">${i.title || "-"}</td>
+            <td style="padding: 8px; color: #2d3748; font-weight: 500;">${itemName}</td>
             <td style="padding: 8px; text-align: right; color: #319795; font-weight: 600;">¥${Number(i.amount || 0).toLocaleString()}</td>
           </tr>
         `;
