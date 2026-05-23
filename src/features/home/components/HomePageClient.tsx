@@ -227,7 +227,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   return (
     <main className="container">
       <section className={styles.calendarContainer}>
-        <div className={styles.calendarHeader}>
+        <div>
           <h3>カレンダー</h3>
         </div>
         <div className={styles.calendarHeader}>
