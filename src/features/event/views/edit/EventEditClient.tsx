@@ -517,13 +517,13 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                     placeholder="コメントを入力してください"
                     style={{ flex: 1 }}
                   />
-                  <button type="button" className="remove-choice" onClick={() => removeYoutubeTimestamp(idx)}>
-                    削除
+                  <button type="button" className="remove-choice" onClick={() => removeYoutubeTimestamp(idx)} title="削除">
+                    <i className="fa-solid fa-trash-can"></i>
                   </button>
                 </div>
               ))}
-              <button type="button" className="add-choice" onClick={addYoutubeTimestamp}>
-                ＋ タイムスタンプを追加
+              <button type="button" className="add-choice" onClick={addYoutubeTimestamp} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <i className="fa-solid fa-plus"></i> タイムスタンプを追加
               </button>
             </div>
           )}
@@ -646,13 +646,14 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                         type="button"
                         className="remove-choice"
                         onClick={() => removePart(sectionIdx, partIdx)}
+                        title="削除"
                       >
-                        削除
+                        <i className="fa-solid fa-trash-can"></i>
                       </button>
                     </div>
                   ))}
-                  <button type="button" className="add-choice" onClick={() => addPart(sectionIdx)}>
-                    ＋ パートを追加
+                  <button type="button" className="add-choice" onClick={() => addPart(sectionIdx)} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <i className="fa-solid fa-plus"></i> パートを追加
                   </button>
                 </div>
               );

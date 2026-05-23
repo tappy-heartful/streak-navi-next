@@ -49,49 +49,51 @@ export function SetlistEdit({ setlist, scores, onChange }: Props) {
   };
 
   return (
-    <div className="setlist-edit-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="setlist-edit-container" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {setlist.map((group, groupIdx) => (
-        <div
-          key={groupIdx}
-          className="vote-item"
-          style={{ background: "rgba(255,255,255,0.05)", padding: "1rem", borderRadius: "8px" }}
-        >
-          <input
-            type="text"
-            value={group.title}
-            onChange={(e) => updateSetlistGroupTitle(groupIdx, e.target.value)}
-            placeholder="グループ名（例: 前半, 後半, アンコール）"
-            style={{
-              marginBottom: "0.5rem",
-              width: "100%",
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.2)",
-              color: "inherit",
-              padding: "0.5rem",
-              borderRadius: "4px",
-            }}
-          />
-          <div
-            className="vote-choices"
-            style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.5rem" }}
-          >
+        <div key={groupIdx} className="vote-item" style={{ position: "relative", padding: "1.25rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1rem" }}>
+            <i className="fa-solid fa-layer-group" style={{ color: "#4CAF50" }}></i>
+            <input
+              type="text"
+              value={group.title}
+              onChange={(e) => updateSetlistGroupTitle(groupIdx, e.target.value)}
+              placeholder="グループ名（例: 前半, 後半, アンコール）"
+              style={{
+                flex: 1,
+                fontWeight: "bold",
+                fontSize: "1rem",
+                border: "none",
+                borderBottom: "2px solid #eee",
+                borderRadius: "0",
+                padding: "4px 0",
+              }}
+            />
+            {setlist.length > 1 && (
+              <button
+                type="button"
+                className="remove-choice"
+                onClick={() => removeSetlistGroup(groupIdx)}
+                title="グループ削除"
+                style={{ background: "#ffebf0", color: "#e53e3e", border: "1px solid #fed7e2" }}
+              >
+                <i className="fa-solid fa-trash-can"></i>
+              </button>
+            )}
+          </div>
+
+          <div className="vote-choices">
             {group.songIds.map((songId, songIdx) => (
-              <div key={songIdx} className="choice-wrapper" style={{ display: "flex", gap: "0.5rem" }}>
+              <div key={songIdx} className="choice-wrapper">
+                <span style={{ fontSize: "14px", color: "#888", minWidth: "20px" }}>{songIdx + 1}.</span>
+                <i className="fa-solid fa-music" style={{ color: "#aaa", fontSize: "14px" }}></i>
                 <select
                   value={songId}
                   onChange={(e) => updateSongInGroup(groupIdx, songIdx, e.target.value)}
-                  style={{
-                    flex: 1,
-                    background: "transparent",
-                    color: "inherit",
-                    border: "1px solid rgba(255,255,255,0.2)",
-                    padding: "0.5rem",
-                    borderRadius: "4px",
-                  }}
                 >
-                  <option value="" style={{ color: "#333" }}>-- 曲を選択 --</option>
+                  <option value="">-- 曲を選択 --</option>
                   {scores.map((s) => (
-                    <option key={s.id} value={s.id} style={{ color: "#333" }}>
+                    <option key={s.id} value={s.id}>
                       {s.title}
                     </option>
                   ))}
@@ -100,54 +102,23 @@ export function SetlistEdit({ setlist, scores, onChange }: Props) {
                   type="button"
                   className="remove-choice"
                   onClick={() => removeSongFromGroup(groupIdx, songIdx)}
-                  style={{
-                    padding: "0.5rem",
-                    background: "rgba(255,0,0,0.2)",
-                    border: "none",
-                    color: "#ff4444",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
+                  title="曲を削除"
                 >
-                  削除
+                  <i className="fa-solid fa-xmark"></i>
                 </button>
               </div>
             ))}
           </div>
-          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+
+          <div style={{ marginTop: "1rem" }}>
             <button
               type="button"
               className="add-choice"
               onClick={() => addSongToGroup(groupIdx)}
-              style={{
-                flex: 1,
-                padding: "0.5rem",
-                background: "rgba(255,255,255,0.1)",
-                border: "none",
-                color: "inherit",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "#f0fdf4", color: "#166534", border: "1px dashed #bbf7d0" }}
             >
-              ＋ 曲を追加
+              <i className="fa-solid fa-plus"></i> 曲を追加
             </button>
-            {setlist.length > 1 && (
-              <button
-                type="button"
-                className="remove-item"
-                onClick={() => removeSetlistGroup(groupIdx)}
-                style={{
-                  padding: "0.5rem",
-                  background: "rgba(255,0,0,0.2)",
-                  border: "none",
-                  color: "#ff4444",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                グループ削除
-              </button>
-            )}
           </div>
         </div>
       ))}
@@ -156,15 +127,20 @@ export function SetlistEdit({ setlist, scores, onChange }: Props) {
         className="add-item-button"
         onClick={addSetlistGroup}
         style={{
-          padding: "0.75rem",
-          background: "rgba(255,255,255,0.1)",
-          border: "1px dashed rgba(255,255,255,0.3)",
-          color: "inherit",
-          borderRadius: "8px",
-          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          padding: "1rem",
+          background: "#fff",
+          border: "2px dashed #4CAF50",
+          color: "#4CAF50",
+          fontWeight: "bold",
+          borderRadius: "12px",
+          transition: "all 0.2s"
         }}
       >
-        ＋ グループを追加
+        <i className="fa-solid fa-plus-circle"></i> グループを追加
       </button>
     </div>
   );
