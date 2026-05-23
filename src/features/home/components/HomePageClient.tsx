@@ -19,7 +19,7 @@ const AnnouncementSection = memo(({ data }: { data: Announcement[] }) => (
   <main className="container">
     <section className={styles.announcementContainer}>
       <div className={styles.announcementHeader}>
-        <h3><i className="fa-solid fa-bullhorn" style={{ marginRight: "0.5rem" }} />お知らせ</h3>
+        <h3>お知らせ</h3>
       </div>
       <ul className={styles.notificationList}>
         {data.map((a, i) => (
@@ -227,7 +227,9 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   return (
     <main className="container">
       <section className={styles.calendarContainer}>
-        <h3><i className="fa-solid fa-calendar" style={{ marginRight: "0.5rem" }} />カレンダー</h3>
+        <div className={styles.calendarHeader}>
+          <h3>カレンダー</h3>
+        </div>
         <div className={styles.calendarHeader}>
           <div className={styles.calendarNav}>
             <button onClick={handlePrevMonth} className={styles.navButtonIcon}>
