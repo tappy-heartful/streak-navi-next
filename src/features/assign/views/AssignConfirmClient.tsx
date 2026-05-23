@@ -112,7 +112,7 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
     <BaseLayout>
       <div className="container">
         <div className="page-header">
-          <h1><i className="fa-solid fa-clipboard-list" /> 譜割り確認</h1>
+          <h1><i className="fa-solid fa-people-group" /> 譜割り確認</h1>
         </div>
 
         <div className={styles.topControls}>
@@ -167,7 +167,7 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
                     {group.songIds.map(songId => {
                       const score = masterData.scores[songId];
                       if (!score) return null;
-                      
+
                       // この曲・このセクションにアサインされているユーザーID
                       const assignedUserIds = new Set(
                         assigns.filter(a => a.songId === songId).map(a => a.userId).filter(Boolean) as string[]
@@ -214,7 +214,7 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
 
         <div className={styles.summaryWrapper}>
           <div className={styles.summarySection}>
-            <h3>{masterData.sections[activeTab]?.name} 小計</h3>
+            <h3><i className="fa-solid fa-calculator" style={{ marginRight: "0.5rem" }} />{masterData.sections[activeTab]?.name} 小計</h3>
             <ul className={styles.summaryList}>
               {Object.entries(summaryData[activeTab] || {})
                 .sort(([a], [b]) => a.localeCompare(b, "ja"))

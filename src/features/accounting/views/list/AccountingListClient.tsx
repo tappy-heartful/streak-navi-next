@@ -28,7 +28,7 @@ export function AccountingListClient({ initialData }: Props) {
 
   return (
     <ListBaseLayout
-      title="バランス会計一覧"
+      title="バランス会計"
       icon="fa-solid fa-scale-balanced"
       basePath="/accounting"
       count={seasons.length}

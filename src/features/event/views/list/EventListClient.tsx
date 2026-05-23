@@ -61,7 +61,7 @@ export function EventListClient({ events }: Props) {
       {/* 日程調整中 */}
       {scheduleList.length > 0 && (
         <div className="container" style={{ marginBottom: "24px" }}>
-          <h3>🗓️ 日程調整中</h3>
+          <h3><i className="fa-solid fa-calendar-days" style={{ marginRight: "0.5rem" }} />日程調整中</h3>
           <div className="table-wrapper">
             <table className="list-table">
               <thead>
@@ -108,7 +108,7 @@ export function EventListClient({ events }: Props) {
 
       {/* 今後の予定 */}
       <div className="container" style={{ marginBottom: "24px" }}>
-        <h3>✅ 今後の予定</h3>
+        <h3><i className="fa-solid fa-calendar-check" style={{ marginRight: "0.5rem" }} />今後の予定</h3>
         <div className="table-wrapper">
           <table className="list-table">
             <thead>
@@ -157,7 +157,7 @@ export function EventListClient({ events }: Props) {
       {/* 終了 */}
       {closedList.length > 0 && (
         <div className="container">
-          <h3>🔚 終了</h3>
+          <h3><i className="fa-solid fa-clock-rotate-left" style={{ marginRight: "0.5rem" }} />終了</h3>
           <div className="table-wrapper">
             <table className="list-table">
               <thead>

@@ -171,11 +171,11 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
     <BaseLayout>
       <div className={styles.container}>
         <div className="page-header">
-          <h1><i className="fa fa-headphones" /> 今日の一曲</h1>
+          <h1><i className="fa-solid fa-record-vinyl" /> 今日の一曲</h1>
         </div>
 
         <div className="container">
-          <h3>今日の一曲について</h3>
+          <h3><i className="fa-solid fa-circle-info" style={{ marginRight: "0.5rem" }} />今日の一曲について</h3>
           <p className={styles.pageDescription}>
             あなたのお気に入りのジャズを登録してください🌸<br />
             匿名・日替わりでホーム画面に表示されるようになります！<br />
@@ -235,7 +235,7 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
 
         <div className="container">
           <div className={styles.playlistHeader}>
-            <h3>{selectedMonth}月のプレイリスト</h3>
+            <h3><i className="fa-solid fa-record-vinyl" style={{ marginRight: "0.5rem" }} />{selectedMonth}月のプレイリスト</h3>
             {playlistIds && (
               <a
                 href={`https://www.youtube.com/watch_videos?video_ids=${playlistIds}`}

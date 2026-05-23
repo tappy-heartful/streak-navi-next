@@ -69,13 +69,13 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
     <BaseLayout>
       <ListBaseLayout
         title="曲投票"
-        icon="fas fa-vote-yea" // optional
+        icon="fa-solid fa-check-to-slot" // optional
         basePath="/vote"
         hideAddButton={!isAdmin}
       >
         {upcomingList.length > 0 && (
           <div className="container" id="upcoming-container">
-            <h3>⏳ 開始前</h3>
+            <h3><i className="fa-solid fa-clock" style={{ marginRight: "0.5rem" }} />開始前</h3>
             <div className="table-wrapper">
               <table className="list-table">
                 <thead>
@@ -121,7 +121,7 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
         )}
 
         <div className="container" id="active-container">
-          <h3>📢 受付中</h3>
+          <h3><i className="fa-solid fa-check-to-slot" style={{ marginRight: "0.5rem" }} />受付中</h3>
           <div className="table-wrapper">
             <table className="list-table">
               <thead>
@@ -176,7 +176,7 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
 
         {closedList.length > 0 && (
           <div className="container" id="closed-container">
-            <h3>🏁 期間外</h3>
+            <h3><i className="fa-solid fa-calendar-check" style={{ marginRight: "0.5rem" }} />期間外</h3>
             <div className="table-wrapper">
               <table className="list-table">
                 <thead>

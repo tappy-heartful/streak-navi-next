@@ -177,7 +177,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
   return (
     <BaseLayout>
       <div className="page-header">
-        <h1><i className="fa-solid fa-edit" /> 譜割り編集</h1>
+        <h1><i className="fa-solid fa-people-group" /> 譜割り編集</h1>
       </div>
 
       <div className="container">

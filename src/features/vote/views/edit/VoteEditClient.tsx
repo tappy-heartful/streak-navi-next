@@ -318,7 +318,7 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
   return (
     <BaseLayout>
       <div className="page-header">
-        <h1><i className="fas fa-vote-yea" /> {isEdit ? "曲投票編集" : mode === "copy" ? "曲投票新規作成(コピー)" : mode === "createFromCall" ? "曲募集から曲投票作成" : "曲投票新規作成"}</h1>
+        <h1><i className="fa-solid fa-check-to-slot" /> {isEdit ? "曲投票編集" : mode === "copy" ? "曲投票新規作成(コピー)" : mode === "createFromCall" ? "曲募集から曲投票作成" : "曲投票新規作成"}</h1>
       </div>
       <div className="container">
         <div className="form-group">

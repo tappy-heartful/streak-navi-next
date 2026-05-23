@@ -53,26 +53,26 @@ export function AssignListClient({ initialEvents }: Props) {
   return (
     <BaseLayout>
       <div className="page-header">
-        <h1><i className="fa-solid fa-music" /> 譜割り一覧</h1>
+        <h1><i className="fa-solid fa-people-group" /> 譜割り一覧</h1>
       </div>
 
       {/* 今後のイベント */}
       <div className="container" style={{ marginBottom: "24px" }}>
-        <h3>📅 今後のイベント</h3>
+        <h3><i className="fa-solid fa-calendar-days" style={{ marginRight: "0.5rem" }} />今後のイベント</h3>
         <EventList events={future} />
       </div>
 
       {/* 日程調整中（件数がある場合のみ表示） */}
       {scheduling.length > 0 && (
         <div className="container" style={{ marginBottom: "24px" }}>
-          <h3>🗓️ 日程調整中のイベント</h3>
+          <h3><i className="fa-solid fa-calendar-days" style={{ marginRight: "0.5rem" }} />日程調整中のイベント</h3>
           <EventList events={scheduling} />
         </div>
       )}
 
       {/* 過去のイベント */}
       <div className="container" style={{ marginBottom: "24px" }}>
-        <h3>🔚 過去のイベント</h3>
+        <h3><i className="fa-solid fa-calendar-check" style={{ marginRight: "0.5rem" }} />過去のイベント</h3>
         <EventList events={closed} isClosed />
       </div>
 

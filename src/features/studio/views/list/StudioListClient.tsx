@@ -56,7 +56,7 @@ export function StudioListClient({ initialData }: Props) {
 
   return (
     <BaseLayout>
-      <ListBaseLayout title="スタジオ" icon="fa fa-building" basePath="/studio">
+      <ListBaseLayout title="スタジオ" icon="fa-solid fa-location-dot" basePath="/studio">
         {prefectures.map(pref => {
           const prefStudios = studiosByPref[pref.id];
           if (!prefStudios || prefStudios.length === 0) return null;

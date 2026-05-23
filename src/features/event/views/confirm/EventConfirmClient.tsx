@@ -336,7 +336,7 @@ export function EventConfirmClient({ eventId, data }: Props) {
 
           return (
             <div key={status.id} className="attendance-status-block">
-              <h3>{status.name}{filtered.length > 0 ? ` (${filtered.length}人)` : ""}</h3>
+              <h3><i className="fa-solid fa-users" style={{ marginRight: "0.5rem" }} />{status.name}{filtered.length > 0 ? ` (${filtered.length}人)` : ""}</h3>
               <div className="status-content">
                 {filtered.length === 0 ? (
                   <p className="no-user">該当者なし</p>

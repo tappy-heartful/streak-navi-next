@@ -19,7 +19,7 @@ const AnnouncementSection = memo(({ data }: { data: Announcement[] }) => (
   <main className="container">
     <section className={styles.announcementContainer}>
       <div className={styles.announcementHeader}>
-        <h3>お知らせ</h3>
+        <h3><i className="fa-solid fa-bullhorn" style={{ marginRight: "0.5rem" }} />お知らせ</h3>
       </div>
       <ul className={styles.notificationList}>
         {data.map((a, i) => (
@@ -49,27 +49,35 @@ type MenuItem = { h: string; l: string; c: string; b?: string | number };
 const MenuSection = ({ title, items }: { title: string; items: MenuItem[] }) => (
   <>
     <h2 className={styles.menuTitle}>{title}</h2>
-    {items.map((item) => (
-      <Link prefetch={true} key={item.h} href={item.h} className={`${styles.menuButton} ${styles[item.c]} ${item.b ? styles.badgeInline : ""}`}>
-        {item.l} {item.b && <span className={styles.badge}>{item.b}</span>}
-      </Link>
-    ))}
+    {items.map((item) => {
+      const parts = item.l.split(" ");
+      const hasIcon = parts.length > 1 && parts[0].startsWith("fa-");
+      const iconClass = hasIcon ? `${parts[0]} ${parts[1]}` : null;
+      const label = hasIcon ? parts.slice(2).join(" ") : item.l;
+
+      return (
+        <Link prefetch={true} key={item.h} href={item.h} className={`${styles.menuButton} ${styles[item.c]} ${item.b ? styles.badgeInline : ""}`}>
+          {iconClass ? <><i className={iconClass} style={{ marginRight: "0.5rem" }} />{label}</> : item.l}
+          {item.b && <span className={styles.badge}>{item.b}</span>}
+        </Link>
+      );
+    })}
   </>
 );
 
 const MenuSectionList = memo(({ isAdmin }: { isAdmin: boolean }) => (
   <main className="container">
-    <h3>メニュー</h3>
+    <h3><i className="fa-solid fa-bars" style={{ marginRight: "0.5rem" }} />メニュー</h3>
     <div className={styles.menuList}>
-      <MenuSection title="演奏メニュー" items={[{ h: "/score", l: "🎼 譜面", c: "perfMenu" }, { h: "/event", l: "🎺 イベント", c: "perfMenu" }, { h: "/assign", l: "🎵 譜割り", c: "perfMenu" }]} />
-      <MenuSection title="活動メニュー" items={[{ h: "/call", l: "🎶 曲募集", c: "actMenu" }, { h: "/vote", l: "📊 曲投票", c: "actMenu" }, { h: "/studio", l: "📍 スタジオ", c: "actMenu" }]} />
-      <MenuSection title="アプリメニュー" items={[{ h: "/user", l: "👥 ユーザ", c: "appMenu" }, { h: "/notice", l: "📣 通知設定", c: "appMenu" }, { h: "/blue-note", l: "🎧 今日の一曲", c: "appMenu", b: "募集中" }, { h: "/board", l: "📋 掲示板", c: "appMenu" }]} />
-      <MenuSection title="ホームページ連携" items={[{ h: "/live", l: "🎷 ライブ", c: "extMenu" }, { h: "/ticket", l: "🎫 予約者一覧", c: "extMenu" }, { h: "/media", l: "🎬 メディア", c: "extMenu" }]} />
+      <MenuSection title="演奏メニュー" items={[{ h: "/score", l: "fa-solid fa-music 譜面", c: "perfMenu" }, { h: "/event", l: "fa-solid fa-calendar-days イベント", c: "perfMenu" }, { h: "/assign", l: "fa-solid fa-people-group 譜割り", c: "perfMenu" }]} />
+      <MenuSection title="活動メニュー" items={[{ h: "/call", l: "fa-solid fa-bullhorn 曲募集", c: "actMenu" }, { h: "/vote", l: "fa-solid fa-check-to-slot 曲投票", c: "actMenu" }, { h: "/studio", l: "fa-solid fa-location-dot スタジオ", c: "actMenu" }]} />
+      <MenuSection title="アプリメニュー" items={[{ h: "/user", l: "fa-solid fa-users ユーザ", c: "appMenu" }, { h: "/notice", l: "fa-solid fa-bell 通知設定", c: "appMenu" }, { h: "/blue-note", l: "fa-solid fa-record-vinyl 今日の一曲", c: "appMenu", b: "募集中" }, { h: "/board", l: "fa-solid fa-clipboard-list 掲示板", c: "appMenu" }]} />
+      <MenuSection title="ホームページ連携" items={[{ h: "/live", l: "fa-solid fa-guitar ライブ", c: "extMenu" }, { h: "/ticket", l: "fa-solid fa-ticket 予約者一覧", c: "extMenu" }, { h: "/media", l: "fa-solid fa-photo-film メディア", c: "extMenu" }]} />
       <MenuSection title="経費管理" items={[
-        { h: "/accounting", l: "⚖️ バランス会計", c: "costMenu" },
-        { h: "/travel-subsidy", l: "🚃 旅費補助額", c: "costMenu" },
-        { h: "/expense-apply", l: "📝 経費申請", c: "costMenu" },
-        ...(isAdmin ? [{ h: "/expense-review", l: "🔍 経費審査", c: "costMenu" }] : [])
+        { h: "/accounting", l: "fa-solid fa-scale-balanced バランス会計", c: "costMenu" },
+        { h: "/travel-subsidy", l: "fa-solid fa-train-subway 旅費補助額", c: "costMenu" },
+        { h: "/expense-apply", l: "fa-solid fa-file-invoice-dollar 経費申請", c: "costMenu" },
+        ...(isAdmin ? [{ h: "/expense-review", l: "fa-solid fa-clipboard-check 経費審査", c: "costMenu" }] : [])
       ]} />
     </div>
   </main>
@@ -78,7 +86,7 @@ MenuSectionList.displayName = "MenuSectionList";
 
 const MediaSection = memo(({ data }: { data: Media[] }) => (
   <main className="container">
-    <h3>メディア</h3>
+    <h3><i className="fa-solid fa-photo-film" style={{ marginRight: "0.5rem" }} />メディア</h3>
     <div className={styles.contentList}>
       {data.length ? data.map(m => (
         <div key={m.id} className={styles.contentItem}>
@@ -219,7 +227,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   return (
     <main className="container">
       <section className={styles.calendarContainer}>
-        <h3>カレンダー</h3>
+        <h3><i className="fa-solid fa-calendar" style={{ marginRight: "0.5rem" }} />カレンダー</h3>
         <div className={styles.calendarHeader}>
           <div className={styles.calendarNav}>
             <button onClick={handlePrevMonth} className={styles.navButtonIcon}>
@@ -344,7 +352,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
     <BaseLayout>
       <div className={styles.homeContainer}>
         <div className="page-header" style={{ marginBottom: 0 }}>
-          <h1><i className="fa fa-home"></i> ホーム</h1>
+          <h1><i className="fa-solid fa-house"></i> ホーム</h1>
         </div>
         <div style={{ textAlign: 'center', fontSize: '14px', color: '#888', marginBottom: '20px', fontStyle: 'italic' }}>
           Welcome to Streak Navi.
@@ -371,7 +379,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
 
         <main className="container">
           <div className={styles.scoreHeader}>
-            <h3>新着譜面</h3>
+            <h3><i className="fa-solid fa-music" style={{ marginRight: "0.5rem" }} />新着譜面</h3>
             {scorePlaylistIds && <a href={`https://www.youtube.com/watch_videos?video_ids=${scorePlaylistIds}`} target="_blank" className={styles.playlistButton} rel="noreferrer"><i className="fa-brands fa-youtube"></i> プレイリスト</a>}
           </div>
           <div className={styles.scoreList}>
@@ -399,7 +407,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
           {initialData.blueNotes.length > 0 && (
             <>
               <div className={styles.scoreHeader}>
-                <h3>今日の一曲</h3>
+                <h3><i className="fa-solid fa-record-vinyl" style={{ marginRight: "0.5rem" }} />今日の一曲</h3>
                 <a href={`https://www.youtube.com/watch_videos?video_ids=${bnPlaylistIds}`} target="_blank" className={styles.playlistButton} rel="noreferrer"><i className="fa-brands fa-youtube"></i> プレイリスト</a>
               </div>
               <Player

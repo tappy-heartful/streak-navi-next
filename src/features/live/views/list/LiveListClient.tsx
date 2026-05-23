@@ -96,19 +96,15 @@ export function LiveListClient({ initialData }: Props) {
     : [];
 
   return (
-    <ListBaseLayout title="ライブ" icon="fa fa-music" basePath="/live" count={initialData.lives.length}>
+    <ListBaseLayout title="ライブ" icon="fa-solid fa-guitar" basePath="/live" count={initialData.lives.length}>
       <div className="container" style={{ marginBottom: "24px" }}>
-        <section>
-          <h3>✅ 今後のライブ予定</h3>
-          <LiveTable lives={upcoming} showMap />
-        </section>
+        <h3><i className="fa-solid fa-calendar-days" style={{ marginRight: "0.5rem" }} />今後の予定</h3>
+        <LiveTable lives={upcoming} showMap />
       </div>
 
       <div className="container">
-        <section>
-          <h3>🔚 終了したライブ</h3>
-          <LiveTable lives={closed} />
-        </section>
+        <h3><i className="fa-solid fa-calendar-check" style={{ marginRight: "0.5rem" }} />過去のライブ</h3>
+        <LiveTable lives={closed} />
       </div>
     </ListBaseLayout>
   );

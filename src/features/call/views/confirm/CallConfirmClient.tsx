@@ -140,7 +140,7 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
     <BaseLayout>
       <AnswerConfirmLayout
         name="曲募集"
-        icon="fa fa-music"
+        icon="fa-solid fa-bullhorn"
         basePath="/call"
         dataId={callId}
         featureIdKey="callId"

@@ -382,7 +382,7 @@ export function LiveConfirmClient({ liveData, liveId }: Props) {
         {liveData.isAcceptReserve && inTerm && (
           <div className="form-group" style={{ marginTop: "8px" }}>
             <Link href={`/ticket?liveId=${liveId}`} className="btn btn-primary">
-              <i className="fas fa-ticket-alt" /> 予約者一覧を見る
+              <i className="fa-solid fa-ticket" /> 予約者一覧を見る
             </Link>
           </div>
         )}

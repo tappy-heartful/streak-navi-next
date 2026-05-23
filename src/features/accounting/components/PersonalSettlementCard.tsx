@@ -38,7 +38,7 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
           <div className={styles.cardPeriodText}>{periodStr}</div>
         </div>
         
-        <h3>自分の精算見込み</h3>
+        <h3 className={styles.sectionTitle}><i className="fa-solid fa-scale-balanced" style={{ marginRight: "0.5rem" }} />自分の精算見込み</h3>
         {!isTarget && (
           <div style={{ color: "#e53e3e", marginBottom: "16px", fontSize: "0.9rem" }}>
             <i className="fa-solid fa-circle-exclamation"></i> あなたはこのシーズンの精算対象に含まれていません。
