@@ -103,7 +103,7 @@ export function BoardEditClient({ mode, boardId, initialBoard, sections, userSec
     <BaseLayout>
       <EditFormLayout
         featureName="掲示板"
-        icon="fas fa-clipboard-list"
+        icon="fa-solid fa-clipboard-list"
         featureIdKey="boardId"
         basePath="/board"
         dataId={boardId}

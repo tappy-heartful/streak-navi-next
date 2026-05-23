@@ -108,7 +108,7 @@ export function CallListClient({ initialData }: Props) {
       <ListBaseLayout title="曲募集" icon="fa-solid fa-bullhorn" basePath="/call">
         {/* 受付中 */}
         <div className="container" id="active-container">
-          <h3>📢 受付中</h3>
+          <h3><i className="fa-solid fa-bullhorn" style={{ marginRight: "0.5rem" }} />受付中</h3>
           <SimpleTable headers={TABLE_HEADERS} hasData={active.length > 0} emptyMessage="該当する曲募集はありません🍀">
             {active.map(renderRow)}
           </SimpleTable>
@@ -117,7 +117,7 @@ export function CallListClient({ initialData }: Props) {
         {/* 開始前（1件以上ある場合のみ表示） */}
         {upcoming.length > 0 && (
           <div className="container" id="upcoming-container">
-            <h3>⏳ 開始前</h3>
+            <h3><i className="fa-solid fa-clock" style={{ marginRight: "0.5rem" }} />開始前</h3>
             <SimpleTable headers={TABLE_HEADERS} hasData={upcoming.length > 0}>
               {upcoming.map(renderRow)}
             </SimpleTable>
@@ -127,7 +127,7 @@ export function CallListClient({ initialData }: Props) {
         {/* 終了（1件以上ある場合のみ表示） */}
         {closed.length > 0 && (
           <div className="container" id="closed-container">
-            <h3>🏁 終了</h3>
+            <h3><i className="fa-solid fa-calendar-check" style={{ marginRight: "0.5rem" }} />終了</h3>
             <SimpleTable headers={TABLE_HEADERS} hasData={closed.length > 0}>
               {closed.map(renderRow)}
             </SimpleTable>

@@ -354,7 +354,7 @@ export function TravelSubsidyClient({
     <BaseLayout>
       <div className="page-header">
         <h1>
-          <i className="fa-solid fa-train" style={{ marginRight: "0.5rem" }} />
+          <i className="fa-solid fa-train-subway" style={{ marginRight: "0.5rem" }} />
           旅費補助額
         </h1>
       </div>

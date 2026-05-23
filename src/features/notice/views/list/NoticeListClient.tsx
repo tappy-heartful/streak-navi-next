@@ -41,7 +41,7 @@ export function NoticeListClient({ initialNotices }: Props) {
     <ListBaseLayout title="通知設定" basePath="/notice" icon="fa-solid fa-bell">
       {/* 自動通知設定 */}
       <div className="container" style={{ marginBottom: "24px" }}>
-        <h3>⚙️ 自動通知設定</h3>
+        <h3><i className="fa-solid fa-robot" style={{ marginRight: "0.5rem" }} />自動通知設定</h3>
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           <li style={{ marginBottom: "12px" }}>
             <Link
@@ -66,14 +66,14 @@ export function NoticeListClient({ initialNotices }: Props) {
 
       {/* バンマス専用通知（今後） */}
       <div className="container" style={{ marginBottom: "24px" }}>
-        <h3>📣 バンマス専用通知（今後）</h3>
+        <h3><i className="fa-solid fa-bullhorn" style={{ marginRight: "0.5rem" }} />バンマス専用通知（今後）</h3>
         <NoticeList notices={future} />
       </div>
 
       {/* バンマス専用通知（終了） */}
       {closed.length > 0 && (
         <div className="container" style={{ marginBottom: "24px" }}>
-          <h3>🔚 バンマス専用通知（終了）</h3>
+          <h3><i className="fa-solid fa-clock-rotate-left" style={{ marginRight: "0.5rem" }} />バンマス専用通知（終了）</h3>
           <NoticeList notices={closed} isClosed />
         </div>
       )}

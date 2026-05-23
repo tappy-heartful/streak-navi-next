@@ -39,7 +39,7 @@ export const SearchableListLayout = <T extends Record<string, any>, F extends Re
       {topSlot}
 
       <div className="container">
-        <h3>検索</h3>
+        <h3>{icon && <i className={icon} style={{ marginRight: "0.5rem" }} />}検索</h3>
         {searchFields}
         <div className="confirm-buttons">
           <button className="clear-button" onClick={list.resetFilters}>クリア</button>
@@ -57,7 +57,10 @@ export const SearchableListLayout = <T extends Record<string, any>, F extends Re
 
       <div className="container">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-          <h3 style={{ margin: 0 }}>{title} ({list.filteredData.length}件)</h3>
+          <h3 style={{ margin: 0 }}>
+            {icon && <i className={icon} style={{ marginRight: "0.5rem" }} />}
+            {title} ({list.filteredData.length}件)
+          </h3>
           {extraHeaderContent}
         </div>
 

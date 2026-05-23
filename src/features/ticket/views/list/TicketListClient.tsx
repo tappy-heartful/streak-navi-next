@@ -75,7 +75,7 @@ function CheckInModal({
 
   const isInvite = state.ticket.resType === "invite";
   const unitPrice = (state.live?.feeAdvance ?? 0);
-  
+
   // 表示されている対象者のみをカウントして計算する
   const targetNames = new Set(state.targets.map(t => t.name));
   const visibleCheckedCount = Array.from(checkedNames).filter(name => targetNames.has(name)).length;
@@ -85,7 +85,7 @@ function CheckInModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>チェックイン確認</h3>
+          <h3><i className="fa-solid fa-clipboard-check" style={{ marginRight: "0.5rem" }} />チェックイン確認</h3>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <div className="modal-body">
@@ -175,7 +175,7 @@ function DoorCheckInModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "340px" }}>
         <div className="modal-header">
-          <h3>当日受付チェックイン</h3>
+          <h3><i className="fa-solid fa-user-check" style={{ marginRight: "0.5rem" }} />当日受付チェックイン</h3>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <div className="modal-body">
@@ -287,7 +287,7 @@ function QrScannerModal({
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "400px" }}>
         <div className="modal-header">
-          <h3>QRスキャン</h3>
+          <h3><i className="fa-solid fa-qrcode" style={{ marginRight: "0.5rem" }} />QRスキャン</h3>
           <button className="modal-close" onClick={handleClose}>×</button>
         </div>
         <div className="modal-body">
@@ -347,7 +347,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
 
   useEffect(() => {
     setBreadcrumbs([{ title: "予約者一覧" }]);
-    
+
     // ライブ未選択（且つURL指定なし）の場合のみ、直近のライブを自動選択
     if (!initialLiveId) {
       const today = format(new Date(), "yyyy.MM.dd");
@@ -709,7 +709,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
     <main>
       <div className="page-header">
         <h1>
-          <i className="fas fa-ticket-alt" /> 予約者一覧
+          <i className="fa-solid fa-ticket" /> 予約者一覧
         </h1>
       </div>
 
@@ -834,7 +834,7 @@ export function TicketListClient({ initialLives, initialLiveId }: Props) {
 
       {/* 当日受付テーブル */}
       <div className="container" style={{ marginTop: "24px" }}>
-        <h3>当日受付</h3>
+        <h3><i className="fa-solid fa-user-plus" style={{ marginRight: "0.5rem" }} />当日受付</h3>
         <div className="table-wrapper">
           <table className="list-table">
             <thead>

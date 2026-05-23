@@ -101,7 +101,7 @@ export function VoteLinkEditClient({ vote, voteId }: Props) {
   return (
     <BaseLayout>
       <div className="page-header">
-        <h1><i className="fas fa-vote-yea" /> 曲投票リンク設定</h1>
+        <h1><i className="fa-solid fa-check-to-slot" /> 曲投票リンク設定</h1>
       </div>
       <div className="container">
         <div style={{ marginBottom: "24px" }}>

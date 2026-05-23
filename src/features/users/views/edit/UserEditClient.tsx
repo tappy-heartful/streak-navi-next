@@ -191,7 +191,7 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
       </div>
 
       <hr style={{ margin: "2rem 0", border: "0", borderTop: "1px solid #eee" }} />
-      <h3 style={{ marginBottom: "0.5rem" }}>居住地情報（本人以外には非表示・任意）</h3>
+      <h3 style={{ marginBottom: "0.5rem" }}><i className="fa-solid fa-location-dot" style={{ marginRight: "0.5rem" }} />居住地情報（本人以外には非表示・任意）</h3>
       <p style={{ fontSize: "0.85rem", color: "#666" }}>
         ※ 旅費補助制度の事前調査と、各ユーザのスムーズな経費申請のため、旅費補助を受けたい方はご協力おねがいします。
       </p>

@@ -52,11 +52,11 @@ export function BoardListClient({ boards, sections }: Props) {
     }));
 
   return (
-    <ListBaseLayout title="掲示板" icon="fas fa-clipboard-list" basePath="/board" hideAddButton={true}>
+    <ListBaseLayout title="掲示板" icon="fa-solid fa-clipboard-list" basePath="/board" hideAddButton={true}>
       <div className="container">
         {userSectionId && (
           <>
-            <ListGroupContainer title={`${sectionName}専用`} icon="fas fa-users">
+            <ListGroupContainer title={`${sectionName}専用`} icon="fa-solid fa-users">
               <SimpleTable
                 headers={["タイトル", "内容", "作成者"]}
                 hasData={sectionBoards.length > 0}
@@ -84,7 +84,7 @@ export function BoardListClient({ boards, sections }: Props) {
         )}
       </div>
       <div className="container">
-        <ListGroupContainer title="全体向け" icon="fas fa-globe">
+        <ListGroupContainer title="全体向け" icon="fa-solid fa-globe">
           <SimpleTable
             headers={["タイトル", "内容", "作成者"]}
             hasData={allBoards.length > 0}
