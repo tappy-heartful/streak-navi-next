@@ -29,7 +29,7 @@ export function ScoreListClient({ initialData }: Props) {
 
   return (
     <SearchableListLayout
-      title="譜面" icon="fa fa-music" basePath="/score"
+      title="譜面" icon="fa-solid fa-music" basePath="/score"
       list={list}
       tableHeaders={["タイトル", "譜面", "音源", "ジャンル", "略称"]}
       searchFields={

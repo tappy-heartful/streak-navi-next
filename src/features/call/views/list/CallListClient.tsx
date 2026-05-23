@@ -105,7 +105,7 @@ export function CallListClient({ initialData }: Props) {
 
   return (
     <BaseLayout>
-      <ListBaseLayout title="曲募集" icon="fa fa-music" basePath="/call">
+      <ListBaseLayout title="曲募集" icon="fa-solid fa-bullhorn" basePath="/call">
         {/* 受付中 */}
         <div className="container" id="active-container">
           <h3>📢 受付中</h3>

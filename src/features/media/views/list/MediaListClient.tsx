@@ -25,7 +25,7 @@ export function MediaListClient({ initialData }: Props) {
 
   return (
     <SearchableListLayout
-      title="メディア" icon="fa fa-photo-film" basePath="/media"
+      title="メディア" icon="fa-solid fa-photo-film" basePath="/media"
       list={list}
       tableHeaders={["タイトル", "日付", "Instagram", "YouTube", "Drive", "TOP"]}
       searchFields={

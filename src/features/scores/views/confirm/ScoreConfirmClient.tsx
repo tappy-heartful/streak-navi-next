@@ -23,7 +23,7 @@ export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: Props) {
     <BaseLayout>
       <ConfirmLayout
         name="譜面"
-        icon="fa fa-music"
+        icon="fa-solid fa-music"
         basePath="/score"
         dataId={scoreId}
         featureIdKey="scoreId"
