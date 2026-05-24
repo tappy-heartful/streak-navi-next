@@ -23,7 +23,9 @@ export function AccountingListClient({ initialData }: Props) {
 
   const getPeriodStr = (season: AccountingSeason) => {
     const info = config.seasons[season.seasonKey];
-    return info ? `${info.startMonth}月〜${info.endMonth}月` : "-";
+    if (!info) return "-";
+    const settlementMonth = info.endMonth === 12 ? 1 : info.endMonth + 1;
+    return `${info.startMonth}月〜${info.endMonth}月（精算: ${settlementMonth}月）`;
   };
 
   return (
