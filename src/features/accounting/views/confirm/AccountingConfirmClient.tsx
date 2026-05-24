@@ -630,6 +630,8 @@ export function AccountingConfirmClient({ initialData }: Props) {
             settlementAmount={personal.settlementAmount}
             isTarget={personal.isTarget}
             seasonKey={seasonKey}
+            managerName={manager?.displayName}
+            managerPaypayId={manager?.paypayId}
           />
         )}
 
