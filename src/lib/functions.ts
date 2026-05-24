@@ -507,6 +507,8 @@ export function getAccountingSeasonTheme(createdAtInput?: any) {
   if (month >= 4 && month <= 6) {
     return {
       label: `${year}年春`,
+      period: "4月〜6月",
+      settlementMonth: "7月",
       seasonKey: "spring",
       gradient: "linear-gradient(135deg, #ec77ab 0%, #f9c06b 100%)",
       primary: "#e65b7b",
@@ -517,6 +519,8 @@ export function getAccountingSeasonTheme(createdAtInput?: any) {
   } else if (month >= 7 && month <= 9) {
     return {
       label: `${year}年夏`,
+      period: "7月〜9月",
+      settlementMonth: "10月",
       seasonKey: "summer",
       gradient: "linear-gradient(135deg, #1fa2ff 0%, #12d6df 100%)",
       primary: "#12a8df",
@@ -527,6 +531,8 @@ export function getAccountingSeasonTheme(createdAtInput?: any) {
   } else if (month >= 10 && month <= 12) {
     return {
       label: `${year}年秋`,
+      period: "10月〜12月",
+      settlementMonth: "1月",
       seasonKey: "autumn",
       gradient: "linear-gradient(135deg, #e65c00 0%, #f9d423 100%)",
       primary: "#e65c00",
@@ -537,6 +543,8 @@ export function getAccountingSeasonTheme(createdAtInput?: any) {
   } else {
     return {
       label: `${year}年冬`,
+      period: "1月〜3月",
+      settlementMonth: "4月",
       seasonKey: "winter",
       gradient: "linear-gradient(135deg, #30496b 0%, #4a90e2 100%)",
       primary: "#30496b",

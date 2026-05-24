@@ -140,15 +140,21 @@ export function ExpenseReviewClient({
           marginBottom: "24px",
           textAlign: "center",
           fontWeight: "bold",
-          fontSize: "1.1rem",
+          fontSize: "1rem",
           boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: "10px"
+          gap: "4px"
         }}>
-          <i className="fa-solid fa-scale-balanced"></i>
-          <span>計上対象シーズン: {seasonTheme.label}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "1.1rem" }}>
+            <i className="fa-solid fa-scale-balanced"></i>
+            <span>計上対象: {seasonTheme.label}シーズン</span>
+          </div>
+          <div style={{ fontSize: "0.85rem", opacity: 0.9 }}>
+            対象期間: {seasonTheme.period}（精算: {seasonTheme.settlementMonth}）
+          </div>
         </div>
 
         <div className={styles.statusContainer} style={{ background: statusInfo.bg, border: `1px solid ${statusInfo.color}` }}>

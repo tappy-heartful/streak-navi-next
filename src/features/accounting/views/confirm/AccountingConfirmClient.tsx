@@ -87,7 +87,8 @@ export function AccountingConfirmClient({ initialData }: Props) {
 
   const seasonInfo = config.seasons[seasonKey];
   const seasonName = `${year}年 ${seasonInfo.name}シーズン`;
-  const periodStr = `${seasonInfo.startMonth}月〜${seasonInfo.endMonth}月`;
+  const settlementMonth = seasonInfo.endMonth === 12 ? 1 : seasonInfo.endMonth + 1;
+  const periodStr = `${seasonInfo.startMonth}月〜${seasonInfo.endMonth}月（精算: ${settlementMonth}月）`;
 
   const manager = useMemo(() => {
     if (!season?.managerId) return null;
