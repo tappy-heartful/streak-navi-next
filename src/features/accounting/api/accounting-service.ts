@@ -190,6 +190,18 @@ export async function getPersonalSettlementSummaryServer(userId: string) {
 
    if (!season) return null;
 
+   // 担当者情報を取得
+   let managerName = "";
+   let managerPaypayId = "";
+   if (season.managerId) {
+     const managerDoc = await adminDb.collection("users").doc(season.managerId).get();
+     if (managerDoc.exists) {
+       const managerData = managerDoc.data();
+       managerName = managerData?.displayName || "";
+       managerPaypayId = managerData?.paypayId || "";
+     }
+   }
+
    const seasonInfo = config.seasons[seasonKey];
    const seasonName = `${year}年 ${seasonInfo.name}シーズン`;
    const settlementMonth = seasonInfo.endMonth === 12 ? 1 : seasonInfo.endMonth + 1;
@@ -238,6 +250,8 @@ export async function getPersonalSettlementSummaryServer(userId: string) {
      myExpenses,
      myIncomes,
      settlementAmount,
-     isTarget
+     isTarget,
+     managerName,
+     managerPaypayId
    };
 }

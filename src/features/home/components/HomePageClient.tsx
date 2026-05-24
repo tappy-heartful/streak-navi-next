@@ -376,6 +376,8 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
             isTarget={settlementSummary.isTarget}
             seasonKey={settlementSummary.season.id.split("-")[1] as AccountingSeasonKey}
             isHome={true}
+            managerName={settlementSummary.managerName}
+            managerPaypayId={settlementSummary.managerPaypayId}
           />
         )}
 

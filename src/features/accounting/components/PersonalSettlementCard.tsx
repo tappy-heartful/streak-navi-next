@@ -14,6 +14,8 @@ interface PersonalSettlementCardProps {
   isTarget: boolean;
   seasonKey: AccountingSeasonKey | "default";
   isHome?: boolean;
+  managerName?: string;
+  managerPaypayId?: string;
 }
 
 export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
@@ -27,6 +29,8 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
   isTarget,
   seasonKey,
   isHome = false,
+  managerName,
+  managerPaypayId,
 }) => {
   if (!season) return null;
 
@@ -37,7 +41,7 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
           <div className={styles.cardSeasonTitle}>{seasonName}</div>
           <div className={styles.cardPeriodText}>{periodStr}</div>
         </div>
-        
+
         <h3 className={styles.sectionTitle}><i className="fa-solid fa-scale-balanced" style={{ marginRight: "0.5rem" }} />自分の精算見込み</h3>
         {!isTarget && (
           <div style={{ color: "#e53e3e", marginBottom: "16px", fontSize: "0.9rem" }}>
@@ -66,13 +70,52 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
               : `受取 ¥${Math.abs(settlementAmount).toLocaleString()}`}
           </div>
         </div>
+
+        {/* 送金手順ガイド（支払いがある場合のみ表示） */}
+        {settlementAmount > 0 && (
+          <div className={styles.paymentGuideBox}>
+            <p className={styles.guideTitle}><i className="fa-solid fa-circle-info"></i> 送金手順</p>
+            <ol className={styles.guideList}>
+              <li>PayPayアプリを開く</li>
+              <li>「送る」タブを選択</li>
+              <li>
+                {managerPaypayId
+                  ? <><strong>「{managerPaypayId}」</strong>({managerName || "担当者"})を検索</>
+                  : <>{managerName ? `「${managerName}」` : "担当者"}を検索</>
+                }
+              </li>
+              <li><strong>¥{settlementAmount.toLocaleString()}</strong> を送金</li>
+            </ol>
+            <div style={{ marginTop: "12px", textAlign: "center" }}>
+              <a
+                href="paypay://"
+                className={styles.button}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  textDecoration: "none",
+                  fontSize: "0.9rem",
+                  padding: "8px 16px",
+                  background: "#ff0033",
+                  color: "#fff",
+                  borderRadius: "20px",
+                  fontWeight: "bold"
+                }}
+              >
+                PayPayアプリを開く
+              </a>
+            </div>
+          </div>
+        )}
+
         <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
           <Link href="/expense-apply?mode=new" style={{ textDecoration: "none" }}>
             <button className={`${styles.button} ${styles.primaryButton}`} style={{ width: "100%" }}>
               <i className="fa-solid fa-receipt"></i> 収入/支出を登録する
             </button>
           </Link>
-          
+
           {isHome && (
             <Link href={`/accounting/confirm?seasonId=${season.id}`} style={{ textDecoration: "none" }}>
               <button className={`${styles.button} ${styles.outlineButton}`} style={{ width: "100%", background: "transparent", border: "1px solid var(--season-primary)", color: "var(--season-primary)" }}>
