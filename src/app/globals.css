@@ -1858,13 +1858,27 @@ a:hover {
   padding: 5px;
 }
 
-.add-recording-button {
+.add-recording-btn {
   margin-top: 10px;
-  background-color: #eee;
+  background-color: #4caf50;
+  color: white;
   border: none;
-  padding: 8px 12px;
+  padding: 10px 16px;
   border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.add-recording-btn:hover {
+  background-color: #45a049;
+}
+
+.add-recording-btn:active {
+  transform: scale(0.98);
 }
 
 /* セットリスト表示 */
