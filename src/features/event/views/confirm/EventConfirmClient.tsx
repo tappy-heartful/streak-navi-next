@@ -610,6 +610,64 @@ export function EventConfirmClient({ eventId, data }: Props) {
           </div>
         </div>
 
+        {/* 回答時コメント */}
+        {answers.some(a => a.comment && a.comment.trim() !== "") && (
+          <div className="form-group" style={{ marginTop: "1.5rem" }}>
+            <label className="label-title">回答時コメント</label>
+            <div
+              className="comments-block"
+              style={{
+                backgroundColor: "#f8fafc",
+                padding: "16px",
+                borderRadius: "12px",
+                border: "1px solid #e2e8f0",
+                maxHeight: "300px",
+                overflowY: "auto",
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px"
+              }}
+            >
+              {answers
+                .filter(a => a.comment && a.comment.trim() !== "")
+                .map(a => {
+                  const user = usersMap[a.uid];
+                  const userName = user?.displayName || "不明";
+                  const userPic = user?.pictureUrl || globalLineDefaultImage;
+                  return (
+                    <div key={a.id} style={{ display: "flex", gap: "12px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+                      <img
+                        src={userPic}
+                        alt={userName}
+                        style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+                        onError={(e) => { e.currentTarget.src = globalLineDefaultImage; }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: "bold", fontSize: "14px", color: "#334155", display: "flex", gap: "8px", alignItems: "center" }}>
+                          <span>{userName}</span>
+                          {!isSchedule && (
+                            (() => {
+                              const attAns = a as EventAttendanceAnswer;
+                              const status = attendanceStatuses.find(s => s.id === attAns.status);
+                              return status ? (
+                                <span style={{ fontSize: "11px", padding: "2px 6px", borderRadius: "4px", backgroundColor: "#f1f5f9", color: "#475569", fontWeight: "normal" }}>
+                                  {status.name}
+                                </span>
+                              ) : null;
+                            })()
+                          )}
+                        </div>
+                        <div style={{ fontSize: "14px", color: "#475569", marginTop: "4px", whiteSpace: "pre-wrap" }}>
+                          {a.comment}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
         {/* 録音・録画リンク */}
         <div className="form-group">
           <label className="label-title">録音・録画リンク</label>
