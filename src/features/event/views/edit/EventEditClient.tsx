@@ -7,12 +7,13 @@ import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { FormFooter } from "@/src/components/Form/FormFooter";
 import { Modal } from "@/src/components/Modal";
-import { Event, Score, Section, Instrument, Studio, SetlistGroup, InstrumentPart } from "@/src/lib/firestore/types";
+import { Event, Score, Section, Instrument, Studio, SetlistGroup, InstrumentPart, Prefecture, Municipality } from "@/src/lib/firestore/types";
 import { addEvent, updateEvent } from "@/src/features/event/api/event-client-service";
 import { showDialog, showSpinner, hideSpinner, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
 import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/src/lib/firebase";
+import { getMunicipalitiesClient } from "@/src/features/users/api/user-client-service";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -22,6 +23,7 @@ type Props = {
   scores: Score[];
   sections: Section[];
   instruments: Instrument[];
+  prefectures: Prefecture[];
 };
 
 
@@ -45,7 +47,7 @@ function defaultDates() {
   return { start: fmt(start), end: fmt(end) };
 }
 
-export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections, instruments }: Props) {
+export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections, instruments, prefectures }: Props) {
   const router = useRouter();
   const { userData, isAdmin, loading } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
@@ -73,6 +75,10 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
   const [title, setTitle] = useState(
     (initialEvent?.title || "") + (mode === "copy" ? "（コピー）" : "")
   );
+  const [prefectureId, setPrefectureId] = useState(initialEvent?.prefectureId || "");
+  const [municipalityId, setMunicipalityId] = useState(initialEvent?.municipalityId || "");
+  const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
+  const [loadingMun, setLoadingMun] = useState(false);
   const [placeName, setPlaceName] = useState(initialEvent?.placeName || "");
   const [website, setWebsite] = useState(initialEvent?.website || "");
   const [access, setAccess] = useState(initialEvent?.access || "");
@@ -125,6 +131,34 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
     crumbs.push({ title: isEdit ? "イベント編集" : "イベント新規作成", href: "" });
     setBreadcrumbs(crumbs);
   }, [loading, isAdmin]);
+
+  // 都道府県が変更されたら市区町村をロード
+  useEffect(() => {
+    const loadMun = async () => {
+      if (!prefectureId) {
+        setMunicipalities([]);
+        setMunicipalityId("");
+        return;
+      }
+      setLoadingMun(true);
+      try {
+        const data = await getMunicipalitiesClient(prefectureId);
+        setMunicipalities(data);
+        
+        setMunicipalityId(prev => {
+          if (prev && data.some(m => m.id === prev)) {
+            return prev;
+          }
+          return "";
+        });
+      } catch (e) {
+        console.error("Failed to load municipalities:", e);
+      } finally {
+        setLoadingMun(false);
+      }
+    };
+    loadMun();
+  }, [prefectureId]);
 
   // ---- Candidate dates helpers ----
 
@@ -216,6 +250,8 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
     setWebsite(studio.hp || "");
     setAccess(studio.access || "");
     setGoogleMap(studio.map || "");
+    setPrefectureId(studio.prefecture || "");
+    setMunicipalityId(studio.municipality || "");
     setStudioModalOpen(false);
   };
 
@@ -224,6 +260,14 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
   const handleSave = async () => {
     if (!title) {
       await showDialog("タイトルは必須です", true);
+      return;
+    }
+    if (!prefectureId) {
+      await showDialog("都道府県は必須です", true);
+      return;
+    }
+    if (!municipalityId) {
+      await showDialog("市区町村は必須です", true);
       return;
     }
     if (attendanceType === "schedule") {
@@ -297,6 +341,8 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       acceptStartDate: hyphenDateToDot(acceptStartDate),
       acceptEndDate: hyphenDateToDot(acceptEndDate),
       placeName,
+      prefectureId,
+      municipalityId,
       website,
       access,
       googleMap,
@@ -435,6 +481,35 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
             onChange={e => setTitle(e.target.value)}
             placeholder="イベント名を入力..."
           />
+        </div>
+
+        {/* 都道府県 */}
+        <div className="form-group">
+          <label>都道府県 <span className="required">*</span></label>
+          <select
+            value={prefectureId}
+            onChange={e => setPrefectureId(e.target.value)}
+          >
+            <option value="">都道府県を選択してください</option>
+            {prefectures.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* 市区町村 */}
+        <div className="form-group">
+          <label>市区町村 <span className="required">*</span></label>
+          <select
+            value={municipalityId}
+            onChange={e => setMunicipalityId(e.target.value)}
+            disabled={!prefectureId || loadingMun}
+          >
+            <option value="">{loadingMun ? "読み込み中..." : "市区町村を選択してください"}</option>
+            {municipalities.map(m => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
         </div>
 
         {/* 場所名 */}
@@ -710,6 +785,8 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                             setWebsite(studio.hp || "");
                             setAccess(studio.access || "");
                             setGoogleMap(studio.map || "");
+                            setPrefectureId(studio.prefecture || "");
+                            setMunicipalityId(studio.municipality || "");
                             setStudioModalOpen(false);
                           }}
                         >

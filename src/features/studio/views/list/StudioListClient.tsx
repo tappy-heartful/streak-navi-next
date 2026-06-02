@@ -12,10 +12,11 @@ type Props = {
   initialData: {
     studios: Studio[];
     prefectures: Prefecture[];
+    municipalityNamesMap?: Record<string, string>;
   };
 };
 
-const TABLE_HEADERS = ["スタジオ名", "公式サイト", "地図", "空き情報", "利用料", "部屋一覧", "電話番号", "予約方法", "アクセス", "備考"];
+const TABLE_HEADERS = ["スタジオ名", "市区町村", "公式サイト", "地図", "空き情報", "利用料", "部屋一覧", "電話番号", "予約方法", "アクセス", "備考"];
 
 function ExternalLinkCell({ href, icon, label }: { href?: string; icon: string; label: string }) {
   return (
@@ -42,7 +43,7 @@ function TelCell({ tel }: { tel?: string }) {
 }
 
 export function StudioListClient({ initialData }: Props) {
-  const { studios, prefectures } = initialData;
+  const { studios, prefectures, municipalityNamesMap = {} } = initialData;
 
   const studiosByPref = useMemo(() => {
     const grouped: Record<string, Studio[]> = {};
@@ -69,6 +70,11 @@ export function StudioListClient({ initialData }: Props) {
                     <tr key={studio.id}>
                       <td className="list-table-row-header">
                         <Link href={`/studio/confirm?studioId=${studio.id}`}>{studio.name}</Link>
+                      </td>
+
+                      <td>
+                        {pref.name}<br />
+                        {studio.municipality ? (municipalityNamesMap[studio.municipality] || "不明") : "-"}
                       </td>
 
                       <ExternalLinkCell href={studio.hp} icon="fas fa-external-link-alt" label="HP" />

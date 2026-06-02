@@ -11,6 +11,7 @@ import {
   Section,
   Instrument,
   User,
+  Prefecture,
 } from "@/src/lib/firestore/types";
 
 function toEventDoc(doc: FirebaseFirestore.DocumentSnapshot): Event {
@@ -24,6 +25,8 @@ function toEventDoc(doc: FirebaseFirestore.DocumentSnapshot): Event {
     acceptStartDate: d.acceptStartDate || "",
     acceptEndDate: d.acceptEndDate || "",
     placeName: d.placeName || "",
+    prefectureId: d.prefectureId || "",
+    municipalityId: d.municipalityId || "",
     website: d.website || "",
     access: d.access || "",
     googleMap: d.googleMap || "",
@@ -67,6 +70,8 @@ export type EventConfirmData = {
   adjustStatuses: EventAdjustStatus[];
   recordings: EventRecording[];
   allUserUids: string[];
+  prefectureName?: string;
+  municipalityName?: string;
 };
 
 export async function fetchEventConfirmData(eventId: string): Promise<EventConfirmData | null> {
@@ -167,6 +172,23 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
     createdAt: d.data().createdAt?.toMillis?.() ?? 0,
   }));
 
+  let prefectureName = "";
+  let municipalityName = "";
+
+  if (event.prefectureId) {
+    const prefDoc = await adminDb.collection("prefectures").doc(event.prefectureId).get();
+    if (prefDoc.exists) {
+      prefectureName = prefDoc.data()?.name || "";
+    }
+  }
+
+  if (event.municipalityId) {
+    const munDoc = await adminDb.collection("municipalities").doc(event.municipalityId).get();
+    if (munDoc.exists) {
+      municipalityName = munDoc.data()?.name || "";
+    }
+  }
+
   return {
     event,
     answers,
@@ -177,6 +199,8 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
     adjustStatuses,
     recordings,
     allUserUids,
+    prefectureName,
+    municipalityName,
   };
 }
 
@@ -184,13 +208,15 @@ export type EventEditData = {
   scores: Score[];
   sections: Section[];
   instruments: Instrument[];
+  prefectures: Prefecture[];
 };
 
 export async function fetchEventEditData(): Promise<EventEditData> {
-  const [scoresSnap, sectionsSnap, instrumentsSnap] = await Promise.all([
+  const [scoresSnap, sectionsSnap, instrumentsSnap, prefecturesSnap] = await Promise.all([
     adminDb.collection("scores").orderBy("title", "asc").get(),
     adminDb.collection("sections").get(),
     adminDb.collection("instruments").get(),
+    adminDb.collection("prefectures").orderBy("order", "asc").get(),
   ]);
 
   const scores: Score[] = scoresSnap.docs.map(d => ({
@@ -208,7 +234,13 @@ export async function fetchEventEditData(): Promise<EventEditData> {
     .map(d => ({ id: d.id, name: d.data().name || "", sectionId: d.data().sectionId || "" }))
     .sort((a, b) => a.id.localeCompare(b.id));
 
-  return { scores, sections, instruments };
+  const prefectures: Prefecture[] = prefecturesSnap.docs.map(d => ({
+    id: d.id,
+    name: d.data().name || "",
+    order: d.data().order ?? 0,
+  }));
+
+  return { scores, sections, instruments, prefectures };
 }
 
 export async function fetchAttendanceAnswerPageData(eventId: string): Promise<{

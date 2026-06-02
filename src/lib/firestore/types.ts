@@ -113,6 +113,7 @@ export interface Municipality {
 export interface Studio {
   id: string;
   prefecture?: string;
+  municipality?: string;
   name: string;
   hp?: string;
   map?: string;
@@ -240,6 +241,8 @@ export interface Event {
   acceptStartDate: string;
   acceptEndDate: string;
   placeName?: string;
+  prefectureId?: string;
+  municipalityId?: string;
   website?: string;
   access?: string;
   googleMap?: string;

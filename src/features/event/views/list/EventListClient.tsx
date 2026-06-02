@@ -10,6 +10,8 @@ import { isInTerm, getDayOfWeek } from "@/src/lib/functions";
 
 type Props = {
   events: Event[];
+  prefNamesMap?: Record<string, string>;
+  munNamesMap?: Record<string, string>;
 };
 
 function isEventPast(event: Event): boolean {
@@ -23,7 +25,7 @@ function isEventPast(event: Event): boolean {
   return eventDate < today;
 }
 
-export function EventListClient({ events }: Props) {
+export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }: Props) {
   const { isAdmin } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
 
@@ -70,6 +72,7 @@ export function EventListClient({ events }: Props) {
                   <th>候補日</th>
                   <th>回答</th>
                   <th>日程調整<br />受付期間</th>
+                  <th>都道府県<br />市区町村</th>
                   <th>場所</th>
                 </tr>
               </thead>
@@ -86,6 +89,10 @@ export function EventListClient({ events }: Props) {
                     </td>
                     <td>{renderStatusCell(e, "schedule")}</td>
                     <td className="text-small">{renderTermDisplay(e)}</td>
+                    <td className="text-small">
+                      {e.prefectureId ? (prefNamesMap[e.prefectureId] || "不明") : "-"}<br />
+                      {e.municipalityId ? (munNamesMap[e.municipalityId] || "不明") : "-"}
+                    </td>
                     <td>
                       {e.website
                         ? <a href={e.website} target="_blank" rel="noopener noreferrer">{e.placeName || "リンク"}</a>
@@ -117,12 +124,13 @@ export function EventListClient({ events }: Props) {
                 <th>日付</th>
                 <th>回答</th>
                 <th>出欠受付期間</th>
+                <th>都道府県<br />市区町村</th>
                 <th>場所</th>
               </tr>
             </thead>
             <tbody>
               {futureList.length === 0 ? (
-                <tr><td colSpan={5} className="empty-text">該当のイベントはありません🍀</td></tr>
+                <tr><td colSpan={6} className="empty-text">該当のイベントはありません🍀</td></tr>
               ) : (
                 futureList.map(e => (
                   <tr key={e.id}>
@@ -134,6 +142,10 @@ export function EventListClient({ events }: Props) {
                     </td>
                     <td>{renderStatusCell(e, "future")}</td>
                     <td className="text-small">{renderTermDisplay(e)}</td>
+                    <td className="text-small">
+                      {e.prefectureId ? (prefNamesMap[e.prefectureId] || "不明") : "-"}<br />
+                      {e.municipalityId ? (munNamesMap[e.municipalityId] || "不明") : "-"}
+                    </td>
                     <td>
                       {e.website
                         ? <a href={e.website} target="_blank" rel="noopener noreferrer">{e.placeName || "リンク"}</a>
@@ -166,6 +178,7 @@ export function EventListClient({ events }: Props) {
                   <th>日付</th>
                   <th>状況</th>
                   <th>出欠受付期間</th>
+                  <th>都道府県<br />市区町村</th>
                   <th>場所</th>
                 </tr>
               </thead>
@@ -180,6 +193,10 @@ export function EventListClient({ events }: Props) {
                     </td>
                     <td><span className="answer-status closed">終了</span></td>
                     <td className="text-small">{renderTermDisplay(e)}</td>
+                    <td className="text-small">
+                      {e.prefectureId ? (prefNamesMap[e.prefectureId] || "不明") : "-"}<br />
+                      {e.municipalityId ? (munNamesMap[e.municipalityId] || "不明") : "-"}
+                    </td>
                     <td>
                       {e.website
                         ? <a href={e.website} target="_blank" rel="noopener noreferrer">{e.placeName || "リンク"}</a>

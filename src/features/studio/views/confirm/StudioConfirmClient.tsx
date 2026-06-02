@@ -9,6 +9,7 @@ type Props = {
   studioData: Studio;
   studioId: string;
   prefectures: Prefecture[];
+  municipalityName?: string;
 };
 
 function LinkValue({ href, isTel = false }: { href?: string; isTel?: boolean }) {
@@ -23,7 +24,7 @@ function LinkValue({ href, isTel = false }: { href?: string; isTel?: boolean }) 
   );
 }
 
-export function StudioConfirmClient({ studioData, studioId, prefectures }: Props) {
+export function StudioConfirmClient({ studioData, studioId, prefectures, municipalityName }: Props) {
   const prefName = prefectures.find(p => p.id === studioData.prefecture)?.name ?? "不明";
 
   return (
@@ -39,6 +40,10 @@ export function StudioConfirmClient({ studioData, studioId, prefectures }: Props
       >
         <DisplayField label="都道府県">
           {prefName}
+        </DisplayField>
+
+        <DisplayField label="市区町村">
+          {municipalityName || "未設定"}
         </DisplayField>
 
         <DisplayField label="スタジオ名">

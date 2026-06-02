@@ -21,7 +21,7 @@ export default async function EventEditPage({
     notFound();
   }
 
-  const { scores, sections, instruments } = editData;
+  const { scores, sections, instruments, prefectures } = editData;
 
   return (
     <EventEditClient
@@ -32,6 +32,7 @@ export default async function EventEditPage({
       scores={scores}
       sections={sections}
       instruments={instruments}
+      prefectures={prefectures}
     />
   );
 }
