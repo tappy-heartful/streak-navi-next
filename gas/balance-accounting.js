@@ -33,9 +33,9 @@
  const TRAVEL_ITEM_ID = "bMLkvqIclyWwVJl0qydm";   // 旅費の経費項目ID
 
  // スタジオ代の各種ID定数（実際のデータベースのIDに合わせて適宜修正してください）
- const STUDIO_TYPE_ID = "002";         // スタジオ代の経費種別ID
- const STUDIO_CATEGORY_ID = "002_001";   // スタジオ代の経費区分ID
- const STUDIO_ITEM_ID = "002_001_001";   // スタジオ代の経費項目ID
+ const STUDIO_TYPE_ID = "fiUBTSW4SEGBfQlcisGh";         // スタジオ代の経費種別ID
+ const STUDIO_CATEGORY_ID = "YgrT3vCEkoYC88ZDFeWo";   // スタジオ代の経費区分ID
+ const STUDIO_ITEM_ID = "CvkhOp2UV0chRO4dlbL8";   // スタジオ代の経費項目ID
 
  function autoCreateAccountingSeason() {
    try {
@@ -314,8 +314,8 @@
        const eventTitle = e.title || "イベント";
 
        const message = `昨日のイベント「${eventTitle}」はお疲れさまでした！\n旅費補助や、スタジオ代の経費申請はお済みですか？\nまだの方は、こちらから経費申請をお願いします。🙇‍♂️\n\n` +
-                       `▼ 旅費補助の申請はこちら\n${BASE_URL}/expense-apply/edit?mode=new&typeId=${TRAVEL_TYPE_ID}&categoryId=${TRAVEL_CATEGORY_ID}&itemId=${TRAVEL_ITEM_ID}&eventId=${eventId}`; // \n\n` +
-                      //  `▼ スタジオ代の申請はこちら\n${BASE_URL}/expense-apply/edit?mode=new&typeId=${STUDIO_TYPE_ID}&categoryId=${STUDIO_CATEGORY_ID}&itemId=${STUDIO_ITEM_ID}&eventId=${eventId}`;
+                       `▼ 旅費補助の申請はこちら\n${BASE_URL}/expense-apply/edit?mode=new&typeId=${TRAVEL_TYPE_ID}&categoryId=${TRAVEL_CATEGORY_ID}&itemId=${TRAVEL_ITEM_ID}&eventId=${eventId}\n\n` +
+                       `▼ スタジオ代の申請はこちら\n${BASE_URL}/expense-apply/edit?mode=new&typeId=${STUDIO_TYPE_ID}&categoryId=${STUDIO_CATEGORY_ID}&itemId=${STUDIO_ITEM_ID}&eventId=${eventId}`;
 
        sendLineMessage(LINE_GROUP_ID, message);
      });
