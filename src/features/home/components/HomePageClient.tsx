@@ -123,6 +123,14 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   const [currentDate, setCurrentDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [holidays, setHolidays] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetch("https://holidays-jp.github.io/api/v1/date.json")
+      .then(res => res.json())
+      .then(data => setHolidays(data))
+      .catch(err => console.error("Failed to fetch holidays:", err));
+  }, []);
 
   // スワイプの閾値（ピクセル）
   const minSwipeDistance = 50;
@@ -264,8 +272,30 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
             const day = i + 1;
             const items = getItemsForDay(day);
             const isToday = now.getFullYear() === year && now.getMonth() === month && now.getDate() === day;
+            
+            const dateObj = new Date(year, month, day);
+            const dayOfWeek = dateObj.getDay();
+            const isSunday = dayOfWeek === 0;
+            const isSaturday = dayOfWeek === 6;
+            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const isHoliday = !!holidays[dateStr];
+            const holidayName = holidays[dateStr] || "";
+
+            let dayClass = "";
+            if (isToday) {
+              dayClass = styles.today;
+            } else if (isHoliday || isSunday) {
+              dayClass = styles.holiday;
+            } else if (isSaturday) {
+              dayClass = styles.saturday;
+            }
+
             return (
-              <div key={day} className={`${styles.calendarDay} ${isToday ? styles.today : ""}`}>
+              <div
+                key={day}
+                className={`${styles.calendarDay} ${dayClass}`}
+                title={holidayName}
+              >
                 <div className={styles.dayNumber}>{day}</div>
                 <div className={styles.dayItems}>
                   {items.map((item, idx) => (
