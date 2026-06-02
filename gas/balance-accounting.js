@@ -9,6 +9,7 @@
   *    - 新シーズンの開始メッセージを LINE グループへ送信。
   * 2. execAccountingRemindNotification:
   *    - 毎日9時に実行。精算期間が終了したシーズンの未入金者に個別に LINE 催促。
+  *      （支払者には本人へ催促、受取者については証跡アップロード担当であるシーズン担当者へ催促）
   * 3. remindYesterdayEventExpenses:
   *    - 毎日実行（イベントの翌日想定）。昨日行われたイベントの経費申請（旅費・スタジオ代）を促すリマインドを LINE グループへ送信。
   */
@@ -178,22 +179,111 @@
      const today = new Date();
      today.setHours(0, 0, 0, 0);
      const seasonDocs = firestore.getDocuments('accountingSeasons');
+     if (seasonDocs.length === 0) return;
+
+     // 毎回取得すると遅いため、マスタ類を一度に取得
+     const expenseTypes = firestore.getDocuments('expenseTypes');
+     const incomeTypeMap = {};
+     expenseTypes.forEach(t => {
+       const data = t.obj || t;
+       incomeTypeMap[t.name.split('/').pop()] = data.isIncome === true;
+     });
+
+     const allExpenses = firestore.getDocuments('expenseApplies');
+     const allIncomes = firestore.getDocuments('incomes');
+     const users = firestore.getDocuments('users');
+     const userMap = {};
+     users.forEach(u => {
+       const uid = u.name.split('/').pop();
+       userMap[uid] = u.obj.displayName;
+     });
+
      seasonDocs.forEach(doc => {
        const s = doc.obj || doc;
        if (!s.endDate) return;
        const endDate = new Date(s.endDate.replace(/\./g, '/'));
        const diffDays = Math.floor((today.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24));
        if (diffDays <= 0 || diffDays % REMIND_INTERVAL_DAYS !== 0) return;
-       const unpaidIds = (s.memberIds || []).filter(uid => {
-         if (uid === s.managerId) return false;
-         return !s.evidenceUrls || !s.evidenceUrls[uid] || s.evidenceUrls[uid].trim() === "";
+
+       const seasonId = s.id;
+       const year = s.year;
+       const seasonKey = s.seasonKey;
+       const memberIds = s.memberIds || [];
+       const managerId = s.managerId;
+       if (memberIds.length === 0) return;
+
+       // このシーズンの精算データ計算
+       const ranges = {
+         winter: { s: `${year}.01.01`, e: `${year}.03.31` },
+         spring: { s: `${year}.04.01`, e: `${year}.06.30` },
+         summer: { s: `${year}.07.01`, e: `${year}.09.30` },
+         autumn: { s: `${year}.10.01`, e: `${year}.12.31` }
+       };
+       const range = ranges[seasonKey];
+
+       const expenses = allExpenses.filter(d => {
+         const obj = d.obj || d;
+         return obj.status === 'approved' && obj.date >= range.s && obj.date <= range.e;
        });
-       unpaidIds.forEach(uid => {
-         const lineMsgDoc = firestore.getDocument(`lineMessagingIds/${uid}`);
+       const incomes = allIncomes.filter(d => {
+         const obj = d.obj || d;
+         return obj.date >= range.s && obj.date <= range.e;
+       });
+
+       let totalExp = 0;
+       let totalInc = 0;
+       const userContrib = {};
+
+       expenses.forEach(d => {
+         const e = d.obj;
+         if (memberIds.includes(e.uid)) {
+           const isIncome = e.isIncome || incomeTypeMap[e.expenseTypeId || e.typeId];
+           const amount = Number(e.amount);
+           if (isIncome) { totalInc += amount; userContrib[e.uid] = (userContrib[e.uid] || 0) - amount; }
+           else { totalExp += amount; userContrib[e.uid] = (userContrib[e.uid] || 0) + amount; }
+         }
+       });
+
+       incomes.forEach(d => {
+         const i = d.obj;
+         if (memberIds.includes(i.uid)) {
+           const amount = Number(i.amount);
+           totalInc += amount;
+           userContrib[i.uid] = (userContrib[i.uid] || 0) - amount;
+         }
+       });
+
+       const netTotal = totalExp - totalInc;
+       const avg = Math.floor(netTotal / memberIds.length);
+
+       const notifications = []; // { toUid: string, msg: string } のリスト
+
+       memberIds.forEach(uid => {
+         const hasEvidence = s.evidenceUrls && s.evidenceUrls[uid] && s.evidenceUrls[uid].trim() !== "";
+         if (hasEvidence) return;
+
+         const contrib = userContrib[uid] || 0;
+         const settlement = avg - contrib;
+
+         if (settlement > 0) {
+           // 支払（未入金者）: 本人へ催促（ただし担当者自身の自己支払催促はスキップ）
+           if (uid === managerId) return;
+           const msg = `お疲れ様です！\n「${s.name}」の支払が確認できていません。リンクよりお支払いをお願いします。🙇‍♂️\n${BASE_URL}/accounting/confirm?seasonId=${s.id}`;
+           notifications.push({ toUid: uid, msg: msg });
+         } else if (settlement < 0) {
+           // 受取（未受取証跡）: シーズン担当者へ催促
+           const receiverName = userMap[uid] || "メンバー";
+           const msg = `お疲れ様です！\n「${s.name}」の${receiverName}さんへの受取証明（スクショ）が未提出です。送金後スクショアップロードをお願いします。🙇‍♂️\n${BASE_URL}/accounting/confirm?seasonId=${s.id}`;
+           notifications.push({ toUid: managerId, msg: msg });
+         }
+       });
+
+       // 通知の送信
+       notifications.forEach(n => {
+         const lineMsgDoc = firestore.getDocument(`lineMessagingIds/${n.toUid}`);
          const lineUid = (lineMsgDoc && lineMsgDoc.obj) ? lineMsgDoc.obj.lineUid : null;
          if (!lineUid) return;
-         const msg = `お疲れ様です！\n「${s.name}」の支払/受取が確認できていません。リンクより対応をお願いします。🙇‍♂️\n${BASE_URL}/accounting/confirm?seasonId=${s.id}`;
-         sendLineMessage(lineUid, msg);
+         sendLineMessage(lineUid, n.msg);
        });
      });
    } catch (e) { Logger.log('Remind Error: ' + e.toString()); }
