@@ -209,7 +209,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
           {voteData.type === "borda" ? (
             <span style={{ color: "#E91E63", fontWeight: "bold" }}>
               <i className="fas fa-list-ol" style={{ marginRight: "6px" }} />
-              ボルダルール（最大{voteData.bordaConfig?.maxRanks}位 / {voteData.bordaConfig?.scoring === "weighted" ? "傾斜" : "線形"}配点: {(() => {
+              ボルダルール（最大{voteData.bordaConfig?.maxRanks}希望まで / {voteData.bordaConfig?.scoring === "weighted" ? "傾斜" : "線形"}配点: {(() => {
                 const max = voteData.bordaConfig?.maxRanks || 3;
                 const scoring = voteData.bordaConfig?.scoring || "linear";
                 const pts = [];
@@ -221,7 +221,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                     if (max === 3) p = [5, 3, 1][i];
                     else p = weights[i] || 1;
                   }
-                  pts.push(`${i + 1}位:${p}pt`);
+                  pts.push(`第${i + 1}希望:${p}pt`);
                 }
                 return pts.join(", ");
               })()}）
@@ -403,7 +403,7 @@ export function VoteConfirmClient({ voteData, voteId, voteAnswers, usersMap }: P
                                     boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
                                     whiteSpace: "nowrap"
                                   }}>
-                                    {myRank + 1}位
+                                    第{myRank + 1}希望
                                   </span>
                                 )}
                               </>
