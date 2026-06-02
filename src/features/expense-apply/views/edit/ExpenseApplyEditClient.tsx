@@ -37,6 +37,12 @@ type Props = {
   initialMasterItems: ExpenseItem[];
   initialTravelConfig: { arrivalPoints: any[], departurePoints: any[] };
   pastEvents: { id: string; title: string; date: string }[];
+  queryParams?: {
+    typeId?: string;
+    categoryId?: string;
+    itemId?: string;
+    eventId?: string;
+  };
 };
 
 export function ExpenseApplyEditClient({
@@ -49,6 +55,7 @@ export function ExpenseApplyEditClient({
   initialMasterItems,
   initialTravelConfig,
   pastEvents,
+  queryParams,
 }: Props) {
   const { user, userData, isAdmin } = useAuth();
   const router = useRouter();
@@ -65,12 +72,14 @@ export function ExpenseApplyEditClient({
   const [departureMuns, setDepartureMuns] = useState<Municipality[]>([]);
   const [arrivalMuns, setArrivalMuns] = useState<Municipality[]>([]);
 
+  const initialItem = masterItems.find(i => i.id === (initialData?.itemId || queryParams?.itemId));
+
   const form = useAppForm(
     {
-      typeId: initialData?.typeId || "",
+      typeId: initialData?.typeId || queryParams?.typeId || "",
       category: initialData?.category || "",
-      categoryId: initialData?.categoryId || "",
-      itemId: initialData?.itemId || "",
+      categoryId: initialData?.categoryId || queryParams?.categoryId || "",
+      itemId: initialData?.itemId || queryParams?.itemId || "",
       name: initialData?.name || "",
       amount: initialData?.amount || 0,
       date: dotDateToHyphen(initialData?.date || new Date().toISOString().split('T')[0]),
@@ -78,9 +87,9 @@ export function ExpenseApplyEditClient({
       departureMunicipalityId: initialData?.departureMunicipalityId || "",
       arrivalPrefectureId: initialData?.arrivalPrefectureId || "",
       arrivalMunicipalityId: initialData?.arrivalMunicipalityId || "",
-      isTravel: initialData?.isTravel || false,
-      isEventRequired: initialData?.isEventRequired || false,
-      eventId: initialData?.eventId || "",
+      isTravel: initialData?.isTravel || initialItem?.isTravel || false,
+      isEventRequired: initialData?.isEventRequired || initialItem?.isEventRequired || false,
+      eventId: initialData?.eventId || queryParams?.eventId || "",
     },
     {
       typeId: [rules.required],

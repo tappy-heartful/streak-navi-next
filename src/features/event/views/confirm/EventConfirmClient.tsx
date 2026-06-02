@@ -57,7 +57,7 @@ export function EventConfirmClient({ eventId, data }: Props) {
   const { userData, isAdmin } = useAuth();
   const uid = userData?.id;
 
-  const { event, answers, usersMap, sectionsMap, scoresMap, attendanceStatuses, adjustStatuses, recordings: initialRecordings, allUserUids } = data;
+  const { event, answers, usersMap, sectionsMap, scoresMap, attendanceStatuses, adjustStatuses, recordings: initialRecordings, allUserUids, prefectureName, municipalityName } = data;
 
   const [recordings, setRecordings] = useState<EventRecording[]>(initialRecordings);
   const [modalOpen, setModalOpen] = useState(false);
@@ -446,6 +446,12 @@ export function EventConfirmClient({ eventId, data }: Props) {
 
         {/* タイトル */}
         <DisplayField label="タイトル">{event.title}</DisplayField>
+
+        {/* 都道府県 */}
+        <DisplayField label="都道府県">{prefectureName || "未設定"}</DisplayField>
+
+        {/* 市区町村 */}
+        <DisplayField label="市区町村">{municipalityName || "未設定"}</DisplayField>
 
         {/* 場所 */}
         <div className="form-group">

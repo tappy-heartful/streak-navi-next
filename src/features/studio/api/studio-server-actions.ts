@@ -27,3 +27,13 @@ export async function getStudioServer(studioId: string): Promise<Studio | null> 
   if (!docSnap.exists) return null;
   return toPlainObject(docSnap) as Studio;
 }
+
+/**
+ * 特定の市区町村の名前を取得（サーバーサイド専用）
+ */
+export async function getMunicipalityNameServer(municipalityId: string): Promise<string> {
+  if (!municipalityId) return "";
+  const doc = await adminDb.collection("municipalities").doc(municipalityId).get();
+  if (!doc.exists) return "";
+  return doc.data()?.name || "";
+}

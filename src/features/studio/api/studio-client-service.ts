@@ -3,6 +3,7 @@ import { collection, addDoc, doc, updateDoc, serverTimestamp } from "firebase/fi
 
 export type StudioFormData = {
   prefecture: string;
+  municipality: string;
   name: string;
   hp: string;
   map: string;

@@ -12,11 +12,18 @@ import { ExpenseApplyEditClient } from "@/src/features/expense-apply/views/edit/
 export const dynamic = "force-dynamic";
 
 type Props = {
-  searchParams: Promise<{ mode?: string; expenseId?: string }>;
+  searchParams: Promise<{
+    mode?: string;
+    expenseId?: string;
+    typeId?: string;
+    categoryId?: string;
+    itemId?: string;
+    eventId?: string;
+  }>;
 };
 
 export default async function ExpenseEditPage({ searchParams }: Props) {
-  const { mode, expenseId } = await searchParams;
+  const { mode, expenseId, typeId, categoryId, itemId, eventId } = await searchParams;
   const isEdit = mode === "edit" || mode === "copy";
 
   const [
@@ -48,6 +55,7 @@ export default async function ExpenseEditPage({ searchParams }: Props) {
       initialMasterItems={masterItems}
       initialTravelConfig={travelConfig as any}
       pastEvents={pastEvents}
+      queryParams={{ typeId, categoryId, itemId, eventId }}
     />
   );
 }

@@ -1,4 +1,4 @@
-import { getStudioServer, getPrefecturesServer } from "@/src/features/studio/api/studio-server-actions";
+import { getStudioServer, getPrefecturesServer, getMunicipalityNameServer } from "@/src/features/studio/api/studio-server-actions";
 import { StudioConfirmClient } from "@/src/features/studio/views/confirm/StudioConfirmClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -31,11 +31,16 @@ export default async function StudioConfirmPage({ searchParams }: Props) {
 
   if (!studioData) notFound();
 
+  const municipalityName = studioData.municipality
+    ? await getMunicipalityNameServer(studioData.municipality)
+    : "";
+
   return (
     <StudioConfirmClient
       studioData={studioData}
       studioId={studioId}
       prefectures={prefectures}
+      municipalityName={municipalityName}
     />
   );
 }
