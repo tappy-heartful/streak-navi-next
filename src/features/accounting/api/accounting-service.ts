@@ -162,19 +162,10 @@ export async function getAccountingSeasonsServer() {
 }
 
 /**
- * ホーム画面表示用の個人精算サマリーを取得
+ * 特定の会計シーズンの精算サマリーを計算するヘルパー関数
  */
-export async function getPersonalSettlementSummaryServer(userId: string) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-
-  let seasonKey: AccountingSeasonKey = "winter";
-  if (month >= 4 && month <= 6) seasonKey = "spring";
-  else if (month >= 7 && month <= 9) seasonKey = "summer";
-  else if (month >= 10 && month <= 12) seasonKey = "autumn";
-
-  // 期間の算出 (1-3, 4-6, 7-9, 10-12)
+async function calculateSeasonSummary(userId: string, season: AccountingSeason, config: any) {
+  const { year, seasonKey } = season;
   const ranges = {
     winter: { start: `${year}.01.01`, end: `${year}.03.31` },
     spring: { start: `${year}.04.01`, end: `${year}.06.30` },
@@ -183,31 +174,24 @@ export async function getPersonalSettlementSummaryServer(userId: string) {
   };
   const range = ranges[seasonKey];
 
-   const [config, season] = await Promise.all([
-     getAccountingConfigServer(),
-     getAccountingSeasonServer(year, seasonKey)
-   ]);
+  // 担当者情報を取得
+  let managerName = "";
+  let managerPaypayId = "";
+  if (season.managerId) {
+    const managerDoc = await adminDb.collection("users").doc(season.managerId).get();
+    if (managerDoc.exists) {
+      const managerData = managerDoc.data();
+      managerName = managerData?.displayName || "";
+      managerPaypayId = managerData?.paypayId || "";
+    }
+  }
 
-   if (!season) return null;
+  const seasonInfo = config.seasons[seasonKey];
+  const seasonName = `${year}年 ${seasonInfo.name}シーズン`;
+  const settlementMonth = seasonInfo.endMonth === 12 ? 1 : seasonInfo.endMonth + 1;
+  const periodStr = `${seasonInfo.startMonth}月〜${seasonInfo.endMonth}月（精算: ${settlementMonth}月）`;
 
-   // 担当者情報を取得
-   let managerName = "";
-   let managerPaypayId = "";
-   if (season.managerId) {
-     const managerDoc = await adminDb.collection("users").doc(season.managerId).get();
-     if (managerDoc.exists) {
-       const managerData = managerDoc.data();
-       managerName = managerData?.displayName || "";
-       managerPaypayId = managerData?.paypayId || "";
-     }
-   }
-
-   const seasonInfo = config.seasons[seasonKey];
-   const seasonName = `${year}年 ${seasonInfo.name}シーズン`;
-   const settlementMonth = seasonInfo.endMonth === 12 ? 1 : seasonInfo.endMonth + 1;
-   const periodStr = `${seasonInfo.startMonth}月〜${seasonInfo.endMonth}月（精算: ${settlementMonth}月）`;
-
-   const expenses = await getApprovedExpensesServer(range.start, range.end);
+  const expenses = await getApprovedExpensesServer(range.start, range.end);
   const incomes = await getIncomesServer(range.start, range.end);
 
   const activeMemberIds = season.memberIds || [];
@@ -243,15 +227,73 @@ export async function getPersonalSettlementSummaryServer(userId: string) {
   const settlementAmount = (isTarget ? averageBurden : 0) - myContribution;
 
   return {
-     season,
-     seasonName,
-     periodStr,
-     averageBurden,
-     myExpenses,
-     myIncomes,
-     settlementAmount,
-     isTarget,
-     managerName,
-     managerPaypayId
-   };
+    season,
+    seasonName,
+    periodStr,
+    averageBurden,
+    myExpenses,
+    myIncomes,
+    settlementAmount,
+    isTarget,
+    managerName,
+    managerPaypayId
+  };
+}
+
+/**
+ * ホーム画面表示用の個人精算サマリーを取得（最新の現行シーズン＋過去の未払いシーズン）
+ */
+export async function getPersonalSettlementSummaryServer(userId: string) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  let currentSeasonKey: AccountingSeasonKey = "winter";
+  if (month >= 4 && month <= 6) currentSeasonKey = "spring";
+  else if (month >= 7 && month <= 9) currentSeasonKey = "summer";
+  else if (month >= 10 && month <= 12) currentSeasonKey = "autumn";
+
+  const currentSeasonId = `${year}-${currentSeasonKey}`;
+
+  // すべてのシーズン情報を並行取得
+  const [config, seasonsSnap] = await Promise.all([
+    getAccountingConfigServer(),
+    adminDb.collection("accountingSeasons").get()
+  ]);
+
+  const allSeasons = seasonsSnap.docs.map(toPlainObject) as AccountingSeason[];
+
+  // 1. 現行シーズンの計算
+  const currentSeason = allSeasons.find(s => s.id === currentSeasonId);
+  let currentSummary = null;
+  if (currentSeason) {
+    currentSummary = await calculateSeasonSummary(userId, currentSeason, config);
+  }
+
+  // 2. 過去の未精算シーズンを収集
+  const unpaidPast = [];
+  const pastSeasons = allSeasons.filter(s => s.id !== currentSeasonId);
+
+  for (const s of pastSeasons) {
+    const isTarget = s.memberIds?.includes(userId);
+    if (!isTarget) continue;
+
+    // 既に支払証明・受取証明の写真が登録済みなら完了とみなす
+    const hasEvidence = s.evidenceUrls && s.evidenceUrls[userId] && s.evidenceUrls[userId].trim() !== "";
+    if (hasEvidence) continue;
+
+    const summary = await calculateSeasonSummary(userId, s, config);
+    // 精算額が0（支払も受取もない）の場合はスキップ
+    if (summary.settlementAmount === 0) continue;
+
+    unpaidPast.push(summary);
+  }
+
+  // 過去の未払いシーズンを新しい順にソート
+  unpaidPast.sort((a, b) => b.season.id.localeCompare(a.season.id));
+
+  return {
+    current: currentSummary,
+    unpaidPast: unpaidPast
+  };
 }
