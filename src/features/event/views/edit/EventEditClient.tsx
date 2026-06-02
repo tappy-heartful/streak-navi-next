@@ -14,6 +14,7 @@ import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/src/lib/firebase";
 import { getMunicipalitiesClient } from "@/src/features/users/api/user-client-service";
+import styles from "./EventEdit.module.css";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -483,82 +484,97 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
           />
         </div>
 
-        {/* 都道府県 */}
-        <div className="form-group">
-          <label>都道府県 <span className="required">*</span></label>
-          <select
-            value={prefectureId}
-            onChange={e => setPrefectureId(e.target.value)}
-          >
-            <option value="">都道府県を選択してください</option>
-            {prefectures.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* 市区町村 */}
-        <div className="form-group">
-          <label>市区町村 <span className="required">*</span></label>
-          <select
-            value={municipalityId}
-            onChange={e => setMunicipalityId(e.target.value)}
-            disabled={!prefectureId || loadingMun}
-          >
-            <option value="">{loadingMun ? "読み込み中..." : "市区町村を選択してください"}</option>
-            {municipalities.map(m => (
-              <option key={m.id} value={m.id}>{m.name}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* 場所名 */}
-        <div className="form-group">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <label style={{ marginBottom: 0 }}>場所名</label>
-            <button type="button" className="add-choice" onClick={handleOpenStudioModal} style={{ whiteSpace: "nowrap", padding: "6px 12px", fontSize: "14px" }}>
+        {/* 場所・アクセス情報ブロック */}
+        <div className={styles.locationBlock}>
+          <div className={styles.locationHeader}>
+            <span className={styles.locationTitle}>
+              <i className="fa-solid fa-map-location-dot" /> 場所・アクセス情報
+            </span>
+            <button
+              type="button"
+              className="add-choice"
+              onClick={handleOpenStudioModal}
+              style={{ whiteSpace: "nowrap", padding: "6px 12px", fontSize: "14px", margin: 0 }}
+            >
               <i className="fas fa-music" /> スタジオから選ぶ
             </button>
           </div>
-          <input
-            type="text"
-            value={placeName}
-            onChange={e => setPlaceName(e.target.value)}
-            placeholder="場所名を入力..."
-          />
-        </div>
 
-        {/* 公式サイト */}
-        <div className="form-group">
-          <label>公式サイトなど</label>
-          <input
-            type="text"
-            value={website}
-            onChange={e => setWebsite(e.target.value)}
-            placeholder="公式サイトなどのURLを入力..."
-          />
-        </div>
+          <div className={styles.locationFields}>
+            {/* 都道府県 & 市区町村 */}
+            <div className={styles.row}>
+              <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                <label>都道府県 <span className="required">*</span></label>
+                <select
+                  value={prefectureId}
+                  onChange={e => setPrefectureId(e.target.value)}
+                >
+                  <option value="">都道府県を選択してください</option>
+                  {prefectures.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
 
-        {/* 交通アクセス */}
-        <div className="form-group">
-          <label>交通アクセス・駐車場情報</label>
-          <textarea
-            rows={3}
-            value={access}
-            onChange={e => setAccess(e.target.value)}
-            placeholder="交通アクセス・駐車場情報を入力(テキスト or URL)..."
-          />
-        </div>
+              <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                <label>市区町村 <span className="required">*</span></label>
+                <select
+                  value={municipalityId}
+                  onChange={e => setMunicipalityId(e.target.value)}
+                  disabled={!prefectureId || loadingMun}
+                >
+                  <option value="">{loadingMun ? "読み込み中..." : "市区町村を選択してください"}</option>
+                  {municipalities.map(m => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-        {/* Google Map */}
-        <div className="form-group">
-          <label>Google Map</label>
-          <input
-            type="text"
-            value={googleMap}
-            onChange={e => setGoogleMap(e.target.value)}
-            placeholder="Google Mapの共有リンクを入力..."
-          />
+            {/* 場所名 */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>場所名</label>
+              <input
+                type="text"
+                value={placeName}
+                onChange={e => setPlaceName(e.target.value)}
+                placeholder="場所名を入力..."
+              />
+            </div>
+
+            {/* 公式サイト */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>公式サイトなど</label>
+              <input
+                type="text"
+                value={website}
+                onChange={e => setWebsite(e.target.value)}
+                placeholder="公式サイトなどのURLを入力..."
+              />
+            </div>
+
+            {/* Google Map */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>Google Map</label>
+              <input
+                type="text"
+                value={googleMap}
+                onChange={e => setGoogleMap(e.target.value)}
+                placeholder="Google Mapの共有リンクを入力..."
+              />
+            </div>
+
+            {/* 交通アクセス */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>交通アクセス・駐車場情報</label>
+              <textarea
+                rows={3}
+                value={access}
+                onChange={e => setAccess(e.target.value)}
+                placeholder="交通アクセス・駐車場情報を入力(テキスト or URL)..."
+              />
+            </div>
+          </div>
         </div>
 
         {/* YouTube */}
