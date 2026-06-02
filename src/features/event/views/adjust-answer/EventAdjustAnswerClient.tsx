@@ -23,6 +23,7 @@ export function EventAdjustAnswerClient({ eventId, event, adjustStatuses }: Prop
   const uid = userData?.id;
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [comment, setComment] = useState<string>("");
   const [isEdit, setIsEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,6 +35,7 @@ export function EventAdjustAnswerClient({ eventId, event, adjustStatuses }: Prop
       const snap = await getDoc(doc(db, "eventAdjustAnswers", `${eventId}_${uid}`));
       if (snap.exists()) {
         setAnswers(snap.data().answers || {});
+        setComment(snap.data().comment || "");
         setIsEdit(true);
       }
       setIsLoading(false);
@@ -59,7 +61,7 @@ export function EventAdjustAnswerClient({ eventId, event, adjustStatuses }: Prop
 
     showSpinner();
     try {
-      await submitAdjustAnswer(eventId, uid, answers);
+      await submitAdjustAnswer(eventId, uid, answers, comment);
       hideSpinner();
       await writeLog({ dataId: eventId, action: `イベント回答（調整）${isEdit ? "修正" : "登録"}` });
       await showDialog(`回答を${isEdit ? "修正" : "登録"}しました`, true);
@@ -133,6 +135,16 @@ export function EventAdjustAnswerClient({ eventId, event, adjustStatuses }: Prop
               );
             })}
           </div>
+        </div>
+
+        <div className="form-group" style={{ marginTop: "1.5rem" }}>
+          <label className="label-title">コメント</label>
+          <textarea
+            rows={3}
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="連絡事項やコメントがあれば入力してください..."
+          />
         </div>
       </AnswerEditLayout>
     </BaseLayout>

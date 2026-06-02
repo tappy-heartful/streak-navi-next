@@ -110,6 +110,7 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
           eventId: data.eventId || eventId,
           uid: data.uid || d.id.replace(eventId + "_", ""),
           answers: data.answers || {},
+          comment: data.comment || "",
           updatedAt: data.updatedAt?.toMillis?.() ?? 0,
         } as EventAdjustAnswer;
       } else {
@@ -118,6 +119,7 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
           eventId: data.eventId || eventId,
           uid: data.uid || d.id.replace(eventId + "_", ""),
           status: data.status || "",
+          comment: data.comment || "",
           updatedAt: data.updatedAt?.toMillis?.() ?? 0,
         } as EventAttendanceAnswer;
       }

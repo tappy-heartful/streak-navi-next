@@ -123,6 +123,14 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   const [currentDate, setCurrentDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [holidays, setHolidays] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetch("https://holidays-jp.github.io/api/v1/date.json")
+      .then(res => res.json())
+      .then(data => setHolidays(data))
+      .catch(err => console.error("Failed to fetch holidays:", err));
+  }, []);
 
   // スワイプの閾値（ピクセル）
   const minSwipeDistance = 50;
@@ -264,8 +272,30 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
             const day = i + 1;
             const items = getItemsForDay(day);
             const isToday = now.getFullYear() === year && now.getMonth() === month && now.getDate() === day;
+            
+            const dateObj = new Date(year, month, day);
+            const dayOfWeek = dateObj.getDay();
+            const isSunday = dayOfWeek === 0;
+            const isSaturday = dayOfWeek === 6;
+            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const isHoliday = !!holidays[dateStr];
+            const holidayName = holidays[dateStr] || "";
+
+            let dayClass = "";
+            if (isToday) {
+              dayClass = styles.today;
+            } else if (isHoliday || isSunday) {
+              dayClass = styles.holiday;
+            } else if (isSaturday) {
+              dayClass = styles.saturday;
+            }
+
             return (
-              <div key={day} className={`${styles.calendarDay} ${isToday ? styles.today : ""}`}>
+              <div
+                key={day}
+                className={`${styles.calendarDay} ${dayClass}`}
+                title={holidayName}
+              >
                 <div className={styles.dayNumber}>{day}</div>
                 <div className={styles.dayItems}>
                   {items.map((item, idx) => (
@@ -365,20 +395,49 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
         <CalendarSection data={initialData.calendarData} />
 
         {settlementSummary && (
-          <PersonalSettlementCard
-            season={settlementSummary.season}
-            seasonName={settlementSummary.seasonName}
-            periodStr={settlementSummary.periodStr}
-            averageBurden={settlementSummary.averageBurden}
-            myExpenses={settlementSummary.myExpenses}
-            myIncomes={settlementSummary.myIncomes}
-            settlementAmount={settlementSummary.settlementAmount}
-            isTarget={settlementSummary.isTarget}
-            seasonKey={settlementSummary.season.id.split("-")[1] as AccountingSeasonKey}
-            isHome={true}
-            managerName={settlementSummary.managerName}
-            managerPaypayId={settlementSummary.managerPaypayId}
-          />
+          <>
+            {/* 未精算の過去シーズン（警告付き表示） */}
+            {settlementSummary.unpaidPast && settlementSummary.unpaidPast.map((past: any) => (
+              <div key={past.season.id} style={{ marginBottom: "20px" }}>
+                <div style={{ backgroundColor: "#fee2e2", border: "1px solid #fecaca", color: "#991b1b", padding: "10px 16px", borderRadius: "8px 8px 0 0", fontSize: "14px", fontWeight: "bold", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <i className="fa-solid fa-triangle-exclamation" />
+                  精算が完了していません！お支払い、または精算状況のご確認をお願いします。
+                </div>
+                <PersonalSettlementCard
+                  season={past.season}
+                  seasonName={past.seasonName}
+                  periodStr={past.periodStr}
+                  averageBurden={past.averageBurden}
+                  myExpenses={past.myExpenses}
+                  myIncomes={past.myIncomes}
+                  settlementAmount={past.settlementAmount}
+                  isTarget={past.isTarget}
+                  seasonKey={past.season.id.split("-")[1] as AccountingSeasonKey}
+                  isHome={true}
+                  managerName={past.managerName}
+                  managerPaypayId={past.managerPaypayId}
+                />
+              </div>
+            ))}
+
+            {/* 現行シーズン */}
+            {settlementSummary.current && (
+              <PersonalSettlementCard
+                season={settlementSummary.current.season}
+                seasonName={settlementSummary.current.seasonName}
+                periodStr={settlementSummary.current.periodStr}
+                averageBurden={settlementSummary.current.averageBurden}
+                myExpenses={settlementSummary.current.myExpenses}
+                myIncomes={settlementSummary.current.myIncomes}
+                settlementAmount={settlementSummary.current.settlementAmount}
+                isTarget={settlementSummary.current.isTarget}
+                seasonKey={settlementSummary.current.season.id.split("-")[1] as AccountingSeasonKey}
+                isHome={true}
+                managerName={settlementSummary.current.managerName}
+                managerPaypayId={settlementSummary.current.managerPaypayId}
+              />
+            )}
+          </>
         )}
 
         <main className="container">

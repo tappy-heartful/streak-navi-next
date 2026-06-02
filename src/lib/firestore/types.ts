@@ -266,6 +266,7 @@ export interface EventAttendanceAnswer {
   eventId: string;
   uid: string;
   status: string;
+  comment?: string;
   updatedAt?: number;
 }
 
@@ -274,6 +275,7 @@ export interface EventAdjustAnswer {
   eventId: string;
   uid: string;
   answers: Record<string, string>; // { "yyyy.MM.dd": statusId }
+  comment?: string;
   updatedAt?: number;
 }
 

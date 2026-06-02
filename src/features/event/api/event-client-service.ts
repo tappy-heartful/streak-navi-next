@@ -19,11 +19,12 @@ import { Event, EventRecording } from "@/src/lib/firestore/types";
 export async function submitAttendanceAnswer(
   eventId: string,
   uid: string,
-  status: string
+  status: string,
+  comment?: string
 ): Promise<void> {
   await setDoc(
     doc(db, "eventAttendanceAnswers", `${eventId}_${uid}`),
-    { eventId, uid, status, updatedAt: serverTimestamp() },
+    { eventId, uid, status, comment, updatedAt: serverTimestamp() },
     { merge: true }
   );
 }
@@ -37,11 +38,12 @@ export async function deleteMyAttendanceAnswer(eventId: string, uid: string): Pr
 export async function submitAdjustAnswer(
   eventId: string,
   uid: string,
-  answers: Record<string, string>
+  answers: Record<string, string>,
+  comment?: string
 ): Promise<void> {
   await setDoc(
     doc(db, "eventAdjustAnswers", `${eventId}_${uid}`),
-    { eventId, uid, answers, updatedAt: serverTimestamp() },
+    { eventId, uid, answers, comment, updatedAt: serverTimestamp() },
     { merge: true }
   );
 }

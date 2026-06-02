@@ -23,6 +23,7 @@ export function EventAttendanceAnswerClient({ eventId, event, attendanceStatuses
   const uid = userData?.id;
 
   const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [comment, setComment] = useState<string>("");
   const [isEdit, setIsEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,6 +33,7 @@ export function EventAttendanceAnswerClient({ eventId, event, attendanceStatuses
       const snap = await getDoc(doc(db, "eventAttendanceAnswers", `${eventId}_${uid}`));
       if (snap.exists()) {
         setSelectedStatus(snap.data().status || "");
+        setComment(snap.data().comment || "");
         setIsEdit(true);
       }
       setIsLoading(false);
@@ -50,7 +52,7 @@ export function EventAttendanceAnswerClient({ eventId, event, attendanceStatuses
 
     showSpinner();
     try {
-      await submitAttendanceAnswer(eventId, uid, selectedStatus);
+      await submitAttendanceAnswer(eventId, uid, selectedStatus, comment);
       hideSpinner();
       await writeLog({ dataId: eventId, action: `イベント回答（出欠）${isEdit ? "修正" : "登録"}` });
       await showDialog(`回答を${isEdit ? "修正" : "登録"}しました`, true);
@@ -109,6 +111,16 @@ export function EventAttendanceAnswerClient({ eventId, event, attendanceStatuses
               );
             })}
           </div>
+        </div>
+
+        <div className="form-group" style={{ marginTop: "1.5rem" }}>
+          <label className="label-title">コメント</label>
+          <textarea
+            rows={3}
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="連絡事項やコメントがあれば入力してください..."
+          />
         </div>
       </AnswerEditLayout>
     </BaseLayout>

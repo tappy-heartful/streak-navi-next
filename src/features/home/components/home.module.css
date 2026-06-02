@@ -510,3 +510,11 @@
 .navButton:active {
   transform: scale(0.95);
 }
+
+.holiday .dayNumber {
+  color: #f44336;
+}
+
+.saturday .dayNumber {
+  color: #2196f3;
+}
