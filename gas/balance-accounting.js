@@ -313,7 +313,28 @@
        const eventId = d.name.split('/').pop();
        const eventTitle = e.title || "イベント";
 
-       const message = `昨日のイベント「${eventTitle}」はお疲れさまでした！\n旅費補助や、スタジオ代の経費申請はお済みですか？\nまだの方は、こちらから経費申請をお願いします。🙇‍♂️\n\n` +
+        let munNote = "";
+        if (e.municipalityId) {
+          try {
+            let prefName = "";
+            if (e.prefectureId) {
+              const prefDoc = firestore.getDocument(`prefectures/${e.prefectureId}`);
+              const prefObj = prefDoc ? (prefDoc.obj || prefDoc) : null;
+              if (prefObj && prefObj.name) {
+                prefName = prefObj.name;
+              }
+            }
+            const munDoc = firestore.getDocument(`municipalities/${e.municipalityId}`);
+            const munObj = munDoc ? (munDoc.obj || munDoc) : null;
+            if (munObj && munObj.name) {
+              munNote = `\n※${prefName}${munObj.name}にお住まいの方は旅費補助の対象外となります。`;
+            }
+          } catch (err) {
+            Logger.log('Municipality Fetch Error: ' + err.toString());
+          }
+        }
+
+       const message = `昨日のイベント「${eventTitle}」はお疲れさまでした！\n旅費補助や、スタジオ代の経費申請はお済みですか？\nまだの方は、こちらから経費申請をお願いします。🙇‍♂️\n${munNote}\n\n` +
                        `▼ 旅費補助の申請はこちら\n${BASE_URL}/expense-apply/edit?mode=new&typeId=${TRAVEL_TYPE_ID}&categoryId=${TRAVEL_CATEGORY_ID}&itemId=${TRAVEL_ITEM_ID}&eventId=${eventId}\n\n` +
                        `▼ スタジオ代の申請はこちら\n${BASE_URL}/expense-apply/edit?mode=new&typeId=${STUDIO_TYPE_ID}&categoryId=${STUDIO_CATEGORY_ID}&itemId=${STUDIO_ITEM_ID}&eventId=${eventId}`;
 

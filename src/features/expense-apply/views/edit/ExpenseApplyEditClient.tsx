@@ -36,7 +36,7 @@ type Props = {
   initialMasterCategories: ExpenseCategory[];
   initialMasterItems: ExpenseItem[];
   initialTravelConfig: { arrivalPoints: any[], departurePoints: any[] };
-  pastEvents: { id: string; title: string; date: string }[];
+  pastEvents: { id: string; title: string; date: string; prefectureId?: string; municipalityId?: string }[];
   queryParams?: {
     typeId?: string;
     categoryId?: string;
@@ -129,6 +129,35 @@ export function ExpenseApplyEditClient({
   const isTravel = selectedItem?.isTravel || false;
   const isEventRequired = selectedItem?.isEventRequired || false;
 
+  // 選択されたイベント
+  const selectedEvent = form.formData.eventId ? pastEvents.find(e => e.id === form.formData.eventId) : null;
+
+  // イベント選択時に目的地の都道府県・市区町村を自動設定
+  const prevEventIdRef = React.useRef<string>(form.formData.eventId);
+  useEffect(() => {
+    const prevEventId = prevEventIdRef.current;
+    prevEventIdRef.current = form.formData.eventId;
+
+    if (isTravel && form.formData.eventId) {
+      const selEv = pastEvents.find(e => e.id === form.formData.eventId);
+      if (selEv?.prefectureId && selEv?.municipalityId) {
+        // 条件：
+        // 1. 新規登録(mode === "new")で、かつ初期表示時 (arrivalPrefectureIdが未設定) の場合
+        // 2. または、イベントの選択が変更された場合 (prevEventId !== form.formData.eventId)
+        const isInitialNew = mode === "new" && !form.formData.arrivalPrefectureId;
+        const isEventChanged = prevEventId !== form.formData.eventId;
+
+        if (isInitialNew || isEventChanged) {
+          form.setFormData(prev => ({
+            ...prev,
+            arrivalPrefectureId: selEv.prefectureId || "",
+            arrivalMunicipalityId: selEv.municipalityId || ""
+          }));
+        }
+      }
+    }
+  }, [isTravel, form.formData.eventId, pastEvents, mode, form.formData.arrivalPrefectureId]);
+
   // 出発地市区町村の取得
   useEffect(() => {
     if (!form.formData.departurePrefectureId) {
@@ -142,7 +171,7 @@ export function ExpenseApplyEditClient({
     fetch();
   }, [form.formData.departurePrefectureId]);
 
-  // 到着地市区町村の取得 (制限あり)
+  // 到着地市区町村の取得 (制限あり、選択されたイベントの目的地は特別に許可)
   useEffect(() => {
     if (!form.formData.arrivalPrefectureId) {
       setArrivalMuns([]);
@@ -150,9 +179,10 @@ export function ExpenseApplyEditClient({
     }
     const fetch = async () => {
       const muns = await getMunicipalitiesClient(form.formData.arrivalPrefectureId);
-      // 到着地制限: travelConfig.arrivalPoints に含まれるもののみ
+      // 到着地制限: travelConfig.arrivalPoints に含まれるもの、または選択されたイベントの目的地
       const filtered = muns.filter(m =>
-        travelConfig.arrivalPoints.some(p => p.prefectureId === form.formData.arrivalPrefectureId && p.municipalityId === m.id)
+        travelConfig.arrivalPoints.some(p => p.prefectureId === form.formData.arrivalPrefectureId && p.municipalityId === m.id) ||
+        (selectedEvent && selectedEvent.prefectureId === form.formData.arrivalPrefectureId && selectedEvent.municipalityId === m.id)
       );
       setArrivalMuns(filtered);
 
@@ -162,11 +192,12 @@ export function ExpenseApplyEditClient({
       }
     };
     fetch();
-  }, [form.formData.arrivalPrefectureId, travelConfig.arrivalPoints, mode, form.formData.arrivalMunicipalityId]);
+  }, [form.formData.arrivalPrefectureId, travelConfig.arrivalPoints, mode, form.formData.arrivalMunicipalityId, selectedEvent]);
 
-  // 到着地の都道府県リストを制限
+  // 到着地の都道府県リストを制限 (選択されたイベントの都道府県は特別に許可)
   const arrivalPrefectures = prefectures.filter(p =>
-    travelConfig.arrivalPoints.some(pt => pt.prefectureId === p.id)
+    travelConfig.arrivalPoints.some(pt => pt.prefectureId === p.id) ||
+    (selectedEvent && selectedEvent.prefectureId === p.id)
   );
 
   // 到着都道府県が1つしかない場合は自動選択
@@ -180,7 +211,8 @@ export function ExpenseApplyEditClient({
     }
   }, [mode, travelConfig.arrivalPoints, form.formData.arrivalPrefectureId]);
 
-  // 補助額の自動計算（サイレント：ダイアログは出さない）
+  // 補助額の自動計算（サイレント：ダイアログは出さない。ただし初期表示時は未設定時にダイアログを出す）
+  const hasCheckedInitial = React.useRef(false);
   useEffect(() => {
     if (isTravel && form.formData.departureMunicipalityId && form.formData.arrivalMunicipalityId) {
       const fetchSubsidy = async () => {
@@ -190,17 +222,42 @@ export function ExpenseApplyEditClient({
         );
         form.updateField("amount", amount ?? 0);
 
+        const depMunName = departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || "";
+        const arrMunName = arrivalMuns.find(m => m.id === form.formData.arrivalMunicipalityId)?.name || "";
+
         if (amount !== null) {
-          const depMunName = departureMuns.find(m => m.id === form.formData.departureMunicipalityId)?.name || "";
-          const arrMunName = arrivalMuns.find(m => m.id === form.formData.arrivalMunicipalityId)?.name || "";
           if (depMunName && arrMunName) {
             form.updateField("name", `旅費補助(往復) ${depMunName}⇔${arrMunName}`);
+          }
+        } else {
+          // 初期表示時に未設定の場合のみダイアログ表示
+          if (depMunName && arrMunName && !hasCheckedInitial.current) {
+            hasCheckedInitial.current = true;
+            if (isAdmin) {
+              const goToSetting = await showDialog(
+                `${depMunName}⇔${arrMunName} の旅費額が未設定です。\n旅費補助額設定画面に移動しますか？`
+              );
+              if (goToSetting) router.push("/travel-subsidy");
+            } else {
+              await showDialog(
+                `${depMunName}⇔${arrMunName} の旅費額が未設定です。\n管理者にご連絡ください。`,
+                true
+              );
+            }
           }
         }
       };
       fetchSubsidy();
     }
-  }, [isTravel, form.formData.departureMunicipalityId, form.formData.arrivalMunicipalityId, departureMuns, arrivalMuns]);
+  }, [
+    isTravel,
+    form.formData.departureMunicipalityId,
+    form.formData.arrivalMunicipalityId,
+    departureMuns,
+    arrivalMuns,
+    isAdmin,
+    router
+  ]);
 
   // 市区町村が確定したとき（ユーザ操作時のみ）に未設定ダイアログを表示
   const handleSubsidyCheck = async (depMunId: string, arrMunId: string) => {
