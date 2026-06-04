@@ -9,6 +9,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { format, getAccountingSeasonTheme } from "@/src/lib/functions";
 import { ExpenseHistoryList } from "@/src/components/ExpenseHistoryList";
 import { TravelDetailsArea } from "@/src/components/TravelDetailsArea";
+import Link from "next/link";
 import styles from "./ExpenseApplyConfirm.module.css";
 
 type Props = {
@@ -132,6 +133,14 @@ export function ExpenseApplyConfirmClient({
           <div className={`${styles.amountValue} label-value`} style={{ color: initialData.typeId === "001" ? "#c62828" : "#2e7d32" }}>
             ¥{initialData.amount.toLocaleString()}
           </div>
+          {initialData.isTravel && (
+            <div style={{ fontSize: "0.85rem", color: "#666", marginTop: "4px" }}>
+              ※ 旅費補助申請のため金額は旅費補助額テーブルにて設定させていただいてます。
+              <Link href="/travel-subsidy" style={{ textDecoration: "underline", marginLeft: "4px", color: "#2563eb" }}>
+                詳しくはこちら
+              </Link>
+            </div>
+          )}
         </FormField>
 
         <FormField label="日付">
