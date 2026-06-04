@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
+import Link from "next/link";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { AppInput } from "@/src/components/Form/AppInput";
@@ -556,6 +557,14 @@ export function ExpenseApplyEditClient({
           placeholder="金額を入力"
           disabled={isTravel}
         />
+        {isTravel && (
+          <div style={{ fontSize: "0.85rem", color: "#666", marginTop: "-12px", marginBottom: "16px" }}>
+            ※ 旅費補助申請のため金額は旅費補助額テーブルより設定させていただいてます。
+            <Link href="/travel-subsidy" style={{ textDecoration: "underline", marginLeft: "4px", color: "#2563eb" }}>
+              詳しくはこちら
+            </Link>
+          </div>
+        )}
 
         {!isEventRequired && (
           <AppInput

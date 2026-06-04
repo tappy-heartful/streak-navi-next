@@ -11,6 +11,7 @@ import { judgeExpenseApply, undoReview } from "@/src/features/expense-review/api
 import { useRouter } from "next/navigation";
 import { ExpenseHistoryList } from "@/src/components/ExpenseHistoryList";
 import { TravelDetailsArea } from "@/src/components/TravelDetailsArea";
+import Link from "next/link";
 import styles from "./ExpenseReview.module.css";
 
 type Props = {
@@ -210,6 +211,14 @@ export function ExpenseReviewClient({
           <div className={`${styles.amountValue} label-value`} style={{ color: initialData.typeId === "001" ? "#c62828" : "#2e7d32" }}>
             ¥{initialData.amount.toLocaleString()}
           </div>
+          {initialData.isTravel && (
+            <div style={{ fontSize: "0.85rem", color: "#666", marginTop: "4px" }}>
+              ※ 旅費補助申請のため金額は旅費補助額テーブルにて設定させていただいてます。
+              <Link href="/travel-subsidy" style={{ textDecoration: "underline", marginLeft: "4px", color: "#2563eb" }}>
+                詳しくはこちら
+              </Link>
+            </div>
+          )}
         </FormField>
 
         <FormField label="発生日">
