@@ -35,6 +35,7 @@ import {
   deleteRecording,
 } from "@/src/features/event/api/event-client-service";
 import { SetlistConfirm } from "@/src/components/Setlist/SetlistConfirm";
+import styles from "./EventConfirm.module.css";
 
 type Props = {
   eventId: string;
@@ -447,51 +448,71 @@ export function EventConfirmClient({ eventId, data }: Props) {
         {/* タイトル */}
         <DisplayField label="タイトル">{event.title}</DisplayField>
 
-        {/* 都道府県 */}
-        <DisplayField label="都道府県">{prefectureName || "未設定"}</DisplayField>
-
-        {/* 市区町村 */}
-        <DisplayField label="市区町村">{municipalityName || "未設定"}</DisplayField>
-
-        {/* 場所 */}
-        <div className="form-group">
-          <label className="label-title">場所</label>
-          <div className="label-value">
-            {event.website ? (
-              <a href={event.website} target="_blank" rel="noopener noreferrer">
-                {event.placeName || event.website}
-              </a>
-            ) : (
-              event.placeName || "未設定"
-            )}
+        {/* 場所・アクセス情報ブロック */}
+        <div className={styles.locationBlock}>
+          <div className={styles.locationHeader}>
+            <span className={styles.locationTitle}>
+              <i className="fa-solid fa-map-location-dot" /> 場所・アクセス情報
+            </span>
           </div>
-        </div>
 
-        {/* 交通アクセス */}
-        <div className="form-group">
-          <label className="label-title">交通アクセス・駐車場情報</label>
-          <div className="label-value">
-            {event.access ? (
-              /^https?:\/\//.test(event.access) ? (
-                <a href={event.access} target="_blank" rel="noopener noreferrer">{event.access}</a>
-              ) : (
-                <span style={{ whiteSpace: "pre-wrap" }}>{event.access}</span>
-              )
-            ) : (
-              "未設定"
-            )}
-          </div>
-        </div>
+          <div className={styles.locationFields}>
+            {/* 都道府県 & 市区町村 */}
+            <div className={styles.row}>
+              <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                <label className="label-title">都道府県</label>
+                <div className="label-value">{prefectureName || "未設定"}</div>
+              </div>
 
-        {/* Google Map */}
-        <div className="form-group">
-          <label className="label-title">Google Map</label>
-          <div className="label-value">
-            {event.googleMap ? (
-              <a href={event.googleMap} target="_blank" rel="noopener noreferrer">Google Mapで見る</a>
-            ) : (
-              "未設定"
-            )}
+              <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                <label className="label-title">市区町村</label>
+                <div className="label-value">{municipalityName || "未設定"}</div>
+              </div>
+            </div>
+
+            {/* 場所名 */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="label-title">場所名</label>
+              <div className="label-value">
+                {event.website ? (
+                  <a href={event.website} target="_blank" rel="noopener noreferrer">
+                    {event.placeName || event.website}
+                  </a>
+                ) : (
+                  event.placeName || "未設定"
+                )}
+              </div>
+            </div>
+
+            {/* Google Map */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="label-title">Google Map</label>
+              <div className="label-value">
+                {event.googleMap ? (
+                  <a href={event.googleMap} target="_blank" rel="noopener noreferrer">
+                    Google Mapで見る
+                  </a>
+                ) : (
+                  "未設定"
+                )}
+              </div>
+            </div>
+
+            {/* 交通アクセス */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="label-title">交通アクセス・駐車場情報</label>
+              <div className="label-value">
+                {event.access ? (
+                  /^https?:\/\//.test(event.access) ? (
+                    <a href={event.access} target="_blank" rel="noopener noreferrer">{event.access}</a>
+                  ) : (
+                    <span style={{ whiteSpace: "pre-wrap" }}>{event.access}</span>
+                  )
+                ) : (
+                  "未設定"
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

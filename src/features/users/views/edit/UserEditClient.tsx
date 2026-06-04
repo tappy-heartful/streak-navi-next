@@ -11,15 +11,17 @@ import { globalLineDefaultImage } from "@/src/lib/functions";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { writeLog } from "@/src/lib/functions";
+import { useRouter } from "next/navigation";
 
 type Props = {
-  uid: string;
+  uid?: string;
   userData: User;
   initialLocation?: UserLocation | null;
   sections: Section[];
   roles: Role[];
   instruments: Instrument[];
   prefectures: Prefecture[];
+  queryParams?: Record<string, string>;
 };
 
 type UserFormData = {
@@ -32,10 +34,24 @@ type UserFormData = {
   municipalityId: string;
 };
 
-export function UserEditClient({ uid, userData, initialLocation, sections, roles, instruments, prefectures }: Props) {
+export function UserEditClient({ uid, userData, initialLocation, sections, roles, instruments, prefectures, queryParams }: Props) {
   const { user, refreshUserData } = useAuth();
+  const router = useRouter();
   const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
   const [loadingMun, setLoadingMun] = useState(false);
+
+  useEffect(() => {
+    if (!uid && user?.uid) {
+      const params = new URLSearchParams();
+      if (queryParams) {
+        Object.entries(queryParams).forEach(([key, val]) => {
+          if (val) params.set(key, val);
+        });
+      }
+      params.set("uid", user.uid);
+      router.replace(`/user/edit?${params.toString()}`);
+    }
+  }, [uid, user, router, queryParams]);
 
   const isSelf = user?.uid === uid;
   const canEdit = isSelf;
@@ -66,12 +82,10 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
     }],
   });
 
-  // 都道府県が変更されたら市区町村をロード
   useEffect(() => {
     const loadMun = async () => {
       if (!form.formData.prefectureId) {
         setMunicipalities([]);
-        // 県が空になったら市区町村もクリア
         if (form.formData.municipalityId) {
           form.updateField("municipalityId", "");
         }
@@ -83,7 +97,6 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
         const data = await getMunicipalitiesClient(form.formData.prefectureId);
         setMunicipalities(data);
 
-        // 現在の市区町村が、新しく取得したリストに含まれていない場合はクリア
         if (form.formData.municipalityId && !data.some(m => m.id === form.formData.municipalityId)) {
           form.updateField("municipalityId", "");
         }
@@ -97,9 +110,10 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
     loadMun();
   }, [form.formData.prefectureId]);
 
+  if (!uid) return null;
+
   const handleSave = async (data: UserFormData) => {
     await saveUser(uid, data);
-    // 自身のデータなら、グローバルのAuthContextを最新化する
     if (isSelf) {
       await refreshUserData();
     }
