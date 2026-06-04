@@ -45,6 +45,7 @@ export default async function UserConfirmPage({ searchParams }: Props) {
 
   return (
     <UserConfirmClient
+      key={uid || "initial"}
       uid={uid}
       userData={userData as any}
       sections={sections}
