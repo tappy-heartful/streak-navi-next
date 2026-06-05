@@ -244,6 +244,7 @@ export function formatDateToYMDDot(dateInput: any): string {
 export async function writeLog({ dataId, action, status = 'success', errorDetail = {} }: any) {
   try {
     const uid = getSession('uid') || 'unknown';
+    const userName = getSession('displayName') || '';
     const now = new Date();
     const dateStr =
       now.getFullYear() +
@@ -261,6 +262,7 @@ export async function writeLog({ dataId, action, status = 'success', errorDetail
     const colName = status === 'success' ? 'logs' : 'errorLogs';
     await setDoc(doc(db, colName, logId), {
       uid,
+      userName,
       action,
       dataId,
       status,
