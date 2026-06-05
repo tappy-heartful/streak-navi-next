@@ -240,10 +240,12 @@ export function ExpenseApplyEditClient({
               );
               if (goToSetting) router.push("/travel-subsidy");
             } else {
-              await showDialog(
-                `${depMunName}⇔${arrMunName} の旅費額が未設定です。\n管理者にご連絡ください。`,
-                true
+              const goToEdit = await showDialog(
+                `${depMunName}⇔${arrMunName} の旅費額が未設定です。\nお住まいの都道府県と市区町村を登録後、システム管理者(たぴ)にご連絡ください。\n\n都道府県と市区町村の登録に進みますか？`
               );
+              if (goToEdit && user?.uid) {
+                router.push(`/user/edit?uid=${user.uid}`);
+              }
             }
           }
         }
@@ -275,10 +277,12 @@ export function ExpenseApplyEditClient({
       );
       if (goToSetting) router.push("/travel-subsidy");
     } else {
-      await showDialog(
-        `${depMunName}⇔${arrMunName} の旅費額が未設定です。\n管理者にご連絡ください。`,
-        true
+      const goToEdit = await showDialog(
+        `${depMunName}⇔${arrMunName} の旅費額が未設定です。\nお住まいの都道府県と市区町村を登録後、システム管理者(たぴ)にご連絡ください。\n\nユーザー編集画面に移動しますか？`
       );
+      if (goToEdit && user?.uid) {
+        router.push(`/user/edit?uid=${user.uid}`);
+      }
     }
   };
 

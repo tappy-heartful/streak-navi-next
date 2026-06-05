@@ -108,7 +108,15 @@ export function ExpenseApplyConfirmClient({
 
         {initialData.isEventRequired && (
           <FormField label="対象イベント">
-            <div className="label-value">{initialData.eventTitle}</div>
+            <div className="label-value">
+              {initialData.eventId ? (
+                <Link href={`/event/confirm?eventId=${initialData.eventId}`} style={{ textDecoration: "underline", color: "#2563eb" }}>
+                  {initialData.eventTitle}
+                </Link>
+              ) : (
+                initialData.eventTitle
+              )}
+            </div>
           </FormField>
         )}
 
