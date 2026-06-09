@@ -313,30 +313,51 @@
        const eventId = d.name.split('/').pop();
        const eventTitle = e.title || "イベント";
 
-        let munNote = "";
-        if (e.municipalityId) {
-          try {
-            let prefName = "";
-            if (e.prefectureId) {
-              const prefDoc = firestore.getDocument(`prefectures/${e.prefectureId}`);
-              const prefObj = prefDoc ? (prefDoc.obj || prefDoc) : null;
-              if (prefObj && prefObj.name) {
-                prefName = prefObj.name;
-              }
-            }
-            const munDoc = firestore.getDocument(`municipalities/${e.municipalityId}`);
-            const munObj = munDoc ? (munDoc.obj || munDoc) : null;
-            if (munObj && munObj.name) {
-              munNote = `\n※${prefName}${munObj.name}にお住まいの方は旅費補助の対象外となります。`;
-            }
-          } catch (err) {
-            Logger.log('Municipality Fetch Error: ' + err.toString());
-          }
-        }
+       // 日付フォーマットの作成 (例: 5/30(土))
+       const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+       const dayOfWeek = weekdays[yesterday.getDay()];
+       const month = yesterday.getMonth() + 1;
+       const dateNum = yesterday.getDate();
+       const dateStr = `${month}/${dateNum}(${dayOfWeek})`;
 
-       const message = `昨日のイベント「${eventTitle}」はお疲れさまでした！\n旅費補助や、スタジオ代の経費申請はお済みですか？\nまだの方は、こちらから経費申請をお願いします。🙇‍♂️\n${munNote}\n\n` +
-                       `▼ 旅費補助の申請はこちら\n${BASE_URL}/expense-apply/edit?mode=new&typeId=${TRAVEL_TYPE_ID}&categoryId=${TRAVEL_CATEGORY_ID}&itemId=${TRAVEL_ITEM_ID}&eventId=${eventId}\n\n` +
-                       `▼ スタジオ代の申請はこちら\n${BASE_URL}/expense-apply/edit?mode=new&typeId=${STUDIO_TYPE_ID}&categoryId=${STUDIO_CATEGORY_ID}&itemId=${STUDIO_ITEM_ID}&eventId=${eventId}`;
+       let munLine = "";
+       if (e.municipalityId) {
+         try {
+           let prefName = "";
+           if (e.prefectureId) {
+             const prefDoc = firestore.getDocument(`prefectures/${e.prefectureId}`);
+             const prefObj = prefDoc ? (prefDoc.obj || prefDoc) : null;
+             if (prefObj && prefObj.name) {
+               prefName = prefObj.name;
+             }
+           }
+           const munDoc = firestore.getDocument(`municipalities/${e.municipalityId}`);
+           const munObj = munDoc ? (munDoc.obj || munDoc) : null;
+           if (munObj && munObj.name) {
+             munLine = `\n※今回は${prefName}${munObj.name}在住の方は対象外です`;
+           }
+         } catch (err) {
+           Logger.log('Municipality Fetch Error: ' + err.toString());
+         }
+       }
+
+       const message = `お疲れ様です、先日の${dateStr}の${eventTitle}お疲れ様でした🍀\n\n` +
+                       `ーーーーーーーーーーーーーー\n\n` +
+                       `案内が遅くなってしまいましたが、参加してくださった方は以下より旅費補助申請をお願いいたします${munLine}\n\n` +
+                       `⚠️シーズン内の旅費補助申請を忘れた場合、シーズン後のご自身への請求額が相対的に増えてしまいます。ご自身のため、お早めの申請をお願いします⚠️\n\n` +
+                       `▼ 今回の旅費補助申請はこちら\n` +
+                       `${BASE_URL}/expense-apply/edit?mode=new&typeId=${TRAVEL_TYPE_ID}&categoryId=${TRAVEL_CATEGORY_ID}&itemId=${TRAVEL_ITEM_ID}&eventId=${eventId}\n\n` +
+                       `ーーーーーーーーーーーーーー\n\n` +
+                       `なお、練習会場費（スタジオ代）などを立て替えてくださった方は、以下より申請をお願いいたします\n\n` +
+                       `▼ 練習会場費（スタジオ代）の申請はこちら\n` +
+                       `${BASE_URL}/expense-apply/edit?mode=new&typeId=${STUDIO_TYPE_ID}&categoryId=${STUDIO_CATEGORY_ID}&itemId=${STUDIO_ITEM_ID}&eventId=${eventId}\n\n` +
+                       `ーーーーーーーーーーーーーー\n\n` +
+                       `なお、「旅費補助額が設定されていません」のメッセージが出る場合、ユーザ情報編集画面より【居住都道府県 市区町村】を入力し、たぴまでご連絡ください🤲\n\n` +
+                       `▼ 居住都道府県、市区町村の登録はこちら\n` +
+                       `${BASE_URL}/user/edit\n\n` +
+                       `ーーーーーーーーーーーーーー\n\n` +
+                       `その他、会計や旅費補助の制度についてはこちらをご覧ください\n` +
+                       `${BASE_URL}/board/confirm?boardId=PcXZzb0pFhlL7DSCzpU3`;
 
        sendLineMessage(LINE_GROUP_ID, message);
      });
