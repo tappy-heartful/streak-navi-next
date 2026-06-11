@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useSearchableList } from "@/src/hooks/useSearchableList";
 import { SearchableListLayout } from "@/src/components/Layout/SearchableListLayout";
@@ -23,12 +23,26 @@ type Props = {
 export function IssueListClient({ initialData }: Props) {
   const { userData } = useAuth();
 
+  const initialFilters = useMemo<IssueFilters>(() => ({
+    search: "",
+    type: "",
+    status: "open",
+    assigneeId: userData?.id || "",
+    sort: "date-asc"
+  }), [userData?.id]);
+
   const list = useSearchableList<Issue, IssueFilters>(
     initialData.issues,
-    { search: "", type: "", status: "open", assigneeId: "", sort: "date-asc" },
+    initialFilters,
     (item, filters) => issueFilterFn(item, filters, userData),
     issueSortFn
   );
+
+  useEffect(() => {
+    if (userData?.id) {
+      list.updateFilter("assigneeId", userData.id);
+    }
+  }, [userData?.id]);
 
   const getAssigneeName = (uid: string) => {
     const u = initialData.users.find((user) => user.id === uid);
@@ -114,13 +128,13 @@ export function IssueListClient({ initialData }: Props) {
 
   return (
     <SearchableListLayout
-      title="イシュー"
+      title="TODO"
       icon="fa-solid fa-list-check"
-      basePath="/issue"
-      list={list}
-      hideAddButton={true} // 全ユーザーに表示したいので、レイアウト内蔵のボタンは非表示
-      extraHeaderContent={extraHeader}
-      tableHeaders={["種類", "タイトル", "担当者", "ステータス", "期限日"]}
+        basePath="/issue"
+        list={list}
+        hideAddButton={true} // 全ユーザーに表示したいので、レイアウト内蔵のボタンは非表示
+        extraHeaderContent={extraHeader}
+        tableHeaders={["タイトル", "期限", "担当者", "種類", "ステータス"]}
       searchFields={
         <ListFilterGrid>
           <FilterInput
@@ -171,31 +185,12 @@ export function IssueListClient({ initialData }: Props) {
     >
       {list.filteredData.map((issue) => (
         <ListRow key={issue.id}>
-          {/* 種類 */}
-          <td className="text-center">
-            <span className={`${styles.typeBadge} ${getTypeClass(issue.type)}`}>
-              {getTypeName(issue.type)}
-            </span>
-          </td>
-
           {/* タイトル */}
           <ListCellHeader href={`/issue/confirm?issueId=${issue.id}`}>
             {issue.title}
           </ListCellHeader>
 
-          {/* 担当者 */}
-          <ListCellSmall>
-            {getAssigneeName(issue.assigneeId)}
-          </ListCellSmall>
-
-          {/* ステータス */}
-          <td className="text-center">
-            <span className={`${styles.statusBadge} ${getStatusClass(issue.status)}`}>
-              {getStatusName(issue.status)}
-            </span>
-          </td>
-
-          {/* 期限日 */}
+          {/* 期限 */}
           <ListCellSmall>
             {issue.date ? (
               <span className={styles.dateContainer}>
@@ -208,30 +203,27 @@ export function IssueListClient({ initialData }: Props) {
               "-"
             )}
           </ListCellSmall>
+
+          {/* 担当者 */}
+          <ListCellSmall>
+            {getAssigneeName(issue.assigneeId)}
+          </ListCellSmall>
+
+          {/* 種類 */}
+          <td className="text-center">
+            <span className={`${styles.typeBadge} ${getTypeClass(issue.type)}`}>
+              {getTypeName(issue.type)}
+            </span>
+          </td>
+
+          {/* ステータス */}
+          <td className="text-center">
+            <span className={`${styles.statusBadge} ${getStatusClass(issue.status)}`}>
+              {getStatusName(issue.status)}
+            </span>
+          </td>
         </ListRow>
       ))}
-
-      {/* 新規作成ボタンを追加 */}
-      {list.filteredData.length > 0 && (
-        <tr>
-          <td colSpan={5} style={{ borderBottom: "none" }}>
-            <div className={styles.addButtonContainer}>
-              <Link href="/issue/edit?mode=new" className={styles.addLink}>
-                ＋ イシューを作成する
-              </Link>
-            </div>
-          </td>
-        </tr>
-      )}
-      {list.filteredData.length === 0 && (
-        <tr>
-          <td colSpan={5} style={{ borderBottom: "none", textAlign: "center", padding: "2rem" }}>
-            <Link href="/issue/edit?mode=new" className={styles.addLink} style={{ margin: "0 auto" }}>
-              ＋ 新しいイシューを作成する
-            </Link>
-          </td>
-        </tr>
-      )}
     </SearchableListLayout>
   );
 }

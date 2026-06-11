@@ -67,19 +67,6 @@
   font-size: 0.75rem;
 }
 
-.addButtonContainer {
-  display: flex;
-  justify-content: center;
-  margin-top: 1.5rem;
-}
 
-.addLink {
-  composes: list-add-button from global;
-  text-decoration: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: fit-content;
-  padding: 12px 24px;
-  font-weight: bold;
-}
+
+

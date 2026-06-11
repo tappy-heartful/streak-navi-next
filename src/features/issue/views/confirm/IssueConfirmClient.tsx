@@ -125,7 +125,7 @@ export function IssueConfirmClient({ issueData, issueId, users, sections }: Prop
   return (
     <BaseLayout>
       <ConfirmLayout
-        name="イシュー"
+        name="TODO"
         icon="fa-solid fa-list-check"
         basePath="/issue"
         dataId={issueId}
@@ -141,11 +141,6 @@ export function IssueConfirmClient({ issueData, issueId, users, sections }: Prop
         {/* 担当者 */}
         <DisplayField label="担当者">
           {getAssigneeName(issueData.assigneeId)}
-        </DisplayField>
-
-        {/* 作成者 */}
-        <DisplayField label="起票者">
-          {getCreatorName(issueData.createdBy)}
         </DisplayField>
 
         {/* タイトル */}
@@ -206,34 +201,49 @@ export function IssueConfirmClient({ issueData, issueId, users, sections }: Prop
         {/* 添付ファイル */}
         {issueData.files && issueData.files.length > 0 && (
           <DisplayField label="添付ファイル">
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div className={styles.linkList}>
               {issueData.files.map((file, idx) => (
                 <a
                   key={idx}
                   href={file.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "8px 12px",
-                    background: "#f3f4f6",
-                    borderRadius: "6px",
-                    textDecoration: "none",
-                    color: "#374151",
-                    border: "1px solid #e5e7eb",
-                    fontSize: "0.9rem"
-                  }}
+                  className={styles.fileLinkCard}
                 >
                   <i className="fa-solid fa-file"></i>
-                  <span style={{ fontWeight: "500" }}>{file.name}</span>
-                  <i className="fa-solid fa-arrow-up-right-from-square" style={{ marginLeft: "auto", opacity: 0.6 }}></i>
+                  <span className={styles.linkCardText}>{file.name}</span>
+                  <i className={`fa-solid fa-arrow-up-right-from-square ${styles.linkCardIconRight}`}></i>
                 </a>
               ))}
             </div>
           </DisplayField>
         )}
+
+        {/* 関連リンク */}
+        {issueData.links && issueData.links.length > 0 && (
+          <DisplayField label="関連リンク">
+            <div className={styles.linkList}>
+              {issueData.links.map((link, idx) => (
+                <a
+                  key={idx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.urlLinkCard}
+                >
+                  <i className="fa-solid fa-link"></i>
+                  <span className={styles.linkCardText}>{link.title}</span>
+                  <i className={`fa-solid fa-arrow-up-right-from-square ${styles.linkCardIconRight}`}></i>
+                </a>
+              ))}
+            </div>
+          </DisplayField>
+        )}
+
+        {/* 起票者 */}
+        <DisplayField label="起票者">
+          {getCreatorName(issueData.createdBy)}
+        </DisplayField>
       </ConfirmLayout>
     </BaseLayout>
   );

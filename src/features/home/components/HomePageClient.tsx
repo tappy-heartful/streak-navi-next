@@ -71,7 +71,7 @@ const MenuSectionList = memo(({ isAdmin }: { isAdmin: boolean }) => (
     <div className={styles.menuList}>
       <MenuSection title="演奏メニュー" items={[{ h: "/score", l: "fa-solid fa-music 譜面", c: "perfMenu" }, { h: "/event", l: "fa-solid fa-calendar-days イベント", c: "perfMenu" }, { h: "/assign", l: "fa-solid fa-people-group 譜割り", c: "perfMenu" }]} />
       <MenuSection title="活動メニュー" items={[{ h: "/call", l: "fa-solid fa-bullhorn 曲募集", c: "actMenu" }, { h: "/vote", l: "fa-solid fa-check-to-slot 曲投票", c: "actMenu" }, { h: "/studio", l: "fa-solid fa-location-dot スタジオ", c: "actMenu" }]} />
-      <MenuSection title="アプリメニュー" items={[{ h: "/user", l: "fa-solid fa-users ユーザ", c: "appMenu" }, { h: "/notice", l: "fa-solid fa-bell 通知設定", c: "appMenu" }, { h: "/blue-note", l: "fa-solid fa-record-vinyl 今日の一曲", c: "appMenu", b: "募集中" }, { h: "/board", l: "fa-solid fa-clipboard-list 掲示板", c: "appMenu" }]} />
+      <MenuSection title="アプリメニュー" items={[{ h: "/user", l: "fa-solid fa-users ユーザ", c: "appMenu" }, { h: "/notice", l: "fa-solid fa-bell 通知設定", c: "appMenu" }, { h: "/blue-note", l: "fa-solid fa-record-vinyl 今日の一曲", c: "appMenu", b: "募集中" }, { h: "/board", l: "fa-solid fa-clipboard-list 掲示板", c: "appMenu" }, { h: "/issue", l: "fa-solid fa-list-check TODO", c: "appMenu" }]} />
       <MenuSection title="ホームページ連携" items={[{ h: "/live", l: "fa-solid fa-guitar ライブ", c: "extMenu" }, { h: "/ticket", l: "fa-solid fa-ticket 予約者一覧", c: "extMenu" }, { h: "/media", l: "fa-solid fa-photo-film メディア", c: "extMenu" }]} />
       <MenuSection title="経費管理" items={[
         { h: "/accounting", l: "fa-solid fa-scale-balanced バランス会計", c: "costMenu" },
