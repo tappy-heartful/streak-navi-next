@@ -35,6 +35,10 @@ function toEventDoc(doc: FirebaseFirestore.DocumentSnapshot): Event {
       time: t.time || "",
       comment: t.comment || "",
     })),
+    rentTimeRanges: (d.rentTimeRanges || []).map((t: any) => ({
+      startTime: t.startTime || "",
+      endTime: t.endTime || "",
+    })),
     schedule: d.schedule || "",
     dress: d.dress || "",
     bring: d.bring || "",

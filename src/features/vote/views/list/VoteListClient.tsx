@@ -28,8 +28,8 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
     const now = Date.now();
 
     votes.forEach((v) => {
-      const start = v.acceptStartDate ? new Date(v.acceptStartDate.replace(/\./g, "/") + " 00:00:00").getTime() : 0;
-      const end = v.acceptEndDate ? new Date(v.acceptEndDate.replace(/\./g, "/") + " 23:59:59").getTime() : Infinity;
+      const start = v.acceptStartDate ? new Date(`${v.acceptStartDate.replace(/\./g, "-")}T00:00:00+09:00`).getTime() : 0;
+      const end = v.acceptEndDate ? new Date(`${v.acceptEndDate.replace(/\./g, "-")}T23:59:59+09:00`).getTime() : Infinity;
 
       if (now < start) {
         upcoming.push(v);

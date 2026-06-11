@@ -26,6 +26,7 @@ import {
   buildYouTubeHtml,
   timestampToSeconds,
   writeLog,
+  format,
 } from "@/src/lib/functions";
 import {
   deleteEventWithAnswers,
@@ -44,13 +45,8 @@ type Props = {
 
 function isEventPast(event: Event): boolean {
   if (!event.date) return false;
-  const parts = event.date.split(".");
-  if (parts.length !== 3) return false;
-  const [y, m, d] = parts.map(Number);
-  const eventDate = new Date(y, m - 1, d);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return eventDate < today;
+  const todayStr = format(new Date(), "yyyy.MM.dd");
+  return event.date < todayStr;
 }
 
 export function EventConfirmClient({ eventId, data }: Props) {
@@ -480,6 +476,25 @@ export function EventConfirmClient({ eventId, data }: Props) {
                   </a>
                 ) : (
                   event.placeName || "未設定"
+                )}
+              </div>
+            </div>
+
+            {/* 施設利用時間 */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="label-title">施設利用時間</label>
+              <div className="label-value">
+                {event.rentTimeRanges && event.rentTimeRanges.length > 0 ? (
+                  <div className={styles.rentTimeList}>
+                    {event.rentTimeRanges.map((range, idx) => (
+                      <span key={idx} className={styles.rentTimeBadge}>
+                        <i className="fa-solid fa-clock" />
+                        {range.startTime} ～ {range.endTime}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  "未設定"
                 )}
               </div>
             </div>

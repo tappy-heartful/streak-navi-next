@@ -119,8 +119,11 @@ const Player = memo(({ title, subtitle, data, idx, setIdx, onRandom }: { title?:
 Player.displayName = "Player";
 
 const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], votes: Vote[], calls: Call[] } }) => {
-  const now = new Date();
-  const [currentDate, setCurrentDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
+  const nowJst = utils.getJSTDate();
+  const todayYear = nowJst.getUTCFullYear();
+  const todayMonth = nowJst.getUTCMonth();
+  const todayDay = nowJst.getUTCDate();
+  const [currentDate, setCurrentDate] = useState(() => new Date(todayYear, todayMonth, 1));
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [holidays, setHolidays] = useState<Record<string, string>>({});
@@ -142,7 +145,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const years = [];
-  for (let y = now.getFullYear() - 1; y <= now.getFullYear() + 2; y++) years.push(y);
+  for (let y = todayYear - 1; y <= todayYear + 2; y++) years.push(y);
   const months = Array.from({ length: 12 }, (_, i) => i);
 
   const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -271,7 +274,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1;
             const items = getItemsForDay(day);
-            const isToday = now.getFullYear() === year && now.getMonth() === month && now.getDate() === day;
+            const isToday = todayYear === year && todayMonth === month && todayDay === day;
             
             const dateObj = new Date(year, month, day);
             const dayOfWeek = dateObj.getDay();

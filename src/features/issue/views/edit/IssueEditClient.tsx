@@ -13,7 +13,7 @@ import { saveIssue } from "@/src/features/issue/api/issue-client-service";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
+import { showSpinner, hideSpinner, showDialog, dotDateToHyphen, hyphenDateToDot, format } from "@/src/lib/functions";
 import { compressImage } from "@/src/lib/image-compression";
 import styles from "./IssueEdit.module.css";
 
@@ -75,7 +75,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections }
       assigneeId: initialIssue?.assigneeId || "",
       title: (mode === "copy" ? `${initialIssue?.title}（コピー）` : initialIssue?.title) ?? "",
       description: initialIssue?.description ?? "",
-      date: dotDateToHyphen(initialIssue?.date || new Date().toISOString().split("T")[0]),
+      date: dotDateToHyphen(initialIssue?.date || format(new Date(), "yyyy-MM-dd")),
       dateType: initialIssue?.dateType || "until",
       status: initialIssue?.status || "not_started",
       scope: initialIssue?.scope || "all",

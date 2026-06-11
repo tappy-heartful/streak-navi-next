@@ -9,7 +9,7 @@ import { FormFooter } from "@/src/components/Form/FormFooter";
 import { Modal } from "@/src/components/Modal";
 import { Event, Score, Section, Instrument, Studio, SetlistGroup, InstrumentPart, Prefecture, Municipality } from "@/src/lib/firestore/types";
 import { addEvent, updateEvent } from "@/src/features/event/api/event-client-service";
-import { showDialog, showSpinner, hideSpinner, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
+import { showDialog, showSpinner, hideSpinner, dotDateToHyphen, hyphenDateToDot, format } from "@/src/lib/functions";
 import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/src/lib/firebase";
@@ -39,13 +39,12 @@ type InstrumentPartState = {
 };
 
 function defaultDates() {
-  const fmt = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const start = new Date();
-  start.setDate(start.getDate() + 1);
-  const end = new Date();
-  end.setDate(end.getDate() + 13);
-  return { start: fmt(start), end: fmt(end) };
+  const start = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const end = new Date(Date.now() + 13 * 24 * 60 * 60 * 1000);
+  return {
+    start: format(start, "yyyy-MM-dd"),
+    end: format(end, "yyyy-MM-dd")
+  };
 }
 
 export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections, instruments, prefectures }: Props) {
@@ -87,6 +86,9 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
   const [youtubeUrl, setYoutubeUrl] = useState(initialEvent?.youtubeUrl || "");
   const [youtubeTimestamps, setYoutubeTimestamps] = useState<{ time: string; comment: string }[]>(
     initialEvent?.youtubeTimestamps || []
+  );
+  const [rentTimeRanges, setRentTimeRanges] = useState<{ startTime: string; endTime: string }[]>(
+    initialEvent?.rentTimeRanges || []
   );
   const [schedule, setSchedule] = useState(initialEvent?.schedule || "");
   const [dress, setDress] = useState(initialEvent?.dress || "");
@@ -185,6 +187,18 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
   const removeYoutubeTimestamp = (idx: number) => {
     setYoutubeTimestamps(prev => prev.filter((_, i) => i !== idx));
+  };
+  
+  const addRentTimeRange = () => {
+    setRentTimeRanges(prev => [...prev, { startTime: "", endTime: "" }]);
+  };
+
+  const removeRentTimeRange = (idx: number) => {
+    setRentTimeRanges(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const updateRentTimeRange = (idx: number, field: "startTime" | "endTime", val: string) => {
+    setRentTimeRanges(prev => prev.map((item, i) => i === idx ? { ...item, [field]: val } : item));
   };
 
   // ---- Instrument config helpers ----
@@ -285,17 +299,13 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       await showDialog("受付期間は必須です", true);
       return;
     }
-    const s = new Date(acceptStartDate).getTime();
-    const e = new Date(acceptEndDate).getTime();
-    if (s > e) {
+    if (acceptStartDate > acceptEndDate) {
       await showDialog("受付終了日は開始日以降にしてください", true);
       return;
     }
     if (mode === "new" || mode === "copy") {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      if (s < tomorrow.getTime()) {
+      const todayStr = format(new Date(), "yyyy-MM-dd");
+      if (acceptStartDate <= todayStr) {
         await showDialog("受付開始日は明日以降にしてください", true);
         return;
       }
@@ -349,6 +359,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       googleMap,
       youtubeUrl,
       youtubeTimestamps: youtubeTimestamps.filter(t => t.time || t.comment),
+      rentTimeRanges: rentTimeRanges.filter(r => r.startTime && r.endTime),
       schedule,
       dress,
       bring,
@@ -551,6 +562,34 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                 onChange={e => setWebsite(e.target.value)}
                 placeholder="公式サイトなどのURLを入力..."
               />
+            </div>
+
+            {/* 施設利用時間 */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>施設利用時間</label>
+              {rentTimeRanges.map((range, idx) => (
+                <div key={idx} className="choice-wrapper" style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
+                  <input
+                    type="time"
+                    value={range.startTime}
+                    onChange={e => updateRentTimeRange(idx, "startTime", e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <span>～</span>
+                  <input
+                    type="time"
+                    value={range.endTime}
+                    onChange={e => updateRentTimeRange(idx, "endTime", e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <button type="button" className="remove-choice" onClick={() => removeRentTimeRange(idx)} title="削除">
+                    <i className="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="add-choice" onClick={addRentTimeRange} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <i className="fa-solid fa-plus"></i> 施設利用時間を追加
+              </button>
             </div>
 
             {/* Google Map */}

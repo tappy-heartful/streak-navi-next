@@ -6,7 +6,7 @@ import { Event } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
-import { isInTerm, getDayOfWeek } from "@/src/lib/functions";
+import { isInTerm, getDayOfWeek, format } from "@/src/lib/functions";
 
 type Props = {
   events: Event[];
@@ -16,13 +16,8 @@ type Props = {
 
 function isEventPast(event: Event): boolean {
   if (!event.date) return false;
-  const parts = event.date.split(".");
-  if (parts.length !== 3) return false;
-  const [y, m, d] = parts.map(Number);
-  const eventDate = new Date(y, m - 1, d);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return eventDate < today;
+  const todayStr = format(new Date(), "yyyy.MM.dd");
+  return event.date < todayStr;
 }
 
 export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }: Props) {

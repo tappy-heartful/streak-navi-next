@@ -12,7 +12,7 @@ import { FormButtons } from "@/src/components/Form/FormButtons";
 import { FormFooter } from "@/src/components/Form/FormFooter";
 import { Vote, Call, VoteItem, VoteChoice, CallAnswerSong } from "@/src/lib/firestore/types";
 import { addVote, updateVote } from "@/src/features/vote/api/vote-client-service";
-import { showSpinner, hideSpinner, showDialog, writeLog } from "@/src/lib/functions";
+import { showSpinner, hideSpinner, showDialog, writeLog, format } from "@/src/lib/functions";
 
 type Mode = "new" | "edit" | "copy" | "createFromCall";
 
@@ -70,12 +70,10 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
     setBreadcrumbs(paths);
 
     // Default dates
-    const start = new Date();
-    start.setDate(start.getDate() + 1);
-    const end = new Date();
-    end.setDate(end.getDate() + 13);
-    const ymdStart = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
-    const ymdEnd = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
+    const start = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const end = new Date(Date.now() + 13 * 24 * 60 * 60 * 1000);
+    const ymdStart = format(start, "yyyy-MM-dd");
+    const ymdEnd = format(end, "yyyy-MM-dd");
 
     if ((mode === "edit" || mode === "copy") && initialVote) {
       setValues({
@@ -191,19 +189,14 @@ export function VoteEditClient({ mode, voteId, initialVote, callData, callAnswer
       valid = false;
     }
 
-    // date validation
     if (values.acceptStartDate && values.acceptEndDate) {
-      const s = new Date(values.acceptStartDate + ' 00:00:00').getTime();
-      const e = new Date(values.acceptEndDate + ' 23:59:59').getTime();
-      if (s > e) {
+      if (values.acceptStartDate > values.acceptEndDate) {
         await showDialog("終了日は開始日以降にしてください", true);
         valid = false;
       }
       if (mode !== "edit") {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(0, 0, 0, 0);
-        if (s < tomorrow.getTime()) {
+        const todayStr = format(new Date(), "yyyy-MM-dd");
+        if (values.acceptStartDate <= todayStr) {
           await showDialog("開始日は明日以降にしてください", true);
           valid = false;
         }

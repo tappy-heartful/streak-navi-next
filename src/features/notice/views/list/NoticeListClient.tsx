@@ -4,30 +4,28 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import { Notice } from "@/src/lib/firestore/types";
 import { ListBaseLayout } from "@/src/components/Layout/ListBaseLayout";
-import { parseDate } from "@/src/lib/functions";
+import { format } from "@/src/lib/functions";
 
 type Props = {
   initialNotices: Notice[];
 };
 
 export function NoticeListClient({ initialNotices }: Props) {
-  const now = new Date();
-  const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
   const { future, closed } = useMemo(() => {
     const future: Notice[] = [];
     const closed: Notice[] = [];
+    const todayStr = format(new Date(), "yyyy.MM.dd");
 
     initialNotices.forEach(notice => {
-      const latestDate = notice.schedules
-        .map(s => parseDate(s.scheduledDate))
+      const latestDateStr = notice.schedules
+        .map(s => s.scheduledDate)
         .filter(Boolean)
-        .reduce<Date | null>((latest, d) => {
-          if (!latest || (d && d > latest)) return d;
+        .reduce<string | null>((latest, d) => {
+          if (!latest || d > latest) return d;
           return latest;
         }, null);
 
-      if (latestDate && latestDate < todayOnly) {
+      if (latestDateStr && latestDateStr < todayStr) {
         closed.push(notice);
       } else {
         future.push(notice);

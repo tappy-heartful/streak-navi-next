@@ -33,8 +33,8 @@ export function CallListClient({ initialData }: Props) {
     const now = Date.now();
 
     calls.forEach(call => {
-      const start = call.acceptStartDate ? new Date(call.acceptStartDate.replace(/\./g, "/") + " 00:00:00").getTime() : 0;
-      const end = call.acceptEndDate ? new Date(call.acceptEndDate.replace(/\./g, "/") + " 23:59:59").getTime() : Infinity;
+      const start = call.acceptStartDate ? new Date(`${call.acceptStartDate.replace(/\./g, "-")}T00:00:00+09:00`).getTime() : 0;
+      const end = call.acceptEndDate ? new Date(`${call.acceptEndDate.replace(/\./g, "-")}T23:59:59+09:00`).getTime() : Infinity;
 
       if (now < start) {
         upcoming.push(call);
@@ -61,8 +61,8 @@ export function CallListClient({ initialData }: Props) {
 
   const getStatus = (call: Call): { text: string; cls: StatusClass } => {
     const now = Date.now();
-    const start = call.acceptStartDate ? new Date(call.acceptStartDate.replace(/\./g, "/") + " 00:00:00").getTime() : 0;
-    const end = call.acceptEndDate ? new Date(call.acceptEndDate.replace(/\./g, "/") + " 23:59:59").getTime() : Infinity;
+    const start = call.acceptStartDate ? new Date(`${call.acceptStartDate.replace(/\./g, "-")}T00:00:00+09:00`).getTime() : 0;
+    const end = call.acceptEndDate ? new Date(`${call.acceptEndDate.replace(/\./g, "-")}T23:59:59+09:00`).getTime() : Infinity;
 
     if (now < start) {
       return { text: "開始前", cls: "closed" }; // 見た目はclosedと同じか適宜調整
