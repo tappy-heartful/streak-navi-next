@@ -180,7 +180,7 @@ export default function Header() {
             {menuLink("/notice", "通知設定", "fa-solid fa-bell")}
             {menuLink("/blue-note", "今日の一曲", "fa-solid fa-record-vinyl")}
             {menuLink("/board", "掲示板", "fa-solid fa-clipboard-list")}
-            {/* {menuLink("/issue", "イシュー", "fa-solid fa-list-check")} */}
+            {menuLink("/issue", "イシュー", "fa-solid fa-list-check")}
             {menuLink("/live", "ライブ", "fa-solid fa-guitar")}
             {menuLink("/ticket", "予約者一覧", "fa-solid fa-ticket")}
             {menuLink("/media", "メディア", "fa-solid fa-photo-film")}

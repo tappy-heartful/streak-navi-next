@@ -210,28 +210,6 @@ export function IssueListClient({ initialData }: Props) {
           </ListCellSmall>
         </ListRow>
       ))}
-
-      {/* 新規作成ボタンを追加 */}
-      {list.filteredData.length > 0 && (
-        <tr>
-          <td colSpan={5} style={{ borderBottom: "none" }}>
-            <div className={styles.addButtonContainer}>
-              <Link href="/issue/edit?mode=new" className={styles.addLink}>
-                ＋ イシューを作成する
-              </Link>
-            </div>
-          </td>
-        </tr>
-      )}
-      {list.filteredData.length === 0 && (
-        <tr>
-          <td colSpan={5} style={{ borderBottom: "none", textAlign: "center", padding: "2rem" }}>
-            <Link href="/issue/edit?mode=new" className={styles.addLink} style={{ margin: "0 auto" }}>
-              ＋ 新しいイシューを作成する
-            </Link>
-          </td>
-        </tr>
-      )}
     </SearchableListLayout>
   );
 }
