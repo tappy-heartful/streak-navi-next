@@ -1,0 +1,333 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ======================================================
+    // 0. 共通判定関数（共通ロジックを関数化）
+    // ======================================================
+
+    // ログインしているか
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // 指定したモジュールの管理者、またはシステム管理者であるか
+    // usersコレクションの「is(Module)Admin」フラグを動的に参照
+    function isAdmin(module) {
+      let user = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return isSignedIn() && (
+        user["is" + module + "Admin"] == true || 
+        user.isSystemAdmin == true
+      );
+    }
+
+    // 操作対象 of ドキュメントID（またはパス）が自分自身のUIDと一致するか
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ドキュメントIDが「任意文字列_UID」形式の場合、自分のデータか判定
+    // 主に回答系（voteAnswers等）で使用
+    function isIdWithUid(id) {
+      return isSignedIn() && id.split('_')[1] == request.auth.uid;
+    }
+
+    // 追加：作成者本人か判定
+    function isCreatedByMe() {
+      return isSignedIn() && resource.data.createdBy == request.auth.uid;
+    }
+
+    // ======================================================
+    // LEVEL 1: 全公開データ (Webサイト等の一般公開用)
+    // ======================================================
+    
+    // ライブ情報、メディア情報は誰でも見れる。更新は各管理者のみ。
+    match /lives/{id} {
+      allow read: if true;
+      
+      // 作成は管理者のみ
+      allow create: if isAdmin("Live");
+      
+      // 更新の制御
+      allow update: if (
+        // パターンA: 管理者なら何でも更新OK
+        isAdmin("Live") || 
+        
+        // パターンB: ログインユーザーなら totalReserved フィールドのみ更新OK
+        (isSignedIn() && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalReserved']))
+      );
+      
+      // 削除は管理者のみ
+      allow delete: if isAdmin("Live");
+    }
+    match /medias/{id}         { allow read: if true; allow write: if isAdmin("Media"); }
+    
+    // システム設定。更新はシステム管理者のみ。
+    match /configs/{id}        { allow read: if true; allow write: if isAdmin("System"); }
+    
+    // アンケート回答は完全オープン（非会員の回答も想定）
+    match /enqueteAnswers/{id} { allow read: if true; allow write: if true; }
+    
+    // チケット。閲覧は誰でも（招待客等）。書き込みは本人またはチケット管理者のみ。
+    match /tickets/{id} {
+      allow read: if true;
+      allow write: if isIdWithUid(id) || isAdmin("Ticket");
+    }
+
+    // ======================================================
+    // LEVEL 2: メンバー限定 ＋ 本人のみ編集・削除可能
+    // ======================================================
+    
+    // 【ユーザー管理】修正版
+    match /{path=**}/users/{id} {
+      allow read: if isSignedIn();
+
+      // 1. 削除：本人のみ
+      allow delete: if isOwner(id);
+
+      // 2. 作成：本人のみ ＋ 管理者フラグが含まれていないこと
+      allow create: if (
+        isOwner(id) && 
+        !request.resource.data.keys().hasAny([
+          'isScoreAdmin', 'isEventAdmin', 'isCallAdmin', 'isVoteAdmin', 
+          'isStudioAdmin', 'isUserAdmin', 'isNoticeAdmin', 
+          'isBlueNoteAdmin', 'isBoardAdmin', 'isLiveAdmin', 'isTicketAdmin', 
+          'isMediaAdmin', 'isSystemAdmin', 'isTravelSubsidyAdmin', 'isExpenseAdmin'
+        ])
+      );
+
+      // 3. 更新：本人のみ ＋ 管理者フラグを変更していないこと
+      allow update: if (
+        isOwner(id) && 
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'isScoreAdmin', 'isEventAdmin', 'isCallAdmin', 'isVoteAdmin', 
+          'isStudioAdmin', 'isUserAdmin', 'isNoticeAdmin', 
+          'isBlueNoteAdmin', 'isBoardAdmin', 'isLiveAdmin', 'isTicketAdmin', 
+          'isMediaAdmin', 'isSystemAdmin', 'isTravelSubsidyAdmin', 'isExpenseAdmin'
+        ])
+      );
+    }
+
+    // 【居住地情報】本人のみ読み書き可（他ユーザ・管理者も参照不可）
+    match /users/{uid}/private/{docId} {
+      allow read, write: if isOwner(uid);
+    }
+
+    match /{path=**}/connectUsers/{id}   { allow read: if isSignedIn(); allow write: if isOwner(id); }
+
+    // 【譜面管理 (Score)】
+    // 閲覧はログイン必須。作成・編集・削除はScore管理者のみ。
+    match /scores/{id}                   { allow read: if true; allow write: if isAdmin("Score"); }
+    match /genres/{id}                   { allow read: if isSignedIn(); allow write: if isAdmin("Score"); }
+    match /scoreStatus/{id}              { allow read: if isSignedIn(); allow write: if isAdmin("Score"); }
+    
+    // 譜割り：現在は全メンバーが読み書き可能
+    match /assigns/{id}                  { allow read, write: if isSignedIn(); }
+
+    // 【イベント・出欠管理 (Event)】
+    match /{path=**}/events/{id}         { allow read: if isSignedIn(); allow write: if isAdmin("Event"); }
+    match /eventRecordings/{id} {
+      // 閲覧はログインしていれば誰でもOK
+      allow read: if isSignedIn();
+
+      // 新規作成：ログインしていて、かつデータのuidフィールドが自分のUIDであること
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+
+      // 更新・削除：既存データのuidフィールドが自分のUIDであること、またはEvent管理者
+      allow update, delete: if (
+        isSignedIn() && resource.data.uid == request.auth.uid || 
+        isAdmin("Event")
+      );
+    }
+    match /eventAdjustStatus/{id}        { allow read: if isSignedIn(); }
+    match /attendanceStatuses/{id}       { allow read: if isSignedIn(); }
+
+    // 【その他機能別モジュール】
+    match /{path=**}/calls/{id}          { allow read: if isSignedIn(); allow write: if isAdmin("Call"); }
+    match /{path=**}/votes/{id}          { allow read: if isSignedIn(); allow write: if isAdmin("Vote"); }
+    match /{path=**}/notices/{id}        { allow read: if isSignedIn(); allow write: if isAdmin("Notice"); }
+    match /{path=**}/studios/{id}        { allow read: if isSignedIn(); allow write: if isAdmin("Studio"); }
+    match /{path=**}/travelSubsidies/{id}{ allow read: if isSignedIn(); allow write: if isAdmin("TravelSubsidy"); }
+    match /{path=**}/boards/{id}         { allow read: if isSignedIn(); allow write: if isSignedIn(); }
+    
+    // 【イシュー管理 (Issue / チケット)】
+    match /issues/{id} {
+      // 閲覧：ログイン済み ＋ (作成者本人 OR 担当者 OR システム管理者 OR 公開範囲全体 OR 公開範囲パートが自分と同じ OR 許可ユーザリストに含まれる)
+      allow read: if isSignedIn() && (
+        resource.data.createdBy == request.auth.uid ||
+        resource.data.assigneeId == request.auth.uid ||
+        isAdmin("System") ||
+        resource.data.scope == "all" ||
+        (resource.data.scope == "part" && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.sectionId == resource.data.partId) ||
+        (resource.data.scope == "user" && request.auth.uid in resource.data.allowedUserIds)
+      );
+
+      // 新規作成：ログイン済み ＋ 作成者が自分自身であること
+      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+
+      // 更新：ログイン済み ＋ (作成者本人 OR 担当者 OR システム管理者)
+      allow update: if isSignedIn() && (
+        resource.data.createdBy == request.auth.uid ||
+        resource.data.assigneeId == request.auth.uid ||
+        isAdmin("System")
+      );
+
+      // 削除：ログイン済み ＋ (作成者本人 OR システム管理者)
+      allow delete: if isSignedIn() && (
+        resource.data.createdBy == request.auth.uid ||
+        isAdmin("System")
+      );
+    }
+
+    // 修正：今日の一曲（BlueNote）
+    match /{path=**}/blueNotes/{id} {
+      allow read: if isSignedIn();
+      // 作成：ログイン済みなら誰でも可能（createdByを自分に設定すること）
+      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+      // 更新・削除：管理者または作成者本人のみ
+      allow update, delete: if isAdmin("BlueNote") || isCreatedByMe();
+    }
+
+    
+    // チェックイン：作成・更新はチケット管理者（受付担当）が行う
+    match /{path=**}/checkIns/{id}       { allow read: if isSignedIn(); allow write: if isAdmin("Ticket"); }
+    
+    // 【集計・回収 (Collect)】
+    match /collects/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin("Collect");
+      match /responses/{resId} { 
+        allow read: if isSignedIn(); 
+        allow write: if isAdmin("Collect"); // 回答データ自体の管理もCollect管理者
+      }
+    }
+
+    // 【運用・保守データ】
+    // ログ：一般ユーザーは作成（書き込み）のみ。閲覧はシステム管理者のみ。
+    match /logs/{id}                     { allow read: if isAdmin("System"); allow create: if isSignedIn(); }
+    match /errorLogs/{id}                { allow read: if isAdmin("System"); allow create: if isSignedIn(); }
+    match /accessLogs/{id}               { allow read: if isAdmin("System"); allow create: if isSignedIn(); }
+    match /connectLogs/{id}              { allow read: if isAdmin("System"); allow create: if isSignedIn(); }
+    match /connectErrorLogs/{id}         { allow read: if isAdmin("System"); allow create: if isSignedIn(); }
+    
+    // アーカイブ：データ削除時の移動先。移動処理を許可するためisSignedInを維持
+    match /{path=**}/archives/{id}       { allow read, write: if isSignedIn(); }
+
+    // 【マスタデータ (ReadOnly)】
+    // 基本的に管理画面でのみ更新される想定のため、アプリからは読み取りのみ許可
+    match /secretWords/{id}              { allow read: if isSignedIn(); }
+    match /roles/{id}                    { allow read: if isSignedIn(); }
+    match /instruments/{id}              { allow read: if isSignedIn(); }
+    match /sections/{id}                 { allow read: if isSignedIn(); }
+    match /prefectures/{id}              { allow read: if isSignedIn(); }
+    match /municipalities/{id}           { allow read: if isSignedIn(); }
+    
+    // 【経費マスタ (Expense Master)】
+    // ログイン済みユーザーであれば誰でも参照可能
+    match /expenseTypes/{id}           { allow read: if isSignedIn(); }
+    match /expenseCategories/{id}      { allow read: if isSignedIn(); }
+    match /expenseItems/{id}           { allow read: if isSignedIn(); }
+
+
+    // ======================================================
+    // LEVEL 3: 個人専用データ（回答系）
+    // ======================================================
+    // 各自の回答：本人が「自分自身のUIDを含むID」のドキュメントのみ操作可能
+    // もしくは、各機能の管理者がメンテナンスのために操作可能
+    match /voteAnswers/{id}            { allow read: if isSignedIn(); allow write: if isIdWithUid(id) || isAdmin("Vote"); }
+    match /callAnswers/{id}            { allow read: if isSignedIn(); allow write: if isIdWithUid(id) || isAdmin("Call"); }
+    match /eventAdjustAnswers/{id}     { allow read: if isSignedIn(); allow write: if isIdWithUid(id) || isAdmin("Event"); }
+    match /eventAttendanceAnswers/{id} { allow read: if isSignedIn(); allow write: if isIdWithUid(id) || isAdmin("Event"); }
+    match /eventAnswers/{id}           { allow read: if isSignedIn(); allow write: if isIdWithUid(id) || isAdmin("Event"); }
+
+    // 【バランス会計 (Balance Accounting)】
+    match /accountingSeasons/{id} {
+      // 閲覧：ログイン済みなら誰でもOK
+      allow read: if isSignedIn();
+      // 作成・更新・削除：会計管理者（isExpenseAdmin）のみ
+      allow write: if isAdmin("Expense");
+    }
+
+    match /incomes/{id} {
+      // 閲覧：ログイン済みなら誰でもOK
+      allow read: if isSignedIn();
+      // 作成：ログイン済みなら誰でも可能（自分のUIDで作成すること）
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      // 更新・削除：作成者本人、または会計管理者
+      allow update, delete: if isSignedIn() && (
+        resource.data.uid == request.auth.uid || 
+        isAdmin("Expense")
+      );
+    }
+
+
+    // 【経費申請 (Expense)】
+    match /expenseApplies/{id} {
+      // 閲覧：本人のデータ、または会計管理者（システム管理者含む）のみ
+      allow read: if isSignedIn() && (
+        resource.data.uid == request.auth.uid || 
+        isAdmin("Expense")
+      );
+
+      // 新規作成：自分のUIDで、ステータスは審査中(pending)で作成。審査関連フィールドは含めない。
+      allow create: if isSignedIn() && (
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.status == "pending" &&
+        !request.resource.data.keys().hasAny(['adminComment', 'reviewerId', 'reviewerName', 'reviewedAt'])
+      );
+
+      // 更新
+      allow update: if isSignedIn() && (
+        // A. 本人：審査中(pending) または 否認済み(rejected) の場合のみ編集可能。
+        //    再提出時は必ずステータスを "pending" に戻す必要があり、審査用フィールドは書き換え不可。
+        (
+          resource.data.uid == request.auth.uid &&
+          (resource.data.status == "pending" || resource.data.status == "rejected") &&
+          request.resource.data.status == "pending" &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['adminComment', 'uid', 'reviewerId', 'reviewerName', 'reviewedAt'])
+        ) || 
+        // B. 会計管理者：ステータス更新、コメント、審査者情報（ID/名/日時）の更新が可能
+        isAdmin("Expense")
+      );
+
+      // 削除：本人（審査中・否認済みのみ）または会計管理者
+      allow delete: if isSignedIn() && (
+        (resource.data.uid == request.auth.uid && (resource.data.status == "pending" || resource.data.status == "rejected")) ||
+        isAdmin("Expense")
+      );
+
+      // ======================================================
+      // 申請・審査履歴 (History Subcollection)
+      // ======================================================
+      match /history/{historyId} {
+        // 閲覧：親ドキュメント(申請)の閲覧権限があるユーザーなら誰でもOK
+        allow read: if isSignedIn() && (
+          get(/databases/$(database)/documents/expenseApplies/$(id)).data.uid == request.auth.uid || 
+          isAdmin("Expense")
+        );
+        // 作成：本人の申請に対する履歴作成、または会計管理者による履歴作成を許可
+        allow create: if isSignedIn() && (
+          get(/databases/$(database)/documents/expenseApplies/$(id)).data.uid == request.auth.uid || 
+          isAdmin("Expense")
+        );
+        // 履歴の改ざん・削除は一切禁止（監査証跡としての完全性維持）
+        allow update, delete: if false;
+      }
+    }
+
+
+    // ======================================================
+    // LEVEL 4: システム制限データ (フロントエンド非推奨)
+    // ======================================================
+    
+    // LINE ID連携：自分の情報の削除のみ許可
+    match /lineMessagingIds/{uid} {
+      allow delete: if isOwner(uid);
+    }
+    
+    // OAuth状態、通知履歴：フロントエンドからの直接操作を禁止
+    match /oauthStates/{oauthStatesId} { allow read, write: if false; }
+    match /notificationHistorys/{notificationHistorys} { allow read, write: if false; }
+  }
+}

@@ -558,3 +558,38 @@ export interface Income {
   createdAt: number;
   updatedAt: number;
 }
+
+// ===== チケット (Issue) =====
+
+export interface IssueStep {
+  text: string;
+  completed: boolean;
+}
+
+export interface IssueFile {
+  name: string;
+  url: string;
+  path: string;
+}
+
+export interface Issue {
+  id: string;
+  type: "todo" | "bug" | "question"; // 区分 (TODO, 課題, 質問)
+  title: string;                       // タイトル
+  description: string;                 // 説明
+  assigneeId: string;                  // 担当者ID (UID)
+  assigneeName?: string;               // 担当者名 (表示用)
+  date: string;                        // 日付 (yyyy.MM.dd)
+  dateType: "until" | "on";            // 日付区分 ("まで" | "に")
+  status: "not_started" | "in_progress" | "completed"; // ステータス ("未" | "実施中" | "済")
+  scope: "all" | "part" | "user";      // 公開範囲 ("全体" | "自分のパート" | "ユーザ指定")
+  partId?: string;                     // 自分のパート時のセクションID
+  allowedUserIds?: string[];           // ユーザ指定時の許可メンバーIDリスト
+  steps?: IssueStep[];                 // チェックリストステップ
+  files?: IssueFile[];                 // 添付ファイル
+  createdBy: string;                   // 作成者UID
+  createdByName?: string;              // 作成者名
+  createdAt: number;
+  updatedAt: number;
+}
+
