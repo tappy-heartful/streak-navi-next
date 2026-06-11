@@ -87,6 +87,9 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
   const [youtubeTimestamps, setYoutubeTimestamps] = useState<{ time: string; comment: string }[]>(
     initialEvent?.youtubeTimestamps || []
   );
+  const [rentTimeRanges, setRentTimeRanges] = useState<{ startTime: string; endTime: string }[]>(
+    initialEvent?.rentTimeRanges || []
+  );
   const [schedule, setSchedule] = useState(initialEvent?.schedule || "");
   const [dress, setDress] = useState(initialEvent?.dress || "");
   const [bring, setBring] = useState(initialEvent?.bring || "");
@@ -184,6 +187,18 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
   const removeYoutubeTimestamp = (idx: number) => {
     setYoutubeTimestamps(prev => prev.filter((_, i) => i !== idx));
+  };
+  
+  const addRentTimeRange = () => {
+    setRentTimeRanges(prev => [...prev, { startTime: "", endTime: "" }]);
+  };
+
+  const removeRentTimeRange = (idx: number) => {
+    setRentTimeRanges(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const updateRentTimeRange = (idx: number, field: "startTime" | "endTime", val: string) => {
+    setRentTimeRanges(prev => prev.map((item, i) => i === idx ? { ...item, [field]: val } : item));
   };
 
   // ---- Instrument config helpers ----
@@ -344,6 +359,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       googleMap,
       youtubeUrl,
       youtubeTimestamps: youtubeTimestamps.filter(t => t.time || t.comment),
+      rentTimeRanges: rentTimeRanges.filter(r => r.startTime && r.endTime),
       schedule,
       dress,
       bring,
@@ -546,6 +562,34 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                 onChange={e => setWebsite(e.target.value)}
                 placeholder="公式サイトなどのURLを入力..."
               />
+            </div>
+
+            {/* 施設利用時間 */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>施設利用時間</label>
+              {rentTimeRanges.map((range, idx) => (
+                <div key={idx} className="choice-wrapper" style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
+                  <input
+                    type="time"
+                    value={range.startTime}
+                    onChange={e => updateRentTimeRange(idx, "startTime", e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <span>～</span>
+                  <input
+                    type="time"
+                    value={range.endTime}
+                    onChange={e => updateRentTimeRange(idx, "endTime", e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <button type="button" className="remove-choice" onClick={() => removeRentTimeRange(idx)} title="削除">
+                    <i className="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="add-choice" onClick={addRentTimeRange} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <i className="fa-solid fa-plus"></i> 施設利用時間を追加
+              </button>
             </div>
 
             {/* Google Map */}

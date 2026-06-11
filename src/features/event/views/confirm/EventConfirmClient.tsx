@@ -480,6 +480,25 @@ export function EventConfirmClient({ eventId, data }: Props) {
               </div>
             </div>
 
+            {/* 施設利用時間 */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="label-title">施設利用時間</label>
+              <div className="label-value">
+                {event.rentTimeRanges && event.rentTimeRanges.length > 0 ? (
+                  <div className={styles.rentTimeList}>
+                    {event.rentTimeRanges.map((range, idx) => (
+                      <span key={idx} className={styles.rentTimeBadge}>
+                        <i className="fa-solid fa-clock" />
+                        {range.startTime} ～ {range.endTime}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  "未設定"
+                )}
+              </div>
+            </div>
+
             {/* Google Map */}
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="label-title">Google Map</label>

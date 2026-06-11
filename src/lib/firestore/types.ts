@@ -232,6 +232,11 @@ export interface EventYouTubeTimestamp {
   comment: string;
 }
 
+export interface EventRentTimeRange {
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -248,6 +253,7 @@ export interface Event {
   googleMap?: string;
   youtubeUrl?: string;
   youtubeTimestamps?: EventYouTubeTimestamp[];
+  rentTimeRanges?: EventRentTimeRange[];
   schedule?: string;
   dress?: string;
   bring?: string;

@@ -45,3 +45,28 @@
     gap: 16px;
   }
 }
+
+
+.rentTimeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rentTimeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: #e2e8f0;
+  border-radius: 16px;
+  font-size: 13px;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  font-weight: bold;
+}
+
+.rentTimeBadge i {
+  color: #64748b;
+}
+
