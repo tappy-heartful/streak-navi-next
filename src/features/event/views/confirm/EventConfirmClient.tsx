@@ -26,6 +26,7 @@ import {
   buildYouTubeHtml,
   timestampToSeconds,
   writeLog,
+  format,
 } from "@/src/lib/functions";
 import {
   deleteEventWithAnswers,
@@ -44,13 +45,8 @@ type Props = {
 
 function isEventPast(event: Event): boolean {
   if (!event.date) return false;
-  const parts = event.date.split(".");
-  if (parts.length !== 3) return false;
-  const [y, m, d] = parts.map(Number);
-  const eventDate = new Date(y, m - 1, d);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return eventDate < today;
+  const todayStr = format(new Date(), "yyyy.MM.dd");
+  return event.date < todayStr;
 }
 
 export function EventConfirmClient({ eventId, data }: Props) {

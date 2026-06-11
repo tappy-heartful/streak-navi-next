@@ -9,6 +9,7 @@ import { rules } from "@/src/lib/validation";
 import { Call } from "@/src/lib/firestore/types";
 import { useAppForm } from "@/src/hooks/useAppForm";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { format } from "@/src/lib/functions";
 
 type Props = {
   mode: "new" | "edit" | "copy";
@@ -17,15 +18,13 @@ type Props = {
 };
 
 function getDefaultStartDate() {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().split("T")[0];
+  const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  return format(d, "yyyy-MM-dd");
 }
 
 function getDefaultEndDate() {
-  const d = new Date();
-  d.setDate(d.getDate() + 13);
-  return d.toISOString().split("T")[0];
+  const d = new Date(Date.now() + 13 * 24 * 60 * 60 * 1000);
+  return format(d, "yyyy-MM-dd");
 }
 
 export function CallEditClient({ mode, callId, initialCall }: Props) {
@@ -81,16 +80,11 @@ export function CallEditClient({ mode, callId, initialCall }: Props) {
   };
 
   const handleSave = async (data: typeof form.formData): Promise<string> => {
-    // 日付の妥当性チェック（cross-field validation）
-    const start = new Date(data.acceptStartDate + "T00:00:00");
-    const end = new Date(data.acceptEndDate + "T23:59:59");
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (isNewOrCopy && start <= today) {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    if (isNewOrCopy && data.acceptStartDate <= todayStr) {
       throw new Error("validation:開始日は明日以降の日付を指定してください");
     }
-    if (start > end) {
+    if (data.acceptStartDate > data.acceptEndDate) {
       throw new Error("validation:終了日は開始日以降にしてください");
     }
 

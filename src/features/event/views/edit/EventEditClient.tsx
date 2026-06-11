@@ -9,7 +9,7 @@ import { FormFooter } from "@/src/components/Form/FormFooter";
 import { Modal } from "@/src/components/Modal";
 import { Event, Score, Section, Instrument, Studio, SetlistGroup, InstrumentPart, Prefecture, Municipality } from "@/src/lib/firestore/types";
 import { addEvent, updateEvent } from "@/src/features/event/api/event-client-service";
-import { showDialog, showSpinner, hideSpinner, dotDateToHyphen, hyphenDateToDot } from "@/src/lib/functions";
+import { showDialog, showSpinner, hideSpinner, dotDateToHyphen, hyphenDateToDot, format } from "@/src/lib/functions";
 import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/src/lib/firebase";
@@ -39,13 +39,12 @@ type InstrumentPartState = {
 };
 
 function defaultDates() {
-  const fmt = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const start = new Date();
-  start.setDate(start.getDate() + 1);
-  const end = new Date();
-  end.setDate(end.getDate() + 13);
-  return { start: fmt(start), end: fmt(end) };
+  const start = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const end = new Date(Date.now() + 13 * 24 * 60 * 60 * 1000);
+  return {
+    start: format(start, "yyyy-MM-dd"),
+    end: format(end, "yyyy-MM-dd")
+  };
 }
 
 export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections, instruments, prefectures }: Props) {
@@ -285,17 +284,13 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       await showDialog("受付期間は必須です", true);
       return;
     }
-    const s = new Date(acceptStartDate).getTime();
-    const e = new Date(acceptEndDate).getTime();
-    if (s > e) {
+    if (acceptStartDate > acceptEndDate) {
       await showDialog("受付終了日は開始日以降にしてください", true);
       return;
     }
     if (mode === "new" || mode === "copy") {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      if (s < tomorrow.getTime()) {
+      const todayStr = format(new Date(), "yyyy-MM-dd");
+      if (acceptStartDate <= todayStr) {
         await showDialog("受付開始日は明日以降にしてください", true);
         return;
       }

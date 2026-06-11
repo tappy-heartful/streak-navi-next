@@ -320,38 +320,52 @@ export async function archiveAndDeleteDoc(collectionName: string, docId: string)
   }
 }
 /**
- * DateオブジェクトまたはFirestoreのTimestampをフォーマット
+ * DateオブジェクトまたはFirestoreのTimestampを JST基準のDateオブジェクト（UTCメソッドでアクセス可能なダミー）に変換するヘルパー
+ */
+export function getJSTDate(dateInput?: any): Date {
+  let date: Date;
+  if (!dateInput) {
+    date = new Date();
+  } else if (typeof dateInput.toDate === 'function') {
+    date = dateInput.toDate();
+  } else if (dateInput instanceof Date) {
+    date = dateInput;
+  } else if (dateInput.seconds !== undefined) {
+    date = new Date(dateInput.seconds * 1000);
+  } else if (typeof dateInput === 'number') {
+    date = new Date(dateInput);
+  } else if (typeof dateInput === 'string') {
+    date = new Date(dateInput.replace(/[\.\-]/g, '/'));
+  } else {
+    date = new Date();
+  }
+
+  if (isNaN(date.getTime())) {
+    date = new Date();
+  }
+
+  // +9時間オフセットして JST のダミー Date オブジェクトを作成
+  return new Date(date.getTime() + 9 * 60 * 60 * 1000);
+}
+
+/**
+ * DateオブジェクトまたはFirestoreのTimestampをフォーマット（常にJST基準）
  */
 export function format(dateOrTimestamp: any, formatString = 'yyyy.MM.dd'): string {
   if (!dateOrTimestamp) return '';
-  let date: Date;
+  const jstDate = getJSTDate(dateOrTimestamp);
 
-  if (typeof dateOrTimestamp.toDate === 'function') {
-    date = dateOrTimestamp.toDate();
-  } else if (dateOrTimestamp instanceof Date) {
-    date = dateOrTimestamp;
-  } else if (dateOrTimestamp.seconds !== undefined) {
-    date = new Date(dateOrTimestamp.seconds * 1000);
-  } else if (typeof dateOrTimestamp === 'number') {
-    date = new Date(dateOrTimestamp);
-  } else if (typeof dateOrTimestamp === 'string') {
-    date = new Date(dateOrTimestamp.replace(/\./g, '/'));
-  } else {
-    return '';
-  }
-
-  if (isNaN(date.getTime())) return '';
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const year = jstDate.getUTCFullYear();
+  const month = String(jstDate.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(jstDate.getUTCDate()).padStart(2, '0');
 
   if (formatString === 'yyyy.MM.dd') return `${year}.${month}.${day}`;
+  if (formatString === 'yyyy-MM-dd') return `${year}-${month}-${day}`;
   if (formatString === 'MMdd') return `${month}${day}`;
   if (formatString === 'MM') return `${month}`;
   if (formatString === 'yyyy/MM/dd HH:mm') {
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const hours = String(jstDate.getUTCHours()).padStart(2, '0');
+    const minutes = String(jstDate.getUTCMinutes()).padStart(2, '0');
     return `${year}/${month}/${day} ${hours}:${minutes}`;
   }
   return `${year}.${month}.${day}`;
@@ -367,12 +381,20 @@ export function parseDate(dateString: string): Date | null {
 }
 
 /**
- * 期間内チェック
+ * 期間内チェック（常にJST基準）
  */
 export function isInTerm(startDateStr: string, endDateStr: string): boolean {
   const now = Date.now();
-  const start = startDateStr ? new Date(startDateStr.replace(/\./g, '/') + ' 00:00:00').getTime() : 0;
-  const end = endDateStr ? new Date(endDateStr.replace(/\./g, '/') + ' 23:59:59').getTime() : Infinity;
+  
+  const parseJST = (dateStr: string, timeStr: string): number => {
+    const normalized = dateStr.replace(/[\.\/]/g, '-').trim();
+    const isoStr = `${normalized}T${timeStr}+09:00`;
+    const t = new Date(isoStr).getTime();
+    return isNaN(t) ? 0 : t;
+  };
+
+  const start = startDateStr ? parseJST(startDateStr, '00:00:00') : 0;
+  const end = endDateStr ? parseJST(endDateStr, '23:59:59') : Infinity;
   return now >= start && now <= end;
 }
 
@@ -503,8 +525,10 @@ export function getAccountingSeasonTheme(createdAtInput?: any) {
     date = new Date();
   }
 
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
+  // +9時間オフセットしてJSTの月・年をUTCメソッドから取得
+  const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const year = jstDate.getUTCFullYear();
+  const month = jstDate.getUTCMonth() + 1;
 
   if (month >= 4 && month <= 6) {
     return {

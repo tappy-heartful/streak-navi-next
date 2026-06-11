@@ -35,7 +35,13 @@ export async function getAnnouncementsServer() {
   const eventResults = events.docs.map(eDoc => {
     const d = eDoc.data();
     if (d.date < todayStr) return null;
-    const diffDays = d.date ? Math.ceil((new Date(d.date.replace(/\./g, "/")).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000) : 0;
+
+    const todayJstStr = utils.format(new Date(), "yyyy-MM-dd");
+    const todayMidnight = new Date(`${todayJstStr}T00:00:00+09:00`).getTime();
+    const eventJstStr = d.date ? d.date.replace(/\./g, "-") : "";
+    const eventMidnight = eventJstStr ? new Date(`${eventJstStr}T00:00:00+09:00`).getTime() : 0;
+    const diffDays = eventMidnight ? Math.round((eventMidnight - todayMidnight) / 86400000) : 0;
+
     const isInAcceptTerm = utils.isInTerm(d.acceptStartDate, d.acceptEndDate);
     return { id: eDoc.id, title: d.title, date: d.date, attendanceType: d.attendanceType, allowAssign: d.allowAssign, isUnanswered: false, diffDays, isInAcceptTerm };
   });
