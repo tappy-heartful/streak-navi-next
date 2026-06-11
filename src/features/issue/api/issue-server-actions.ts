@@ -9,6 +9,10 @@ export async function getIssues(): Promise<Issue[]> {
     return {
       id: doc.id,
       ...data,
+      links: (data.links || []).map((l: any) => ({
+        title: l.title || "",
+        url: l.url || ""
+      })),
       createdAt: data.createdAt?.toMillis?.() || data.createdAt || 0,
       updatedAt: data.updatedAt?.toMillis?.() || data.updatedAt || 0,
     } as Issue;
@@ -22,6 +26,10 @@ export async function getIssue(id: string): Promise<Issue | null> {
   return {
     id: doc.id,
     ...data,
+    links: (data.links || []).map((l: any) => ({
+      title: l.title || "",
+      url: l.url || ""
+    })),
     createdAt: data.createdAt?.toMillis?.() || data.createdAt || 0,
     updatedAt: data.updatedAt?.toMillis?.() || data.updatedAt || 0,
   } as Issue;

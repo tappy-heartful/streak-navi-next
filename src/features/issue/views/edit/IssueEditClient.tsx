@@ -8,7 +8,7 @@ import { AppInput } from "@/src/components/Form/AppInput";
 import { FormField } from "@/src/components/Form/FormField";
 import { useAppForm } from "@/src/hooks/useAppForm";
 import { rules } from "@/src/lib/validation";
-import { Issue, User, Section, IssueStep, IssueFile } from "@/src/lib/firestore/types";
+import { Issue, User, Section, IssueStep, IssueFile, IssueLink } from "@/src/lib/firestore/types";
 import { saveIssue } from "@/src/features/issue/api/issue-client-service";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { storage } from "@/src/lib/firebase";
@@ -32,6 +32,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections }
   // 添付ファイルとステップの状態管理
   const [files, setFiles] = useState<IssueFile[]>(initialIssue?.files || []);
   const [steps, setSteps] = useState<IssueStep[]>(initialIssue?.steps || []);
+  const [links, setLinks] = useState<IssueLink[]>(initialIssue?.links || []);
   const [allowedUserIds, setAllowedUserIds] = useState<string[]>(initialIssue?.allowedUserIds || []);
 
   // セクションごとにユーザーをグループ化する
@@ -162,6 +163,23 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections }
     setSteps((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // 関連リンク操作
+  const addLink = () => {
+    setLinks((prev) => [...prev, { title: "", url: "" }]);
+  };
+
+  const updateLink = (index: number, field: "title" | "url", value: string) => {
+    setLinks((prev) => {
+      const newLinks = [...prev];
+      newLinks[index] = { ...newLinks[index], [field]: value };
+      return newLinks;
+    });
+  };
+
+  const deleteLink = (index: number) => {
+    setLinks((prev) => prev.filter((_, i) => i !== index));
+  };
+
   // ユーザ指定の公開範囲制御
   const toggleMemberSelection = (uid: string) => {
     setAllowedUserIds((prev) =>
@@ -186,6 +204,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections }
       partId: data.scope === "part" ? (userData?.sectionId || "") : "",
       allowedUserIds: data.scope === "user" ? allowedUserIds : [],
       steps: steps.filter((step) => step.text.trim().length > 0),
+      links: links.filter((link) => link.title.trim() && link.url.trim()),
       files,
     };
 
@@ -287,6 +306,41 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections }
           </ul>
           <button type="button" onClick={addStep} className={styles.addStepBtn}>
             <i className="fa-solid fa-plus"></i> ステップを追加
+          </button>
+        </FormField>
+
+        {/* 関連リンク */}
+        <FormField label="関連リンク">
+          <ul className={styles.linkList}>
+            {links.map((link, idx) => (
+              <li key={idx} className={styles.linkItem}>
+                <input
+                  type="text"
+                  className={`${styles.linkTitleInput} form-control`}
+                  value={link.title}
+                  placeholder="サイトのタイトル (例: 参考URL, 関連ページ)"
+                  onChange={(e) => updateLink(idx, "title", e.target.value)}
+                />
+                <input
+                  type="url"
+                  className={`${styles.linkUrlInput} form-control`}
+                  value={link.url}
+                  placeholder="URL (https://...)"
+                  onChange={(e) => updateLink(idx, "url", e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => deleteLink(idx)}
+                  className={styles.deleteStepBtn}
+                  title="リンクを削除"
+                >
+                  <i className="fa-solid fa-trash-can"></i>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button type="button" onClick={addLink} className={styles.addStepBtn}>
+            <i className="fa-solid fa-plus"></i> リンクを追加
           </button>
         </FormField>
 

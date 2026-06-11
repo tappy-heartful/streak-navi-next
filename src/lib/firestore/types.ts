@@ -578,6 +578,11 @@ export interface IssueFile {
   path: string;
 }
 
+export interface IssueLink {
+  title: string;
+  url: string;
+}
+
 export interface Issue {
   id: string;
   type: "todo" | "bug" | "question"; // 区分 (TODO, 課題, 質問)
@@ -593,6 +598,7 @@ export interface Issue {
   allowedUserIds?: string[];           // ユーザ指定時の許可メンバーIDリスト
   steps?: IssueStep[];                 // チェックリストステップ
   files?: IssueFile[];                 // 添付ファイル
+  links?: IssueLink[];                 // 関連リンク
   createdBy: string;                   // 作成者UID
   createdByName?: string;              // 作成者名
   createdAt: number;
