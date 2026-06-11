@@ -202,7 +202,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections }
   return (
     <BaseLayout>
       <EditFormLayout
-        featureName="イシュー"
+        featureName="TODO"
         icon="fa-solid fa-list-check"
         featureIdKey="issueId"
         basePath="/issue"

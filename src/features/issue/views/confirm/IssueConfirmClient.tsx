@@ -125,7 +125,7 @@ export function IssueConfirmClient({ issueData, issueId, users, sections }: Prop
   return (
     <BaseLayout>
       <ConfirmLayout
-        name="イシュー"
+        name="TODO"
         icon="fa-solid fa-list-check"
         basePath="/issue"
         dataId={issueId}
@@ -141,11 +141,6 @@ export function IssueConfirmClient({ issueData, issueId, users, sections }: Prop
         {/* 担当者 */}
         <DisplayField label="担当者">
           {getAssigneeName(issueData.assigneeId)}
-        </DisplayField>
-
-        {/* 作成者 */}
-        <DisplayField label="起票者">
-          {getCreatorName(issueData.createdBy)}
         </DisplayField>
 
         {/* タイトル */}
@@ -234,6 +229,11 @@ export function IssueConfirmClient({ issueData, issueId, users, sections }: Prop
             </div>
           </DisplayField>
         )}
+
+        {/* 作成者 */}
+        <DisplayField label="起票者">
+          {getCreatorName(issueData.createdBy)}
+        </DisplayField>
       </ConfirmLayout>
     </BaseLayout>
   );
