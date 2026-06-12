@@ -186,27 +186,50 @@ export function IssueListClient({ initialData }: Props) {
       }
     });
 
-    const result: { id: string; name: string; issues: Issue[] }[] = [];
+    const groupsWithEarliestDate: { id: string; name: string; issues: Issue[]; earliestDate: string }[] = [];
 
     initialData.issueGroups.forEach((g) => {
-      if (map[g.id].length > 0) {
-        result.push({
+      const issuesInGroup = map[g.id];
+      if (issuesInGroup.length > 0) {
+        // そのグループ内の最短（最古）日付を取得
+        let earliest = "9999.12.31";
+        issuesInGroup.forEach((issue) => {
+          const d = issue.date || "9999.12.31";
+          if (d < earliest) {
+            earliest = d;
+          }
+        });
+        groupsWithEarliestDate.push({
           id: g.id,
           name: g.name,
-          issues: map[g.id],
+          issues: issuesInGroup,
+          earliestDate: earliest,
         });
       }
     });
 
     if (unclassified.length > 0) {
-      result.push({
+      let earliest = "9999.12.31";
+      unclassified.forEach((issue) => {
+        const d = issue.date || "9999.12.31";
+        if (d < earliest) {
+          earliest = d;
+        }
+      });
+      groupsWithEarliestDate.push({
         id: "unclassified",
         name: "未分類",
         issues: unclassified,
+        earliestDate: earliest,
       });
     }
 
-    return result;
+    // 各グループの最短タスク日付の昇順でグループ自体をソート
+    groupsWithEarliestDate.sort((a, b) => {
+      return a.earliestDate.localeCompare(b.earliestDate);
+    });
+
+    return groupsWithEarliestDate;
   }, [list.filteredData, initialData.issueGroups]);
 
   const userGroups = useMemo(() => {
@@ -313,17 +336,6 @@ export function IssueListClient({ initialData }: Props) {
               groups={userGroups}
               value={list.filters.assigneeId}
               onChange={(v) => list.updateFilter("assigneeId", v)}
-            />
-            <FilterSelect
-              label="並び替え"
-              options={[
-                { id: "date-asc", name: "期限の近い順" },
-                { id: "date-desc", name: "期限の遠い順" },
-                { id: "createdAt-desc", name: "新着順" },
-                { id: "createdAt-asc", name: "古い順" },
-              ]}
-              value={list.filters.sort}
-              onChange={(v) => list.updateFilter("sort", v)}
             />
           </ListFilterGrid>
         }

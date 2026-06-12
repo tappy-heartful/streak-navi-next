@@ -1,6 +1,7 @@
 import React from "react";
 import { getIssue, getIssueGroups } from "@/src/features/issue/api/issue-server-actions";
 import { getUsersServer, getSectionsServer } from "@/src/features/users/api/user-server-actions";
+import { fetchEvents } from "@/src/features/event/api/event-server-actions";
 import { IssueEditClient } from "@/src/features/issue/views/edit/IssueEditClient";
 
 type Props = {
@@ -13,11 +14,12 @@ export default async function IssueEditPage({ searchParams }: Props) {
   const { mode, issueId } = await searchParams;
   const isEdit = mode === "edit" || mode === "copy";
 
-  const [initialIssue, users, sections, issueGroups] = await Promise.all([
+  const [initialIssue, users, sections, issueGroups, events] = await Promise.all([
     isEdit && issueId ? getIssue(issueId) : Promise.resolve(null),
     getUsersServer(),
     getSectionsServer(),
     getIssueGroups(),
+    fetchEvents(),
   ]);
 
   return (
@@ -28,6 +30,7 @@ export default async function IssueEditPage({ searchParams }: Props) {
       users={users}
       sections={sections}
       issueGroups={issueGroups}
+      events={events}
     />
   );
 }

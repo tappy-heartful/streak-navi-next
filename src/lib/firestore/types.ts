@@ -588,6 +588,7 @@ export interface Issue {
   id: string;
   type: "todo" | "bug" | "question"; // 区分 (TODO, 課題, 質問)
   groupId?: string;                    // グループID
+  eventIds?: string[];                 // 関連するイベントIDリスト
   title: string;                       // タイトル
   description: string;                 // 説明
   assigneeId: string;                  // 担当者ID (UID)

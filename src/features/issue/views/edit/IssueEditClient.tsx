@@ -8,7 +8,7 @@ import { AppInput } from "@/src/components/Form/AppInput";
 import { FormField } from "@/src/components/Form/FormField";
 import { useAppForm } from "@/src/hooks/useAppForm";
 import { rules } from "@/src/lib/validation";
-import { Issue, User, Section, IssueStep, IssueFile, IssueLink, IssueGroup } from "@/src/lib/firestore/types";
+import { Issue, User, Section, IssueStep, IssueFile, IssueLink, IssueGroup, Event } from "@/src/lib/firestore/types";
 import { saveIssue } from "@/src/features/issue/api/issue-client-service";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { storage } from "@/src/lib/firebase";
@@ -24,9 +24,10 @@ type Props = {
   users: User[];
   sections: Section[];
   issueGroups: IssueGroup[];
+  events: Event[];
 };
 
-export function IssueEditClient({ mode, issueId, initialIssue, users, sections, issueGroups }: Props) {
+export function IssueEditClient({ mode, issueId, initialIssue, users, sections, issueGroups, events }: Props) {
   const { userData } = useAuth();
   const router = useRouter();
 
@@ -35,6 +36,13 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
   const [steps, setSteps] = useState<IssueStep[]>(initialIssue?.steps || []);
   const [links, setLinks] = useState<IssueLink[]>(initialIssue?.links || []);
   const [allowedUserIds, setAllowedUserIds] = useState<string[]>(initialIssue?.allowedUserIds || []);
+  const [selectedEventIds, setSelectedEventIds] = useState<string[]>(initialIssue?.eventIds || []);
+
+  const toggleEventSelection = (eventId: string) => {
+    setSelectedEventIds((prev) =>
+      prev.includes(eventId) ? prev.filter((id) => id !== eventId) : [...prev, eventId]
+    );
+  };
 
   // セクションごとにユーザーをグループ化する
   const groupedUsers = React.useMemo(() => {
@@ -207,6 +215,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
       scope: data.scope as "all" | "part" | "user",
       partId: data.scope === "part" ? (userData?.sectionId || "") : "",
       allowedUserIds: data.scope === "user" ? allowedUserIds : [],
+      eventIds: selectedEventIds,
       steps: steps.filter((step) => step.text.trim().length > 0),
       links: links.filter((link) => link.title.trim() && link.url.trim()),
       files,
@@ -440,6 +449,28 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
             </div>
           </FormField>
         )}
+
+        {/* 関連するイベント */}
+        <FormField label="関連するイベント (任意・複数選択可)">
+          <div className={styles.eventChecklist}>
+            {events.map((e) => (
+              <label key={e.id} className={styles.eventCheckLabel}>
+                <input
+                  type="checkbox"
+                  className={styles.eventCheckbox}
+                  checked={selectedEventIds.includes(e.id)}
+                  onChange={() => toggleEventSelection(e.id)}
+                />
+                <span className={styles.eventCheckText}>
+                  {e.title} {e.date && `(${e.date})`}
+                </span>
+              </label>
+            ))}
+            {events.length === 0 && (
+              <div style={{ color: "#64748b", padding: "8px" }}>イベントが登録されていません</div>
+            )}
+          </div>
+        </FormField>
 
         {/* 添付ファイル */}
         <FormField label="添付ファイル (画像・PDF)">

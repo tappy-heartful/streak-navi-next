@@ -1,11 +1,12 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
-import { Issue, User, Section, IssueGroup } from "@/src/lib/firestore/types";
+import { Issue, User, Section, IssueGroup, Event } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { toggleIssueStep } from "@/src/features/issue/api/issue-client-service";
 import { buildYouTubeHtml, showSpinner, hideSpinner } from "@/src/lib/functions";
@@ -17,9 +18,10 @@ type Props = {
   users: User[];
   sections: Section[];
   issueGroups: IssueGroup[];
+  events: Event[];
 };
 
-export function IssueConfirmClient({ issueData, issueId, users, sections, issueGroups }: Props) {
+export function IssueConfirmClient({ issueData, issueId, users, sections, issueGroups, events }: Props) {
   const router = useRouter();
   const { userData, isAdmin } = useAuth();
 
@@ -30,6 +32,14 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
     if (!groupId) return "未分類";
     const group = issueGroups.find((g) => g.id === groupId);
     return group?.name || "未分類";
+  };
+
+  const getRelatedEvents = () => {
+    if (!issueData.eventIds || issueData.eventIds.length === 0) return null;
+    const related = issueData.eventIds
+      .map((id) => events.find((e) => e.id === id))
+      .filter(Boolean) as Event[];
+    return related.length > 0 ? related : null;
   };
 
   const getAssigneeName = (uid: string) => {
@@ -247,6 +257,27 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
                   <span className={styles.linkCardText}>{link.title}</span>
                   <i className={`fa-solid fa-arrow-up-right-from-square ${styles.linkCardIconRight}`}></i>
                 </a>
+              ))}
+            </div>
+          </DisplayField>
+        )}
+
+        {/* 関連するイベント */}
+        {getRelatedEvents() && (
+          <DisplayField label="関連するイベント">
+            <div className={styles.linkList}>
+              {getRelatedEvents()!.map((e) => (
+                <Link
+                  key={e.id}
+                  href={`/event/confirm?eventId=${e.id}`}
+                  className={styles.urlLinkCard}
+                >
+                  <i className="fa-solid fa-calendar-days"></i>
+                  <span className={styles.linkCardText}>
+                    {e.title} {e.date && `(${e.date})`}
+                  </span>
+                  <i className={`fa-solid fa-arrow-up-right-from-square ${styles.linkCardIconRight}`}></i>
+                </Link>
               ))}
             </div>
           </DisplayField>
