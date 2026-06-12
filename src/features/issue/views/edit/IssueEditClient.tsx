@@ -25,11 +25,59 @@ type Props = {
   sections: Section[];
   issueGroups: IssueGroup[];
   events: Event[];
+  issues: Issue[];
+  parentId?: string;
 };
 
-export function IssueEditClient({ mode, issueId, initialIssue, users, sections, issueGroups, events }: Props) {
+export function IssueEditClient({ mode, issueId, initialIssue, users, sections, issueGroups, events, issues, parentId }: Props) {
   const { userData } = useAuth();
   const router = useRouter();
+
+  const hasChildren = React.useMemo(() => {
+    if (mode === "new" || !issueId) return false;
+    return issues.some((i) => i.parentId === issueId);
+  }, [issues, mode, issueId]);
+
+  const validParentIssues = React.useMemo(() => {
+    if (hasChildren) return [];
+    // Only display issues that do not have any parent themselves (prevent 2+ levels depth)
+    const candidates = issues.filter((i) => !i.parentId);
+    if (mode === "new" || mode === "copy" || !issueId) return candidates;
+    return candidates.filter((i) => i.id !== issueId);
+  }, [issues, mode, issueId, hasChildren]);
+
+  const groupedParentIssues = React.useMemo(() => {
+    const map: Record<string, Issue[]> = {};
+    const unclassified: Issue[] = [];
+
+    issueGroups.forEach((g) => {
+      map[g.id] = [];
+    });
+
+    validParentIssues.forEach((i) => {
+      if (i.groupId && map[i.groupId] !== undefined) {
+        map[i.groupId].push(i);
+      } else {
+        unclassified.push(i);
+      }
+    });
+
+    const result = issueGroups
+      .map((g) => ({
+        group: g,
+        issues: map[g.id].sort((a, b) => a.title.localeCompare(b.title, "ja")),
+      }))
+      .filter((g) => g.issues.length > 0);
+
+    if (unclassified.length > 0) {
+      result.push({
+        group: { id: "unclassified", name: "未分類" },
+        issues: unclassified.sort((a, b) => a.title.localeCompare(b.title, "ja")),
+      });
+    }
+
+    return result;
+  }, [validParentIssues, issueGroups]);
 
   // 添付ファイルとステップの状態管理
   const [files, setFiles] = useState<IssueFile[]>(initialIssue?.files || []);
@@ -95,6 +143,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
     {
       type: initialIssue?.type || "todo",
       groupId: initialIssue?.groupId || "",
+      parentId: initialIssue?.parentId || parentId || "",
       assigneeId: initialIssue?.assigneeId || "",
       title: (mode === "copy" ? `${initialIssue?.title}（コピー）` : initialIssue?.title) ?? "",
       description: initialIssue?.description ?? "",
@@ -106,6 +155,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
     {
       type: [rules.required],
       groupId: [],
+      parentId: [],
       assigneeId: [rules.required],
       title: [rules.required],
       description: [rules.required],
@@ -217,6 +267,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
     const payload = {
       type: data.type as "todo" | "bug" | "question" | "proposal" | "request",
       groupId: data.groupId || "",
+      parentId: data.parentId || "",
       assigneeId: data.assigneeId,
       assigneeName,
       title: data.title,
@@ -287,25 +338,33 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
           </select>
         </FormField>
 
-        {/* 担当者 (Assignee) */}
-        <FormField label="担当者" error={form.errors.assigneeId} required={true}>
-          <select
-            className="form-control"
-            value={form.formData.assigneeId}
-            onChange={(e) => form.updateField("assigneeId", e.target.value)}
-          >
-            <option value="">選択してください</option>
-            {groupedUsers.map((g) => (
-              <optgroup key={g.section.id} label={g.section.name}>
-                {g.members.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.displayName || "匿名"}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </FormField>
+        {/* 親TODO */}
+        {hasChildren ? (
+          <FormField label="親TODO">
+            <div style={{ color: "#64748b", fontSize: "0.9rem", padding: "8px 0" }}>
+              このTODOにはすでに子TODOが設定されているため、親TODOは設定できません。
+            </div>
+          </FormField>
+        ) : (
+          <FormField label="親TODO" error={form.errors.parentId}>
+            <select
+              className="form-control"
+              value={form.formData.parentId}
+              onChange={(e) => form.updateField("parentId", e.target.value)}
+            >
+              <option value="">なし (親TODOに設定しない)</option>
+              {groupedParentIssues.map((g) => (
+                <optgroup key={g.group.id} label={g.group.name}>
+                  {g.issues.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.title}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </FormField>
+        )}
 
         {/* タイトル */}
         <AppInput
@@ -350,6 +409,26 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
           <button type="button" onClick={addStep} className={styles.addStepBtn}>
             <i className="fa-solid fa-plus"></i> ステップを追加
           </button>
+        </FormField>
+
+        {/* 担当者 (Assignee) */}
+        <FormField label="担当者" error={form.errors.assigneeId} required={true}>
+          <select
+            className="form-control"
+            value={form.formData.assigneeId}
+            onChange={(e) => form.updateField("assigneeId", e.target.value)}
+          >
+            <option value="">選択してください</option>
+            {groupedUsers.map((g) => (
+              <optgroup key={g.section.id} label={g.section.name}>
+                {g.members.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.displayName || "匿名"}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
         </FormField>
 
         {/* 関連リンク */}

@@ -97,3 +97,145 @@
   margin-left: auto;
   opacity: 0.6;
 }
+
+.parentLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #2563eb;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.parentLink:hover {
+  color: #1d4ed8;
+}
+
+.childList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.childLinkCard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  text-decoration: none !important;
+  color: #334155 !important;
+  font-size: 0.9rem;
+}
+
+.childLinkCard:hover {
+  background-color: #f1f5f9;
+}
+
+.addChildBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background-color: #2563eb;
+  color: white !important;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+}
+
+.addChildBtn:hover {
+  background-color: #1d4ed8;
+}
+
+.linkChildBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.linkChildBtn:hover {
+  background-color: #e2e8f0;
+}
+
+/* Modal styling for linking TODO */
+.linkModalContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 60vh;
+}
+
+.searchInput {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  width: 100%;
+}
+
+.searchInput:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.modalIssueList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 40vh;
+}
+
+.modalIssueItem {
+  padding: 10px 14px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.modalIssueItem:hover {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.modalIssueTitle {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.modalIssueSub {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.modalIssueGroup {
+  font-weight: 500;
+}
+
+.modalIssueAssignee {
+  font-weight: 500;
+}

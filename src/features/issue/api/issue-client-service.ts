@@ -103,3 +103,14 @@ export const deleteIssueGroup = async (id: string) => {
   const docRef = doc(db, "issueGroups", id);
   await deleteDoc(docRef);
 };
+
+/** 子TODOとして設定する (parentIdを更新) */
+export const updateIssueParent = async (issueId: string, parentId: string) => {
+  const uid = getSession("uid");
+  if (!uid) throw new Error("ログインが必要です");
+  const docRef = doc(db, "issues", issueId);
+  await updateDoc(docRef, {
+    parentId,
+    updatedAt: serverTimestamp()
+  });
+};
