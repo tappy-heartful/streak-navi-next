@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
@@ -8,8 +8,9 @@ import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { Issue, User, Section, IssueGroup, Event } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { toggleIssueStep } from "@/src/features/issue/api/issue-client-service";
-import { buildYouTubeHtml, showSpinner, hideSpinner } from "@/src/lib/functions";
+import { toggleIssueStep, updateIssueParent } from "@/src/features/issue/api/issue-client-service";
+import { buildYouTubeHtml, showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
+import { Modal } from "@/src/components/Modal";
 import styles from "./IssueConfirm.module.css";
 
 type Props = {
@@ -19,11 +20,62 @@ type Props = {
   sections: Section[];
   issueGroups: IssueGroup[];
   events: Event[];
+  issues: Issue[];
 };
 
-export function IssueConfirmClient({ issueData, issueId, users, sections, issueGroups, events }: Props) {
+export function IssueConfirmClient({ issueData, issueId, users, sections, issueGroups, events, issues }: Props) {
   const router = useRouter();
   const { userData, isAdmin } = useAuth();
+
+  const parentIssue = issueData.parentId ? issues.find((i) => i.id === issueData.parentId) : null;
+  const childIssues = issues.filter((i) => i.parentId === issueId);
+
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Find eligible existing issues to be linked as a child
+  const eligibleChildIssues = React.useMemo(() => {
+    return issues.filter((i) => {
+      // 1. Not itself
+      if (i.id === issueId) return false;
+      // 2. Not already a child of current issue
+      if (i.parentId === issueId) return false;
+      // 3. Must not have a parent itself (cannot make a child task another child task)
+      if (i.parentId) return false;
+      // 4. Must not have any children of its own (cannot make a parent task a child)
+      const hasChildrenOfItsOwn = issues.some((child) => child.parentId === i.id);
+      if (hasChildrenOfItsOwn) return false;
+      
+      return true;
+    });
+  }, [issues, issueId]);
+
+  const filteredEligibleIssues = React.useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return eligibleChildIssues;
+    return eligibleChildIssues.filter(
+      (i) => i.title.toLowerCase().includes(term) || i.description?.toLowerCase().includes(term)
+    );
+  }, [eligibleChildIssues, searchTerm]);
+
+  const handleLinkChild = async (childId: string) => {
+    const child = issues.find(i => i.id === childId);
+    const confirmed = await showDialog(`「${child?.title}」をこのTODOの子TODOとして設定しますか？`);
+    if (!confirmed) return;
+
+    showSpinner();
+    try {
+      await updateIssueParent(childId, issueId);
+      setIsLinkModalOpen(false);
+      setSearchTerm("");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      await showDialog("子TODOの追加に失敗しました。");
+    } finally {
+      hideSpinner();
+    }
+  };
 
   // 編集権限: 管理者、または起票者、または担当者
   const canEdit = isAdmin || userData?.id === issueData.createdBy || userData?.id === issueData.assigneeId;
@@ -164,10 +216,15 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
           {getGroupName(issueData.groupId)}
         </DisplayField>
 
-        {/* 担当者 */}
-        <DisplayField label="担当者">
-          {getAssigneeName(issueData.assigneeId)}
-        </DisplayField>
+        {/* 親TODO */}
+        {parentIssue && (
+          <DisplayField label="親TODO">
+            <Link href={`/issue/confirm?issueId=${parentIssue.id}`} className={styles.parentLink}>
+              <i className="fa-solid fa-folder-tree" style={{ marginRight: "4px" }}></i>
+              {parentIssue.title}
+            </Link>
+          </DisplayField>
+        )}
 
         {/* タイトル */}
         <DisplayField label="タイトル">
@@ -199,6 +256,47 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
             </ul>
           </DisplayField>
         )}
+
+        {/* 子TODO */}
+        {!issueData.parentId && (
+          <DisplayField label="子TODO">
+            {childIssues.length > 0 && (
+              <div className={styles.childList} style={{ marginBottom: "12px" }}>
+                {childIssues.map((child) => (
+                  <Link
+                    key={child.id}
+                    href={`/issue/confirm?issueId=${child.id}`}
+                    className={styles.childLinkCard}
+                  >
+                    <i className="fa-solid fa-list-check" style={{ marginRight: "4px" }}></i>
+                    <span className={styles.linkCardText}>{child.title}</span>
+                    <i className={`fa-solid fa-chevron-right ${styles.linkCardIconRight}`}></i>
+                  </Link>
+                ))}
+              </div>
+            )}
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <Link
+                href={`/issue/edit?mode=new&parentId=${issueId}`}
+                className={styles.addChildBtn}
+              >
+                <i className="fa-solid fa-plus"></i> 子TODOを新規作成
+              </Link>
+              <button
+                type="button"
+                onClick={() => setIsLinkModalOpen(true)}
+                className={styles.linkChildBtn}
+              >
+                <i className="fa-solid fa-link"></i> 既存を子に設定
+              </button>
+            </div>
+          </DisplayField>
+        )}
+
+        {/* 担当者 */}
+        <DisplayField label="担当者">
+          {getAssigneeName(issueData.assigneeId)}
+        </DisplayField>
 
         {/* 期限日 */}
         <DisplayField label="期限日">
@@ -292,6 +390,38 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
           {getCreatorName(issueData.createdBy)}
         </DisplayField>
       </ConfirmLayout>
+      {isLinkModalOpen && (
+        <Modal title="既存TODOを子に設定" onClose={() => setIsLinkModalOpen(false)}>
+          <div className={styles.linkModalContainer}>
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="TODOのタイトルで検索..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <ul className={styles.modalIssueList}>
+              {filteredEligibleIssues.map((issue) => {
+                const groupName = issue.groupId ? issueGroups.find(g => g.id === issue.groupId)?.name : "未分類";
+                return (
+                  <li key={issue.id} className={styles.modalIssueItem} onClick={() => handleLinkChild(issue.id)}>
+                    <div className={styles.modalIssueTitle}>{issue.title}</div>
+                    <div className={styles.modalIssueSub}>
+                      <span className={styles.modalIssueGroup}>📁 {groupName || "未分類"}</span>
+                      {issue.assigneeName && <span className={styles.modalIssueAssignee}>👤 {issue.assigneeName}</span>}
+                    </div>
+                  </li>
+                );
+              })}
+              {filteredEligibleIssues.length === 0 && (
+                <li style={{ textAlign: "center", color: "#64748b", padding: "24px 12px" }}>
+                  候補となるTODOが見つかりません。
+                </li>
+              )}
+            </ul>
+          </div>
+        </Modal>
+      )}
     </BaseLayout>
   );
 }

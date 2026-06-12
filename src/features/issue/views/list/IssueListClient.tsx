@@ -26,6 +26,52 @@ type Props = {
   };
 };
 
+const buildTree = (issues: Issue[]): { issue: Issue; depth: number }[] => {
+  const result: { issue: Issue; depth: number }[] = [];
+  const visited = new Set<string>();
+
+  // A map of parentId -> child issues
+  const childrenMap: Record<string, Issue[]> = {};
+  issues.forEach((i) => {
+    if (i.parentId) {
+      if (!childrenMap[i.parentId]) {
+        childrenMap[i.parentId] = [];
+      }
+      childrenMap[i.parentId].push(i);
+    }
+  });
+
+  // Find root issues: those whose parent is not in the current list of issues
+  const rootIssues = issues.filter(
+    (i) => !i.parentId || !issues.some((parent) => parent.id === i.parentId)
+  );
+
+  // Helper to recursively traverse
+  const traverse = (issue: Issue, depth: number) => {
+    if (visited.has(issue.id)) return;
+    visited.add(issue.id);
+    result.push({ issue, depth });
+
+    const children = childrenMap[issue.id] || [];
+    // Preserve the current sorting order of the main list
+    const sortedChildren = children.sort((a, b) => {
+      const indexA = issues.indexOf(a);
+      const indexB = issues.indexOf(b);
+      return indexA - indexB;
+    });
+
+    sortedChildren.forEach((child) => {
+      traverse(child, depth + 1);
+    });
+  };
+
+  rootIssues.forEach((root) => {
+    traverse(root, 0);
+  });
+
+  return result;
+};
+
 export function IssueListClient({ initialData }: Props) {
   const router = useRouter();
   const { userData } = useAuth();
@@ -194,7 +240,7 @@ export function IssueListClient({ initialData }: Props) {
       }
     });
 
-    const groupsWithEarliestDate: { id: string; name: string; issues: Issue[]; earliestDate: string }[] = [];
+    const groupsWithEarliestDate: { id: string; name: string; issues: { issue: Issue; depth: number }[]; earliestDate: string }[] = [];
 
     initialData.issueGroups.forEach((g) => {
       const issuesInGroup = map[g.id];
@@ -207,10 +253,11 @@ export function IssueListClient({ initialData }: Props) {
             earliest = d;
           }
         });
+        const tree = buildTree(issuesInGroup);
         groupsWithEarliestDate.push({
           id: g.id,
           name: g.name,
-          issues: issuesInGroup,
+          issues: tree,
           earliestDate: earliest,
         });
       }
@@ -224,10 +271,11 @@ export function IssueListClient({ initialData }: Props) {
           earliest = d;
         }
       });
+      const tree = buildTree(unclassified);
       groupsWithEarliestDate.push({
         id: "unclassified",
         name: "未分類",
-        issues: unclassified,
+        issues: tree,
         earliestDate: earliest,
       });
     }
@@ -358,11 +406,26 @@ export function IssueListClient({ initialData }: Props) {
               </td>
             </tr>
             {/* 各イシュー行 */}
-            {group.issues.map((issue) => (
+            {group.issues.map(({ issue, depth }) => (
               <ListRow key={issue.id}>
                 {/* タイトル */}
                 <ListCellHeader href={`/issue/confirm?issueId=${issue.id}`}>
-                  {issue.title}
+                  <div
+                    style={{
+                      paddingLeft: "0px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      wordBreak: "break-all"
+                    }}
+                  >
+                    {depth > 0 && (
+                      <span style={{ color: "#94a3b8", fontWeight: "normal", fontSize: "0.85em", flexShrink: 0 }}>
+                        ↳
+                      </span>
+                    )}
+                    <span>{issue.title}</span>
+                  </div>
                 </ListCellHeader>
 
                 {/* 期限 */}
