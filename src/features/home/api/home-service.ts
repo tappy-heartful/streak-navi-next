@@ -1,6 +1,6 @@
 import { adminDb } from "@/src/lib/firebase-admin";
 import * as utils from "@/src/lib/functions";
-import { Announcement, BlueNote, Media, Score } from "@/src/lib/firestore/types";
+import { Announcement, BlueNote, Media, Score, Issue } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 
 /**
@@ -102,15 +102,17 @@ export async function getMediasServer(count = 10) {
 }
 
 export async function getCalendarDataServer() {
-  const [eventsSnap, votesSnap, callsSnap] = await Promise.all([
+  const [eventsSnap, votesSnap, callsSnap, issuesSnap] = await Promise.all([
     adminDb.collection("events").get(),
     adminDb.collection("votes").get(),
     adminDb.collection("calls").get(),
+    adminDb.collection("issues").get(),
   ]);
 
   const events = eventsSnap.docs.map(toPlainObject);
   const votes = votesSnap.docs.map(toPlainObject);
   const calls = callsSnap.docs.map(toPlainObject);
+  const issues = issuesSnap.docs.map(toPlainObject);
 
-  return { events, votes, calls };
+  return { events, votes, calls, issues };
 }

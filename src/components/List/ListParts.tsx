@@ -18,11 +18,29 @@ export const FilterInput = ({
 
 // セレクトボックス用
 export const FilterSelect = ({ 
-  value, onChange, options, label 
-}: { value: string, onChange: (v: string) => void, options: { id: string, name: string }[], label: string }) => (
+  value, onChange, options, label, groups 
+}: { 
+  value: string;
+  onChange: (v: string) => void;
+  options?: { id: string; name: string }[];
+  label: string;
+  groups?: { label: string; options: { id: string; name: string }[] }[];
+}) => (
   <select value={value} onChange={(e) => onChange(e.target.value)}>
     <option value="">{label}</option>
-    {options.map((opt) => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
+    {groups ? (
+      groups.map((group, gIdx) => (
+        <optgroup key={gIdx} label={group.label}>
+          {group.options.map((opt) => (
+            <option key={opt.id} value={opt.id}>{opt.name}</option>
+          ))}
+        </optgroup>
+      ))
+    ) : (
+      options?.map((opt) => (
+        <option key={opt.id} value={opt.id}>{opt.name}</option>
+      ))
+    )}
   </select>
 );
 
