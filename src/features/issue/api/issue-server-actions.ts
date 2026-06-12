@@ -1,6 +1,6 @@
 import "server-only";
 import { adminDb } from "@/src/lib/firebase-admin";
-import { Issue } from "@/src/lib/firestore/types";
+import { Issue, IssueGroup } from "@/src/lib/firestore/types";
 
 export async function getIssues(): Promise<Issue[]> {
   const snapshot = await adminDb.collection("issues").orderBy("createdAt", "desc").get();
@@ -33,4 +33,17 @@ export async function getIssue(id: string): Promise<Issue | null> {
     createdAt: data.createdAt?.toMillis?.() || data.createdAt || 0,
     updatedAt: data.updatedAt?.toMillis?.() || data.updatedAt || 0,
   } as Issue;
+}
+
+export async function getIssueGroups(): Promise<IssueGroup[]> {
+  const snapshot = await adminDb.collection("issueGroups").orderBy("name", "asc").get();
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data.createdAt?.toMillis?.() || data.createdAt || 0,
+      updatedAt: data.updatedAt?.toMillis?.() || data.updatedAt || 0,
+    } as IssueGroup;
+  });
 }

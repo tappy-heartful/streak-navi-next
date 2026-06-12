@@ -67,6 +67,151 @@
   font-size: 0.75rem;
 }
 
+/* モーダル内のグループ管理レイアウト */
+.groupModalContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 60vh;
+}
+
+.addGroupForm {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.groupInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.groupInput:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.groupAddButton {
+  padding: 8px 16px;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.groupAddButton:hover {
+  background-color: #059669;
+}
+
+.groupList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 40vh;
+}
+
+.groupItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  gap: 12px;
+}
+
+.groupItemName {
+  font-weight: 500;
+  color: #334155;
+  flex: 1;
+}
+
+.groupEditForm {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.groupActionButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editBtn {
+  color: #3b82f6;
+}
+.editBtn:hover {
+  background-color: #eff6ff;
+}
+
+.deleteBtn {
+  color: #ef4444;
+}
+.deleteBtn:hover {
+  background-color: #fee2e2;
+}
+
+.saveBtn {
+  color: #10b981;
+}
+.saveBtn:hover {
+  background-color: #e2fbf0;
+}
+
+.cancelBtn {
+  color: #64748b;
+}
+.cancelBtn:hover {
+  background-color: #f1f5f9;
+}
+
+/* グループヘッダー行のスタイル */
+.groupHeaderRow {
+  background-color: #f1f5f9;
+}
+
+.groupHeaderCell {
+  padding: 10px 12px;
+  font-weight: 600;
+  color: #334155;
+  text-align: left;
+  border-bottom: 2px solid #cbd5e1;
+  background-color: #f8fafc;
+  font-size: 0.9rem;
+}
+
+.groupHeaderCell i {
+  color: #64748b;
+}
+
 
 
 

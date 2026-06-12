@@ -5,12 +5,13 @@ import {
   collection,
   addDoc,
   updateDoc,
+  deleteDoc,
   doc,
   getDoc,
   serverTimestamp
 } from "firebase/firestore";
 import { getSession } from "@/src/lib/functions";
-import { Issue } from "@/src/lib/firestore/types";
+import { Issue, IssueGroup } from "@/src/lib/firestore/types";
 
 /** チケットの保存 (新規作成・更新・コピー) */
 export const saveIssue = async (
@@ -66,4 +67,39 @@ export const toggleIssueStep = async (
       updatedAt: serverTimestamp()
     });
   }
+};
+
+/** グループの保存 (新規作成・更新) */
+export const saveIssueGroup = async (
+  mode: "new" | "edit",
+  name: string,
+  id?: string
+): Promise<string> => {
+  const uid = getSession("uid");
+  if (!uid) throw new Error("ログインが必要です");
+
+  const payload = {
+    name,
+    updatedAt: serverTimestamp(),
+  };
+
+  if (mode === "edit" && id) {
+    const docRef = doc(db, "issueGroups", id);
+    await updateDoc(docRef, payload);
+    return id;
+  } else {
+    const res = await addDoc(collection(db, "issueGroups"), {
+      ...payload,
+      createdAt: serverTimestamp(),
+    });
+    return res.id;
+  }
+};
+
+/** グループの削除 */
+export const deleteIssueGroup = async (id: string) => {
+  const uid = getSession("uid");
+  if (!uid) throw new Error("ログインが必要です");
+  const docRef = doc(db, "issueGroups", id);
+  await deleteDoc(docRef);
 };

@@ -13,6 +13,7 @@ type Props<T extends Record<string, any>, F extends Record<string, any>> = {
   list: SearchableListReturn<T, F>;
   searchFields: React.ReactNode;
   extraHeaderContent?: React.ReactNode;
+  extraSearchHeaderContent?: React.ReactNode; // ★ 追加
   tableHeaders: (string | { content: React.ReactNode; className?: string })[];
   onSearch?: (filters: F) => void; // ★ これがある場合はボタンを表示し、手動実行モードになる
   hideAddButton?: boolean;
@@ -21,7 +22,7 @@ type Props<T extends Record<string, any>, F extends Record<string, any>> = {
 };
 
 export const SearchableListLayout = <T extends Record<string, any>, F extends Record<string, any>>({
-  title, icon, basePath, list, searchFields, extraHeaderContent, tableHeaders, onSearch, hideAddButton, topSlot, children
+  title, icon, basePath, list, searchFields, extraHeaderContent, extraSearchHeaderContent, tableHeaders, onSearch, hideAddButton, topSlot, children
 }: Props<T, F>) => {
   const { setBreadcrumbs } = useBreadcrumb();
   const { isAdmin } = useAuth();
@@ -39,7 +40,10 @@ export const SearchableListLayout = <T extends Record<string, any>, F extends Re
       {topSlot}
 
       <div className="container">
-        <h3>{icon && <i className={icon} style={{ marginRight: "0.5rem" }} />}検索</h3>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+          <h3 style={{ margin: 0 }}>{icon && <i className={icon} style={{ marginRight: "0.5rem" }} />}検索</h3>
+          {extraSearchHeaderContent}
+        </div>
         {searchFields}
         <div className="confirm-buttons">
           <button className="clear-button" onClick={list.resetFilters}>クリア</button>
