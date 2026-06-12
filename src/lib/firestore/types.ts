@@ -59,6 +59,7 @@ export interface User {
   createdAt?: number;
   updatedAt?: number;
   isSystemAdmin?: boolean;
+  isIssueAdmin?: boolean;
   [key: string]: any; // 動的フラグ (e.g. isScoreAdmin)
 }
 
@@ -586,6 +587,7 @@ export interface IssueLink {
 export interface Issue {
   id: string;
   type: "todo" | "bug" | "question"; // 区分 (TODO, 課題, 質問)
+  groupId?: string;                    // グループID
   title: string;                       // タイトル
   description: string;                 // 説明
   assigneeId: string;                  // 担当者ID (UID)
@@ -603,5 +605,12 @@ export interface Issue {
   createdByName?: string;              // 作成者名
   createdAt: number;
   updatedAt: number;
+}
+
+export interface IssueGroup {
+  id: string;
+  name: string;
+  createdAt?: number;
+  updatedAt?: number;
 }
 

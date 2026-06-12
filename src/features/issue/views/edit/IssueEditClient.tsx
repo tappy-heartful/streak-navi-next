@@ -8,7 +8,7 @@ import { AppInput } from "@/src/components/Form/AppInput";
 import { FormField } from "@/src/components/Form/FormField";
 import { useAppForm } from "@/src/hooks/useAppForm";
 import { rules } from "@/src/lib/validation";
-import { Issue, User, Section, IssueStep, IssueFile, IssueLink } from "@/src/lib/firestore/types";
+import { Issue, User, Section, IssueStep, IssueFile, IssueLink, IssueGroup } from "@/src/lib/firestore/types";
 import { saveIssue } from "@/src/features/issue/api/issue-client-service";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { storage } from "@/src/lib/firebase";
@@ -23,9 +23,10 @@ type Props = {
   initialIssue: Issue | null;
   users: User[];
   sections: Section[];
+  issueGroups: IssueGroup[];
 };
 
-export function IssueEditClient({ mode, issueId, initialIssue, users, sections }: Props) {
+export function IssueEditClient({ mode, issueId, initialIssue, users, sections, issueGroups }: Props) {
   const { userData } = useAuth();
   const router = useRouter();
 
@@ -73,6 +74,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections }
   const form = useAppForm(
     {
       type: initialIssue?.type || "todo",
+      groupId: initialIssue?.groupId || "",
       assigneeId: initialIssue?.assigneeId || "",
       title: (mode === "copy" ? `${initialIssue?.title}（コピー）` : initialIssue?.title) ?? "",
       description: initialIssue?.description ?? "",
@@ -83,6 +85,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections }
     },
     {
       type: [rules.required],
+      groupId: [],
       assigneeId: [rules.required],
       title: [rules.required],
       description: [rules.required],
@@ -193,6 +196,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections }
 
     const payload = {
       type: data.type as "todo" | "bug" | "question",
+      groupId: data.groupId || "",
       assigneeId: data.assigneeId,
       assigneeName,
       title: data.title,
@@ -241,6 +245,22 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections }
             <option value="todo">TODO</option>
             <option value="bug">課題</option>
             <option value="question">質問</option>
+          </select>
+        </FormField>
+
+        {/* グループ */}
+        <FormField label="グループ" error={form.errors.groupId}>
+          <select
+            className="form-control"
+            value={form.formData.groupId}
+            onChange={(e) => form.updateField("groupId", e.target.value)}
+          >
+            <option value="">未分類</option>
+            {issueGroups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
           </select>
         </FormField>
 

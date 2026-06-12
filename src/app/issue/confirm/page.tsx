@@ -1,5 +1,5 @@
 import React from "react";
-import { getIssue } from "@/src/features/issue/api/issue-server-actions";
+import { getIssue, getIssueGroups } from "@/src/features/issue/api/issue-server-actions";
 import { getUsersServer, getSectionsServer } from "@/src/features/users/api/user-server-actions";
 import { notFound } from "next/navigation";
 import { IssueConfirmClient } from "@/src/features/issue/views/confirm/IssueConfirmClient";
@@ -14,10 +14,11 @@ export default async function IssueConfirmPage({ searchParams }: Props) {
   const { issueId } = await searchParams;
   if (!issueId) notFound();
 
-  const [issue, users, sections] = await Promise.all([
+  const [issue, users, sections, issueGroups] = await Promise.all([
     getIssue(issueId),
     getUsersServer(),
     getSectionsServer(),
+    getIssueGroups(),
   ]);
 
   if (!issue) notFound();
@@ -28,6 +29,7 @@ export default async function IssueConfirmPage({ searchParams }: Props) {
       issueId={issueId}
       users={users}
       sections={sections}
+      issueGroups={issueGroups}
     />
   );
 }

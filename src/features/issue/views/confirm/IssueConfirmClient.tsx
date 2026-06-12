@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
-import { Issue, User, Section } from "@/src/lib/firestore/types";
+import { Issue, User, Section, IssueGroup } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { toggleIssueStep } from "@/src/features/issue/api/issue-client-service";
 import { buildYouTubeHtml, showSpinner, hideSpinner } from "@/src/lib/functions";
@@ -16,14 +16,21 @@ type Props = {
   issueId: string;
   users: User[];
   sections: Section[];
+  issueGroups: IssueGroup[];
 };
 
-export function IssueConfirmClient({ issueData, issueId, users, sections }: Props) {
+export function IssueConfirmClient({ issueData, issueId, users, sections, issueGroups }: Props) {
   const router = useRouter();
   const { userData, isAdmin } = useAuth();
 
   // 編集権限: 管理者、または起票者、または担当者
   const canEdit = isAdmin || userData?.id === issueData.createdBy || userData?.id === issueData.assigneeId;
+
+  const getGroupName = (groupId?: string) => {
+    if (!groupId) return "未分類";
+    const group = issueGroups.find((g) => g.id === groupId);
+    return group?.name || "未分類";
+  };
 
   const getAssigneeName = (uid: string) => {
     const u = users.find((user) => user.id === uid);
@@ -136,6 +143,11 @@ export function IssueConfirmClient({ issueData, issueId, users, sections }: Prop
         {/* 種類 */}
         <DisplayField label="種類">
           {getTypeName(issueData.type)}
+        </DisplayField>
+
+        {/* グループ */}
+        <DisplayField label="グループ">
+          {getGroupName(issueData.groupId)}
         </DisplayField>
 
         {/* 担当者 */}

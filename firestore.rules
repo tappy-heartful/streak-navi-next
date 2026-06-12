@@ -93,7 +93,8 @@ service cloud.firestore {
           'isScoreAdmin', 'isEventAdmin', 'isCallAdmin', 'isVoteAdmin', 
           'isStudioAdmin', 'isUserAdmin', 'isNoticeAdmin', 
           'isBlueNoteAdmin', 'isBoardAdmin', 'isLiveAdmin', 'isTicketAdmin', 
-          'isMediaAdmin', 'isSystemAdmin', 'isTravelSubsidyAdmin', 'isExpenseAdmin'
+          'isMediaAdmin', 'isSystemAdmin', 'isTravelSubsidyAdmin', 'isExpenseAdmin',
+          'isIssueAdmin'
         ])
       );
 
@@ -104,7 +105,8 @@ service cloud.firestore {
           'isScoreAdmin', 'isEventAdmin', 'isCallAdmin', 'isVoteAdmin', 
           'isStudioAdmin', 'isUserAdmin', 'isNoticeAdmin', 
           'isBlueNoteAdmin', 'isBoardAdmin', 'isLiveAdmin', 'isTicketAdmin', 
-          'isMediaAdmin', 'isSystemAdmin', 'isTravelSubsidyAdmin', 'isExpenseAdmin'
+          'isMediaAdmin', 'isSystemAdmin', 'isTravelSubsidyAdmin', 'isExpenseAdmin',
+          'isIssueAdmin'
         ])
       );
     }
@@ -178,6 +180,12 @@ service cloud.firestore {
         resource.data.createdBy == request.auth.uid ||
         isAdmin("System")
       );
+    }
+
+    // 【イシューグループ管理】
+    match /issueGroups/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin("Issue");
     }
 
     // 修正：今日の一曲（BlueNote）

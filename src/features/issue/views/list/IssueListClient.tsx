@@ -1,16 +1,20 @@
 "use client";
 
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSearchableList } from "@/src/hooks/useSearchableList";
 import { SearchableListLayout } from "@/src/components/Layout/SearchableListLayout";
-import { Issue, User, Section } from "@/src/lib/firestore/types";
+import { Issue, User, Section, IssueGroup } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { issueFilterFn, issueSortFn, IssueFilters } from "@/src/features/issue/lib/issue-search-engine";
 import {
   ListFilterGrid, FilterInput, FilterSelect,
   ListRow, ListCellHeader, ListCellSmall
 } from "@/src/components/List/ListParts";
+import { saveIssueGroup, deleteIssueGroup } from "@/src/features/issue/api/issue-client-service";
+import { Modal } from "@/src/components/Modal";
+import { showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
 import styles from "./IssueList.module.css";
 
 type Props = {
@@ -18,11 +22,20 @@ type Props = {
     issues: Issue[];
     users: User[];
     sections: Section[];
+    issueGroups: IssueGroup[];
   };
 };
 
 export function IssueListClient({ initialData }: Props) {
+  const router = useRouter();
   const { userData } = useAuth();
+
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
+  const [editingGroupName, setEditingGroupName] = useState("");
+
+  const isIssueAdmin = userData?.isSystemAdmin || userData?.isIssueAdmin;
 
   const initialFilters = useMemo<IssueFilters>(() => ({
     search: "",
@@ -96,6 +109,106 @@ export function IssueListClient({ initialData }: Props) {
     }
   };
 
+  const handleAddGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGroupName.trim()) return;
+
+    showSpinner();
+    try {
+      await saveIssueGroup("new", newGroupName.trim());
+      setNewGroupName("");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      await showDialog("グループの追加に失敗しました");
+    } finally {
+      hideSpinner();
+    }
+  };
+
+  const handleStartEdit = (group: IssueGroup) => {
+    setEditingGroupId(group.id);
+    setEditingGroupName(group.name);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingGroupId(null);
+    setEditingGroupName("");
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    if (!editingGroupName.trim()) return;
+
+    showSpinner();
+    try {
+      await saveIssueGroup("edit", editingGroupName.trim(), id);
+      setEditingGroupId(null);
+      setEditingGroupName("");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      await showDialog("グループ名の変更に失敗しました");
+    } finally {
+      hideSpinner();
+    }
+  };
+
+  const handleDeleteGroup = async (group: IssueGroup) => {
+    const confirmed = await showDialog(`グループ「${group.name}」を削除しますか？\n（このグループに属していたTODOは未分類になります）`);
+    if (!confirmed) return;
+
+    showSpinner();
+    try {
+      await deleteIssueGroup(group.id);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      await showDialog("グループの削除に失敗しました");
+    } finally {
+      hideSpinner();
+    }
+  };
+
+  // グループごとの整理
+  const groupedIssues = useMemo(() => {
+    const map: Record<string, Issue[]> = {};
+    const unclassified: Issue[] = [];
+
+    initialData.issueGroups.forEach((g) => {
+      map[g.id] = [];
+    });
+
+    list.filteredData.forEach((issue) => {
+      if (issue.groupId && map[issue.groupId]) {
+        map[issue.groupId].push(issue);
+      } else {
+        unclassified.push(issue);
+      }
+    });
+
+    const result: { id: string; name: string; issues: Issue[] }[] = [];
+
+    initialData.issueGroups.forEach((g) => {
+      if (map[g.id].length > 0) {
+        result.push({
+          id: g.id,
+          name: g.name,
+          issues: map[g.id],
+        });
+      }
+    });
+
+    if (unclassified.length > 0) {
+      result.push({
+        id: "unclassified",
+        name: "未分類",
+        issues: unclassified,
+      });
+    }
+
+    return result;
+  }, [list.filteredData, initialData.issueGroups]);
+
   const userGroups = useMemo(() => {
     const groupsMap: Record<string, { label: string; options: { id: string; name: string }[] }> = {};
     
@@ -127,6 +240,30 @@ export function IssueListClient({ initialData }: Props) {
     return Object.values(groupsMap).filter(g => g.options.length > 0);
   }, [initialData.sections, initialData.users]);
 
+  const extraSearchHeader = isIssueAdmin ? (
+    <button
+      onClick={() => setIsGroupModalOpen(true)}
+      className="list-add-button"
+      style={{
+        textDecoration: "none",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 12px",
+        fontSize: "0.85rem",
+        margin: 0,
+        height: "auto",
+        minHeight: "0",
+        backgroundColor: "#4b5563",
+        border: "none",
+        color: "#fff",
+        cursor: "pointer"
+      }}
+    >
+      <i className="fa-solid fa-folder-open" style={{ marginRight: "4px" }}></i> グループ管理
+    </button>
+  ) : null;
+
   const extraHeader = (
     <Link
       href="/issue/edit?mode=new"
@@ -148,88 +285,189 @@ export function IssueListClient({ initialData }: Props) {
   );
 
   return (
-    <SearchableListLayout
-      title="TODO"
-      icon="fa-solid fa-list-check"
+    <>
+      <SearchableListLayout
+        title="TODO"
+        icon="fa-solid fa-list-check"
         basePath="/issue"
         list={list}
         hideAddButton={true} // 全ユーザーに表示したいので、レイアウト内蔵のボタンは非表示
         extraHeaderContent={extraHeader}
+        extraSearchHeaderContent={extraSearchHeader}
         tableHeaders={["タイトル", "期限", "担当者", "種類", "ステータス"]}
-      searchFields={
-        <ListFilterGrid>
-          <FilterSelect
-            label="ステータスを選択"
-            options={[
-              { id: "open", name: "未完了 (未+実施中)" },
-              { id: "not_started", name: "未" },
-              { id: "in_progress", name: "実施中" },
-              { id: "completed", name: "済" },
-            ]}
-            value={list.filters.status}
-            onChange={(v) => list.updateFilter("status", v)}
-          />
-          <FilterSelect
-            label="担当者を選択"
-            groups={userGroups}
-            value={list.filters.assigneeId}
-            onChange={(v) => list.updateFilter("assigneeId", v)}
-          />
-          <FilterSelect
-            label="並び替え"
-            options={[
-              { id: "date-asc", name: "期限の近い順" },
-              { id: "date-desc", name: "期限の遠い順" },
-              { id: "createdAt-desc", name: "新着順" },
-              { id: "createdAt-asc", name: "古い順" },
-            ]}
-            value={list.filters.sort}
-            onChange={(v) => list.updateFilter("sort", v)}
-          />
-        </ListFilterGrid>
-      }
-    >
-      {list.filteredData.map((issue) => (
-        <ListRow key={issue.id}>
-          {/* タイトル */}
-          <ListCellHeader href={`/issue/confirm?issueId=${issue.id}`}>
-            {issue.title}
-          </ListCellHeader>
+        searchFields={
+          <ListFilterGrid>
+            <FilterSelect
+              label="ステータスを選択"
+              options={[
+                { id: "open", name: "未完了 (未+実施中)" },
+                { id: "not_started", name: "未" },
+                { id: "in_progress", name: "実施中" },
+                { id: "completed", name: "済" },
+              ]}
+              value={list.filters.status}
+              onChange={(v) => list.updateFilter("status", v)}
+            />
+            <FilterSelect
+              label="担当者を選択"
+              groups={userGroups}
+              value={list.filters.assigneeId}
+              onChange={(v) => list.updateFilter("assigneeId", v)}
+            />
+            <FilterSelect
+              label="並び替え"
+              options={[
+                { id: "date-asc", name: "期限の近い順" },
+                { id: "date-desc", name: "期限の遠い順" },
+                { id: "createdAt-desc", name: "新着順" },
+                { id: "createdAt-asc", name: "古い順" },
+              ]}
+              value={list.filters.sort}
+              onChange={(v) => list.updateFilter("sort", v)}
+            />
+          </ListFilterGrid>
+        }
+      >
+        {groupedIssues.map((group) => (
+          <React.Fragment key={group.id}>
+            {/* グループヘッダー行 */}
+            <tr className={styles.groupHeaderRow}>
+              <td colSpan={5} className={styles.groupHeaderCell}>
+                <i className="fa-solid fa-folder" style={{ marginRight: "6px" }}></i>
+                {group.name} ({group.issues.length}件)
+              </td>
+            </tr>
+            {/* 各イシュー行 */}
+            {group.issues.map((issue) => (
+              <ListRow key={issue.id}>
+                {/* タイトル */}
+                <ListCellHeader href={`/issue/confirm?issueId=${issue.id}`}>
+                  {issue.title}
+                </ListCellHeader>
 
-          {/* 期限 */}
-          <ListCellSmall>
-            {issue.date ? (
-              <span className={styles.dateContainer}>
-                {issue.date}
-                <span className={styles.dateType}>
-                  {issue.dateType === "until" ? "まで" : "に"}
-                </span>
-              </span>
-            ) : (
-              "-"
-            )}
-          </ListCellSmall>
+                {/* 期限 */}
+                <ListCellSmall>
+                  {issue.date ? (
+                    <span className={styles.dateContainer}>
+                      {issue.date}
+                      <span className={styles.dateType}>
+                        {issue.dateType === "until" ? "まで" : "に"}
+                      </span>
+                    </span>
+                  ) : (
+                    "-"
+                  )}
+                </ListCellSmall>
 
-          {/* 担当者 */}
-          <ListCellSmall>
-            {getAssigneeName(issue.assigneeId)}
-          </ListCellSmall>
+                {/* 担当者 */}
+                <ListCellSmall>
+                  {getAssigneeName(issue.assigneeId)}
+                </ListCellSmall>
 
-          {/* 種類 */}
-          <td className="text-center">
-            <span className={`${styles.typeBadge} ${getTypeClass(issue.type)}`}>
-              {getTypeName(issue.type)}
-            </span>
-          </td>
+                {/* 種類 */}
+                <td className="text-center">
+                  <span className={`${styles.typeBadge} ${getTypeClass(issue.type)}`}>
+                    {getTypeName(issue.type)}
+                  </span>
+                </td>
 
-          {/* ステータス */}
-          <td className="text-center">
-            <span className={`${styles.statusBadge} ${getStatusClass(issue.status)}`}>
-              {getStatusName(issue.status)}
-            </span>
-          </td>
-        </ListRow>
-      ))}
-    </SearchableListLayout>
+                {/* ステータス */}
+                <td className="text-center">
+                  <span className={`${styles.statusBadge} ${getStatusClass(issue.status)}`}>
+                    {getStatusName(issue.status)}
+                  </span>
+                </td>
+              </ListRow>
+            ))}
+          </React.Fragment>
+        ))}
+      </SearchableListLayout>
+
+      {isGroupModalOpen && (
+        <Modal title="グループ管理" onClose={() => setIsGroupModalOpen(false)}>
+          <div className={styles.groupModalContainer}>
+            {/* 新規追加フォーム */}
+            <form onSubmit={handleAddGroup} className={styles.addGroupForm}>
+              <input
+                type="text"
+                className={styles.groupInput}
+                placeholder="新しいグループ名を入力"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+              />
+              <button type="submit" className={styles.groupAddButton}>
+                <i className="fa-solid fa-plus"></i> 追加
+              </button>
+            </form>
+
+            {/* グループ一覧 */}
+            <ul className={styles.groupList}>
+              {initialData.issueGroups.map((group) => (
+                <li key={group.id} className={styles.groupItem}>
+                  {editingGroupId === group.id ? (
+                    <div className={styles.groupEditForm}>
+                      <input
+                        type="text"
+                        className={styles.groupInput}
+                        value={editingGroupName}
+                        onChange={(e) => setEditingGroupName(e.target.value)}
+                      />
+                      <div className={styles.groupActionButtons}>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEdit(group.id)}
+                          className={`${styles.iconButton} ${styles.saveBtn}`}
+                          title="保存"
+                        >
+                          <i className="fa-solid fa-floppy-disk"></i>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelEdit}
+                          className={`${styles.iconButton} ${styles.cancelBtn}`}
+                          title="キャンセル"
+                        >
+                          <i className="fa-solid fa-xmark"></i>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span className={styles.groupItemName}>
+                        <i className="fa-solid fa-folder" style={{ marginRight: "6px", color: "#64748b" }}></i>
+                        {group.name}
+                      </span>
+                      <div className={styles.groupActionButtons}>
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(group)}
+                          className={`${styles.iconButton} ${styles.editBtn}`}
+                          title="編集"
+                        >
+                          <i className="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteGroup(group)}
+                          className={`${styles.iconButton} ${styles.deleteBtn}`}
+                          title="削除"
+                        >
+                          <i className="fa-solid fa-trash-can"></i>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </li>
+              ))}
+              {initialData.issueGroups.length === 0 && (
+                <li style={{ textAlign: "center", color: "#64748b", padding: "16px" }}>
+                  グループはありません。新しいグループを作成してください。
+                </li>
+              )}
+            </ul>
+          </div>
+        </Modal>
+      )}
+    </>
   );
 }
