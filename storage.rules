@@ -1,0 +1,54 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // 1. 既存の領収書用ルール（画像のみ、認証が必要）
+    match /receipts/{allPaths=**} {
+      allow read, delete: if request.auth != null;
+      allow write: if request.auth != null 
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // 2. 掲示板の添付ファイル用ルール（全ファイルOK、一般公開）
+    match /boards/attachments/{allPaths=**} {
+      allow read: if true;
+      allow delete: if request.auth != null;
+      allow write: if request.auth != null 
+                   && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    // 3. ライブのフライヤー用ルール（画像のみ、一般公開）
+    match /lives/flyers/{allPaths=**} {
+      allow read: if true;
+      allow delete: if request.auth != null;
+      allow write: if request.auth != null 
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // 4. 経費申請の添付ファイル用ルール（画像およびPDF、認証が必要）
+    match /expenses/attachments/{allPaths=**} {
+      allow read, delete: if request.auth != null;
+      allow write: if request.auth != null 
+                   && request.resource.size < 10 * 1024 * 1024
+                   && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
+    }
+
+    // 5. 経費精算のエビデンス画像用ルール（画像のみ、認証が必要）
+    match /accounting/evidence/{allPaths=**} {
+      allow read, delete: if request.auth != null;
+      allow write: if request.auth != null 
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // 6. TODO (イシュー) の添付ファイル用ルール（画像およびPDF、認証が必要） ★追加
+    match /issues/attachments/{allPaths=**} {
+      allow read, delete: if request.auth != null;
+      allow write: if request.auth != null 
+                   && request.resource.size < 10 * 1024 * 1024
+                   && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
+    }
+  }
+}

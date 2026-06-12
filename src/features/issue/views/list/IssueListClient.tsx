@@ -4,7 +4,7 @@ import React, { useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useSearchableList } from "@/src/hooks/useSearchableList";
 import { SearchableListLayout } from "@/src/components/Layout/SearchableListLayout";
-import { Issue, User } from "@/src/lib/firestore/types";
+import { Issue, User, Section } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { issueFilterFn, issueSortFn, IssueFilters } from "@/src/features/issue/lib/issue-search-engine";
 import {
@@ -17,6 +17,7 @@ type Props = {
   initialData: {
     issues: Issue[];
     users: User[];
+    sections: Section[];
   };
 };
 
@@ -27,9 +28,9 @@ export function IssueListClient({ initialData }: Props) {
     search: "",
     type: "",
     status: "open",
-    assigneeId: userData?.id || "",
+    assigneeId: "",
     sort: "date-asc"
-  }), [userData?.id]);
+  }), []);
 
   const list = useSearchableList<Issue, IssueFilters>(
     initialData.issues,
@@ -37,12 +38,6 @@ export function IssueListClient({ initialData }: Props) {
     (item, filters) => issueFilterFn(item, filters, userData),
     issueSortFn
   );
-
-  useEffect(() => {
-    if (userData?.id) {
-      list.updateFilter("assigneeId", userData.id);
-    }
-  }, [userData?.id]);
 
   const getAssigneeName = (uid: string) => {
     const u = initialData.users.find((user) => user.id === uid);
@@ -101,10 +96,36 @@ export function IssueListClient({ initialData }: Props) {
     }
   };
 
-  const userOptions = initialData.users.map((u) => ({
-    id: u.id,
-    name: u.displayName || "匿名",
-  }));
+  const userGroups = useMemo(() => {
+    const groupsMap: Record<string, { label: string; options: { id: string; name: string }[] }> = {};
+    
+    // 1. 各セクションの入れ物を用意
+    initialData.sections.forEach((sec) => {
+      groupsMap[sec.id] = {
+        label: sec.name,
+        options: []
+      };
+    });
+    
+    // 2. セクション未指定のユーザー用の入れ物を用意
+    const OTHERS_KEY = "others";
+    groupsMap[OTHERS_KEY] = {
+      label: "その他",
+      options: []
+    };
+    
+    // 3. ユーザーをセクションIDに従って分類
+    initialData.users.forEach((u) => {
+      const targetSecId = u.sectionId && groupsMap[u.sectionId] ? u.sectionId : OTHERS_KEY;
+      groupsMap[targetSecId].options.push({
+        id: u.id,
+        name: u.displayName || "匿名"
+      });
+    });
+    
+    // 4. 空ではないグループのみ抽出して返す
+    return Object.values(groupsMap).filter(g => g.options.length > 0);
+  }, [initialData.sections, initialData.users]);
 
   const extraHeader = (
     <Link
@@ -137,21 +158,6 @@ export function IssueListClient({ initialData }: Props) {
         tableHeaders={["タイトル", "期限", "担当者", "種類", "ステータス"]}
       searchFields={
         <ListFilterGrid>
-          <FilterInput
-            placeholder="タイトル・説明で検索..."
-            value={list.filters.search}
-            onChange={(v) => list.updateFilter("search", v)}
-          />
-          <FilterSelect
-            label="種類を選択"
-            options={[
-              { id: "todo", name: "TODO" },
-              { id: "bug", name: "課題" },
-              { id: "question", name: "質問" },
-            ]}
-            value={list.filters.type}
-            onChange={(v) => list.updateFilter("type", v)}
-          />
           <FilterSelect
             label="ステータスを選択"
             options={[
@@ -165,7 +171,7 @@ export function IssueListClient({ initialData }: Props) {
           />
           <FilterSelect
             label="担当者を選択"
-            options={userOptions}
+            groups={userGroups}
             value={list.filters.assigneeId}
             onChange={(v) => list.updateFilter("assigneeId", v)}
           />

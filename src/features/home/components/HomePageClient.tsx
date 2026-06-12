@@ -7,11 +7,14 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import * as utils from "@/src/lib/functions";
 import styles from "./home.module.css";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
-import type { Announcement, Score, BlueNote, Media, Event as FirestoreEvent, Vote, Call } from "@/src/lib/firestore/types";
+import type { Announcement, Score, BlueNote, Media, Event as FirestoreEvent, Vote, Call, Issue } from "@/src/lib/firestore/types";
 import { InstagramEmbed } from "@/src/components/InstagramEmbed";
 import { getPersonalSettlementSummaryAction } from "@/src/features/accounting/api/accounting-server-actions";
 import { PersonalSettlementCard } from "@/src/features/accounting/components/PersonalSettlementCard";
 import { AccountingSeason, AccountingSeasonKey } from "@/src/lib/firestore/types";
+import { hasViewPermission } from "@/src/features/issue/lib/issue-search-engine";
+import { db } from "@/src/lib/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 // --- 再描画させないためのメモ化コンポーネント群 ---
 
@@ -118,7 +121,10 @@ const Player = memo(({ title, subtitle, data, idx, setIdx, onRandom }: { title?:
 ));
 Player.displayName = "Player";
 
-const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], votes: Vote[], calls: Call[] } }) => {
+const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], votes: Vote[], calls: Call[], issues: Issue[] } }) => {
+  const { userData } = useAuth();
+  const uid = userData?.id;
+
   const nowJst = utils.getJSTDate();
   const todayYear = nowJst.getUTCFullYear();
   const todayMonth = nowJst.getUTCMonth();
@@ -128,6 +134,15 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [holidays, setHolidays] = useState<Record<string, string>>({});
 
+  // フィルター用状態
+  const [scopeFilter, setScopeFilter] = useState<'all' | 'my'>('all');
+
+  // 自分の回答・出欠状況の管理
+  const [myAttendanceAnswers, setMyAttendanceAnswers] = useState<Record<string, { statusId: string; statusName: string }>>({});
+  const [myAdjustEventIds, setMyAdjustEventIds] = useState<Set<string>>(new Set());
+  const [myVoteIds, setMyVoteIds] = useState<Set<string>>(new Set());
+  const [myCallIds, setMyCallIds] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     fetch("https://holidays-jp.github.io/api/v1/date.json")
       .then(res => res.json())
@@ -135,29 +150,136 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
       .catch(err => console.error("Failed to fetch holidays:", err));
   }, []);
 
+  useEffect(() => {
+    if (!uid) return;
+    const fetchUserData = async () => {
+      try {
+        // 1. 出欠ステータスマスタの取得
+        const statusesSnap = await getDocs(collection(db, "attendanceStatuses"));
+        const statusMap: Record<string, string> = {};
+        statusesSnap.forEach(doc => {
+          statusMap[doc.id] = doc.data().name || "";
+        });
+
+        // 2. 自分のイベント出欠回答の取得
+        const attSnap = await getDocs(query(collection(db, "eventAttendanceAnswers"), where("uid", "==", uid)));
+        const attAnswers: Record<string, { statusId: string; statusName: string }> = {};
+        attSnap.forEach(doc => {
+          const d = doc.data();
+          if (d.eventId && d.status) {
+            attAnswers[d.eventId] = {
+              statusId: d.status,
+              statusName: statusMap[d.status] || ""
+            };
+          }
+        });
+        setMyAttendanceAnswers(attAnswers);
+
+        // 3. 自分のイベント日程調整回答の取得
+        const adjSnap = await getDocs(query(collection(db, "eventAdjustAnswers"), where("uid", "==", uid)));
+        const adjIds = new Set<string>();
+        adjSnap.forEach(doc => {
+          const d = doc.data();
+          if (d.eventId) adjIds.add(d.eventId);
+        });
+        setMyAdjustEventIds(adjIds);
+
+        // 4. 自分の曲投票回答の取得
+        const voteSnap = await getDocs(query(collection(db, "voteAnswers"), where("uid", "==", uid)));
+        const vIds = new Set<string>();
+        voteSnap.forEach(doc => {
+          const d = doc.data();
+          if (d.voteId) vIds.add(d.voteId);
+        });
+        setMyVoteIds(vIds);
+
+        // 5. 自分の曲募集回答の取得
+        const callSnap = await getDocs(query(collection(db, "callAnswers"), where("uid", "==", uid)));
+        const cIds = new Set<string>();
+        callSnap.forEach(doc => {
+          const parts = doc.id.split("_");
+          if (parts[0]) cIds.add(parts[0]);
+        });
+        setMyCallIds(cIds);
+      } catch (e) {
+        console.error("Failed to load user answers for calendar filtering:", e);
+      }
+    };
+    fetchUserData();
+  }, [uid]);
+
+
+
   // スワイプの閾値（ピクセル）
   const minSwipeDistance = 50;
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const years = [];
-  for (let y = todayYear - 1; y <= todayYear + 2; y++) years.push(y);
-  const months = Array.from({ length: 12 }, (_, i) => i);
-
-  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCurrentDate(new Date(parseInt(e.target.value), month, 1));
+  const handlePrevMonth = () => {
+    setCurrentDate(prev => {
+      const y = prev.getFullYear();
+      const m = prev.getMonth();
+      return m === 0 ? new Date(y - 1, 11, 1) : new Date(y, m - 1, 1);
+    });
   };
 
-  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCurrentDate(new Date(year, parseInt(e.target.value), 1));
+  const handleNextMonth = () => {
+    setCurrentDate(prev => {
+      const y = prev.getFullYear();
+      const m = prev.getMonth();
+      return m === 11 ? new Date(y + 1, 0, 1) : new Date(y, m + 1, 1);
+    });
   };
 
-  const handlePrevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const handleNextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+  const handleGoToToday = () => {
+    setCurrentDate(new Date(todayYear, todayMonth, 1));
+  };
+
+  const gridCells = useMemo(() => {
+    const cells = [];
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
+    
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevYear = month === 0 ? year - 1 : year;
+    const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+
+    // Padding previous month's trailing days
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+      cells.push({
+        dayNum: daysInPrevMonth - i,
+        month: prevMonth,
+        year: prevYear,
+        isCurrentMonth: false,
+      });
+    }
+
+    // Current month's days
+    for (let i = 1; i <= daysInCurrentMonth; i++) {
+      cells.push({
+        dayNum: i,
+        month: month,
+        year: year,
+        isCurrentMonth: true,
+      });
+    }
+
+    // Padding next month's leading days to make a full 42 grid
+    const remaining = 42 - cells.length;
+    const nextMonth = month === 11 ? 0 : month + 1;
+    const nextYear = month === 11 ? year + 1 : year;
+    for (let i = 1; i <= remaining; i++) {
+      cells.push({
+        dayNum: i,
+        month: nextMonth,
+        year: nextYear,
+        isCurrentMonth: false,
+      });
+    }
+
+    return cells;
+  }, [year, month]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
@@ -184,53 +306,152 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
     return str.length <= len ? str : str.slice(0, len) + "...";
   };
 
-  const getItemsForDay = (day: number) => {
-    const dateStr = `${year}.${String(month + 1).padStart(2, '0')}.${String(day).padStart(2, '0')}`;
-    const items: { type: 'event' | 'vote' | 'call', label: string, link: string, id: string, position?: 'start' | 'middle' | 'end' }[] = [];
-    const dayOfWeek = new Date(year, month, day).getDay();
+  const getItemsForDay = (cellYear: number, cellMonth: number, day: number) => {
+    const dateStr = `${cellYear}.${String(cellMonth + 1).padStart(2, '0')}.${String(day).padStart(2, '0')}`;
+    const items: {
+      type: 'event' | 'vote' | 'call' | 'issue',
+      iconClass?: string,
+      label: string,
+      link: string,
+      id: string,
+      status?: string,
+      position?: 'start' | 'middle' | 'end',
+      createdBy?: string,
+      assigneeId?: string
+    }[] = [];
+    const dayOfWeek = new Date(cellYear, cellMonth, day).getDay();
     const isSunday = dayOfWeek === 0;
 
+    const todayStr = `${todayYear}.${String(todayMonth + 1).padStart(2, '0')}.${String(todayDay).padStart(2, '0')}`;
+
+    // イベント
     data.events.forEach(e => {
+      if (scopeFilter === 'my') {
+        const hasResponded = !!(myAttendanceAnswers[e.id] || myAdjustEventIds.has(e.id));
+        const isCreatedByMe = e.createdBy === uid;
+        const isFutureOrToday = e.date ? e.date >= todayStr : (e.candidateDates?.some(d => d >= todayStr) ?? false);
+        
+        let show = false;
+        if (isCreatedByMe) {
+          show = true;
+        } else if (hasResponded) {
+          const ans = myAttendanceAnswers[e.id];
+          const isAbsent = ans && (ans.statusName.includes("欠席") || ans.statusName === "欠" || ans.statusName === "Absent");
+          if (!isAbsent) {
+            show = true;
+          }
+        } else if (isFutureOrToday) {
+          show = true;
+        }
+        if (!show) return;
+      }
+
       if (e.date === dateStr) {
-        items.push({ type: 'event', label: `📅 ${e.title}`, link: `/event/confirm?eventId=${e.id}`, id: e.id });
+        items.push({
+          type: 'event',
+          iconClass: 'fa-solid fa-calendar-days',
+          label: e.title,
+          link: `/event/confirm?eventId=${e.id}`,
+          id: e.id,
+          createdBy: e.createdBy
+        });
       } else if (e.candidateDates?.includes(dateStr)) {
-        items.push({ type: 'event', label: `🗓️ ${e.title}`, link: `/event/confirm?eventId=${e.id}`, id: e.id });
+        items.push({
+          type: 'event',
+          iconClass: 'fa-regular fa-calendar',
+          label: e.title,
+          link: `/event/confirm?eventId=${e.id}`,
+          id: e.id,
+          createdBy: e.createdBy
+        });
       }
     });
 
+    // 曲投票 (投票 & 募集)
     data.votes.forEach(v => {
+      if (scopeFilter === 'my') {
+        const hasResponded = myVoteIds.has(v.id);
+        const isCreatedByMe = v.createdBy === uid;
+        const isActive = v.acceptStartDate <= todayStr && todayStr <= v.acceptEndDate;
+        
+        const show = isCreatedByMe || hasResponded || isActive;
+        if (!show) return;
+      }
+
       const isStart = v.acceptStartDate === dateStr;
       const isEnd = v.acceptEndDate === dateStr;
       const isInPeriod = v.acceptStartDate <= dateStr && dateStr <= v.acceptEndDate;
 
       if (isInPeriod) {
-        const label = (isStart || isSunday) ? `📊 ${v.name}` : "";
+        const label = (isStart || isSunday) ? v.name : "";
         items.push({
           type: 'vote',
+          iconClass: label ? 'fa-solid fa-check-to-slot' : undefined,
           label,
           link: `/vote/confirm?voteId=${v.id}`,
           id: v.id,
-          position: isStart ? 'start' : isEnd ? 'end' : 'middle'
+          position: isStart ? 'start' : isEnd ? 'end' : 'middle',
+          createdBy: v.createdBy
         });
       }
     });
 
     data.calls.forEach(c => {
+      if (scopeFilter === 'my') {
+        const hasResponded = myCallIds.has(c.id);
+        const isCreatedByMe = c.createdBy === uid;
+        const isActive = c.acceptStartDate <= todayStr && todayStr <= c.acceptEndDate;
+        
+        const show = isCreatedByMe || hasResponded || isActive;
+        if (!show) return;
+      }
+
       const isStart = c.acceptStartDate === dateStr;
       const isEnd = c.acceptEndDate === dateStr;
       const isInPeriod = c.acceptStartDate <= dateStr && dateStr <= c.acceptEndDate;
 
       if (isInPeriod) {
-        const label = (isStart || isSunday) ? `🎶 ${c.title}` : "";
+        const label = (isStart || isSunday) ? c.title : "";
         items.push({
           type: 'call',
+          iconClass: label ? 'fa-solid fa-bullhorn' : undefined,
           label,
           link: `/call/confirm?callId=${c.id}`,
           id: c.id,
-          position: isStart ? 'start' : isEnd ? 'end' : 'middle'
+          position: isStart ? 'start' : isEnd ? 'end' : 'middle',
+          createdBy: c.createdBy
         });
       }
     });
+
+    // TODO (イシュー)
+    if (data.issues) {
+      data.issues.forEach(issue => {
+        if (!hasViewPermission(issue, userData)) return;
+
+        if (scopeFilter === 'my') {
+          if (issue.assigneeId !== uid && issue.createdBy !== uid) return;
+        }
+
+        if (issue.date === dateStr) {
+          const iconClass = issue.type === 'bug'
+            ? 'fa-solid fa-bug'
+            : issue.type === 'question'
+              ? 'fa-solid fa-circle-question'
+              : (issue.status === 'completed' ? 'fa-solid fa-square-check' : 'fa-regular fa-square-check');
+          items.push({
+            type: 'issue',
+            iconClass,
+            label: issue.title,
+            link: `/issue/confirm?issueId=${issue.id}`,
+            id: issue.id,
+            status: issue.status,
+            assigneeId: issue.assigneeId,
+            createdBy: issue.createdBy
+          });
+        }
+      });
+    }
 
     return items;
   };
@@ -238,78 +459,191 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   return (
     <main className="container">
       <section className={styles.calendarContainer}>
-        <div>
-          <h3>カレンダー</h3>
-        </div>
         <div className={styles.calendarHeader}>
-          <div className={styles.calendarNav}>
-            <button onClick={handlePrevMonth} className={styles.navButtonIcon}>
-              <i className="fa-solid fa-chevron-left" />
+          <div className={styles.monthLabel}>
+            <i className="fa-solid fa-calendar-days" style={{ color: "#4caf50" }}></i>
+            {year}年{month + 1}月
+          </div>
+          <div className={styles.headerBtns}>
+            <button type="button" className={styles.todayBtn} onClick={handleGoToToday}>
+              今日
             </button>
-            <div className={styles.calendarSelectors}>
-              <select value={year} onChange={handleYearChange}>
-                {years.map(y => <option key={y} value={y}>{y}年</option>)}
-              </select>
-              <select value={month} onChange={handleMonthChange}>
-                {months.map(m => <option key={m} value={m}>{m + 1}月</option>)}
-              </select>
-            </div>
-            <button onClick={handleNextMonth} className={styles.navButtonIcon}>
-              <i className="fa-solid fa-chevron-right" />
+            <button type="button" className={styles.navBtn} onClick={handlePrevMonth} aria-label="前月">
+              <i className="fa-solid fa-chevron-left"></i>
+            </button>
+            <button type="button" className={styles.navBtn} onClick={handleNextMonth} aria-label="次月">
+              <i className="fa-solid fa-chevron-right"></i>
             </button>
           </div>
         </div>
+
+        {/* フィルターセクション */}
+        <div className={styles.filterSection}>
+          <div className={styles.filterGroup}>
+            <span className={styles.filterLabel}>表示対象:</span>
+            <div className={styles.toggleButtonGroup}>
+              <button 
+                type="button"
+                className={`${styles.filterButton} ${scopeFilter === 'all' ? styles.activeScope : ''}`}
+                onClick={() => setScopeFilter('all')}
+              >
+                全体
+              </button>
+              <button 
+                type="button"
+                className={`${styles.filterButton} ${scopeFilter === 'my' ? styles.activeScope : ''}`}
+                onClick={() => setScopeFilter('my')}
+              >
+                自分のもの
+              </button>
+            </div>
+          </div>
+          
+          <div className={styles.legendGroup}>
+            <span className={`${styles.legendItem} ${styles.legendEvent}`}><i className="fa-solid fa-calendar-days" /> イベント</span>
+            <span className={`${styles.legendItem} ${styles.legendVote}`}><i className="fa-solid fa-check-to-slot" /> 曲投票</span>
+            <span className={`${styles.legendItem} ${styles.legendCall}`}><i className="fa-solid fa-bullhorn" /> 曲募集</span>
+            <span className={`${styles.legendItem} ${styles.legendTodo}`}><i className="fa-regular fa-square-check" /> TODO</span>
+            <span className={`${styles.legendItem} ${styles.legendAbsent}`}><i className="fa-solid fa-calendar-xmark" /> 欠席</span>
+          </div>
+        </div>
+
+        <div className={styles.weekdaysHeader}>
+          <div className={`${styles.weekday} ${styles.weekdaySunday}`}>日</div>
+          <div className={styles.weekday}>月</div>
+          <div className={styles.weekday}>火</div>
+          <div className={styles.weekday}>水</div>
+          <div className={styles.weekday}>木</div>
+          <div className={styles.weekday}>金</div>
+          <div className={`${styles.weekday} ${styles.weekdaySaturday}`}>土</div>
+        </div>
+
         <div
-          className={styles.calendarGrid}
+          className={styles.daysGrid}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          {['日', '月', '火', '水', '木', '金', '土'].map(d => (
-            <div key={d} className={styles.weekdayHeader}>{d}</div>
-          ))}
-          {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} className={styles.calendarDayEmpty} />
-          ))}
-          {Array.from({ length: daysInMonth }).map((_, i) => {
-            const day = i + 1;
-            const items = getItemsForDay(day);
-            const isToday = todayYear === year && todayMonth === month && todayDay === day;
+          {gridCells.map((cell, idx) => {
+            const items = getItemsForDay(cell.year, cell.month, cell.dayNum);
+            const isToday = todayYear === cell.year && todayMonth === cell.month && todayDay === cell.dayNum;
             
-            const dateObj = new Date(year, month, day);
-            const dayOfWeek = dateObj.getDay();
-            const isSunday = dayOfWeek === 0;
-            const isSaturday = dayOfWeek === 6;
-            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const cellDayOfWeek = idx % 7; // 0 = Sunday, 6 = Saturday
+            const dateStr = `${cell.year}-${String(cell.month + 1).padStart(2, "0")}-${String(cell.dayNum).padStart(2, "0")}`;
             const isHoliday = !!holidays[dateStr];
             const holidayName = holidays[dateStr] || "";
 
             let dayClass = "";
             if (isToday) {
               dayClass = styles.today;
-            } else if (isHoliday || isSunday) {
+            } else if (isHoliday || cellDayOfWeek === 0) {
               dayClass = styles.holiday;
-            } else if (isSaturday) {
+            } else if (cellDayOfWeek === 6) {
               dayClass = styles.saturday;
+            }
+
+            if (!cell.isCurrentMonth) {
+              dayClass += ` ${styles.otherMonthDay}`;
             }
 
             return (
               <div
-                key={day}
+                key={`${cell.year}-${cell.month}-${cell.dayNum}-${idx}`}
                 className={`${styles.calendarDay} ${dayClass}`}
                 title={holidayName}
               >
-                <div className={styles.dayNumber}>{day}</div>
-                <div className={styles.dayItems}>
-                  {items.map((item, idx) => (
-                    <Link
-                      key={`${item.type}-${item.id}-${idx}`}
-                      href={item.link}
-                      className={`${styles.calendarItem} ${styles[item.type]} ${item.position ? styles[item.position] : ""}`}
-                    >
-                      {item.label ? truncate(item.label, 13) : "\u00A0"}
-                    </Link>
-                  ))}
+                <div className={styles.dayHeader}>
+                  <span
+                    className={`${styles.dayNumber} ${
+                      isToday
+                        ? styles.todayCircle
+                        : (cellDayOfWeek === 0 || isHoliday)
+                          ? styles.sundayNumber
+                          : cellDayOfWeek === 6
+                            ? styles.saturdayNumber
+                            : ""
+                    }`}
+                  >
+                    {cell.dayNum}
+                  </span>
+                </div>
+                <div className={styles.eventsContainer}>
+                  {items.map((item, idx) => {
+                    const isCompleted = item.type === 'issue' && item.status === 'completed';
+                    let pillClass = "";
+
+                    if (item.type === 'issue') {
+                      pillClass = styles.todoMe; // ティール (todoMe)
+
+                      return (
+                        <Link
+                          key={`${item.type}-${item.id}-${idx}`}
+                          href={item.link}
+                          className={`${styles.todoPill} ${pillClass} ${isCompleted ? styles.completed : ""}`}
+                        >
+                          {item.iconClass && <i className={item.iconClass} style={{ marginRight: "2px" }} />}
+                          {item.label ? truncate(item.label, 12) : "\u00A0"}
+                        </Link>
+                      );
+                    } else if (item.type === 'event') {
+                      const hasResponded = !!myAttendanceAnswers[item.id];
+                      const isAbsent = hasResponded && (myAttendanceAnswers[item.id].statusName.includes("欠席") || myAttendanceAnswers[item.id].statusName === "欠" || myAttendanceAnswers[item.id].statusName === "Absent");
+                      
+                      if (isAbsent) {
+                        pillClass = styles.eventAbsent; // グレーアウト
+                      } else {
+                        pillClass = styles.eventMeLight; // ブルー (eventMeLight)
+                      }
+
+                      return (
+                        <Link
+                          key={`${item.type}-${item.id}-${idx}`}
+                          href={item.link}
+                          className={`${styles.eventPill} ${pillClass}`}
+                        >
+                          {item.iconClass && <i className={item.iconClass} style={{ marginRight: "3px" }} />}
+                          {item.label ? truncate(item.label, 12) : "\u00A0"}
+                        </Link>
+                      );
+                    } else if (item.type === 'vote') {
+                      pillClass = styles.eventCoupleLight; // オレンジ (eventCoupleLight)
+
+                      let spanClass = styles.eventPill;
+                      if (item.position === 'start') spanClass = `${styles.eventPill} ${styles.eventStart}`;
+                      else if (item.position === 'middle') spanClass = `${styles.eventPill} ${styles.eventMiddle}`;
+                      else if (item.position === 'end') spanClass = `${styles.eventPill} ${styles.eventEnd}`;
+
+                      return (
+                        <Link
+                          key={`${item.type}-${item.id}-${idx}`}
+                          href={item.link}
+                          className={`${spanClass} ${pillClass}`}
+                        >
+                          {item.iconClass && <i className={item.iconClass} style={{ marginRight: "3px" }} />}
+                          {item.label ? truncate(item.label, 12) : "\u00A0"}
+                        </Link>
+                      );
+                    } else {
+                      // call (曲募集)
+                      pillClass = styles.eventPartnerLight; // パープル (eventPartnerLight)
+
+                      let spanClass = styles.eventPill;
+                      if (item.position === 'start') spanClass = `${styles.eventPill} ${styles.eventStart}`;
+                      else if (item.position === 'middle') spanClass = `${styles.eventPill} ${styles.eventMiddle}`;
+                      else if (item.position === 'end') spanClass = `${styles.eventPill} ${styles.eventEnd}`;
+
+                      return (
+                        <Link
+                          key={`${item.type}-${item.id}-${idx}`}
+                          href={item.link}
+                          className={`${spanClass} ${pillClass}`}
+                        >
+                          {item.iconClass && <i className={item.iconClass} style={{ marginRight: "3px" }} />}
+                          {item.label ? truncate(item.label, 12) : "\u00A0"}
+                        </Link>
+                      );
+                    }
+                  })}
                 </div>
               </div>
             );
@@ -333,6 +667,7 @@ type InitialData = {
     events: FirestoreEvent[];
     votes: Vote[];
     calls: Call[];
+    issues: Issue[];
   };
 };
 
