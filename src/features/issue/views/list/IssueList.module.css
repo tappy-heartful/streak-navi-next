@@ -26,6 +26,18 @@
   border: 1px solid #bfdbfe;
 }
 
+.typeProposal {
+  background-color: #faf5ff;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+}
+
+.typeRequest {
+  background-color: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #ffedd5;
+}
+
 .statusBadge {
   display: inline-block;
   padding: 4px 8px;

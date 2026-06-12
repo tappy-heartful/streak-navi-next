@@ -44,6 +44,18 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
     );
   };
 
+  const [showPastEvents, setShowPastEvents] = useState(false);
+
+  const isFutureEvent = (e: Event) => {
+    const todayStr = format(new Date(), "yyyy.MM.dd");
+    return e.date ? e.date >= todayStr : (e.candidateDates?.some((d) => d >= todayStr) ?? false);
+  };
+
+  const visibleEvents = React.useMemo(() => {
+    if (showPastEvents) return events;
+    return events.filter((e) => isFutureEvent(e) || selectedEventIds.includes(e.id));
+  }, [events, showPastEvents, selectedEventIds]);
+
   // セクションごとにユーザーをグループ化する
   const groupedUsers = React.useMemo(() => {
     const map: Record<string, User[]> = {};
@@ -203,7 +215,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
     const assigneeName = selectedAssignee?.displayName || "";
 
     const payload = {
-      type: data.type as "todo" | "bug" | "question",
+      type: data.type as "todo" | "bug" | "question" | "proposal" | "request",
       groupId: data.groupId || "",
       assigneeId: data.assigneeId,
       assigneeName,
@@ -254,6 +266,8 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
             <option value="todo">TODO</option>
             <option value="bug">課題</option>
             <option value="question">質問</option>
+            <option value="proposal">提案</option>
+            <option value="request">要望</option>
           </select>
         </FormField>
 
@@ -452,8 +466,17 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
 
         {/* 関連するイベント */}
         <FormField label="関連するイベント (任意・複数選択可)">
+          <div style={{ marginBottom: "8px", display: "flex", justifyContent: "flex-end" }}>
+            <button
+              type="button"
+              onClick={() => setShowPastEvents(!showPastEvents)}
+              className={styles.togglePastEventsBtn}
+            >
+              {showPastEvents ? "過去のイベントを非表示" : "過去のイベントを表示"}
+            </button>
+          </div>
           <div className={styles.eventChecklist}>
-            {events.map((e) => (
+            {visibleEvents.map((e) => (
               <label key={e.id} className={styles.eventCheckLabel}>
                 <input
                   type="checkbox"
@@ -466,8 +489,8 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
                 </span>
               </label>
             ))}
-            {events.length === 0 && (
-              <div style={{ color: "#64748b", padding: "8px" }}>イベントが登録されていません</div>
+            {visibleEvents.length === 0 && (
+              <div style={{ color: "#64748b", padding: "8px" }}>表示対象のイベントがありません</div>
             )}
           </div>
         </FormField>
