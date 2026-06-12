@@ -60,6 +60,10 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
         return "課題";
       case "question":
         return "質問";
+      case "proposal":
+        return "提案";
+      case "request":
+        return "要望";
       default:
         return type;
     }

@@ -438,7 +438,11 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
             ? 'fa-solid fa-bug'
             : issue.type === 'question'
               ? 'fa-solid fa-circle-question'
-              : (issue.status === 'completed' ? 'fa-solid fa-square-check' : 'fa-regular fa-square-check');
+              : issue.type === 'proposal'
+                ? 'fa-regular fa-lightbulb'
+                : issue.type === 'request'
+                  ? 'fa-regular fa-comments'
+                  : (issue.status === 'completed' ? 'fa-solid fa-square-check' : 'fa-regular fa-square-check');
           items.push({
             type: 'issue',
             iconClass,

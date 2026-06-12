@@ -65,6 +65,10 @@ export function IssueListClient({ initialData }: Props) {
         return "課題";
       case "question":
         return "質問";
+      case "proposal":
+        return "提案";
+      case "request":
+        return "要望";
       default:
         return type;
     }
@@ -78,6 +82,10 @@ export function IssueListClient({ initialData }: Props) {
         return styles.typeBug;
       case "question":
         return styles.typeQuestion;
+      case "proposal":
+        return styles.typeProposal;
+      case "request":
+        return styles.typeRequest;
       default:
         return "";
     }

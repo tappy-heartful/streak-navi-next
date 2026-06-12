@@ -215,7 +215,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
     const assigneeName = selectedAssignee?.displayName || "";
 
     const payload = {
-      type: data.type as "todo" | "bug" | "question",
+      type: data.type as "todo" | "bug" | "question" | "proposal" | "request",
       groupId: data.groupId || "",
       assigneeId: data.assigneeId,
       assigneeName,
@@ -266,6 +266,8 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
             <option value="todo">TODO</option>
             <option value="bug">課題</option>
             <option value="question">質問</option>
+            <option value="proposal">提案</option>
+            <option value="request">要望</option>
           </select>
         </FormField>
 
