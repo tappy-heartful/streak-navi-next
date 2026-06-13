@@ -364,6 +364,136 @@
    } catch (e) { Logger.log('Event Remind Error: ' + e.toString()); }
  }
 
+  /**
+   * イベント後7日おきに、出席するが旅費補助申請が未提出かつイベント開催市区町村在住ではない人にリマインドする
+   */
+  function remindPendingTravelExpenses() {
+    try {
+      const firestore = FirestoreApp.getFirestore(FIRESTORE_EMAIL, FIRESTORE_KEY, FIRESTORE_PROJECT_ID);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const events = firestore.getDocuments('events');
+      const allAttendance = firestore.getDocuments('eventAttendanceAnswers');
+      const allExpenses = firestore.getDocuments('expenseApplies');
+      const users = firestore.getDocuments('users');
+
+      const userMap = {};
+      users.forEach(u => {
+        const uid = u.name.split('/').pop();
+        userMap[uid] = u.obj.displayName || "メンバー";
+      });
+
+      events.forEach(docRef => {
+        const e = docRef.obj || docRef;
+        if (!e.date) return;
+
+        // 2026年5月以降のイベントのみを対象にする (yyyy.MM.dd 形式)
+        if (e.date < "2026.05.01") return;
+
+        // 日付のパース ("yyyy.MM.dd")
+        const dateParts = e.date.split('.');
+        if (dateParts.length !== 3) return;
+        const eventDate = new Date(Number(dateParts[0]), Number(dateParts[1]) - 1, Number(dateParts[2]));
+        
+        const diffTime = today.getTime() - eventDate.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        // イベント後7日おき（7日、14日、21日...）かつ過去90日以内のイベントを対象とする
+        if (diffDays <= 0 || diffDays > 90 || diffDays % 7 !== 0) return;
+
+        const eventId = docRef.name.split('/').pop();
+        const eventTitle = e.title || "イベント";
+
+        // 出席と回答したユーザーを抽出
+        const attendees = allAttendance.filter(attDoc => {
+          const att = attDoc.obj || attDoc;
+          return att.eventId === eventId && String(att.status) === "1";
+        }).map(attDoc => {
+          const att = attDoc.obj || attDoc;
+          return att.uid;
+        });
+
+        if (attendees.length === 0) return;
+
+        // すでにこのイベントの旅費申請を提出したユーザーを抽出
+        const submittedUids = new Set();
+        allExpenses.forEach(expDoc => {
+          const exp = expDoc.obj || expDoc;
+          if (exp.eventId === eventId &&
+              (exp.expenseTypeId === TRAVEL_TYPE_ID || exp.typeId === TRAVEL_TYPE_ID) &&
+              exp.categoryId === TRAVEL_CATEGORY_ID &&
+              exp.itemId === TRAVEL_ITEM_ID) {
+            submittedUids.add(exp.uid);
+          }
+        });
+
+        // 未提出の出席者を対象にする
+        const pendingUids = attendees.filter(uid => !submittedUids.has(uid));
+
+        pendingUids.forEach(uid => {
+          try {
+            // 居住地情報の取得 (users/{uid}/private/location)
+            let userLoc = {};
+            try {
+              const locDoc = firestore.getDocument(`users/${uid}/private/location`);
+              if (locDoc && locDoc.obj) {
+                userLoc = locDoc.obj;
+              }
+            } catch (locErr) {
+              Logger.log(`Failed to get location for user ${uid}: ` + locErr.toString());
+            }
+
+            const isLocationUnregistered = !userLoc.prefectureId || !userLoc.municipalityId;
+
+            if (!isLocationUnregistered) {
+              // イベント開催の市区町村と同じ在住の場合は対象外
+              if (e.municipalityId && userLoc.municipalityId === e.municipalityId) {
+                return;
+              }
+            }
+
+            // 個別LINE通知の送信
+            const lineMsgDoc = firestore.getDocument(`lineMessagingIds/${uid}`);
+            const lineUid = (lineMsgDoc && lineMsgDoc.obj) ? lineMsgDoc.obj.lineUid : null;
+            if (!lineUid) return;
+
+            const dateStr = `${Number(dateParts[1])}/${Number(dateParts[2])}`;
+            let message = "";
+
+            if (isLocationUnregistered) {
+              message = `お疲れ様です！Streak Navi コンシェルジュです🍀\n\n` +
+                        `【登録情報（居住地）登録と旅費補助申請のお願い】\n` +
+                        `先日のイベント「${eventTitle}」（${dateStr}）について出席と回答されていますが、旅費補助の申請が未提出です。⚠️\n\n` +
+                        `現在、旅費補助額の計算に必要な「居住都道府県」または「市区町村」の情報が未登録となっております。\n` +
+                        `まずは以下のプロフィール編集画面より、居住地をご登録ください🤲\n` +
+                        `（※イベント開催市区町村と同じ在住の方は申請対象外となりますが、登録がない場合は自動判定ができないため、ご登録をお願いいたします）\n\n` +
+                        `▼ 居住地（都道府県・市区町村）の登録はこちら\n` +
+                        `${BASE_URL}/user/edit\n\n` +
+                        `▼ 旅費補助申請はこちら\n` +
+                        `${BASE_URL}/expense-apply/edit?mode=new&typeId=${TRAVEL_TYPE_ID}&categoryId=${TRAVEL_CATEGORY_ID}&itemId=${TRAVEL_ITEM_ID}&eventId=${eventId}`;
+            } else {
+              message = `お疲れ様です！Streak Navi コンシェルジュです🍀\n\n` +
+                        `【旅費補助申請のリマインド】\n` +
+                        `先日のイベント「${eventTitle}」（${dateStr}）について、出席と回答されていますが、旅費補助の申請が未提出のようです。⚠️\n\n` +
+                        `※イベント開催場所（市区町村）に居住されている方は申請対象外となりますが、対象の方は以下のリンクよりお早めに申請をお願いいたします🤲\n\n` +
+                        `▼ 旅費補助申請はこちら\n` +
+                        `${BASE_URL}/expense-apply/edit?mode=new&typeId=${TRAVEL_TYPE_ID}&categoryId=${TRAVEL_CATEGORY_ID}&itemId=${TRAVEL_ITEM_ID}&eventId=${eventId}\n\n` +
+                        `▼ 登録情報（居住地）の確認・変更はこちら\n` +
+                        `${BASE_URL}/user/edit`;
+            }
+
+            sendLineMessage(lineUid, message);
+          } catch (uidErr) {
+            Logger.log(`Error processing user ${uid} for event ${eventId}: ` + uidErr.toString());
+          }
+        });
+      });
+    } catch (e) {
+      Logger.log('Remind Travel Expenses Error: ' + e.toString());
+    }
+  }
+
  function sendLineMessage(to, text) {
    if (!to || !LINE_ACCESS_TOKEN) return;
    const options = {
