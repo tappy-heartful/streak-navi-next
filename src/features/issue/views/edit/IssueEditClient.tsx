@@ -27,9 +27,10 @@ type Props = {
   events: Event[];
   issues: Issue[];
   parentId?: string;
+  initialDate?: string;
 };
 
-export function IssueEditClient({ mode, issueId, initialIssue, users, sections, issueGroups, events, issues, parentId }: Props) {
+export function IssueEditClient({ mode, issueId, initialIssue, users, sections, issueGroups, events, issues, parentId, initialDate }: Props) {
   const { userData } = useAuth();
   const router = useRouter();
 
@@ -147,7 +148,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
       assigneeId: initialIssue?.assigneeId || "",
       title: (mode === "copy" ? `${initialIssue?.title}（コピー）` : initialIssue?.title) ?? "",
       description: initialIssue?.description ?? "",
-      date: dotDateToHyphen(initialIssue?.date || format(new Date(), "yyyy-MM-dd")),
+      date: dotDateToHyphen(initialIssue?.date || initialDate || format(new Date(), "yyyy-MM-dd")),
       dateType: initialIssue?.dateType || "until",
       status: initialIssue?.status || "not_started",
       scope: initialIssue?.scope || "all",

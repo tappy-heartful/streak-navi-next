@@ -15,6 +15,7 @@ import { AccountingSeason, AccountingSeasonKey } from "@/src/lib/firestore/types
 import { hasViewPermission } from "@/src/features/issue/lib/issue-search-engine";
 import { db } from "@/src/lib/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import { DailyAgendaModal } from "./DailyAgendaModal";
 
 // --- 再描画させないためのメモ化コンポーネント群 ---
 
@@ -136,6 +137,16 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
 
   // フィルター用状態
   const [scopeFilter, setScopeFilter] = useState<'all' | 'my'>('all');
+
+  // アジェンダモーダル表示用状態
+  const [activeDateStr, setActiveDateStr] = useState<string>("");
+  const [isAgendaOpen, setIsAgendaOpen] = useState(false);
+
+  const handleCellClick = (cellYear: number, cellMonth: number, dayNum: number) => {
+    const dateStr = `${cellYear}.${String(cellMonth + 1).padStart(2, '0')}.${String(dayNum).padStart(2, '0')}`;
+    setActiveDateStr(dateStr);
+    setIsAgendaOpen(true);
+  };
 
   // 自分の回答・出欠状況の管理
   const [myAttendanceAnswers, setMyAttendanceAnswers] = useState<Record<string, { statusId: string; statusName: string }>>({});
@@ -555,6 +566,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
                 key={`${cell.year}-${cell.month}-${cell.dayNum}-${idx}`}
                 className={`${styles.calendarDay} ${dayClass}`}
                 title={holidayName}
+                onClick={() => handleCellClick(cell.year, cell.month, cell.dayNum)}
               >
                 <div className={styles.dayHeader}>
                   <span
@@ -580,14 +592,13 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
                       pillClass = styles.todoMe; // ティール (todoMe)
 
                       return (
-                        <Link
+                        <span
                           key={`${item.type}-${item.id}-${idx}`}
-                          href={item.link}
                           className={`${styles.todoPill} ${pillClass} ${isCompleted ? styles.completed : ""}`}
                         >
                           {item.iconClass && <i className={item.iconClass} style={{ marginRight: "2px" }} />}
                           {item.label ? truncate(item.label, 12) : "\u00A0"}
-                        </Link>
+                        </span>
                       );
                     } else if (item.type === 'event') {
                       const hasResponded = !!myAttendanceAnswers[item.id];
@@ -600,14 +611,13 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
                       }
 
                       return (
-                        <Link
+                        <span
                           key={`${item.type}-${item.id}-${idx}`}
-                          href={item.link}
                           className={`${styles.eventPill} ${pillClass}`}
                         >
                           {item.iconClass && <i className={item.iconClass} style={{ marginRight: "3px" }} />}
                           {item.label ? truncate(item.label, 12) : "\u00A0"}
-                        </Link>
+                        </span>
                       );
                     } else if (item.type === 'vote') {
                       pillClass = styles.eventCoupleLight; // オレンジ (eventCoupleLight)
@@ -618,14 +628,13 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
                       else if (item.position === 'end') spanClass = `${styles.eventPill} ${styles.eventEnd}`;
 
                       return (
-                        <Link
+                        <span
                           key={`${item.type}-${item.id}-${idx}`}
-                          href={item.link}
                           className={`${spanClass} ${pillClass}`}
                         >
                           {item.iconClass && <i className={item.iconClass} style={{ marginRight: "3px" }} />}
                           {item.label ? truncate(item.label, 12) : "\u00A0"}
-                        </Link>
+                        </span>
                       );
                     } else {
                       // call (曲募集)
@@ -637,14 +646,13 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
                       else if (item.position === 'end') spanClass = `${styles.eventPill} ${styles.eventEnd}`;
 
                       return (
-                        <Link
+                        <span
                           key={`${item.type}-${item.id}-${idx}`}
-                          href={item.link}
                           className={`${spanClass} ${pillClass}`}
                         >
                           {item.iconClass && <i className={item.iconClass} style={{ marginRight: "3px" }} />}
                           {item.label ? truncate(item.label, 12) : "\u00A0"}
-                        </Link>
+                        </span>
                       );
                     }
                   })}
@@ -653,6 +661,18 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
             );
           })}
         </div>
+
+        {isAgendaOpen && (
+          <DailyAgendaModal
+            activeDateStr={activeDateStr}
+            items={getItemsForDay(
+              Number(activeDateStr.split(".")[0]),
+              Number(activeDateStr.split(".")[1]) - 1,
+              Number(activeDateStr.split(".")[2])
+            )}
+            onClose={() => setIsAgendaOpen(false)}
+          />
+        )}
       </section>
     </main>
   );

@@ -25,6 +25,7 @@ type Props = {
   sections: Section[];
   instruments: Instrument[];
   prefectures: Prefecture[];
+  initialDate?: string;
 };
 
 
@@ -47,7 +48,7 @@ function defaultDates() {
   };
 }
 
-export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections, instruments, prefectures }: Props) {
+export function EventEditClient({ mode, eventId, initialEvent, initialType, scores, sections, instruments, prefectures, initialDate }: Props) {
   const router = useRouter();
   const { userData, isAdmin, loading } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
@@ -58,7 +59,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
   const [attendanceType, setAttendanceType] = useState<"schedule" | "attendance">(
     initialEvent?.attendanceType || initialType
   );
-  const [date, setDate] = useState(dotDateToHyphen(initialEvent?.date || ""));
+  const [date, setDate] = useState(dotDateToHyphen(initialEvent?.date || initialDate || ""));
   const [candidateDates, setCandidateDates] = useState<string[]>(
     initialEvent?.candidateDates?.map(dotDateToHyphen) || [""]
   );

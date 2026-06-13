@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function EventEditPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mode?: string; eventId?: string; type?: string }>;
+  searchParams: Promise<{ mode?: string; eventId?: string; type?: string; date?: string }>;
 }) {
-  const { mode = "new", eventId, type } = await searchParams;
+  const { mode = "new", eventId, type, date } = await searchParams;
 
   const [initialEvent, editData] = await Promise.all([
     (mode === "edit" || mode === "copy") && eventId ? fetchEvent(eventId) : Promise.resolve(null),
@@ -33,6 +33,7 @@ export default async function EventEditPage({
       sections={sections}
       instruments={instruments}
       prefectures={prefectures}
+      initialDate={date}
     />
   );
 }
