@@ -616,3 +616,12 @@ export interface IssueGroup {
   updatedAt?: number;
 }
 
+export interface IssueComment {
+  id: string;
+  issueId: string;
+  text: string;
+  createdBy: string;
+  createdByName: string;
+  createdAt: number;
+}
+
