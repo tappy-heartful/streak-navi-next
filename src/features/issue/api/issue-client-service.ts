@@ -11,7 +11,8 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 import { getSession } from "@/src/lib/functions";
-import { Issue, IssueGroup } from "@/src/lib/firestore/types";
+import { Issue, IssueGroup, IssueComment } from "@/src/lib/firestore/types";
+import { notifyIssueAction } from "./issue-notification-server-actions";
 
 /** チケットの保存 (新規作成・更新・コピー) */
 export const saveIssue = async (
@@ -31,6 +32,7 @@ export const saveIssue = async (
   if (mode === "edit" && id) {
     const docRef = doc(db, "issues", id);
     await updateDoc(docRef, payload);
+    notifyIssueAction(id, "update", uid);
     return id;
   } else {
     const res = await addDoc(collection(db, "issues"), {
@@ -39,6 +41,7 @@ export const saveIssue = async (
       createdByName: actorName,
       createdAt: serverTimestamp(),
     });
+    notifyIssueAction(res.id, "create", uid);
     return res.id;
   }
 };
@@ -113,4 +116,24 @@ export const updateIssueParent = async (issueId: string, parentId: string) => {
     parentId,
     updatedAt: serverTimestamp()
   });
+};
+
+/** コメントの追加 */
+export const addIssueComment = async (
+  issueId: string,
+  text: string,
+  actorName: string
+): Promise<string> => {
+  const uid = getSession("uid");
+  if (!uid) throw new Error("ログインが必要です");
+
+  const commentsCol = collection(db, "issues", issueId, "comments");
+  const res = await addDoc(commentsCol, {
+    issueId,
+    text,
+    createdBy: uid,
+    createdByName: actorName,
+    createdAt: serverTimestamp(),
+  });
+  return res.id;
 };

@@ -180,6 +180,35 @@ service cloud.firestore {
         resource.data.createdBy == request.auth.uid ||
         isAdmin("System")
       );
+
+      // コメントサブコレクション
+      match /comments/{commentId} {
+        // 閲覧：親イシューの閲覧権限があるユーザーなら誰でもOK
+        allow read: if isSignedIn() && (
+          get(/databases/$(database)/documents/issues/$(id)).data.createdBy == request.auth.uid ||
+          get(/databases/$(database)/documents/issues/$(id)).data.assigneeId == request.auth.uid ||
+          isAdmin("System") ||
+          get(/databases/$(database)/documents/issues/$(id)).data.scope == "all" ||
+          (get(/databases/$(database)/documents/issues/$(id)).data.scope == "part" && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.sectionId == get(/databases/$(database)/documents/issues/$(id)).data.partId) ||
+          (get(/databases/$(database)/documents/issues/$(id)).data.scope == "user" && request.auth.uid in get(/databases/$(database)/documents/issues/$(id)).data.allowedUserIds)
+        );
+
+        // 新規作成：親イシューの閲覧権限があり、作成者が自分自身であること
+        allow create: if isSignedIn() && (
+          get(/databases/$(database)/documents/issues/$(id)).data.createdBy == request.auth.uid ||
+          get(/databases/$(database)/documents/issues/$(id)).data.assigneeId == request.auth.uid ||
+          isAdmin("System") ||
+          get(/databases/$(database)/documents/issues/$(id)).data.scope == "all" ||
+          (get(/databases/$(database)/documents/issues/$(id)).data.scope == "part" && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.sectionId == get(/databases/$(database)/documents/issues/$(id)).data.partId) ||
+          (get(/databases/$(database)/documents/issues/$(id)).data.scope == "user" && request.auth.uid in get(/databases/$(database)/documents/issues/$(id)).data.allowedUserIds)
+        ) && request.resource.data.createdBy == request.auth.uid;
+
+        // 更新・削除：作成者本人 OR システム管理者
+        allow update, delete: if isSignedIn() && (
+          resource.data.createdBy == request.auth.uid ||
+          isAdmin("System")
+        );
+      }
     }
 
     // 【イシューグループ管理】

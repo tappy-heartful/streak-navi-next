@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
-import { Issue, User, Section, IssueGroup, Event } from "@/src/lib/firestore/types";
+import { Issue, User, Section, IssueGroup, Event, IssueComment } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { toggleIssueStep, updateIssueParent } from "@/src/features/issue/api/issue-client-service";
-import { buildYouTubeHtml, showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
+import { toggleIssueStep, updateIssueParent, addIssueComment } from "@/src/features/issue/api/issue-client-service";
+import { buildYouTubeHtml, showSpinner, hideSpinner, showDialog, format } from "@/src/lib/functions";
 import { Modal } from "@/src/components/Modal";
 import styles from "./IssueConfirm.module.css";
 
@@ -21,9 +21,10 @@ type Props = {
   issueGroups: IssueGroup[];
   events: Event[];
   issues: Issue[];
+  comments?: IssueComment[];
 };
 
-export function IssueConfirmClient({ issueData, issueId, users, sections, issueGroups, events, issues }: Props) {
+export function IssueConfirmClient({ issueData, issueId, users, sections, issueGroups, events, issues, comments = [] }: Props) {
   const router = useRouter();
   const { userData, isAdmin } = useAuth();
 
@@ -32,6 +33,38 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
 
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+
+    setIsSubmitting(true);
+    showSpinner();
+    try {
+      const actorName = userData?.displayName || "匿名";
+      // 1. コメントをFirestoreに保存
+      await addIssueComment(issueId, commentText.trim(), actorName);
+
+      // 2. LINE通知を送信
+      const { notifyIssueAction } = await import("@/src/features/issue/api/issue-notification-server-actions");
+      notifyIssueAction(issueId, "comment", userData?.id || "", {
+        commentText: commentText.trim(),
+        actorName,
+      }).catch((err) => console.error("LINE notification failed:", err));
+
+      setCommentText("");
+      await showDialog("コメントを投稿しました", true);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      await showDialog("コメントの投稿に失敗しました。");
+    } finally {
+      setIsSubmitting(false);
+      hideSpinner();
+    }
+  };
 
   // Find eligible existing issues to be linked as a child
   const eligibleChildIssues = React.useMemo(() => {
@@ -388,6 +421,62 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
         {/* 起票者 */}
         <DisplayField label="起票者">
           {getCreatorName(issueData.createdBy)}
+        </DisplayField>
+
+        {/* コメント */}
+        <DisplayField label="コメント">
+          <div className={styles.commentSection}>
+            {/* コメント一覧 */}
+            <div className={styles.commentList}>
+              {comments.length > 0 ? (
+                comments.map((comment) => (
+                  <div key={comment.id} className={styles.commentItem}>
+                    <div className={styles.commentHeader}>
+                      <span className={styles.commentAuthor}>
+                        <i className="fa-solid fa-user" style={{ marginRight: "6px" }}></i>
+                        {comment.createdByName}
+                      </span>
+                      <span className={styles.commentDate}>
+                        {format(comment.createdAt, 'yyyy/MM/dd HH:mm')}
+                      </span>
+                    </div>
+                    <div className={styles.commentBody}>
+                      {comment.text.split("\n").map((line, i) => (
+                        <React.Fragment key={i}>
+                          {line}
+                          <br />
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.noComments}>コメントはありません。</div>
+              )}
+            </div>
+
+            {/* 新規コメント投稿 */}
+            <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
+              <textarea
+                className="form-control"
+                placeholder="コメントを入力してください..."
+                rows={3}
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                disabled={isSubmitting}
+                required
+              />
+              <div className={styles.formActions}>
+                <button
+                  type="submit"
+                  className={styles.commentSubmitBtn}
+                  disabled={isSubmitting || !commentText.trim()}
+                >
+                  <i className="fa-solid fa-paper-plane"></i> コメントを送信
+                </button>
+              </div>
+            </form>
+          </div>
         </DisplayField>
       </ConfirmLayout>
       {isLinkModalOpen && (
