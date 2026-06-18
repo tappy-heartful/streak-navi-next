@@ -4,6 +4,20 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# Streak Navi - 開発前提条件 (Premises)
+
+## モバイルファーストの徹底 (Mobile-First Design)
+
+本リポジトリにおけるUI/UX設計およびデザインは、**スマートフォン（モバイル環境）での操作・閲覧を最優先（Mobile-First）**とします。
+
+### 理由
+- 主な利用ユーザーがスマートフォンで本システムを日常的に操作するため。
+- モバイル時の極小幅（360px〜480px程度）でもレイアウトが崩れず、視認性が高く、快適にスクロールおよび操作を行えることを絶対条件とします。
+
+### 実装上の注意
+- テーブルなどの要素がはみ出る場合は、必ずコンテナ側に `overflow-x: auto` などを用いて横スクロール対応にし、外側のレイアウトを壊さないようにすること。
+- 改行やスペースの不足によって、名前や日付、ボタン等の要素が画面幅で不自然に折り返したり潰れたりしないように設計に配慮してください。
+
 # Agent Behavior Rules
 1. **実装プランの承認プロセス省略**: Implementation Planを作成した後、ユーザーの明示的な承認を待つ必要はありません。プランを提示（または作成）したら、そのまま連続してタスクの実行（コードの修正等）に進んでください。
 2. **モバイル表示の考慮**: スマートフォンでの表示崩れを防ぐため、フィルターバッジやボタン等のUI要素が画面幅で見切れたり不自然に折り返したりしないように常に設計に配慮してください。必要に応じて要素を別行にするか、スクロール可能なコンテナに格納するなど、モバイルファーストでの実装を徹底してください。

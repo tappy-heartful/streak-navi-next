@@ -8,8 +8,8 @@ import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { Issue, User, Section, IssueGroup, Event, IssueComment } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { toggleIssueStep, updateIssueParent, addIssueComment } from "@/src/features/issue/api/issue-client-service";
-import { buildYouTubeHtml, showSpinner, hideSpinner, showDialog, format } from "@/src/lib/functions";
+import { toggleIssueStep, updateIssueParent, addIssueComment, updateIssueComment } from "@/src/features/issue/api/issue-client-service";
+import { buildYouTubeHtml, showSpinner, hideSpinner, showDialog, format, globalLineDefaultImage } from "@/src/lib/functions";
 import { Modal } from "@/src/components/Modal";
 import styles from "./IssueConfirm.module.css";
 
@@ -35,6 +35,28 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
   const [searchTerm, setSearchTerm] = useState("");
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
+
+  const handleCommentUpdate = async (commentId: string) => {
+    if (!editingText.trim()) return;
+
+    setIsSubmitting(true);
+    showSpinner();
+    try {
+      await updateIssueComment(issueId, commentId, editingText.trim());
+      setEditingCommentId(null);
+      setEditingText("");
+      await showDialog("コメントを更新しました", true);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      await showDialog("コメントの更新に失敗しました。");
+    } finally {
+      setIsSubmitting(false);
+      hideSpinner();
+    }
+  };
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -429,27 +451,82 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
             {/* コメント一覧 */}
             <div className={styles.commentList}>
               {comments.length > 0 ? (
-                comments.map((comment) => (
-                  <div key={comment.id} className={styles.commentItem}>
-                    <div className={styles.commentHeader}>
-                      <span className={styles.commentAuthor}>
-                        <i className="fa-solid fa-user" style={{ marginRight: "6px" }}></i>
-                        {comment.createdByName}
-                      </span>
-                      <span className={styles.commentDate}>
-                        {format(comment.createdAt, 'yyyy/MM/dd HH:mm')}
-                      </span>
+                comments.map((comment) => {
+                  const commentUser = users.find((u) => u.id === comment.createdBy);
+                  const commentUserPic = commentUser?.pictureUrl || globalLineDefaultImage;
+
+                  return (
+                    <div key={comment.id} className={styles.commentItem}>
+                      <div className={styles.commentHeader}>
+                        <div className={styles.commentHeaderLeft}>
+                          <img src={commentUserPic} alt={comment.createdByName} className={styles.commentUserPic} />
+                          <span className={styles.commentAuthor}>
+                            {comment.createdByName}
+                          </span>
+                        </div>
+                        <div className={styles.commentHeaderRight}>
+                          <span className={styles.commentDate}>
+                            {format(comment.createdAt, 'yyyy/MM/dd HH:mm')}
+                          </span>
+                          {comment.createdBy === userData?.id && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingCommentId(comment.id);
+                                setEditingText(comment.text);
+                              }}
+                              className={styles.commentEditBtn}
+                              disabled={isSubmitting}
+                            >
+                              <i className="fa-solid fa-pen-to-square"></i> 編集
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <div className={styles.commentBody}>
+                        {editingCommentId === comment.id ? (
+                          <div className={styles.editCommentForm}>
+                            <textarea
+                              className="form-control"
+                              rows={3}
+                              value={editingText}
+                              onChange={(e) => setEditingText(e.target.value)}
+                              disabled={isSubmitting}
+                            />
+                            <div className={styles.editActions}>
+                              <button
+                                type="button"
+                                className={styles.editCancelBtn}
+                                onClick={() => {
+                                  setEditingCommentId(null);
+                                  setEditingText("");
+                                }}
+                                disabled={isSubmitting}
+                              >
+                                キャンセル
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.editSaveBtn}
+                                onClick={() => handleCommentUpdate(comment.id)}
+                                disabled={isSubmitting || !editingText.trim()}
+                              >
+                                保存
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          comment.text.split("\n").map((line, i) => (
+                            <React.Fragment key={i}>
+                              {line}
+                              <br />
+                            </React.Fragment>
+                          ))
+                        )}
+                      </div>
                     </div>
-                    <div className={styles.commentBody}>
-                      {comment.text.split("\n").map((line, i) => (
-                        <React.Fragment key={i}>
-                          {line}
-                          <br />
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className={styles.noComments}>コメントはありません。</div>
               )}
