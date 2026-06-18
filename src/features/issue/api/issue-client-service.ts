@@ -137,3 +137,25 @@ export const addIssueComment = async (
   });
   return res.id;
 };
+
+/** コメントの更新 */
+export const updateIssueComment = async (
+  issueId: string,
+  commentId: string,
+  text: string
+): Promise<void> => {
+  const uid = getSession("uid");
+  if (!uid) throw new Error("ログインが必要です");
+
+  const commentDocRef = doc(db, "issues", issueId, "comments", commentId);
+  const snap = await getDoc(commentDocRef);
+  if (!snap.exists()) throw new Error("コメントが見つかりません");
+  if (snap.data().createdBy !== uid) {
+    throw new Error("自分のコメントのみ編集できます");
+  }
+
+  await updateDoc(commentDocRef, {
+    text,
+    updatedAt: serverTimestamp(),
+  });
+};
