@@ -450,6 +450,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
     }[] = [];
     const dayOfWeek = new Date(cellYear, cellMonth, day).getDay();
     const isSunday = dayOfWeek === 0;
+    const isSaturday = dayOfWeek === 6;
 
     const todayStr = `${todayYear}.${String(todayMonth + 1).padStart(2, '0')}.${String(todayDay).padStart(2, '0')}`;
 
@@ -516,13 +517,19 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
 
       if (isInPeriod) {
         const label = (isStart || isSunday) ? `調整: ${e.title}` : "";
+        let position: 'start' | 'middle' | 'end' = 'middle';
+        if ((isStart && !isEnd) || (isSunday && !isEnd)) {
+          position = 'start';
+        } else if (isEnd || isSaturday) {
+          position = 'end';
+        }
         items.push({
           type: 'schedule_adjust',
           iconClass: label ? 'fa-solid fa-calendar-days' : undefined,
           label,
           link: `/event/confirm?eventId=${e.id}`,
           id: e.id,
-          position: isStart ? 'start' : isEnd ? 'end' : 'middle',
+          position,
           createdBy: e.createdBy
         });
       }
@@ -545,13 +552,19 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
 
       if (isInPeriod) {
         const label = (isStart || isSunday) ? v.name : "";
+        let position: 'start' | 'middle' | 'end' = 'middle';
+        if ((isStart && !isEnd) || (isSunday && !isEnd)) {
+          position = 'start';
+        } else if (isEnd || isSaturday) {
+          position = 'end';
+        }
         items.push({
           type: 'vote',
           iconClass: label ? 'fa-solid fa-check-to-slot' : undefined,
           label,
           link: `/vote/confirm?voteId=${v.id}`,
           id: v.id,
-          position: isStart ? 'start' : isEnd ? 'end' : 'middle',
+          position,
           createdBy: v.createdBy
         });
       }
@@ -573,13 +586,19 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
 
       if (isInPeriod) {
         const label = (isStart || isSunday) ? c.title : "";
+        let position: 'start' | 'middle' | 'end' = 'middle';
+        if ((isStart && !isEnd) || (isSunday && !isEnd)) {
+          position = 'start';
+        } else if (isEnd || isSaturday) {
+          position = 'end';
+        }
         items.push({
           type: 'call',
           iconClass: label ? 'fa-solid fa-bullhorn' : undefined,
           label,
           link: `/call/confirm?callId=${c.id}`,
           id: c.id,
-          position: isStart ? 'start' : isEnd ? 'end' : 'middle',
+          position,
           createdBy: c.createdBy
         });
       }
