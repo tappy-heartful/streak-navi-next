@@ -80,7 +80,7 @@ const TodoSection = memo(({ todos }: { todos: Issue[] }) => {
 
   const getStatusName = (status: string) => {
     switch (status) {
-      case "not_started": return "未着手";
+      case "not_started": return "未実施";
       case "in_progress": return "実施中";
       default: return status;
     }
@@ -88,9 +88,10 @@ const TodoSection = memo(({ todos }: { todos: Issue[] }) => {
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case "not_started": return styles.todoStatusNotStarted;
-      case "in_progress": return styles.todoStatusInProgress;
-      default: return "";
+      case "not_started":
+      case "in_progress":
+      default:
+        return styles.todoStatusInProgress;
     }
   };
 

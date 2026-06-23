@@ -167,11 +167,18 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
     }
   );
 
-  // 公開範囲が「ユーザ指定」かつメンバーが選択されていない場合はバリデーションエラーを追加する独自のフック
+  // バリデーションエラーを追加する独自のフック
   const customValidate = () => {
     const errs = form.validate();
     if (form.formData.scope === "user" && allowedUserIds.length === 0) {
       errs.scope = "公開するメンバーを1人以上選択してください。";
+    }
+
+    if (form.formData.status === "completed") {
+      const hasUncompletedSteps = steps.some((step) => !step.completed && step.text.trim().length > 0);
+      if (hasUncompletedSteps) {
+        errs.status = "未完了のステップがあるため、「済」に設定できません。すべてのステップを完了させてください。";
+      }
     }
     return errs;
   };

@@ -934,13 +934,15 @@
 }
 
 .todoStatusNotStarted {
-  background-color: #e2e8f0;
-  color: #475569;
+  background-color: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
 }
 
 .todoStatusInProgress {
-  background-color: #dbeafe;
-  color: #1d4ed8;
+  background-color: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
 }
 
 .todoChevron {

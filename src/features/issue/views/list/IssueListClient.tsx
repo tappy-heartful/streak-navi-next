@@ -140,11 +140,11 @@ export function IssueListClient({ initialData }: Props) {
   const getStatusName = (status: string) => {
     switch (status) {
       case "not_started":
-        return "未";
+        return "未実施";
       case "in_progress":
         return "実施中";
       case "completed":
-        return "済";
+        return "実施済";
       default:
         return status;
     }
@@ -152,14 +152,12 @@ export function IssueListClient({ initialData }: Props) {
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case "not_started":
-        return styles.statusNotStarted;
-      case "in_progress":
-        return styles.statusInProgress;
       case "completed":
         return styles.statusCompleted;
+      case "not_started":
+      case "in_progress":
       default:
-        return "";
+        return styles.statusInProgress;
     }
   };
 

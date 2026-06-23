@@ -8,7 +8,7 @@ import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { Issue, User, Section, IssueGroup, Event, IssueComment } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
-import { toggleIssueStep, updateIssueParent, addIssueComment, updateIssueComment } from "@/src/features/issue/api/issue-client-service";
+import { toggleIssueStep, updateIssueParent, addIssueComment, updateIssueComment, updateIssueStatus } from "@/src/features/issue/api/issue-client-service";
 import { buildYouTubeHtml, showSpinner, hideSpinner, showDialog, format, globalLineDefaultImage } from "@/src/lib/functions";
 import { Modal } from "@/src/components/Modal";
 import styles from "./IssueConfirm.module.css";
@@ -179,13 +179,56 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
   const getStatusName = (status: string) => {
     switch (status) {
       case "not_started":
-        return "未";
+        return "未実施";
       case "in_progress":
         return "実施中";
       case "completed":
-        return "済";
+        return "実施済";
       default:
         return status;
+    }
+  };
+
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "completed":
+        return styles.statusCompleted;
+      case "not_started":
+      case "in_progress":
+      default:
+        return styles.statusInProgress;
+    }
+  };
+
+  const getAnswerStatusClass = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "answered";
+      case "not_started":
+      case "in_progress":
+      default:
+        return "pending";
+    }
+  };
+
+  const handleStatusChange = async (newStatus: "not_started" | "in_progress" | "completed") => {
+    if (newStatus === "completed") {
+      const hasUncompletedSteps = issueData.steps?.some((step) => !step.completed && step.text.trim().length > 0);
+      if (hasUncompletedSteps) {
+        await showDialog("未完了のステップがあるため、「済」に設定できません。すべてのステップを完了させてください。");
+        return;
+      }
+    }
+
+    showSpinner();
+    try {
+      await updateIssueStatus(issueId, newStatus);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      await showDialog("ステータスの更新に失敗しました。");
+    } finally {
+      hideSpinner();
     }
   };
 
@@ -205,9 +248,13 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
     showSpinner();
     try {
       await toggleIssueStep(issueId, index, checked);
+      if (!checked && issueData.status === "completed") {
+        await updateIssueStatus(issueId, "in_progress");
+      }
       router.refresh();
     } catch (err) {
       console.error(err);
+      await showDialog("ステップの更新に失敗しました。");
     } finally {
       hideSpinner();
     }
@@ -261,6 +308,11 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
         collectionName="issues"
         overrideAdmin={canEdit}
       >
+        <div className="answer-status-container">
+          <span className={`answer-status ${getAnswerStatusClass(issueData.status)}`}>
+            {getStatusName(issueData.status)}
+          </span>
+        </div>
         {/* 種類 */}
         <DisplayField label="種類">
           {getTypeName(issueData.type)}
@@ -360,7 +412,23 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
 
         {/* ステータス */}
         <DisplayField label="ステータス">
-          {getStatusName(issueData.status)}
+          {canEdit ? (
+            <div className={styles.statusSelectWrapper}>
+              <select
+                className={`${styles.statusSelect} ${getStatusClass(issueData.status)}`}
+                value={issueData.status}
+                onChange={(e) => handleStatusChange(e.target.value as any)}
+              >
+                <option value="not_started" className={styles.statusOption}>未実施</option>
+                <option value="in_progress" className={styles.statusOption}>実施中</option>
+                <option value="completed" className={styles.statusOption}>実施済</option>
+              </select>
+            </div>
+          ) : (
+            <span className={`${styles.statusBadge} ${getStatusClass(issueData.status)}`}>
+              {getStatusName(issueData.status)}
+            </span>
+          )}
         </DisplayField>
 
         {/* 公開範囲 */}
