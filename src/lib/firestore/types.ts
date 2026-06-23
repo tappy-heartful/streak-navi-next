@@ -263,6 +263,7 @@ export interface Event {
   allowAssign?: boolean;
   setlist?: SetlistGroup[];
   instrumentConfig?: Record<string, InstrumentPart[]>;
+  isVenueReserved?: boolean;
   createdBy?: string;
   createdAt?: number;
   updatedAt?: number;

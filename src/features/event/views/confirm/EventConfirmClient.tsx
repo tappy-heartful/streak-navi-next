@@ -528,6 +528,22 @@ export function EventConfirmClient({ eventId, data }: Props) {
                 )}
               </div>
             </div>
+
+            {/* 会場押さえ状況 */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="label-title">会場押さえ状況</label>
+              <div className="label-value">
+                {event.isVenueReserved ? (
+                  <span className={styles.reservedBadge}>
+                    <i className="fa-solid fa-circle-check" /> 押さえ済み
+                  </span>
+                ) : (
+                  <span className={styles.notReservedBadge}>
+                    <i className="fa-solid fa-circle-minus" /> 未押さえ
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
