@@ -97,6 +97,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
   const [rent, setRent] = useState(initialEvent?.rent || "");
   const [other, setOther] = useState(initialEvent?.other || "");
   const [allowAssign, setAllowAssign] = useState(initialEvent?.allowAssign ?? false);
+  const [isVenueReserved, setIsVenueReserved] = useState(initialEvent?.isVenueReserved ?? false);
 
   const [setlistGroups, setSetlistGroups] = useState<SetlistGroup[]>(
     initialEvent?.setlist?.map(g => ({ title: g.title, songIds: g.songIds || [] })) ||
@@ -369,6 +370,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       allowAssign,
       setlist,
       instrumentConfig: instrConfig,
+      isVenueReserved,
       createdBy: initialEvent?.createdBy || userData?.displayName || "",
     };
 
@@ -613,6 +615,19 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                 onChange={e => setAccess(e.target.value)}
                 placeholder="交通アクセス・駐車場情報を入力(テキスト or URL)..."
               />
+            </div>
+
+            {/* 会場押さえ済みチェックボックス */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className={styles.checkboxRow}>
+                <input
+                  type="checkbox"
+                  className={styles.checkboxInput}
+                  checked={isVenueReserved}
+                  onChange={e => setIsVenueReserved(e.target.checked)}
+                />
+                会場押さえ済み
+              </label>
             </div>
           </div>
         </div>

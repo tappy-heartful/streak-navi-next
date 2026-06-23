@@ -13,7 +13,7 @@ export async function getAnnouncementsServer() {
   const [votes, calls, events] = await Promise.all([
     adminDb.collection("votes").orderBy("createdAt", "desc").get(),
     adminDb.collection("calls").orderBy("createdAt", "desc").get(),
-    adminDb.collection("events").orderBy("date", "asc").get()
+    adminDb.collection("events").get()
   ]);
 
   const checkTerm = (snap: FirebaseFirestore.QuerySnapshot, msg: string, labelKey: string, linkBase: string) => {
@@ -32,9 +32,9 @@ export async function getAnnouncementsServer() {
   checkTerm(calls, "候補曲、募集中です！", "title", "/call/confirm?callId=");
 
   // イベント関連のロジック
-  const eventResults = events.docs.map(eDoc => {
+  const eventList = events.docs.map(eDoc => {
     const d = eDoc.data();
-    if (d.date < todayStr) return null;
+    const isInAcceptTerm = utils.isInTerm(d.acceptStartDate, d.acceptEndDate);
 
     const todayJstStr = utils.format(new Date(), "yyyy-MM-dd");
     const todayMidnight = new Date(`${todayJstStr}T00:00:00+09:00`).getTime();
@@ -42,32 +42,40 @@ export async function getAnnouncementsServer() {
     const eventMidnight = eventJstStr ? new Date(`${eventJstStr}T00:00:00+09:00`).getTime() : 0;
     const diffDays = eventMidnight ? Math.round((eventMidnight - todayMidnight) / 86400000) : 0;
 
-    const isInAcceptTerm = utils.isInTerm(d.acceptStartDate, d.acceptEndDate);
-    return { id: eDoc.id, title: d.title, date: d.date, attendanceType: d.attendanceType, allowAssign: d.allowAssign, isUnanswered: false, diffDays, isInAcceptTerm };
+    return {
+      id: eDoc.id,
+      title: d.title || "",
+      date: d.date || "",
+      attendanceType: d.attendanceType || "attendance",
+      allowAssign: !!d.allowAssign,
+      diffDays,
+      isInAcceptTerm
+    };
   });
 
-  type UpcomingEvent = { id: string; title: string; date: string; attendanceType: string; allowAssign: boolean; isUnanswered: boolean; diffDays: number; isInAcceptTerm: boolean };
-  const upcoming = eventResults.filter((e): e is UpcomingEvent => e !== null);
-
-  // 日程調整
-  const schPending = upcoming.filter(e => e.attendanceType === "schedule");
-  if (schPending.length) {
+  // 1. 日程調整 (Schedule adjustments in active acceptance term)
+  const activeSchedules = eventList.filter(e => e.attendanceType === "schedule" && e.isInAcceptTerm);
+  if (activeSchedules.length) {
     items.push({ type: "pending", message: "日程調整、受付中です！" });
-    schPending.forEach(e => items.push({ type: "item", label: `🗓️ ${e.title}`, link: `/event/confirm?eventId=${e.id}` }));
+    activeSchedules.forEach(e => items.push({ type: "item", label: `🗓️ ${e.title}`, link: `/event/confirm?eventId=${e.id}` }));
   }
 
-  // 次のイベント
-  const target = upcoming[0];
+  // 2. 直近のイベント (Confirmed upcoming events)
+  const upcomingAttendance = eventList
+    .filter(e => e.attendanceType === "attendance" && e.date >= todayStr)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const target = upcomingAttendance[0];
   if (target) {
-    const isAccepting = target.attendanceType === "attendance" && target.isInAcceptTerm;
+    const isAccepting = target.isInAcceptTerm;
     const header = isAccepting 
       ? `イベントまであと${target.diffDays}日です！\n出欠確認、受付中です！`
       : (target.diffDays === 0 ? "今日はイベント当日です！" : `次のイベントまで、あと${target.diffDays}日！`);
     items.push({ type: "pending", message: header }, { type: "item", label: `📅${target.date} ${target.title}`, link: `/event/confirm?eventId=${target.id}` });
   }
 
-  // 譜割り
-  const assignPending = upcoming.filter(e => e.allowAssign);
+  // 3. 譜割り
+  const assignPending = upcomingAttendance.filter(e => e.allowAssign);
   if (assignPending.length) {
     items.push({ type: "pending", message: "譜割り、受付中です！" });
     assignPending.forEach(e => items.push({ type: "item", label: `🎵${e.date} ${e.title}`, link: `/assign/confirm?eventId=${e.id}` }));

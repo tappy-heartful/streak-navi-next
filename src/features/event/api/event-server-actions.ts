@@ -47,6 +47,7 @@ function toEventDoc(doc: FirebaseFirestore.DocumentSnapshot): Event {
     allowAssign: d.allowAssign ?? false,
     setlist: d.setlist || [],
     instrumentConfig: d.instrumentConfig || {},
+    isVenueReserved: d.isVenueReserved ?? false,
     createdBy: d.createdBy || "",
     createdAt: d.createdAt?.toMillis?.() ?? 0,
     updatedAt: d.updatedAt?.toMillis?.() ?? 0,

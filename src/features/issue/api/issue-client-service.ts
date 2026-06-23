@@ -159,3 +159,19 @@ export const updateIssueComment = async (
     updatedAt: serverTimestamp(),
   });
 };
+
+/** チケットのステータスを更新 */
+export const updateIssueStatus = async (
+  issueId: string,
+  status: "not_started" | "in_progress" | "completed"
+) => {
+  const uid = getSession("uid");
+  if (!uid) throw new Error("ログインが必要です");
+
+  const docRef = doc(db, "issues", issueId);
+  await updateDoc(docRef, {
+    status,
+    updatedAt: serverTimestamp()
+  });
+  notifyIssueAction(issueId, "update", uid);
+};

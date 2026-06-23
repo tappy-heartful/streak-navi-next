@@ -45,3 +45,21 @@
     gap: 16px;
   }
 }
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  color: #334155;
+  margin-top: 4px;
+}
+
+.checkboxInput {
+  width: 18px !important;
+  height: 18px !important;
+  margin: 0 !important;
+  cursor: pointer;
+}

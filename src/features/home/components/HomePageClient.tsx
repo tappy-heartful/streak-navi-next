@@ -49,6 +49,122 @@ const AnnouncementSection = memo(({ data }: { data: Announcement[] }) => (
 ));
 AnnouncementSection.displayName = "AnnouncementSection";
 
+const TodoSection = memo(({ todos }: { todos: Issue[] }) => {
+  if (todos.length === 0) return null;
+
+  const todayStr = utils.format(new Date(), "yyyy.MM.dd");
+  const todayJstStr = utils.format(new Date(), "yyyy-MM-dd");
+  const todayMidnight = new Date(`${todayJstStr}T00:00:00+09:00`).getTime();
+
+  const getTypeName = (type: string) => {
+    switch (type) {
+      case "todo": return "TODO";
+      case "bug": return "課題";
+      case "question": return "質問";
+      case "proposal": return "提案";
+      case "request": return "要望";
+      default: return type;
+    }
+  };
+
+  const getTypeBadgeClass = (type: string) => {
+    switch (type) {
+      case "todo": return styles.todoBadgeTodo;
+      case "bug": return styles.todoBadgeBug;
+      case "question": return styles.todoBadgeQuestion;
+      case "proposal": return styles.todoBadgeProposal;
+      case "request": return styles.todoBadgeRequest;
+      default: return "";
+    }
+  };
+
+  const getStatusName = (status: string) => {
+    switch (status) {
+      case "not_started": return "未実施";
+      case "in_progress": return "実施中";
+      default: return status;
+    }
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "not_started":
+      case "in_progress":
+      default:
+        return styles.todoStatusInProgress;
+    }
+  };
+
+  return (
+    <main className="container">
+      <div className={styles.todoContainer}>
+        <div className={styles.todoHeader}>
+          <h3>
+            <i className={`fa-solid fa-list-check ${styles.todoHeaderIcon}`} />
+            TODO ({todos.length}件)
+          </h3>
+        </div>
+        <div className={styles.todoCard}>
+          <ul className={styles.todoList}>
+            {todos.map((todo) => {
+              const isOverdue = todo.date && todo.date < todayStr;
+              let remainingLabel = "";
+              if (todo.date) {
+                const todoJstStr = todo.date.replace(/\./g, "-");
+                const todoMidnight = new Date(`${todoJstStr}T00:00:00+09:00`).getTime();
+                const diffDays = Math.round((todoMidnight - todayMidnight) / 86400000);
+                if (diffDays > 0) {
+                  remainingLabel = `あと ${diffDays} 日`;
+                } else if (diffDays === 0) {
+                  remainingLabel = "今日まで";
+                } else {
+                  remainingLabel = "期限超過";
+                }
+              }
+
+              return (
+                <li key={todo.id}>
+                  <Link href={`/issue/confirm?issueId=${todo.id}`} className={styles.todoItem}>
+                    <div className={styles.todoItemContent}>
+                      <div className={styles.todoItemTitleRow}>
+                        <span className={`${styles.todoBadge} ${getTypeBadgeClass(todo.type)}`}>
+                          {getTypeName(todo.type)}
+                        </span>
+                        <span className={`${styles.todoStatusBadge} ${getStatusBadgeClass(todo.status)}`}>
+                          {getStatusName(todo.status)}
+                        </span>
+                        <span className={styles.todoItemTitle}>{todo.title}</span>
+                      </div>
+                      <div className={styles.todoItemMeta}>
+                        {todo.date ? (
+                          <span className={`${styles.todoDate} ${isOverdue ? styles.todoDateOverdue : ""}`}>
+                            <i className="fa-regular fa-clock" />
+                            {todo.date} {todo.dateType === "until" ? "まで" : "に"}
+                            <span className={styles.todoRemaining}>
+                              {isOverdue && <i className="fa-solid fa-triangle-exclamation" />}
+                              {remainingLabel}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className={styles.todoDate}>
+                            <i className="fa-regular fa-clock" /> 期限なし
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <i className={`fa-solid fa-chevron-right ${styles.todoChevron}`} />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
+    </main>
+  );
+});
+TodoSection.displayName = "TodoSection";
+
 type MenuItem = { h: string; l: string; c: string; b?: string | number };
 const MenuSection = ({ title, items }: { title: string; items: MenuItem[] }) => (
   <>
@@ -320,7 +436,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
   const getItemsForDay = (cellYear: number, cellMonth: number, day: number) => {
     const dateStr = `${cellYear}.${String(cellMonth + 1).padStart(2, '0')}.${String(day).padStart(2, '0')}`;
     const items: {
-      type: 'event' | 'vote' | 'call' | 'issue',
+      type: 'event' | 'vote' | 'call' | 'issue' | 'schedule_adjust',
       iconClass?: string,
       label: string,
       link: string,
@@ -373,6 +489,38 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
           label: e.title,
           link: `/event/confirm?eventId=${e.id}`,
           id: e.id,
+          createdBy: e.createdBy
+        });
+      }
+    });
+
+    // イベント日程調整の受付期間
+    data.events.forEach(e => {
+      if (e.attendanceType !== "schedule") return;
+      if (!e.acceptStartDate || !e.acceptEndDate) return;
+
+      if (scopeFilter === 'my') {
+        const hasResponded = myAdjustEventIds.has(e.id);
+        const isCreatedByMe = e.createdBy === uid;
+        const isActive = e.acceptStartDate <= todayStr && todayStr <= e.acceptEndDate;
+        
+        const show = isCreatedByMe || hasResponded || isActive;
+        if (!show) return;
+      }
+
+      const isStart = e.acceptStartDate === dateStr;
+      const isEnd = e.acceptEndDate === dateStr;
+      const isInPeriod = e.acceptStartDate <= dateStr && dateStr <= e.acceptEndDate;
+
+      if (isInPeriod) {
+        const label = (isStart || isSunday) ? `調整: ${e.title}` : "";
+        items.push({
+          type: 'schedule_adjust',
+          iconClass: label ? 'fa-solid fa-calendar-days' : undefined,
+          label,
+          link: `/event/confirm?eventId=${e.id}`,
+          id: e.id,
+          position: isStart ? 'start' : isEnd ? 'end' : 'middle',
           createdBy: e.createdBy
         });
       }
@@ -516,6 +664,7 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
           
           <div className={styles.legendGroup}>
             <span className={`${styles.legendItem} ${styles.legendEvent}`}><i className="fa-solid fa-calendar-days" /> イベント</span>
+            <span className={`${styles.legendItem} ${styles.legendScheduleAdjust}`}><i className="fa-solid fa-calendar-days" /> 日程調整</span>
             <span className={`${styles.legendItem} ${styles.legendVote}`}><i className="fa-solid fa-check-to-slot" /> 曲投票</span>
             <span className={`${styles.legendItem} ${styles.legendCall}`}><i className="fa-solid fa-bullhorn" /> 曲募集</span>
             <span className={`${styles.legendItem} ${styles.legendTodo}`}><i className="fa-regular fa-square-check" /> TODO</span>
@@ -614,6 +763,23 @@ const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], vote
                         <span
                           key={`${item.type}-${item.id}-${idx}`}
                           className={`${styles.eventPill} ${pillClass}`}
+                        >
+                          {item.iconClass && <i className={item.iconClass} style={{ marginRight: "3px" }} />}
+                          {item.label ? truncate(item.label, 12) : "\u00A0"}
+                        </span>
+                      );
+                    } else if (item.type === 'schedule_adjust') {
+                      pillClass = styles.eventScheduleAdjust; // ソフトアンバー (eventScheduleAdjust)
+
+                      let spanClass = styles.eventPill;
+                      if (item.position === 'start') spanClass = `${styles.eventPill} ${styles.eventStart}`;
+                      else if (item.position === 'middle') spanClass = `${styles.eventPill} ${styles.eventMiddle}`;
+                      else if (item.position === 'end') spanClass = `${styles.eventPill} ${styles.eventEnd}`;
+
+                      return (
+                        <span
+                          key={`${item.type}-${item.id}-${idx}`}
+                          className={`${spanClass} ${pillClass}`}
                         >
                           {item.iconClass && <i className={item.iconClass} style={{ marginRight: "3px" }} />}
                           {item.label ? truncate(item.label, 12) : "\u00A0"}
@@ -742,6 +908,27 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
   const scorePlaylistIds = useMemo(() => initialData.scores.map((s) => s.youtubeId).filter(Boolean).join(","), [initialData.scores]);
   const bnPlaylistIds = useMemo(() => utils.getWatchVideosOrder(currentBNIdx, initialData.blueNotes)?.join(","), [currentBNIdx, initialData.blueNotes]);
 
+  const myIncompleteTodos = useMemo(() => {
+    if (!userData || !initialData.calendarData?.issues) return [];
+    
+    return initialData.calendarData.issues
+      .filter((issue) => {
+        // Must be uncompleted
+        if (issue.status === "completed") return false;
+        // Must be assigned to me
+        if (issue.assigneeId !== userData.id) return false;
+        // Must have view permission
+        if (!hasViewPermission(issue, userData)) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        // Sort by date ascending (soonest deadline first). Empty dates last.
+        const dateA = a.date || "9999.12.31";
+        const dateB = b.date || "9999.12.31";
+        return dateA.localeCompare(dateB);
+      });
+  }, [userData, initialData.calendarData?.issues]);
+
   return (
     <BaseLayout>
       <div className={styles.homeContainer}>
@@ -753,6 +940,8 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
         </div>
 
         <AnnouncementSection data={initialData.announcements} />
+
+        <TodoSection todos={myIncompleteTodos} />
 
         <CalendarSection data={initialData.calendarData} />
 

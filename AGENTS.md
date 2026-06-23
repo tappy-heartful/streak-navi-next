@@ -4,23 +4,11 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# Streak Navi - 開発前提条件 (Premises)
-
-## モバイルファーストの徹底 (Mobile-First Design)
-
-本リポジトリにおけるUI/UX設計およびデザインは、**スマートフォン（モバイル環境）での操作・閲覧を最優先（Mobile-First）**とします。
-
-### 理由
-- 主な利用ユーザーがスマートフォンで本システムを日常的に操作するため。
-- モバイル時の極小幅（360px〜480px程度）でもレイアウトが崩れず、視認性が高く、快適にスクロールおよび操作を行えることを絶対条件とします。
-
-### 実装上の注意
-- テーブルなどの要素がはみ出る場合は、必ずコンテナ側に `overflow-x: auto` などを用いて横スクロール対応にし、外側のレイアウトを壊さないようにすること。
-- 改行やスペースの不足によって、名前や日付、ボタン等の要素が画面幅で不自然に折り返したり潰れたりしないように設計に配慮してください。
+すべての日本語で回答してください
 
 # Agent Behavior Rules
 1. **実装プランの承認プロセス省略**: Implementation Planを作成した後、ユーザーの明示的な承認を待つ必要はありません。プランを提示（または作成）したら、そのまま連続してタスクの実行（コードの修正等）に進んでください。
-2. **モバイル表示の考慮**: スマートフォンでの表示崩れを防ぐため、フィルターバッジやボタン等のUI要素が画面幅で見切れたり不自然に折り返したりしないように常に設計に配慮してください。必要に応じて要素を別行にするか、スクロール可能なコンテナに格納するなど、モバイルファーストでの実装を徹底してください。
+2. **モバイル表示 of the design**: スマートフォンでの表示崩れを防ぐため、フィルターバッジやボタン等のUI要素が画面幅で見切れたり不自然に折り返したりしないように常に設計に配慮してください。必要に応じて要素を別行にするか、スクロール可能なコンテナに格納するなど、モバイルファーストでの実装を徹底してください。
 
 # CANDY プロジェクト規約 (Project Conventions)
 
@@ -36,13 +24,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - `api/`:
     - `*-server-actions.ts`: サーバーサイドでのデータ取得・ロジック（`"use server"`）
     - `*-client-service.ts`: クライアントサイドでの書き込み処理等
-  - `components/`: その機能固有のUIコンポーネント（パス名：`Kebab-case` または `PascalCase`）
+  - `components/`: その機能固有 of UIコンポーネント（パス名：`Kebab-case` または `PascalCase`）
   - `views/`:
     - `*ListClient.tsx`: 一覧画面のメインロジック
     - `*EditClient.tsx`: 編集画面のメインロジック
     - `*ConfirmClient.tsx`: 詳細・確認画面のメインロジック
-  - `lib/`: その機能固有のロジック、検索エンジン等
-  - `types/`: 機能固有の型定義
+  - `lib/`: その機能固有 of ロジック、検索エンジン等
+  - `types/`: 機能固有 of 型定義
 
 ### 1.2. 共通ディレクトリ構成
 
@@ -148,7 +136,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ### 4.3. スタイル規約 (CSS Modules)
 
-- **原則**: 各画面（`src/features/**/views/*` および `src/app/**/page.tsx`）のデザインは、必ず同階層の `*.module.css` に分離して管理する。
+- **原則**: 各画面（`src/features/**/views/*` および `src/app/**/page.tsx`）のデザインは、必ず同階層 of `*.module.css` に分離して管理する。
 - **コンポーネントも同様**: `src/components/**` や `src/features/**/components/**` のUIも、可能な限り `*.module.css` を使用する。
 - **禁止**: `style jsx`（styled-jsx）および `style={{ ... }}` の多用は禁止（例外は、どうしても動的に変える必要がある最小限のインライン値のみ）。
 - **globals.css の役割**: `globals.css` はレイアウトの土台・共通トークン・共通クラス（`page-container`, `content-card` 等）に限定し、画面固有の装飾は置かない。

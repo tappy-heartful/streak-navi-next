@@ -251,6 +251,18 @@
   background-color: #dbeafe;
 }
 
+.scheduleAdjustTheme {
+  background-color: #fffbef;
+  border-left-color: #f59e0b;
+}
+.scheduleAdjustTheme .iconCol {
+  color: #d97706;
+}
+.scheduleAdjustTheme .typeBadge {
+  color: #b45309;
+  background-color: #fef3c7;
+}
+
 .voteTheme {
   background-color: #fff7ed;
   border-left-color: #f97316;
