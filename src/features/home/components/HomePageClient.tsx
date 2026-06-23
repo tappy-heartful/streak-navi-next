@@ -89,9 +89,11 @@ const TodoSection = memo(({ todos }: { todos: Issue[] }) => {
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case "not_started":
+        return styles.todoStatusNotStarted;
       case "in_progress":
-      default:
         return styles.todoStatusInProgress;
+      default:
+        return "";
     }
   };
 

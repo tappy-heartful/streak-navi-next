@@ -272,7 +272,10 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                                 backgroundColor: "#f9f9f9",
                                 borderRadius: "12px",
                                 borderLeft: `4px solid ${color.border}`,
-                                position: "relative"
+                                position: "relative",
+                                wordBreak: "break-all",
+                                overflowWrap: "break-word",
+                                minWidth: 0
                               }}>
                                 <div style={{ fontSize: "1.1rem", fontWeight: "800", marginBottom: "10px", color: "#222" }}>
                                   {song.title}
@@ -333,7 +336,9 @@ export function CallConfirmClient({ callData, callId, callAnswers, usersMap, sco
                                     fontSize: "0.9rem",
                                     lineHeight: "1.5",
                                     color: "#444",
-                                    whiteSpace: "pre-wrap"
+                                    whiteSpace: "pre-wrap",
+                                    wordBreak: "break-all",
+                                    overflowWrap: "break-word"
                                   }}>
                                     <div style={{ fontSize: "0.75rem", fontWeight: "900", color: "#999", textTransform: "uppercase", marginBottom: "4px" }}>Note</div>
                                     {song.note}

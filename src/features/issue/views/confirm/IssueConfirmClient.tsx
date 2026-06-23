@@ -194,9 +194,11 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
       case "completed":
         return styles.statusCompleted;
       case "not_started":
+        return styles.statusNotStarted;
       case "in_progress":
-      default:
         return styles.statusInProgress;
+      default:
+        return "";
     }
   };
 
@@ -204,10 +206,11 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
     switch (status) {
       case "completed":
         return "answered";
-      case "not_started":
       case "in_progress":
-      default:
         return "pending";
+      case "not_started":
+      default:
+        return "closed";
     }
   };
 

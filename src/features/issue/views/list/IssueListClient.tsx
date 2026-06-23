@@ -155,9 +155,11 @@ export function IssueListClient({ initialData }: Props) {
       case "completed":
         return styles.statusCompleted;
       case "not_started":
+        return styles.statusNotStarted;
       case "in_progress":
-      default:
         return styles.statusInProgress;
+      default:
+        return "";
     }
   };
 

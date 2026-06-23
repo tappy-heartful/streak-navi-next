@@ -183,6 +183,19 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
     return errs;
   };
 
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "completed":
+        return styles.statusCompleted;
+      case "not_started":
+        return styles.statusNotStarted;
+      case "in_progress":
+        return styles.statusInProgress;
+      default:
+        return "";
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -500,15 +513,17 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
 
         {/* ステータス */}
         <FormField label="ステータス" error={form.errors.status} required={true}>
-          <select
-            className="form-control"
-            value={form.formData.status}
-            onChange={(e) => form.updateField("status", e.target.value)}
-          >
-            <option value="not_started">未</option>
-            <option value="in_progress">実施中</option>
-            <option value="completed">済</option>
-          </select>
+          <div className={styles.statusSelectWrapper}>
+            <select
+              className={`${styles.statusSelect} ${getStatusClass(form.formData.status)}`}
+              value={form.formData.status}
+              onChange={(e) => form.updateField("status", e.target.value)}
+            >
+              <option value="not_started" className={styles.statusOption}>未実施</option>
+              <option value="in_progress" className={styles.statusOption}>実施中</option>
+              <option value="completed" className={styles.statusOption}>実施済</option>
+            </select>
+          </div>
         </FormField>
 
         {/* 公開範囲 */}
