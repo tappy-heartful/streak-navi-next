@@ -258,4 +258,54 @@
   color: #1f2937;
 }
 
+/* Status select styling identical to confirm screen */
+.statusSelectWrapper {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  max-width: 200px;
+}
+
+.statusSelect {
+  display: inline-block;
+  padding: 10px 36px 10px 16px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='currentColor' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-color: inherit;
+  border: 1px solid currentColor;
+}
+
+.statusOption {
+  background-color: #ffffff;
+  color: #333333;
+}
+
+.statusNotStarted {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+.statusInProgress {
+  background-color: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.statusCompleted {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
 

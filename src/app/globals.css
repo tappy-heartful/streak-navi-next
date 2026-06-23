@@ -24,6 +24,9 @@ body {
   font-family: Arial, sans-serif;
   color: #333;
   background-color: #f4f4f4;
+
+  /* 長い単語やURLの強制折り返し（デザイン崩れ防止） */
+  overflow-wrap: break-word;
 }
 
 body.with-fixed-header {
