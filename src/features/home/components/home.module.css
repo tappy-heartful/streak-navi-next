@@ -781,3 +781,184 @@
     padding: 2px 4px;
   }
 }
+
+/* 日程調整 (Schedule Adjust) styles */
+.eventScheduleAdjust {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+
+.legendScheduleAdjust {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+
+/* TODOカードセクション */
+.todoContainer {
+  margin-bottom: 24px;
+}
+
+.todoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.todoHeader h3 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.todoCard {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  padding: 16px;
+  overflow: hidden;
+}
+
+.todoList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.todoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.todoItem:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateX(4px);
+}
+
+.todoItemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.todoItemTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.todoItemTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.todoItemMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.todoDate {
+  font-size: 0.75rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.todoDateOverdue {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.todoBadge {
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* Badge colors */
+.todoBadgeTodo {
+  background-color: #e0f2f1;
+  color: #00796b;
+}
+.todoBadgeBug {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+.todoBadgeQuestion {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+.todoBadgeProposal {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+.todoBadgeRequest {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
+.todoStatusBadge {
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.todoStatusNotStarted {
+  background-color: #e2e8f0;
+  color: #475569;
+}
+
+.todoStatusInProgress {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.todoChevron {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.todoHeaderIcon {
+  color: #009688;
+  margin-right: 8px;
+}
+
+.todoRemaining {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+  font-weight: bold;
+}

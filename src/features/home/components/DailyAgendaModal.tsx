@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import styles from "./DailyAgendaModal.module.css";
 
 interface AgendaItem {
-  type: "event" | "vote" | "call" | "issue";
+  type: "event" | "vote" | "call" | "issue" | "schedule_adjust";
   iconClass?: string;
   label: string;
   link: string;
@@ -42,6 +42,8 @@ export function DailyAgendaModal({ activeDateStr, items, onClose }: DailyAgendaM
     switch (type) {
       case "event":
         return styles.eventTheme;
+      case "schedule_adjust":
+        return styles.scheduleAdjustTheme;
       case "vote":
         return styles.voteTheme;
       case "call":
@@ -57,6 +59,8 @@ export function DailyAgendaModal({ activeDateStr, items, onClose }: DailyAgendaM
     switch (type) {
       case "event":
         return "イベント";
+      case "schedule_adjust":
+        return "日程調整";
       case "vote":
         return "曲投票";
       case "call":
