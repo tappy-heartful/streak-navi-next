@@ -86,7 +86,8 @@ function execTodoDeadlineNotification() {
         let message = "";
 
         if (isOverdue) {
-          message = `お疲れ様です。Streak Naviからの自動通知です。\n\n` +
+          message = `お疲れ様です！Streak Navi コンシェルジュです🍀\n\n` +
+                    `【TODO期限超過のリマインド】\n` +
                     `担当として設定されているTODOが期限を超過しています。⚠️\n\n` +
                     `■ タイトル: ${todo.title}\n` +
                     `■ 期限日: ${todo.date} ${dateTypeStr} (期限を${elapsedDays}日過ぎています)\n` +
@@ -96,7 +97,8 @@ function execTodoDeadlineNotification() {
                     `${BASE_URL}/issue/confirm?issueId=${todo.id}\n\n` +
                     `※本メッセージはTODOの期限日を基準に自動送信されています。`;
         } else {
-          message = `お疲れ様です。Streak Naviからの自動通知です。\n\n` +
+          message = `お疲れ様です！Streak Navi コンシェルジュです🍀\n\n` +
+                    `【TODO期限前のリマインド】\n` +
                     `担当として設定されているTODOの期限が${remindType === "当日" ? "本日" : "7日後"}となりましたので、お知らせいたします。\n\n` +
                     `■ タイトル: ${todo.title}\n` +
                     `■ 期限日: ${todo.date} ${dateTypeStr}\n` +
