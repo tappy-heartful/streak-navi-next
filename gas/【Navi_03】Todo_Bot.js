@@ -107,7 +107,22 @@ function execTodoDeadlineNotification() {
                     `※本メッセージはTODOの期限日を基準に自動送信されています。`;
         }
 
-        sendLineMessage(lineUid, message);
+        const messageId = sendLinePush(lineUid, message);
+        if (messageId) {
+          try {
+            firestore.createDocument('notificationIndividualHistorys', {
+              messageId: messageId,
+              content: message,
+              sentAt: new Date(),
+              sourceCollection: 'issues',
+              sourceDocId: todo.id,
+              title: todo.title
+            });
+            Logger.log(`[TODOリマインド] 履歴保存完了 (個別): ${messageId}`);
+          } catch (err) {
+            Logger.log(`[TODOリマインド] 履歴保存エラー (個別): ${err.toString()}`);
+          }
+        }
         Logger.log(`[TODOリマインド] 送信完了:「${todo.title}」(担当者: ${todo.assigneeName || '不明'}, 種別: ${remindType}, 経過日数: ${elapsedDays}日)`);
         sentCount++;
       } catch (userErr) {
@@ -162,15 +177,31 @@ function getStatusName(status) {
 }
 
 /**
- * LINE個別メッセージ送信関数
+ * LINEメッセージ送信関数 (メッセージIDを返す)
  */
-function sendLineMessage(to, text) {
-  if (!to || !LINE_ACCESS_TOKEN) return;
+function sendLinePush(to, messageText) {
+  if (!to || !LINE_ACCESS_TOKEN) return null;
+  const payload = { to: to, messages: [{ type: 'text', text: messageText }] };
   const options = {
-    'method': 'post', 'contentType': 'application/json',
+    'method': 'post',
+    'contentType': 'application/json',
     'headers': { 'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN },
-    'payload': JSON.stringify({ to: to, messages: [{ type: 'text', text: text }] }),
+    'payload': JSON.stringify(payload),
     'muteHttpExceptions': true
   };
-  UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', options);
+  try {
+    const response = UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', options);
+    const resCode = response.getResponseCode();
+    const resJson = JSON.parse(response.getContentText());
+
+    if (resCode === 200 && resJson.sentMessages && resJson.sentMessages.length > 0) {
+      return resJson.sentMessages[0].id;
+    } else {
+      Logger.log('LINE Push Failed: ' + response.getContentText());
+      return null;
+    }
+  } catch (e) {
+    Logger.log('LINE Push Error: ' + e.toString());
+    return null;
+  }
 }

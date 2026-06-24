@@ -80,7 +80,23 @@
          memberIds, endDate: endDateStr, createdAt: Date.now(), updatedAt: Date.now()
        });
 
-       sendLineMessage(LINE_GROUP_ID, `【バランス会計】\n今日から「${seasonName}シーズン」の会計が開始されます。これ以降の収支は新しいシーズンに計上されます。よろしくお願いします！\n${BASE_URL}/accounting`);
+       const messageText = `【バランス会計】\n今日から「${seasonName}シーズン」の会計が開始されます。これ以降の収支は新しいシーズンに計上されます。よろしくお願いします！\n${BASE_URL}/accounting`;
+       const messageId = sendLinePush(LINE_GROUP_ID, messageText);
+       if (messageId) {
+         try {
+           firestore.createDocument('notificationHistorys', {
+             messageId: messageId,
+             content: messageText,
+             sentAt: new Date(),
+             sourceCollection: 'accountingSeasons',
+             sourceDocId: seasonId,
+             title: seasonName + "シーズン"
+           });
+           Logger.log(`履歴保存完了: ${messageId}`);
+         } catch (err) {
+           Logger.log(`履歴保存エラー: ${err.toString()}`);
+         }
+       }
      }
    } catch (e) { Logger.log('Error: ' + e.toString()); }
  }
@@ -169,7 +185,22 @@
 
      const message = `【バランス会計・前シーズン精算結果】\n「${season.name}」の集計が完了しました。\n\n総支出: ¥${totalExp.toLocaleString()}\n総収入: ¥${totalInc.toLocaleString()}\n平均負担額: ¥${avg.toLocaleString()}\n\n■ 各メンバー精算額\n${listStr}\n詳細はこちら:\n${BASE_URL}/accounting/confirm?seasonId=${seasonId}${payInstruction}`;
 
-     sendLineMessage(LINE_GROUP_ID, message);
+     const messageId = sendLinePush(LINE_GROUP_ID, message);
+     if (messageId) {
+       try {
+         firestore.createDocument('notificationHistorys', {
+           messageId: messageId,
+           content: message,
+           sentAt: new Date(),
+           sourceCollection: 'accountingSeasons',
+           sourceDocId: seasonId,
+           title: season.name
+         });
+         Logger.log(`履歴保存完了: ${messageId}`);
+       } catch (err) {
+         Logger.log(`履歴保存エラー: ${err.toString()}`);
+       }
+     }
    } catch (e) { Logger.log('Summary Error: ' + e.toString()); }
  }
 
@@ -283,7 +314,22 @@
          const lineMsgDoc = firestore.getDocument(`lineMessagingIds/${n.toUid}`);
          const lineUid = (lineMsgDoc && lineMsgDoc.obj) ? lineMsgDoc.obj.lineUid : null;
          if (!lineUid) return;
-         sendLineMessage(lineUid, n.msg);
+         const messageId = sendLinePush(lineUid, n.msg);
+         if (messageId) {
+           try {
+             firestore.createDocument('notificationIndividualHistorys', {
+               messageId: messageId,
+               content: n.msg,
+               sentAt: new Date(),
+               sourceCollection: 'accountingSeasons',
+               sourceDocId: seasonId,
+               title: s.name
+             });
+             Logger.log(`履歴保存完了 (個別): ${messageId}`);
+           } catch (err) {
+             Logger.log(`履歴保存エラー (個別): ${err.toString()}`);
+           }
+         }
        });
      });
    } catch (e) { Logger.log('Remind Error: ' + e.toString()); }
@@ -359,7 +405,22 @@
                        `その他、会計や旅費補助の制度についてはこちらをご覧ください\n` +
                        `${BASE_URL}/board/confirm?boardId=PcXZzb0pFhlL7DSCzpU3`;
 
-       sendLineMessage(LINE_GROUP_ID, message);
+       const messageId = sendLinePush(LINE_GROUP_ID, message);
+       if (messageId) {
+         try {
+           firestore.createDocument('notificationHistorys', {
+             messageId: messageId,
+             content: message,
+             sentAt: new Date(),
+             sourceCollection: 'events',
+             sourceDocId: eventId,
+             title: eventTitle
+           });
+           Logger.log(`履歴保存完了: ${messageId}`);
+         } catch (err) {
+           Logger.log(`履歴保存エラー: ${err.toString()}`);
+         }
+       }
      });
    } catch (e) { Logger.log('Event Remind Error: ' + e.toString()); }
  }
@@ -483,7 +544,22 @@
                         `${BASE_URL}/user/edit`;
             }
 
-            sendLineMessage(lineUid, message);
+            const messageId = sendLinePush(lineUid, message);
+            if (messageId) {
+              try {
+                firestore.createDocument('notificationIndividualHistorys', {
+                  messageId: messageId,
+                  content: message,
+                  sentAt: new Date(),
+                  sourceCollection: 'events',
+                  sourceDocId: eventId,
+                  title: eventTitle
+                });
+                Logger.log(`履歴保存完了 (個別): ${messageId}`);
+              } catch (err) {
+                Logger.log(`履歴保存エラー (個別): ${err.toString()}`);
+              }
+            }
           } catch (uidErr) {
             Logger.log(`Error processing user ${uid} for event ${eventId}: ` + uidErr.toString());
           }
@@ -494,13 +570,29 @@
     }
   }
 
- function sendLineMessage(to, text) {
-   if (!to || !LINE_ACCESS_TOKEN) return;
-   const options = {
-     'method': 'post', 'contentType': 'application/json',
-     'headers': { 'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN },
-     'payload': JSON.stringify({ to: to, messages: [{ type: 'text', text: text }] }),
-     'muteHttpExceptions': true
-   };
-   UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', options);
- }
+  function sendLinePush(to, messageText) {
+    if (!to || !LINE_ACCESS_TOKEN) return null;
+    const payload = { to: to, messages: [{ type: 'text', text: messageText }] };
+    const options = {
+      'method': 'post',
+      'contentType': 'application/json',
+      'headers': { 'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN },
+      'payload': JSON.stringify(payload),
+      'muteHttpExceptions': true
+    };
+    try {
+      const response = UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', options);
+      const resCode = response.getResponseCode();
+      const resJson = JSON.parse(response.getContentText());
+
+      if (resCode === 200 && resJson.sentMessages && resJson.sentMessages.length > 0) {
+        return resJson.sentMessages[0].id;
+      } else {
+        Logger.log('LINE Push Failed: ' + response.getContentText());
+        return null;
+      }
+    } catch (e) {
+      Logger.log('LINE Push Error: ' + e.toString());
+      return null;
+    }
+  }
