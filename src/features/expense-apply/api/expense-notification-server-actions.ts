@@ -7,6 +7,9 @@ import { getMunicipalityNamesMapServer } from "../../users/api/user-server-actio
 
 const BASE_URL = "https://streak-navi.vercel.app";
 
+// 通知先管理者のユーザーID
+const ADMIN_UID = "9a1620bfa0c161cbc392a256b35fa12a734e5f29f0bb956c56b09e7335d895f5";
+
 /**
  * 日時を JST 形式でフォーマット (yyyy/MM/dd HH:mm)
  */
@@ -100,6 +103,35 @@ export async function notifyExpenseApply(expenseId: string, action: 'create' | '
     }
 
     const messages: any[] = [{ type: "text", text }];
+
+    // 新規経費申請時（action === 'create'）に管理者へ通知
+    if (action === 'create') {
+      try {
+        const applicantDoc = await adminDb.collection("users").doc(expenseData.uid).get();
+        const applicantName = applicantDoc.exists ? (applicantDoc.data()?.displayName || "不明") : "不明";
+
+        const adminText = `お疲れ様です！Streak Navi コンシェルジュです🍀\n` +
+                          `${applicantName}さんより、新しい経費申請が提出されました。審査をお願いいたします。\n\n` +
+                          `【申請内容】\n` +
+                          `申請者: ${applicantName}\n` +
+                          `項目: ${expenseData.name}\n` +
+                          `金額: ¥${expenseData.amount.toLocaleString()}\n` +
+                          `日付: ${expenseData.date}\n` +
+                          `種別: ${expenseData.category || "不明"}\n\n` +
+                          `▼ 審査はこちらから行えます\n` +
+                          `${BASE_URL}/expense-review/review?expenseId=${expenseId}`;
+
+        const adminLineDoc = await adminDb.collection("lineMessagingIds").doc(ADMIN_UID).get();
+        if (adminLineDoc.exists && adminLineDoc.data()?.lineUid) {
+          // 自分自身が申請した場合は二重通知を防ぐためスキップ
+          if (expenseData.uid !== ADMIN_UID) {
+            await sendLinePushMessage(adminLineDoc.data()?.lineUid, [{ type: "text", text: adminText }]);
+          }
+        }
+      } catch (adminErr) {
+        console.error("Failed to notify admin about expense apply", adminErr);
+      }
+    }
 
     const lineDoc = await adminDb.collection("lineMessagingIds").doc(expenseData.uid).get();
     if (lineDoc.exists && lineDoc.data()?.lineUid) {
