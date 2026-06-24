@@ -111,15 +111,15 @@ export async function notifyExpenseApply(expenseId: string, action: 'create' | '
         const applicantName = applicantDoc.exists ? (applicantDoc.data()?.displayName || "不明") : "不明";
 
         const adminText = `お疲れ様です！Streak Navi コンシェルジュです🍀\n` +
-                          `${applicantName}さんより、新しい経費申請が提出されました。審査をお願いいたします。\n\n` +
-                          `【申請内容】\n` +
-                          `申請者: ${applicantName}\n` +
-                          `項目: ${expenseData.name}\n` +
-                          `金額: ¥${expenseData.amount.toLocaleString()}\n` +
-                          `日付: ${expenseData.date}\n` +
-                          `種別: ${expenseData.category || "不明"}\n\n` +
-                          `▼ 審査はこちらから行えます\n` +
-                          `${BASE_URL}/expense-review/review?expenseId=${expenseId}`;
+          `${applicantName}さんより、新しい経費申請が提出されました。審査をお願いいたします。\n\n` +
+          `【申請内容】\n` +
+          `申請者: ${applicantName}\n` +
+          `項目: ${expenseData.name}\n` +
+          `金額: ¥${expenseData.amount.toLocaleString()}\n` +
+          `日付: ${expenseData.date}\n` +
+          `種別: ${expenseData.category || "不明"}\n\n` +
+          `▼ 審査はこちらから行えます\n` +
+          `${BASE_URL}/expense-review/review?expenseId=${expenseId}`;
 
         const adminLineDoc = await adminDb.collection("lineMessagingIds").doc(ADMIN_UID).get();
         if (adminLineDoc.exists && adminLineDoc.data()?.lineUid) {

@@ -87,7 +87,7 @@ export const saveExpenseApply = async (
     });
 
     // 通知の送信
-    notifyExpenseApply(id, "update");
+    await notifyExpenseApply(id, "update");
 
     return id;
   } else {
@@ -109,7 +109,7 @@ export const saveExpenseApply = async (
     });
 
     // 通知の送信
-    notifyExpenseApply(res.id, "create");
+    await notifyExpenseApply(res.id, "create");
 
     return res.id;
   }
@@ -121,7 +121,7 @@ export const deleteExpenseApply = async (id: string) => {
   const { archiveAndDeleteDoc } = await import("@/src/lib/functions");
   await archiveAndDeleteDoc("expenseApplies", id);
   // 通知の送信
-  notifyExpenseApply(id, "delete");
+  await notifyExpenseApply(id, "delete");
 };
 
 /** 旅費設定を取得 */
