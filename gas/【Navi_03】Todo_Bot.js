@@ -6,7 +6,7 @@
  *    - 毎日朝実行されるトリガーを想定。
  *    - 未完了のTODO（statusが 'completed' 以外）を取得。
  *    - 期限日（date: yyyy.MM.dd）を判定し、期限日までの経過日数に応じて以下のタイミングで担当者へ個別にLINE通知を送信する。
- *      - 期限前: 7日前、当日
+ *      - 期限前: 7日前、3日前、当日
  *      - 期限超過後: 翌日（1日後）、および以降7日ごと（8日後、15日後、22日後...）の周期的通知
  */
 
@@ -52,6 +52,8 @@ function execTodoDeadlineNotification() {
 
       if (elapsedDays === -7) {
         remindType = "7日前";
+      } else if (elapsedDays === -3) {
+        remindType = "3日前";
       } else if (elapsedDays === 0) {
         remindType = "当日";
       } else if (elapsedDays === 1) {
@@ -99,7 +101,7 @@ function execTodoDeadlineNotification() {
         } else {
           message = `お疲れ様です！Streak Navi コンシェルジュです🍀\n\n` +
                     `【TODO期限前のリマインド】\n` +
-                    `担当として設定されているTODOの期限が${remindType === "当日" ? "本日" : "7日後"}となりましたので、お知らせいたします。\n\n` +
+                    `担当として設定されているTODOの期限が${remindType === "当日" ? "本日" : (remindType === "3日前" ? "3日後" : "7日後")}となりましたので、お知らせいたします。\n\n` +
                     `■ タイトル: ${todo.title}\n` +
                     `■ 期限日: ${todo.date} ${dateTypeStr}\n` +
                     `■ 状態: ${getStatusName(todo.status)}\n\n` +
