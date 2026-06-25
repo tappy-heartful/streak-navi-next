@@ -11,7 +11,7 @@
  */
 
 const props = PropertiesService.getScriptProperties();
-const LINE_ACCESS_TOKEN = props.getProperty('LINE_CHANNEL_ACCESS_TOKEN');
+const LINE_INDIV_ACCESS_TOKEN = props.getProperty('LINE_INDIV_ACCESS_TOKEN');
 const FIRESTORE_EMAIL = props.getProperty('FIRESTORE_EMAIL');
 const FIRESTORE_KEY = props.getProperty('FIRESTORE_KEY').replace(/\\n/g, '\n');
 const FIRESTORE_PROJECT_ID = props.getProperty('FIRESTORE_PROJECT_ID');
@@ -184,12 +184,12 @@ function getStatusName(status) {
  * LINEメッセージ送信関数 (メッセージIDを返す)
  */
 function sendLinePush(to, messageText) {
-  if (!to || !LINE_ACCESS_TOKEN) return null;
+  if (!to || !LINE_INDIV_ACCESS_TOKEN) return null;
   const payload = { to: to, messages: [{ type: 'text', text: messageText }] };
   const options = {
     'method': 'post',
     'contentType': 'application/json',
-    'headers': { 'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN },
+    'headers': { 'Authorization': 'Bearer ' + LINE_INDIV_ACCESS_TOKEN },
     'payload': JSON.stringify(payload),
     'muteHttpExceptions': true
   };
