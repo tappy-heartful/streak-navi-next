@@ -125,7 +125,11 @@ export async function notifyExpenseApply(expenseId: string, action: 'create' | '
         if (adminLineDoc.exists && adminLineDoc.data()?.lineUid) {
           // 自分自身が申請した場合は二重通知を防ぐためスキップ
           if (expenseData.uid !== ADMIN_UID) {
-            await sendLinePushMessage(adminLineDoc.data()?.lineUid, [{ type: "text", text: adminText }]);
+            await sendLinePushMessage(adminLineDoc.data()?.lineUid, [{ type: "text", text: adminText }], {
+              sourceCollection: "expenseApplies",
+              sourceDocId: expenseId,
+              title: expenseData.name,
+            });
           }
         }
       } catch (adminErr) {
@@ -135,7 +139,11 @@ export async function notifyExpenseApply(expenseId: string, action: 'create' | '
 
     const lineDoc = await adminDb.collection("lineMessagingIds").doc(expenseData.uid).get();
     if (lineDoc.exists && lineDoc.data()?.lineUid) {
-      await sendLinePushMessage(lineDoc.data()?.lineUid, messages);
+      await sendLinePushMessage(lineDoc.data()?.lineUid, messages, {
+        sourceCollection: "expenseApplies",
+        sourceDocId: expenseId,
+        title: expenseData.name,
+      });
     }
   } catch (e) {
     console.error("notifyExpenseApply failed", e);
@@ -192,7 +200,11 @@ export async function notifyExpenseReview(expenseId: string, status: 'approved' 
 
     const lineDoc = await adminDb.collection("lineMessagingIds").doc(expenseData.uid).get();
     if (lineDoc.exists && lineDoc.data()?.lineUid) {
-      await sendLinePushMessage(lineDoc.data()?.lineUid, messages);
+      await sendLinePushMessage(lineDoc.data()?.lineUid, messages, {
+        sourceCollection: "expenseApplies",
+        sourceDocId: expenseId,
+        title: expenseData.name,
+      });
     }
   } catch (e) {
     console.error("notifyExpenseReview failed", e);

@@ -113,7 +113,11 @@ export async function notifyIssueAction(
     for (const uid of targetUids) {
       const lineDoc = await adminDb.collection("lineMessagingIds").doc(uid).get();
       if (lineDoc.exists && lineDoc.data()?.lineUid) {
-        await sendLinePushMessage(lineDoc.data()?.lineUid, messages);
+        await sendLinePushMessage(lineDoc.data()?.lineUid, messages, {
+          sourceCollection: "issues",
+          sourceDocId: issueId,
+          title: issueData.title,
+        });
       }
     }
   } catch (e) {
