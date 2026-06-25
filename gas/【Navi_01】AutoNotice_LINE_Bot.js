@@ -1,5 +1,5 @@
 // スクリプトプロパティからキーを取得
-const LINE_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_ACCESS_TOKEN');
+const LINE_GROUP_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty('LINE_GROUP_ACCESS_TOKEN');
 const LINE_GROUP_ID = PropertiesService.getScriptProperties().getProperty('LINE_GROUP_ID');
 const FIRESTORE_EMAIL = PropertiesService.getScriptProperties().getProperty('FIRESTORE_EMAIL');
 const FIRESTORE_KEY = PropertiesService.getScriptProperties().getProperty('FIRESTORE_KEY').replace(/\\n/g, '\n');
@@ -121,12 +121,12 @@ function getTargetUrl(type, id) {
  * LINEにメッセージを送信
  */
 function sendLinePush(messageText) {
-  if (!LINE_GROUP_ID || !LINE_ACCESS_TOKEN) return null;
+  if (!LINE_GROUP_ID || !LINE_GROUP_ACCESS_TOKEN) return null;
   const payload = { to: LINE_GROUP_ID, messages: [{ type: 'text', text: messageText }] };
   const options = {
     'method': 'post',
     'contentType': 'application/json',
-    'headers': { 'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN },
+    'headers': { 'Authorization': 'Bearer ' + LINE_GROUP_ACCESS_TOKEN },
     'payload': JSON.stringify(payload),
     'muteHttpExceptions': true
   };

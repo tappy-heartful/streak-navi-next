@@ -15,7 +15,8 @@
   */
 
  const props = PropertiesService.getScriptProperties();
- const LINE_ACCESS_TOKEN = props.getProperty('LINE_CHANNEL_ACCESS_TOKEN');
+ const LINE_INDIV_ACCESS_TOKEN = props.getProperty('LINE_INDIV_ACCESS_TOKEN');
+ const LINE_GROUP_ACCESS_TOKEN = props.getProperty('LINE_GROUP_ACCESS_TOKEN');
  const LINE_GROUP_ID = props.getProperty('LINE_GROUP_ID');
  const FIRESTORE_EMAIL = props.getProperty('FIRESTORE_EMAIL');
  const FIRESTORE_KEY = props.getProperty('FIRESTORE_KEY').replace(/\\n/g, '\n');
@@ -577,12 +578,14 @@
   }
 
   function sendLinePush(to, messageText) {
-    if (!to || !LINE_ACCESS_TOKEN) return null;
+    const isGroup = to.startsWith('C') || to === LINE_GROUP_ID;
+    const token = isGroup ? LINE_GROUP_ACCESS_TOKEN : LINE_INDIV_ACCESS_TOKEN;
+    if (!to || !token) return null;
     const payload = { to: to, messages: [{ type: 'text', text: messageText }] };
     const options = {
       'method': 'post',
       'contentType': 'application/json',
-      'headers': { 'Authorization': 'Bearer ' + LINE_ACCESS_TOKEN },
+      'headers': { 'Authorization': 'Bearer ' + token },
       'payload': JSON.stringify(payload),
       'muteHttpExceptions': true
     };
