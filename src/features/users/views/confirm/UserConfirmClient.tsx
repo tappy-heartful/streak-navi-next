@@ -93,6 +93,14 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
           {userData.abbreviation || "未設定"}
         </DisplayField>
 
+        <DisplayField label="本名">
+          {userData.realName || "未設定"}
+        </DisplayField>
+
+        <DisplayField label="2026年 倉敷ジャズスト ミュージシャンID">
+          {userData.kurashikiJazzMusicianId || "未設定"}
+        </DisplayField>
+
         <DisplayField label="管理者権限">
           {adminRoles || "なし"}
         </DisplayField>

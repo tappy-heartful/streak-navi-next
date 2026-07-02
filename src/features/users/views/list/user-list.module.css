@@ -31,3 +31,82 @@
   line-height: 1.4;
   white-space: pre-wrap;
 }
+
+.idListButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+.idListButton {
+  background-color: #2196F3;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+  transition: background-color 0.2s, box-shadow 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.idListButton:hover {
+  background-color: #1e88e5;
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+}
+
+.modalTableSection {
+  margin-bottom: 1.5rem;
+}
+
+.modalSectionTitle {
+  font-size: 15px;
+  font-weight: bold;
+  border-left: 4px solid #2196F3;
+  padding-left: 8px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.modalTableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #eee;
+  border-radius: 6px;
+}
+
+.modalTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.modalTable th,
+.modalTable td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.modalTable th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #555;
+  width: 50%;
+}
+
+.modalTable tr:last-child td {
+  border-bottom: none;
+}
+
+.modalUserCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

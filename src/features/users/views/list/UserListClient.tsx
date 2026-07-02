@@ -6,8 +6,9 @@ import { SimpleTable } from "@/src/components/Table/SimpleTable";
 import { User, Section, Role, Instrument, SecretWord } from "@/src/lib/firestore/types";
 import { globalLineDefaultImage } from "@/src/lib/functions";
 import Link from "next/link";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import styles from "./user-list.module.css";
+import { Modal } from "@/src/components/Modal";
 
 type Props = {
   initialData: {
@@ -21,6 +22,7 @@ type Props = {
 
 export function UserListClient({ initialData }: Props) {
   const { users, sections, roles, instruments, secretWords } = initialData;
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 補助関数群
   const getRoleName = (roleId?: string) =>
@@ -77,6 +79,92 @@ export function UserListClient({ initialData }: Props) {
       count={users.length}
       hideAddButton={true}
     >
+      {/* ミュージシャンID一覧表示ボタン */}
+      <div className={styles.idListButtonContainer}>
+        <button type="button" className={styles.idListButton} onClick={() => setIsModalOpen(true)}>
+          <i className="fa-solid fa-address-book" />
+          2026年 ミュージシャンID一覧
+        </button>
+      </div>
+
+      {isModalOpen && (
+        <Modal title="2026年 ミュージシャンID一覧" onClose={() => setIsModalOpen(false)}>
+          {sections.map(section => {
+            const sectionUsers = usersBySection.grouped[section.id];
+            if (!sectionUsers || sectionUsers.length === 0) return null;
+
+            return (
+              <div key={section.id} className={styles.modalTableSection}>
+                <h4 className={styles.modalSectionTitle}>{section.name}</h4>
+                <div className={styles.modalTableWrapper}>
+                  <table className={styles.modalTable}>
+                    <thead>
+                      <tr>
+                        <th>氏名 / ユーザー名</th>
+                        <th>2026年 ミュージシャンID</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sectionUsers.map(u => (
+                        <tr key={u.id}>
+                          <td>
+                            <div className={styles.modalUserCell}>
+                              <img
+                                src={u.pictureUrl || globalLineDefaultImage}
+                                alt="icon"
+                                className={styles.userThumb}
+                                onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
+                              />
+                              <span>{u.realName || u.displayName || "名無し"}</span>
+                            </div>
+                          </td>
+                          <td>{u.kurashikiJazzMusicianId || "未設定"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* パート未設定ユーザー */}
+          {usersBySection.unknownUsers.length > 0 && (
+            <div className={styles.modalTableSection}>
+              <h4 className={styles.modalSectionTitle}>❓未設定</h4>
+              <div className={styles.modalTableWrapper}>
+                <table className={styles.modalTable}>
+                  <thead>
+                    <tr>
+                      <th>氏名 / ユーザー名</th>
+                      <th>2026年 ミュージシャンID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {usersBySection.unknownUsers.map(u => (
+                      <tr key={u.id}>
+                        <td>
+                          <div className={styles.modalUserCell}>
+                            <img
+                              src={u.pictureUrl || globalLineDefaultImage}
+                              alt="icon"
+                              className={styles.userThumb}
+                              onError={(e) => { (e.target as HTMLImageElement).src = globalLineDefaultImage; }}
+                            />
+                            <span>{u.realName || u.displayName || "名無し"}</span>
+                          </div>
+                        </td>
+                        <td>{u.kurashikiJazzMusicianId || "未設定"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
+
       {/* 登録されているセクション順に表示 */}
       {sections.map(section => {
         const sectionUsers = usersBySection.grouped[section.id];
