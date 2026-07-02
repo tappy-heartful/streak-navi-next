@@ -68,7 +68,7 @@
 
      if (!seasonKey) return;
 
-     sendPrevSeasonSummary(firestore, prevYear, prevSeasonKey);
+     // sendPrevSeasonSummary(firestore, prevYear, prevSeasonKey);
 
      const seasonId = `${year}-${seasonKey}`;
      try {
@@ -81,23 +81,23 @@
          memberIds, endDate: endDateStr, createdAt: Date.now(), updatedAt: Date.now()
        });
 
-       const messageText = `【バランス会計】\n今日から「${seasonName}シーズン」の会計が開始されます。これ以降の収支は新しいシーズンに計上されます。よろしくお願いします！\n${BASE_URL}/accounting`;
-       const messageId = sendLinePush(LINE_GROUP_ID, messageText);
-       if (messageId) {
-         try {
-           firestore.createDocument('notificationHistorys', {
-             messageId: messageId,
-             content: messageText,
-             sentAt: new Date(),
-             sourceCollection: 'accountingSeasons',
-             sourceDocId: seasonId,
-             title: seasonName + "シーズン"
-           });
-           Logger.log(`履歴保存完了: ${messageId}`);
-         } catch (err) {
-           Logger.log(`履歴保存エラー: ${err.toString()}`);
-         }
-       }
+       // const messageText = `【バランス会計】\n今日から「${seasonName}シーズン」の会計が開始されます。これ以降の収支は新しいシーズンに計上されます。よろしくお願いします！\n${BASE_URL}/accounting`;
+       // const messageId = sendLinePush(LINE_GROUP_ID, messageText);
+       // if (messageId) {
+       //   try {
+       //     firestore.createDocument('notificationHistorys', {
+       //       messageId: messageId,
+       //       content: messageText,
+       //       sentAt: new Date(),
+       //       sourceCollection: 'accountingSeasons',
+       //       sourceDocId: seasonId,
+       //       title: seasonName + "シーズン"
+       //     });
+       //     Logger.log(`履歴保存完了: ${messageId}`);
+       //   } catch (err) {
+       //     Logger.log(`履歴保存エラー: ${err.toString()}`);
+       //   }
+       // }
      }
    } catch (e) { Logger.log('Error: ' + e.toString()); }
  }
