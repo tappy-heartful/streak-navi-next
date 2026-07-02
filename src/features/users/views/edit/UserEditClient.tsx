@@ -32,6 +32,8 @@ type UserFormData = {
   paypayId: string;
   prefectureId: string;
   municipalityId: string;
+  kurashikiJazzMusicianId: string;
+  realName: string;
 };
 
 export function UserEditClient({ uid, userData, initialLocation, sections, roles, instruments, prefectures, queryParams }: Props) {
@@ -64,6 +66,8 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
     paypayId: userData.paypayId || "",
     prefectureId: initialLocation?.prefectureId || "",
     municipalityId: initialLocation?.municipalityId || "",
+    kurashikiJazzMusicianId: userData.kurashikiJazzMusicianId || "",
+    realName: userData.realName || "",
   };
 
   const form = useAppForm<UserFormData>(initialValues, {
@@ -202,6 +206,30 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
       />
       <div className="musical-hint" style={{ marginTop: '-12px', marginBottom: '16px' }}>
         譜割りに表示されるあなたの名前です（2文字）
+      </div>
+
+      <AppInput
+        label="本名"
+        field="realName"
+        value={form.formData.realName}
+        updateField={form.updateField}
+        error={form.errors.realName}
+        placeholder="例: 山田太郎"
+      />
+      <div className="musical-hint" style={{ marginTop: '-12px', marginBottom: '16px' }}>
+        ※ライブのエントリーなどに用います。LINE表示名が本名の漢字表記ではない場合にご入力ください
+      </div>
+
+      <AppInput
+        label="2026年 倉敷ジャズスト ミュージシャンID"
+        field="kurashikiJazzMusicianId"
+        value={form.formData.kurashikiJazzMusicianId}
+        updateField={form.updateField}
+        error={form.errors.kurashikiJazzMusicianId}
+        placeholder="例: 26001"
+      />
+      <div className="musical-hint" style={{ marginTop: '-12px', marginBottom: '16px' }}>
+        2026年倉敷ジャズストリートのミュージシャンIDを入力してください
       </div>
 
       <hr style={{ margin: "2rem 0", border: "0", borderTop: "1px solid #eee" }} />

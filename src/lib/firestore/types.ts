@@ -60,6 +60,8 @@ export interface User {
   updatedAt?: number;
   isSystemAdmin?: boolean;
   isIssueAdmin?: boolean;
+  realName?: string;
+  kurashikiJazzMusicianId?: string;
   [key: string]: any; // 動的フラグ (e.g. isScoreAdmin)
 }
 
