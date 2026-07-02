@@ -217,7 +217,7 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
         placeholder="例: 山田太郎"
       />
       <div className="musical-hint" style={{ marginTop: '-12px', marginBottom: '16px' }}>
-        ※ライブのエントリーなどに用います。LINE表示名が本名ではない場合にご入力ください
+        ※ライブのエントリーなどに用います。LINE表示名が本名の漢字表記ではない場合にご入力ください
       </div>
 
       <AppInput
