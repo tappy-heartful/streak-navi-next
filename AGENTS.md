@@ -1,14 +1,14 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+# これはあなたが知っているNext.jsではありません
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
-
-すべての日本語で回答してください
-
+このバージョンには破壊的変更が含まれています。API、コンベンション、およびファイル構造はすべて、あなたの学習データと異なる場合があります。コードを記述する前に、`node_modules/next/dist/docs/` にある関連ガイドを必ず読んでください。非推奨の警告には厳格に従ってください。
 # Agent Behavior Rules
-1. **実装プランの承認プロセス省略**: Implementation Planを作成した後、ユーザーの明示的な承認を待つ必要はありません。プランを提示（または作成）したら、そのまま連続してタスクの実行（コードの修正等）に進んでください。
-2. **モバイル表示 of the design**: スマートフォンでの表示崩れを防ぐため、フィルターバッジやボタン等のUI要素が画面幅で見切れたり不自然に折り返したりしないように常に設計に配慮してください。必要に応じて要素を別行にするか、スクロール可能なコンテナに格納するなど、モバイルファーストでの実装を徹底してください。
+1. **実装プランの承認プロセス省略**: Implementation Plan（実装プラン）を作成した後、ユーザーの明示的な承認を待つ必要はありません。プランを提示（または作成）したら、そのまま連続してタスクの実行（コードの修正等）に進んでください。
+2. **モバイル向けUI設計の徹底**: スマートフォンでの表示崩れを防ぐため、フィルターバッジやボタン等のUI要素が画面幅で見切れたり不自然に折り返したりしないように常に設計に配慮してください。必要に応じて要素を別行にするか、スクロール可能なコンテナに格納するなど、モバイルファーストでの実装を徹底してください。
+3. **PCシステムおよびネットワーク操作の絶対禁止**: PC本体のシステム設定、ハードウェア構成、またはネットワーク状態を変更するコマンドの実行やアクションは絶対に禁止します。タスクの解釈ミスによってホストシステムを変更すると、システムエラーを引き起こします。
+   - `netsh`、`ipconfig /renew`、`ifconfig`、`systemctl restart network` などのネットワークアダプター、Wi-Fi設定、ファイアウォール構成を無効化、リセット、または変更するコマンドは**絶対に実行しないでください**。
+   - ハードウェアドライバーのアンインストール、再インストール、アップデートは**絶対に行わないでください**。
+   - プロジェクトディレクトリ外のOSレベルのシステムファイルの変更、システム全体の再起動やシャットダウンは**絶対に実行しないでください**。
+   - 通信エラーやAPIエラーが発生した場合は、ホストマシンの設定を変更するのではなく、プロジェクト内のアプリケーションコードや設定を修正するか、ユーザーに指示を仰いでください。
 
 # CANDY プロジェクト規約 (Project Conventions)
 
@@ -24,13 +24,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - `api/`:
     - `*-server-actions.ts`: サーバーサイドでのデータ取得・ロジック（`"use server"`）
     - `*-client-service.ts`: クライアントサイドでの書き込み処理等
-  - `components/`: その機能固有 of UIコンポーネント（パス名：`Kebab-case` または `PascalCase`）
+  - `components/`: その機能固有のUIコンポーネント（パス名：`Kebab-case` または `PascalCase`）
   - `views/`:
     - `*ListClient.tsx`: 一覧画面のメインロジック
     - `*EditClient.tsx`: 編集画面のメインロジック
     - `*ConfirmClient.tsx`: 詳細・確認画面のメインロジック
-  - `lib/`: その機能固有 of ロジック、検索エンジン等
-  - `types/`: 機能固有 of 型定義
+  - `lib/`: その機能固有のロジック、検索エンジン等
+  - `types/`: 機能固有の型定義
 
 ### 1.2. 共通ディレクトリ構成
 
@@ -136,7 +136,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ### 4.3. スタイル規約 (CSS Modules)
 
-- **原則**: 各画面（`src/features/**/views/*` および `src/app/**/page.tsx`）のデザインは、必ず同階層 of `*.module.css` に分離して管理する。
+- **原則**: 各画面（`src/features/**/views/*` および `src/app/**/page.tsx`）のデザインは、必ず同階層の `*.module.css` に分離して管理する。
 - **コンポーネントも同様**: `src/components/**` や `src/features/**/components/**` のUIも、可能な限り `*.module.css` を使用する。
 - **禁止**: `style jsx`（styled-jsx）および `style={{ ... }}` の多用は禁止（例外は、どうしても動的に変える必要がある最小限のインライン値のみ）。
 - **globals.css の役割**: `globals.css` はレイアウトの土台・共通トークン・共通クラス（`page-container`, `content-card` 等）に限定し、画面固有の装飾は置かない。
