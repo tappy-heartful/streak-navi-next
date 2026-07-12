@@ -246,6 +246,156 @@ export function AccountingConfirmClient({ initialData }: Props) {
     }
   };
 
+  const handleShowTotalExpensesModal = async () => {
+    const activeMemberIds = season?.memberIds || [];
+    const targetExpenses = expenses.filter(e => activeMemberIds.includes(e.uid) && !e.isIncome);
+
+    if (targetExpenses.length === 0) {
+      showDialog("全体支出の内訳はありません。", true);
+      return;
+    }
+
+    // 日付でソート（降順）
+    targetExpenses.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+    let html = `<div style="font-family: sans-serif; max-height: 60vh; overflow-y: auto; padding: 4px;">`;
+    html += `
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+        <thead>
+          <tr style="background: #ebf8ff; border-bottom: 2px solid #bee3f8; text-align: left;">
+            <th style="padding: 8px;">メンバー</th>
+            <th style="padding: 8px;">日付・名目</th>
+            <th style="padding: 8px; text-align: right;">金額</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    targetExpenses.forEach(e => {
+      const user = users.find(u => u.id === e.uid);
+      const avatar = user?.pictureUrl
+        ? `<img src="${user.pictureUrl}" alt="" width="24" height="24" style="border-radius: 50%; object-fit: cover; vertical-align: middle;" />`
+        : `<div style="width: 24px; height: 24px; border-radius: 50%; background: #eee; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #ccc; overflow: hidden; vertical-align: middle;"><i class="fa-solid fa-user" style="color: #ccc; font-size: 10px;"></i></div>`;
+
+      html += `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 8px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px;">
+              ${avatar}
+              <span style="font-size: 12px; color: #2d3748; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${user?.displayName || "不明"}</span>
+            </div>
+          </td>
+          <td style="padding: 8px;">
+            <div style="font-size: 11px; color: #718096;">${e.date || "-"}</div>
+            <div style="font-weight: 500; color: #2d3748;">${e.name || e.category || "-"}</div>
+          </td>
+          <td style="padding: 8px; text-align: right; color: #e53e3e; font-weight: 600;">¥${Number(e.amount || 0).toLocaleString()}</td>
+        </tr>
+      `;
+    });
+
+    html += `
+        <tr style="border-top: 2px solid #cbd5e1; font-weight: bold; background: #f8fafc;">
+          <td colspan="2" style="padding: 8px; color: #2d3748;">合計</td>
+          <td style="padding: 8px; text-align: right; color: #e53e3e; font-weight: 700;">¥${totals.totalExpenses.toLocaleString()}</td>
+        </tr>
+    `;
+
+    html += `</tbody></table></div>`;
+
+    await showModal("全体支出の内訳一覧", html);
+  };
+
+  const handleShowTotalIncomesModal = async () => {
+    const activeMemberIds = season?.memberIds || [];
+    
+    // 1. 経費申請の中の収入項目
+    const targetExpenses = expenses.filter(e => activeMemberIds.includes(e.uid) && e.isIncome);
+    // 2. 収入一覧
+    const targetIncomes = incomes.filter(i => activeMemberIds.includes(i.uid));
+
+    // 合同リストを作って日付でソートする
+    const allIncomes: Array<{
+      date: string;
+      uid: string;
+      title: string;
+      amount: number;
+    }> = [];
+
+    targetExpenses.forEach(e => {
+      allIncomes.push({
+        date: e.date || "",
+        uid: e.uid,
+        title: e.name || e.category || "",
+        amount: e.amount
+      });
+    });
+
+    targetIncomes.forEach(i => {
+      allIncomes.push({
+        date: i.date || "",
+        uid: i.uid,
+        title: i.title || "",
+        amount: i.amount
+      });
+    });
+
+    if (allIncomes.length === 0) {
+      showDialog("全体収入の内訳はありません。", true);
+      return;
+    }
+
+    // 日付でソート（降順）
+    allIncomes.sort((a, b) => b.date.localeCompare(a.date));
+
+    let html = `<div style="font-family: sans-serif; max-height: 60vh; overflow-y: auto; padding: 4px;">`;
+    html += `
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+        <thead>
+          <tr style="background: #e6fffa; border-bottom: 2px solid #b2f5ea; text-align: left;">
+            <th style="padding: 8px;">メンバー</th>
+            <th style="padding: 8px;">日付・名目</th>
+            <th style="padding: 8px; text-align: right;">金額</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    allIncomes.forEach(i => {
+      const user = users.find(u => u.id === i.uid);
+      const avatar = user?.pictureUrl
+        ? `<img src="${user.pictureUrl}" alt="" width="24" height="24" style="border-radius: 50%; object-fit: cover; vertical-align: middle;" />`
+        : `<div style="width: 24px; height: 24px; border-radius: 50%; background: #eee; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #ccc; overflow: hidden; vertical-align: middle;"><i class="fa-solid fa-user" style="color: #ccc; font-size: 10px;"></i></div>`;
+
+      html += `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 8px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px;">
+              ${avatar}
+              <span style="font-size: 12px; color: #2d3748; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${user?.displayName || "不明"}</span>
+            </div>
+          </td>
+          <td style="padding: 8px;">
+            <div style="font-size: 11px; color: #718096;">${i.date || "-"}</div>
+            <div style="font-weight: 500; color: #2d3748;">${i.title}</div>
+          </td>
+          <td style="padding: 8px; text-align: right; color: #319795; font-weight: 600;">¥${Number(i.amount || 0).toLocaleString()}</td>
+        </tr>
+      `;
+    });
+
+    html += `
+        <tr style="border-top: 2px solid #cbd5e1; font-weight: bold; background: #f8fafc;">
+          <td colspan="2" style="padding: 8px; color: #2d3748;">合計</td>
+          <td style="padding: 8px; text-align: right; color: #319795; font-weight: 700;">¥${totals.totalIncomes.toLocaleString()}</td>
+        </tr>
+    `;
+
+    html += `</tbody></table></div>`;
+
+    await showModal("全体収入の内訳一覧", html);
+  };
+
   const handleShowExpensesModal = async (uid: string, name: string) => {
     const userExpenses = expenses.filter(e => e.uid === uid && !e.isIncome);
     const userIncomes = [
@@ -602,10 +752,52 @@ export function AccountingConfirmClient({ initialData }: Props) {
             <div className={styles.statItem}>
               <div className={styles.statLabel}>全体支出</div>
               <div className={styles.statValue}>¥{totals.totalExpenses.toLocaleString()}</div>
+              <button
+                type="button"
+                onClick={handleShowTotalExpensesModal}
+                style={{
+                  background: "rgba(255, 255, 255, 0.25)",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "3px 8px",
+                  fontSize: "0.7rem",
+                  color: "white",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  fontWeight: "bold",
+                  marginTop: "8px"
+                }}
+              >
+                <span>詳細</span>
+                <i className="fa-solid fa-chevron-right" style={{ fontSize: "0.6rem" }}></i>
+              </button>
             </div>
             <div className={styles.statItem}>
               <div className={styles.statLabel}>全体収入</div>
               <div className={styles.statValue}>¥{totals.totalIncomes.toLocaleString()}</div>
+              <button
+                type="button"
+                onClick={handleShowTotalIncomesModal}
+                style={{
+                  background: "rgba(255, 255, 255, 0.25)",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "3px 8px",
+                  fontSize: "0.7rem",
+                  color: "white",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  fontWeight: "bold",
+                  marginTop: "8px"
+                }}
+              >
+                <span>詳細</span>
+                <i className="fa-solid fa-chevron-right" style={{ fontSize: "0.6rem" }}></i>
+              </button>
             </div>
             <div className={styles.statItem}>
               <div className={styles.statLabel}>メンバー数</div>
