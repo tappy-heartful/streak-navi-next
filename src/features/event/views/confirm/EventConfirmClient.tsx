@@ -54,7 +54,7 @@ export function EventConfirmClient({ eventId, data }: Props) {
   const { userData, isAdmin } = useAuth();
   const uid = userData?.id;
 
-  const { event, answers, usersMap, sectionsMap, scoresMap, attendanceStatuses, adjustStatuses, recordings: initialRecordings, allUserUids, prefectureName, municipalityName } = data;
+  const { event, answers, attendanceAnswers: attendanceAnswersProp, adjustAnswers: adjustAnswersProp, usersMap, sectionsMap, scoresMap, attendanceStatuses, adjustStatuses, recordings: initialRecordings, allUserUids, prefectureName, municipalityName } = data;
 
   const [recordings, setRecordings] = useState<EventRecording[]>(initialRecordings);
   const [modalOpen, setModalOpen] = useState(false);
@@ -233,9 +233,22 @@ export function EventConfirmClient({ eventId, data }: Props) {
 
   // ---- Adjust table (schedule type) ----
 
-  const renderAdjustTable = () => {
-    const candidateDates = event.candidateDates || [];
-    const adjustAnswers = answers as EventAdjustAnswer[];
+  const renderAdjustTable = (customAnswers?: EventAdjustAnswer[]) => {
+    const adjustAnswers = customAnswers || (adjustAnswersProp || []);
+
+    let candidateDates = event.candidateDates || [];
+    if (candidateDates.length === 0) {
+      const dateSet = new Set<string>();
+      adjustAnswers.forEach(ans => {
+        Object.keys(ans.answers || {}).forEach(date => {
+          dateSet.add(date);
+        });
+      });
+      candidateDates = Array.from(dateSet).sort();
+    }
+
+    const answeredAdjustUids = adjustAnswers.map(a => a.uid);
+    const localUnansweredUids = allUserUids.filter(u => !answeredAdjustUids.includes(u));
 
     const dateCounts: Record<string, Record<string, number>> = {};
     adjustAnswers.forEach(ans => {
@@ -288,21 +301,21 @@ export function EventConfirmClient({ eventId, data }: Props) {
                     </span>
                   );
                 })}
-                {unansweredUids.length > 0 ? (
+                {localUnansweredUids.length > 0 ? (
                   <a
                     href="#"
                     className="status-count status-unanswered"
                     onClick={e => {
                       e.preventDefault();
                       const [, m, d] = date.split(".");
-                      showUsersModal(`${m}/${d}(${dayStr}) 未回答の人`, unansweredUids);
+                      showUsersModal(`${m}/${d}(${dayStr}) 未回答の人`, localUnansweredUids);
                     }}
                   >
-                    未{unansweredUids.length}
+                    未{localUnansweredUids.length}
                   </a>
                 ) : (
                   <span className="status-count status-count-zero status-unanswered">
-                    未{unansweredUids.length}
+                    未{localUnansweredUids.length}
                   </span>
                 )}
               </div>
@@ -315,8 +328,11 @@ export function EventConfirmClient({ eventId, data }: Props) {
 
   // ---- Attendance blocks (attendance type) ----
 
-  const renderAttendanceBlocks = () => {
-    const attAnswers = answers as EventAttendanceAnswer[];
+  const renderAttendanceBlocks = (customAnswers?: EventAttendanceAnswer[]) => {
+    const attAnswers = customAnswers || (attendanceAnswersProp || []);
+    const answeredAttUids = attAnswers.map(a => a.uid);
+    const localUnansweredUids = allUserUids.filter(u => !answeredAttUids.includes(u));
+
     return (
       <>
         {attendanceStatuses.map(status => {
@@ -365,10 +381,11 @@ export function EventConfirmClient({ eventId, data }: Props) {
             </div>
           );
         })}
-        {unansweredUids.length > 0 && (
+        {localUnansweredUids.length > 0 && (
           <button
+            type="button"
             id="unanswered-button"
-            onClick={() => showUsersModal("出欠 未回答者", unansweredUids)}
+            onClick={() => showUsersModal("出欠 未回答者", localUnansweredUids)}
           >
             未回答者を見る
           </button>
@@ -659,30 +676,60 @@ export function EventConfirmClient({ eventId, data }: Props) {
               回答{answers.length}人 (未回答{unansweredUids.length}人)
             </span>
             {isSchedule ? renderAdjustTable() : renderAttendanceBlocks()}
+
+            {/* サブ回答状況の表示 */}
+            {isSchedule && attendanceAnswersProp && attendanceAnswersProp.length > 0 && (
+              <div style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px dashed #cbd5e1" }}>
+                <h4 style={{ fontSize: "0.95rem", color: "#475569", marginBottom: "8px", fontWeight: "bold" }}>
+                  <i className="fa-solid fa-users" style={{ marginRight: "0.5rem" }} />出欠回答（登録済みデータ）
+                </h4>
+                <span className="answer-count-summary">
+                  回答{attendanceAnswersProp.length}人 (未回答{allUserUids.length - attendanceAnswersProp.length}人)
+                </span>
+                {renderAttendanceBlocks(attendanceAnswersProp)}
+              </div>
+            )}
+            {!isSchedule && adjustAnswersProp && adjustAnswersProp.length > 0 && (
+              <div style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px dashed #cbd5e1" }}>
+                <h4 style={{ fontSize: "0.95rem", color: "#475569", marginBottom: "8px", fontWeight: "bold" }}>
+                  <i className="fa-solid fa-calendar-days" style={{ marginRight: "0.5rem" }} />日程調整回答（登録済みデータ）
+                </h4>
+                <span className="answer-count-summary">
+                  回答{adjustAnswersProp.length}人 (未回答{allUserUids.length - adjustAnswersProp.length}人)
+                </span>
+                {renderAdjustTable(adjustAnswersProp)}
+              </div>
+            )}
           </div>
         </div>
 
         {/* 回答時コメント */}
-        {answers.some(a => a.comment && a.comment.trim() !== "") && (
-          <div className="form-group" style={{ marginTop: "1.5rem" }}>
-            <label className="label-title">回答時コメント</label>
-            <div
-              className="comments-block"
-              style={{
-                backgroundColor: "#f8fafc",
-                padding: "16px",
-                borderRadius: "12px",
-                border: "1px solid #e2e8f0",
-                maxHeight: "300px",
-                overflowY: "auto",
-                display: "flex",
-                flexDirection: "column",
-                gap: "12px"
-              }}
-            >
-              {answers
-                .filter(a => a.comment && a.comment.trim() !== "")
-                .map(a => {
+        {(() => {
+          const allComments = [
+            ...attendanceAnswersProp.map(a => ({ ...a, type: "attendance" as const })),
+            ...adjustAnswersProp.map(a => ({ ...a, type: "adjust" as const }))
+          ].filter(a => a.comment && a.comment.trim() !== "");
+
+          if (allComments.length === 0) return null;
+
+          return (
+            <div className="form-group" style={{ marginTop: "1.5rem" }}>
+              <label className="label-title">回答時コメント</label>
+              <div
+                className="comments-block"
+                style={{
+                  backgroundColor: "#f8fafc",
+                  padding: "16px",
+                  borderRadius: "12px",
+                  border: "1px solid #e2e8f0",
+                  maxHeight: "300px",
+                  overflowY: "auto",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px"
+                }}
+              >
+                {allComments.map(a => {
                   const user = usersMap[a.uid];
                   const userName = user?.displayName || "不明";
                   const userPic = user?.pictureUrl || globalLineDefaultImage;
@@ -697,17 +744,18 @@ export function EventConfirmClient({ eventId, data }: Props) {
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: "bold", fontSize: "14px", color: "#334155", display: "flex", gap: "8px", alignItems: "center" }}>
                           <span>{userName}</span>
-                          {!isSchedule && (
-                            (() => {
-                              const attAns = a as EventAttendanceAnswer;
-                              const status = attendanceStatuses.find(s => s.id === attAns.status);
-                              return status ? (
-                                <span style={{ fontSize: "11px", padding: "2px 6px", borderRadius: "4px", backgroundColor: "#f1f5f9", color: "#475569", fontWeight: "normal" }}>
-                                  {status.name}
-                                </span>
-                              ) : null;
-                            })()
-                          )}
+                          <span style={{ fontSize: "11px", padding: "2px 6px", borderRadius: "4px", backgroundColor: "#f1f5f9", color: "#475569", fontWeight: "normal" }}>
+                            {a.type === "attendance" ? "出欠回答" : "日程調整"}
+                          </span>
+                          {a.type === "attendance" && (() => {
+                            const attAns = a as EventAttendanceAnswer;
+                            const status = attendanceStatuses.find(s => s.id === attAns.status);
+                            return status ? (
+                              <span style={{ fontSize: "11px", padding: "2px 6px", borderRadius: "4px", backgroundColor: "#e2e8f0", color: "#1e293b", fontWeight: "normal" }}>
+                                {status.name}
+                              </span>
+                            ) : null;
+                          })()}
                         </div>
                         <div style={{ fontSize: "14px", color: "#475569", marginTop: "4px", whiteSpace: "pre-wrap" }}>
                           {a.comment}
@@ -716,9 +764,10 @@ export function EventConfirmClient({ eventId, data }: Props) {
                     </div>
                   );
                 })}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* 録音・録画リンク */}
         <div className="form-group">

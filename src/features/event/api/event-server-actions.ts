@@ -68,6 +68,8 @@ export async function fetchEvent(id: string): Promise<Event | null> {
 export type EventConfirmData = {
   event: Event;
   answers: (EventAttendanceAnswer | EventAdjustAnswer)[];
+  attendanceAnswers: EventAttendanceAnswer[];
+  adjustAnswers: EventAdjustAnswer[];
   usersMap: Record<string, User>;
   sectionsMap: Record<string, string>; // sectionId → name
   scoresMap: Record<string, Score>;
@@ -85,10 +87,10 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
   const event = toEventDoc(eventDoc);
 
   const isSchedule = event.attendanceType === "schedule";
-  const answerCollection = isSchedule ? "eventAdjustAnswers" : "eventAttendanceAnswers";
 
   const [
-    answersSnap,
+    attendanceAnswersSnap,
+    adjustAnswersSnap,
     usersSnap,
     sectionsSnap,
     scoresSnap,
@@ -96,7 +98,8 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
     adjustStatusesSnap,
     recordingsSnap,
   ] = await Promise.all([
-    adminDb.collection(answerCollection).where("eventId", "==", eventId).get(),
+    adminDb.collection("eventAttendanceAnswers").where("eventId", "==", eventId).get(),
+    adminDb.collection("eventAdjustAnswers").where("eventId", "==", eventId).get(),
     adminDb.collection("users").get(),
     adminDb.collection("sections").get(),
     adminDb.collection("scores").get(),
@@ -105,30 +108,35 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
     adminDb.collection("eventRecordings").where("eventId", "==", eventId).orderBy("createdAt", "asc").get(),
   ]);
 
-  const answers = answersSnap.docs
+  const attendanceAnswers = attendanceAnswersSnap.docs
     .filter(d => d.id.startsWith(eventId + "_"))
     .map(d => {
       const data = d.data();
-      if (isSchedule) {
-        return {
-          id: d.id,
-          eventId: data.eventId || eventId,
-          uid: data.uid || d.id.replace(eventId + "_", ""),
-          answers: data.answers || {},
-          comment: data.comment || "",
-          updatedAt: data.updatedAt?.toMillis?.() ?? 0,
-        } as EventAdjustAnswer;
-      } else {
-        return {
-          id: d.id,
-          eventId: data.eventId || eventId,
-          uid: data.uid || d.id.replace(eventId + "_", ""),
-          status: data.status || "",
-          comment: data.comment || "",
-          updatedAt: data.updatedAt?.toMillis?.() ?? 0,
-        } as EventAttendanceAnswer;
-      }
+      return {
+        id: d.id,
+        eventId: data.eventId || eventId,
+        uid: data.uid || d.id.replace(eventId + "_", ""),
+        status: data.status || "",
+        comment: data.comment || "",
+        updatedAt: data.updatedAt?.toMillis?.() ?? 0,
+      } as EventAttendanceAnswer;
     });
+
+  const adjustAnswers = adjustAnswersSnap.docs
+    .filter(d => d.id.startsWith(eventId + "_"))
+    .map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        eventId: data.eventId || eventId,
+        uid: data.uid || d.id.replace(eventId + "_", ""),
+        answers: data.answers || {},
+        comment: data.comment || "",
+        updatedAt: data.updatedAt?.toMillis?.() ?? 0,
+      } as EventAdjustAnswer;
+    });
+
+  const answers = isSchedule ? adjustAnswers : attendanceAnswers;
 
   const usersMap: Record<string, User> = {};
   const allUserUids: string[] = [];
@@ -199,6 +207,8 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
   return {
     event,
     answers,
+    attendanceAnswers,
+    adjustAnswers,
     usersMap,
     sectionsMap,
     scoresMap,
