@@ -258,14 +258,14 @@ export function AccountingConfirmClient({ initialData }: Props) {
     // 日付でソート（降順）
     targetExpenses.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
-    let html = `<div style="font-family: sans-serif; max-height: 60vh; overflow-y: auto; padding: 4px;">`;
+    let html = `<div style="font-family: sans-serif; max-height: 60vh; overflow-y: auto; padding: 0 4px;">`;
     html += `
       <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
         <thead>
           <tr style="background: #ebf8ff; border-bottom: 2px solid #bee3f8; text-align: left;">
-            <th style="padding: 8px;">メンバー</th>
-            <th style="padding: 8px;">日付・名目</th>
-            <th style="padding: 8px; text-align: right;">金額</th>
+            <th style="padding: 8px; position: sticky; top: 0; background: #ebf8ff; z-index: 2;">メンバー</th>
+            <th style="padding: 8px; position: sticky; top: 0; background: #ebf8ff; z-index: 2;">日付・名目</th>
+            <th style="padding: 8px; text-align: right; position: sticky; top: 0; background: #ebf8ff; z-index: 2;">金額</th>
           </tr>
         </thead>
         <tbody>
@@ -296,8 +296,8 @@ export function AccountingConfirmClient({ initialData }: Props) {
 
     html += `
         <tr style="border-top: 2px solid #cbd5e1; font-weight: bold; background: #f8fafc;">
-          <td colspan="2" style="padding: 8px; color: #2d3748;">合計</td>
-          <td style="padding: 8px; text-align: right; color: #e53e3e; font-weight: 700;">¥${totals.totalExpenses.toLocaleString()}</td>
+          <td colspan="2" style="padding: 8px; color: #2d3748; background: #f8fafc; position: sticky; bottom: 0; z-index: 2; border-top: 2px solid #cbd5e1;">合計</td>
+          <td style="padding: 8px; text-align: right; color: #e53e3e; font-weight: 700; background: #f8fafc; position: sticky; bottom: 0; z-index: 2; border-top: 2px solid #cbd5e1;">¥${totals.totalExpenses.toLocaleString()}</td>
         </tr>
     `;
 
@@ -348,14 +348,14 @@ export function AccountingConfirmClient({ initialData }: Props) {
     // 日付でソート（降順）
     allIncomes.sort((a, b) => b.date.localeCompare(a.date));
 
-    let html = `<div style="font-family: sans-serif; max-height: 60vh; overflow-y: auto; padding: 4px;">`;
+    let html = `<div style="font-family: sans-serif; max-height: 60vh; overflow-y: auto; padding: 0 4px;">`;
     html += `
       <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
         <thead>
           <tr style="background: #e6fffa; border-bottom: 2px solid #b2f5ea; text-align: left;">
-            <th style="padding: 8px;">メンバー</th>
-            <th style="padding: 8px;">日付・名目</th>
-            <th style="padding: 8px; text-align: right;">金額</th>
+            <th style="padding: 8px; position: sticky; top: 0; background: #e6fffa; z-index: 2;">メンバー</th>
+            <th style="padding: 8px; position: sticky; top: 0; background: #e6fffa; z-index: 2;">日付・名目</th>
+            <th style="padding: 8px; text-align: right; position: sticky; top: 0; background: #e6fffa; z-index: 2;">金額</th>
           </tr>
         </thead>
         <tbody>
@@ -386,8 +386,8 @@ export function AccountingConfirmClient({ initialData }: Props) {
 
     html += `
         <tr style="border-top: 2px solid #cbd5e1; font-weight: bold; background: #f8fafc;">
-          <td colspan="2" style="padding: 8px; color: #2d3748;">合計</td>
-          <td style="padding: 8px; text-align: right; color: #319795; font-weight: 700;">¥${totals.totalIncomes.toLocaleString()}</td>
+          <td colspan="2" style="padding: 8px; color: #2d3748; background: #f8fafc; position: sticky; bottom: 0; z-index: 2; border-top: 2px solid #cbd5e1;">合計</td>
+          <td style="padding: 8px; text-align: right; color: #319795; font-weight: 700; background: #f8fafc; position: sticky; bottom: 0; z-index: 2; border-top: 2px solid #cbd5e1;">¥${totals.totalIncomes.toLocaleString()}</td>
         </tr>
     `;
 
