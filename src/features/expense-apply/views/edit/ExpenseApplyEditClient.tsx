@@ -61,10 +61,6 @@ export function ExpenseApplyEditClient({
   const { user, userData, isAdmin } = useAuth();
   const router = useRouter();
   const seasonTheme = getAccountingSeasonTheme(initialData?.createdAt);
-  const [files, setFiles] = useState<{ name: string; url: string; path: string }[]>(
-    initialData?.files || []
-  );
-
   const [masterTypes] = useState<ExpenseType[]>(initialMasterTypes);
   const [masterCategories] = useState<ExpenseCategory[]>(initialMasterCategories);
   const [masterItems] = useState<ExpenseItem[]>(initialMasterItems);
@@ -91,6 +87,7 @@ export function ExpenseApplyEditClient({
       isTravel: initialData?.isTravel || initialItem?.isTravel || false,
       isEventRequired: initialData?.isEventRequired || initialItem?.isEventRequired || false,
       eventId: initialData?.eventId || queryParams?.eventId || "",
+      files: initialData?.files || [],
     },
     {
       typeId: [rules.required],
@@ -301,7 +298,7 @@ export function ExpenseApplyEditClient({
       const snapshot = await uploadBytes(storageRef, uploadFile);
       const url = await getDownloadURL(snapshot.ref);
       await writeLog({ dataId: storagePath, action: "経費申請ファイルアップロード" });
-      setFiles(prev => [...prev, { name: file.name, url, path: storagePath }]);
+      form.updateField("files", [...(form.formData.files || []), { name: file.name, url, path: storagePath }]);
     } catch (e) {
       console.error(e);
       await writeLog({ dataId: "upload", action: "経費申請ファイルアップロード", status: "error", errorDetail: { message: (e as Error).message } });
@@ -313,7 +310,8 @@ export function ExpenseApplyEditClient({
   };
 
   const removeFile = async (index: number) => {
-    const file = files[index];
+    const file = form.formData.files?.[index];
+    if (!file) return;
     if (file.path) {
       showSpinner();
       try {
@@ -327,7 +325,7 @@ export function ExpenseApplyEditClient({
         hideSpinner();
       }
     }
-    setFiles(prev => prev.filter((_, i) => i !== index));
+    form.updateField("files", (form.formData.files || []).filter((_, i) => i !== index));
   };
 
   const onSaveApi = async (data: typeof form.formData) => {
@@ -339,7 +337,7 @@ export function ExpenseApplyEditClient({
       expenseTypeId: data.typeId, // ドキュメントIDを明示的に登録
       category: itemName,
       date: isEventRequired && selectedEvent ? selectedEvent.date : hyphenDateToDot(data.date),
-      files,
+      files: data.files,
       isTravel,
       isEventRequired,
       eventId: isEventRequired ? (data.eventId || "") : "",
@@ -582,30 +580,32 @@ export function ExpenseApplyEditClient({
           />
         )}
 
-        <FormField label="添付ファイル (領収書など)">
-          <p style={{ margin: "0 0 8px", fontSize: "13px", color: "#919191" }}>
-            ※ 添付すると審査が通りやすくなります
-          </p>
-          <div className={styles.fileUploadWrapper}>
-            <input type="file" accept="image/*,application/pdf" onChange={handleFileUpload} style={{ display: "none" }} id="file-upload" />
-            <label htmlFor="file-upload" className={styles.fileUploadLabel}>
-              画像・PDFを追加
-            </label>
-          </div>
+        {!isTravel && (
+          <FormField label="添付ファイル (領収書など)">
+            <p style={{ margin: "0 0 8px", fontSize: "13px", color: "#919191" }}>
+              ※ 添付すると審査が通りやすくなります
+            </p>
+            <div className={styles.fileUploadWrapper}>
+              <input type="file" accept="image/*,application/pdf" onChange={handleFileUpload} style={{ display: "none" }} id="file-upload" />
+              <label htmlFor="file-upload" className={styles.fileUploadLabel}>
+                画像・PDFを追加
+              </label>
+            </div>
 
-          <ul className={styles.fileList}>
-            {files.map((file, i) => (
-              <li key={i} className={styles.fileItem}>
-                <span className={styles.fileName}>
-                  {file.name}
-                </span>
-                <button type="button" onClick={() => removeFile(i)} className={styles.removeBtn}>
-                  <i className="fas fa-times"></i>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </FormField>
+            <ul className={styles.fileList}>
+              {(form.formData.files || []).map((file, i) => (
+                <li key={i} className={styles.fileItem}>
+                  <span className={styles.fileName}>
+                    {file.name}
+                  </span>
+                  <button type="button" onClick={() => removeFile(i)} className={styles.removeBtn}>
+                    <i className="fas fa-times"></i>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </FormField>
+        )}
       </EditFormLayout>
     </BaseLayout>
   );

@@ -31,8 +31,12 @@ export const saveIssue = async (
 
   if (mode === "edit" && id) {
     const docRef = doc(db, "issues", id);
+    const oldSnap = await getDoc(docRef);
+    const oldStatus = oldSnap.exists() ? oldSnap.data()?.status : null;
     await updateDoc(docRef, payload);
-    notifyIssueAction(id, "update", uid);
+    if (oldStatus !== payload.status) {
+      notifyIssueAction(id, "status_change", uid);
+    }
     return id;
   } else {
     const res = await addDoc(collection(db, "issues"), {
@@ -169,9 +173,15 @@ export const updateIssueStatus = async (
   if (!uid) throw new Error("ログインが必要です");
 
   const docRef = doc(db, "issues", issueId);
+  const oldSnap = await getDoc(docRef);
+  const oldStatus = oldSnap.exists() ? oldSnap.data()?.status : null;
+
   await updateDoc(docRef, {
     status,
     updatedAt: serverTimestamp()
   });
-  notifyIssueAction(issueId, "update", uid);
+
+  if (oldStatus !== status) {
+    notifyIssueAction(issueId, "status_change", uid);
+  }
 };
