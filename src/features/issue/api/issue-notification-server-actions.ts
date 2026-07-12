@@ -39,7 +39,7 @@ const ISSUE_STATUS_LABELS: Record<string, string> = {
  */
 export async function notifyIssueAction(
   issueId: string,
-  action: "create" | "update" | "comment",
+  action: "create" | "update" | "comment" | "status_change",
   actorId: string,
   payload?: { commentText?: string; actorName?: string }
 ) {
@@ -61,6 +61,23 @@ export async function notifyIssueAction(
       text += `区分: ${typeLabel}\n`;
       text += `タイトル: ${issueData.title}\n`;
       text += `担当者: ${issueData.assigneeName || "未設定"}\n`;
+      if (issueData.date) {
+        text += `期限/日付: ${issueData.date} (${issueData.dateType === "until" ? "まで" : "に"})\n`;
+      }
+      text += `起票者: ${issueData.createdByName || "不明"}\n`;
+      if (issueData.description) {
+        const descPreview = issueData.description.length > 150
+          ? issueData.description.substring(0, 150) + "..."
+          : issueData.description;
+        text += `説明:\n${descPreview}\n`;
+      }
+    } else if (action === "status_change") {
+      text += `${typeLabel}のステータスが変更されました。内容をご確認ください。\n\n`;
+      text += `【更新内容】\n`;
+      text += `区分: ${typeLabel}\n`;
+      text += `タイトル: ${issueData.title}\n`;
+      text += `担当者: ${issueData.assigneeName || "未設定"}\n`;
+      text += `ステータス: ${statusLabel}\n`;
       if (issueData.date) {
         text += `期限/日付: ${issueData.date} (${issueData.dateType === "until" ? "まで" : "に"})\n`;
       }
