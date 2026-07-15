@@ -23,18 +23,6 @@ function isEventPast(event: Event): boolean {
   return event.date < todayStr;
 }
 
-function formatCompactDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const normalized = dateStr.replace(/-/g, ".");
-  const parts = normalized.split(".");
-  if (parts.length !== 3) return dateStr;
-  const [_, m, d] = parts;
-  const month = parseInt(m, 10);
-  const day = parseInt(d, 10);
-  const dayOfWeek = getDayOfWeek(dateStr, true);
-  return `${month}/${day}(${dayOfWeek})`;
-}
-
 export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }: Props) {
   const { userData, isAdmin } = useAuth();
   const uid = userData?.id;
@@ -110,7 +98,13 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
 
   const renderTermDisplay = (e: Event) => {
     if (!e.acceptStartDate && !e.acceptEndDate) return "-";
-    return `${e.acceptStartDate || ""} ～ ${e.acceptEndDate || ""}`;
+    return (
+      <>
+        {e.acceptStartDate || ""}
+        <br />
+        ～ {e.acceptEndDate || ""}
+      </>
+    );
   };
 
   const renderStatusCell = (e: Event, type: "schedule" | "future" | "closed") => {
@@ -212,7 +206,9 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
                     <td className="list-table-row-header">
                       <div className={styles.eventDateSub}>
                         {(e.candidateDates || []).map(d => (
-                          <div key={d} className={styles.dateItem}>{formatCompactDate(d)}</div>
+                          <span key={d} className={styles.dateItem}>
+                            {d}({getDayOfWeek(d, true)})
+                          </span>
                         ))}
                       </div>
                       <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
@@ -266,7 +262,9 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
                     <td className="list-table-row-header">
                       <div className={styles.eventDateSub}>
                         {e.date ? (
-                          <span className={styles.dateItem}>{formatCompactDate(e.date)}</span>
+                          <span className={styles.dateItem}>
+                            {e.date}({getDayOfWeek(e.date, true)})
+                          </span>
                         ) : "-"}
                       </div>
                       <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
@@ -318,7 +316,9 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
                     <td className="list-table-row-header">
                       <div className={styles.eventDateSub}>
                         {e.date ? (
-                          <span className={styles.dateItem}>{formatCompactDate(e.date)}</span>
+                          <span className={styles.dateItem}>
+                            {e.date}({getDayOfWeek(e.date, true)})
+                          </span>
                         ) : "-"}
                       </div>
                       <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
