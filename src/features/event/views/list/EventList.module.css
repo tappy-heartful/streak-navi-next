@@ -1,0 +1,12 @@
+.eventDateSub {
+  font-size: 0.65rem;
+  color: #718096;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+.dateItem {
+  white-space: nowrap;
+  display: block;
+  letter-spacing: -0.02em;
+}
