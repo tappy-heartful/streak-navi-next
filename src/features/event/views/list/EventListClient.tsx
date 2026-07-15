@@ -9,6 +9,7 @@ import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { isInTerm, getDayOfWeek, format } from "@/src/lib/functions";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/src/lib/firebase";
+import styles from "./EventList.module.css";
 
 type Props = {
   events: Event[];
@@ -20,6 +21,18 @@ function isEventPast(event: Event): boolean {
   if (!event.date) return false;
   const todayStr = format(new Date(), "yyyy.MM.dd");
   return event.date < todayStr;
+}
+
+function formatCompactDate(dateStr: string): string {
+  if (!dateStr) return "";
+  const normalized = dateStr.replace(/-/g, ".");
+  const parts = normalized.split(".");
+  if (parts.length !== 3) return dateStr;
+  const [_, m, d] = parts;
+  const month = parseInt(m, 10);
+  const day = parseInt(d, 10);
+  const dayOfWeek = getDayOfWeek(dateStr, true);
+  return `${month}/${day}(${dayOfWeek})`;
 }
 
 export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }: Props) {
@@ -187,7 +200,6 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
               <thead>
                 <tr>
                   <th>イベント名</th>
-                  <th>候補日</th>
                   <th>回答</th>
                   <th>日程調整<br />受付期間</th>
                   <th>都道府県<br />市区町村</th>
@@ -198,12 +210,12 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
                 {scheduleList.map(e => (
                   <tr key={e.id}>
                     <td className="list-table-row-header">
+                      <div className={styles.eventDateSub}>
+                        {(e.candidateDates || []).map(d => (
+                          <div key={d} className={styles.dateItem}>{formatCompactDate(d)}</div>
+                        ))}
+                      </div>
                       <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
-                    </td>
-                    <td className="text-small">
-                      {(e.candidateDates || []).map(d => (
-                        <div key={d}>{getDayOfWeek(d)}</div>
-                      ))}
                     </td>
                     <td>{renderStatusCell(e, "schedule")}</td>
                     <td className="text-small">{renderTermDisplay(e)}</td>
@@ -239,7 +251,6 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
             <thead>
               <tr>
                 <th>イベント名</th>
-                <th>日付</th>
                 <th>回答</th>
                 <th>出欠受付期間</th>
                 <th>都道府県<br />市区町村</th>
@@ -248,15 +259,17 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
             </thead>
             <tbody>
               {futureList.length === 0 ? (
-                <tr><td colSpan={6} className="empty-text">該当のイベントはありません🍀</td></tr>
+                <tr><td colSpan={5} className="empty-text">該当のイベントはありません🍀</td></tr>
               ) : (
                 futureList.map(e => (
                   <tr key={e.id}>
                     <td className="list-table-row-header">
+                      <div className={styles.eventDateSub}>
+                        {e.date ? (
+                          <span className={styles.dateItem}>{formatCompactDate(e.date)}</span>
+                        ) : "-"}
+                      </div>
                       <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
-                    </td>
-                    <td className="text-small">
-                      {e.date ? `${e.date}(${getDayOfWeek(e.date, true)})` : "-"}
                     </td>
                     <td>{renderStatusCell(e, "future")}</td>
                     <td className="text-small">{renderTermDisplay(e)}</td>
@@ -293,7 +306,6 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
               <thead>
                 <tr>
                   <th>イベント名</th>
-                  <th>日付</th>
                   <th>状況</th>
                   <th>出欠受付期間</th>
                   <th>都道府県<br />市区町村</th>
@@ -304,10 +316,12 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
                 {closedList.map(e => (
                   <tr key={e.id}>
                     <td className="list-table-row-header">
+                      <div className={styles.eventDateSub}>
+                        {e.date ? (
+                          <span className={styles.dateItem}>{formatCompactDate(e.date)}</span>
+                        ) : "-"}
+                      </div>
                       <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
-                    </td>
-                    <td className="text-small">
-                      {e.date ? `${e.date}(${getDayOfWeek(e.date, true)})` : "-"}
                     </td>
                     <td>{renderStatusCell(e, "closed")}</td>
                     <td className="text-small">{renderTermDisplay(e)}</td>
