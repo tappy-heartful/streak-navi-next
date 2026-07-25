@@ -46,6 +46,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
   const { userData } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
   const router = useRouter();
+  const [activeEvidenceUrl, setActiveEvidenceUrl] = useState<string | null>(null);
 
   const {
     season,
@@ -604,13 +605,8 @@ export function AccountingConfirmClient({ initialData }: Props) {
     }
   };
 
-  const handleViewEvidence = async (name: string, url: string) => {
-    await showModal(
-      `${name} さんの精算エビデンス`,
-      `<div style="text-align: center; padding: 10px;">
-        <img src="${url}" alt="evidence" style="max-width: 100%; max-height: 70vh; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
-      </div>`
-    );
+  const handleViewEvidence = (name: string, url: string) => {
+    setActiveEvidenceUrl(url);
   };
 
   const renderGroupedMembers = () => (
@@ -947,6 +943,39 @@ export function AccountingConfirmClient({ initialData }: Props) {
       <div className="page-footer">
         <Link href="/accounting" className="back-link">← 一覧に戻る</Link>
       </div>
+      {activeEvidenceUrl && (
+        <div 
+          onClick={() => setActiveEvidenceUrl(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            cursor: 'pointer',
+            padding: '20px',
+            boxSizing: 'border-box'
+          }}
+        >
+          <img 
+            src={activeEvidenceUrl} 
+            alt="Evidence" 
+            style={{
+              maxWidth: '100%',
+              maxHeight: '90vh',
+              objectFit: 'contain',
+              borderRadius: '8px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+              userSelect: 'none'
+            }} 
+          />
+        </div>
+      )}
     </BaseLayout>
   );
 }
