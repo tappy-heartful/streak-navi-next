@@ -372,3 +372,104 @@
   color: #cbd5e0;
   font-style: italic;
 }
+
+/* 担当者バッジ */
+.managerBadge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: #e6fffa;
+  color: #319795;
+  border: 1px solid #319795;
+  display: inline-block;
+  font-weight: bold;
+}
+
+/* 未提出（要清算）メンバーの背景 */
+.pendingUpload {
+  background-color: rgba(118, 75, 162, 0.08) !important; /* フォールバック */
+  background-color: color-mix(in srgb, var(--season-primary) 8%, transparent) !important;
+  border-left: 4px solid var(--season-primary) !important;
+  padding-left: 8px !important;
+}
+
+/* 画面上部ステータス表示 */
+.statusContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 16px;
+  padding: 12px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+}
+
+.statusLabelGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statusText {
+  font-size: 0.9rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.statusBadge {
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusActive {
+  background: #3182ce; /* 実施中: 青 */
+}
+
+.statusWaiting {
+  background: #dd6b20; /* 終了(清算待ち): オレンジ/アンバー */
+}
+
+.statusCompleted {
+  background: #38a169; /* 終了(清算済): 緑 */
+}
+
+/* 清算完了トグルボタン */
+.btnToggleSettle {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btnToggleSettle.toSettle {
+  background: #38a169;
+  color: white;
+}
+
+.btnToggleSettle.toSettle:hover {
+  background: #2f855a;
+}
+
+.btnToggleSettle.toUnsettle {
+  background: transparent;
+  border-color: #e53e3e;
+  color: #e53e3e;
+}
+
+.btnToggleSettle.toUnsettle:hover {
+  background: #fff5f5;
+}

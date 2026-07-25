@@ -282,9 +282,13 @@ export async function getPersonalSettlementSummaryServer(userId: string) {
     const hasEvidence = s.evidenceUrls && s.evidenceUrls[userId] && s.evidenceUrls[userId].trim() !== "";
     if (hasEvidence) continue;
 
+    // 担当者の場合はスクショ不要なためスキップ
+    const isManager = s.managerId === userId;
+    if (isManager) continue;
+
     const summary = await calculateSeasonSummary(userId, s, config);
-    // 精算額が0（支払も受取もない）の場合はスキップ
-    if (summary.settlementAmount === 0) continue;
+    // 精算額が0以下（支払う必要がない）の場合はスキップ
+    if (summary.settlementAmount <= 0) continue;
 
     unpaidPast.push(summary);
   }

@@ -187,6 +187,65 @@ export function AccountingConfirmClient({ initialData }: Props) {
   const isSaxPart = userData?.sectionId === "1";
   const canSetManager = isSaxPart || isAccountAdmin;
 
+  // 期間が終了している（過去のシーズン）かどうかの判定
+  const isPastSeason = useMemo(() => {
+    if (!season) return false;
+    const info = config.seasons[seasonKey];
+    if (!info) return false;
+    
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    
+    const endMonth = info.endMonth;
+    const endYear = year;
+
+    if (currentYear > endYear) return true;
+    if (currentYear === endYear && currentMonth > endMonth) return true;
+    return false;
+  }, [config, seasonKey, year, season]);
+
+  // メンバー全員（担当者を除く）のスクショ提出状況などからステータスを判定
+  const status = useMemo(() => {
+    // 1. 実施中のシーズンの場合 ➡ 「実施中」
+    if (!isPastSeason) {
+      return "active";
+    }
+
+    // 2. 過去の（終わった）シーズンの場合
+    const activeMemberIds = season?.memberIds || [];
+    
+    // 要清算メンバー（担当者を除く、支払額 > 0）
+    const requiredSettlementMembers = activeMemberIds.filter(uid => {
+      if (uid === season?.managerId) return false;
+      const user = users.find(u => u.id === uid);
+      if (!user) return false;
+      
+      const userExpenses = expenses
+        .filter(e => e.uid === uid && !e.isIncome)
+        .reduce((s, e) => s + Number(e.amount || 0), 0);
+      const userIncomes = expenses
+        .filter(e => e.uid === uid && e.isIncome)
+        .reduce((s, e) => s + Number(e.amount || 0), 0) +
+        incomes
+          .filter(i => i.uid === uid)
+          .reduce((s, i) => s + Number(i.amount || 0), 0);
+      
+      const contribution = userExpenses - userIncomes;
+      const memberSettlement = totals.averageBurden - contribution;
+      return memberSettlement > 0;
+    });
+
+    if (requiredSettlementMembers.length === 0) {
+      return "completed"; // 要清算メンバーがいない場合は清算完了とみなす
+    }
+
+    const allUploaded = requiredSettlementMembers.every(uid => !!season?.evidenceUrls?.[uid]);
+    // 全員アップロード完了している ➡ 「終了(清算済)」
+    // 未アップロードの人がいる ➡ 「終了(清算待ち)」
+    return allUploaded ? "completed" : "waiting";
+  }, [isPastSeason, season, users, expenses, incomes, totals.averageBurden]);
+
   const handleSetManager = async () => {
     if (!season || !canSetManager) return;
 
@@ -561,8 +620,10 @@ export function AccountingConfirmClient({ initialData }: Props) {
         <ul className={styles.memberList}>
           {members.map(m => {
             const memberSettlement = totals.averageBurden - m.contribution;
+            const isRequiredSettlement = m.uid !== season?.managerId && memberSettlement > 0;
+            const isUploadPending = isRequiredSettlement && !season?.evidenceUrls?.[m.uid];
             return (
-              <li key={m.uid} className={styles.memberItem}>
+              <li key={m.uid} className={`${styles.memberItem} ${isUploadPending ? styles.pendingUpload : ""}`}>
                 {m.pictureUrl ? (
                   <img src={m.pictureUrl} alt={m.name} width={40} height={40} className={styles.memberAvatar} />
                 ) : (
@@ -573,6 +634,9 @@ export function AccountingConfirmClient({ initialData }: Props) {
                 <div className={styles.memberName}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span>{m.name}</span>
+                    {m.uid === season?.managerId && (
+                      <span className={styles.managerBadge}>担当者</span>
+                    )}
                     {m.uid !== season?.managerId && season?.evidenceUrls?.[m.uid] && (
                       <span className={styles.statusBadgeUploaded}>済</span>
                     )}
@@ -611,7 +675,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
                             表示
                           </button>
                         )}
-                        {isAccountAdmin && season?.evidenceUrls?.[m.uid] && (
+                        {(isAccountAdmin || userData?.id === m.uid) && season?.evidenceUrls?.[m.uid] && (
                           <button
                             type="button"
                             className={styles.btnReceiptDelete}
@@ -621,7 +685,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
                             <i className="fa-solid fa-trash-can"></i>
                           </button>
                         )}
-                        {isAccountAdmin && (
+                        {(isAccountAdmin || userData?.id === m.uid) && memberSettlement > 0 && (
                           <label className={styles.btnReceiptUpload} title="エビデンス画像をアップロード">
                             <i className="fa-solid fa-upload"></i>
                             <input
@@ -632,7 +696,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
                             />
                           </label>
                         )}
-                        {!isAccountAdmin && !season?.evidenceUrls?.[m.uid] && (
+                        {!(isAccountAdmin || userData?.id === m.uid) && !season?.evidenceUrls?.[m.uid] && memberSettlement > 0 && (
                           <span className={styles.evidencePlaceholder}>エビデンス未登録</span>
                         )}
                       </>
@@ -742,6 +806,23 @@ export function AccountingConfirmClient({ initialData }: Props) {
           <h1>
             <i className="fa-solid fa-scale-balanced"></i> バランス会計確認
           </h1>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
+            {status === "completed" && (
+              <span className={`${styles.statusBadge} ${styles.statusCompleted}`}>
+                <i className="fa-solid fa-circle-check"></i> 終了(清算済)
+              </span>
+            )}
+            {status === "waiting" && (
+              <span className={`${styles.statusBadge} ${styles.statusWaiting}`}>
+                <i className="fa-solid fa-hourglass-half"></i> 終了(清算待ち)
+              </span>
+            )}
+            {status === "active" && (
+              <span className={`${styles.statusBadge} ${styles.statusActive}`}>
+                <i className="fa-solid fa-play"></i> 実施中
+              </span>
+            )}
+          </div>
         </div>
 
         {/* ヘッダーカード */}
