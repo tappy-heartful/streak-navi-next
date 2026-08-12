@@ -8,6 +8,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import styles from "./assign.module.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FormFooter } from "@/src/components/Form/FormFooter";
 import * as utils from "@/src/lib/functions";
 import { showSpinner, hideSpinner, showDialog, writeLog } from "@/src/lib/functions";
 import { saveAssign, releaseAssign } from "@/src/features/assign/api/assign-client-service";
@@ -166,10 +167,8 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
           <p className={styles.emptyMessage}>
             このイベントには、あなたの担当楽器のパートが設定されていません。
           </p>
-          <div style={{ textAlign: "center" }}>
-            <Link href={`/assign/confirm?eventId=${event.id}`} className="back-link">← 戻る</Link>
-          </div>
         </div>
+        <FormFooter backHref={`/assign/confirm?eventId=${event.id}`} backText="譜割り確認" />
       </BaseLayout>
     );
   }
@@ -271,10 +270,8 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
           </button>
         </div>
 
-        <div className="page-footer" style={{ marginTop: "30px" }}>
-          <Link href={`/assign/confirm?eventId=${event.id}`} className="back-link">← キャンセルして戻る</Link>
         </div>
-      </div>
-    </BaseLayout>
+        <FormFooter backHref={`/assign/confirm?eventId=${event.id}`} backText="譜割り確認" />
+      </BaseLayout>
   );
 }

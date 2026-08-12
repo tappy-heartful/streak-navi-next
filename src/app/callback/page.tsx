@@ -60,6 +60,12 @@ function CallbackContent() {
         throw new Error(result.error);
       }
 
+      if (result.isPwaLogin) {
+        setMessage("ログインに成功しました！Streak Naviアプリ（ホーム画面のアイコン）に戻ってください。このブラウザ画面は閉じて構いません。");
+        hideSpinner();
+        return;
+      }
+
       // 2. Firebaseログイン
       const userCredential = await signInWithCustomToken(auth, result.customToken);
       const user = userCredential.user;
