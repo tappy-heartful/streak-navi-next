@@ -168,26 +168,36 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="slide-menu-section">
+          {/* ホーム（別枠） */}
+          <div className="slide-menu-section home-menu">
             {menuLink("/home", "ホーム", "fa-solid fa-house")}
+          </div>
+
+          {/* よく使う項目（メイン） */}
+          <div className="slide-menu-section main-menu">
             {menuLink("/score", "譜面", "fa-solid fa-music")}
             {menuLink("/event", "イベント", "fa-solid fa-calendar-days")}
             {menuLink("/assign", "譜割り", "fa-solid fa-people-group")}
+            {menuLink("/expense-apply", "経費申請", "fa-solid fa-file-invoice-dollar")}
+          </div>
+
+          <div className="menu-divider">その他のメニュー</div>
+
+          {/* その他の項目（サブ） */}
+          <div className="slide-menu-section sub-menu">
             {menuLink("/call", "曲募集", "fa-solid fa-bullhorn")}
             {menuLink("/vote", "投票", "fa-solid fa-check-to-slot")}
-            {menuLink("/studio", "スタジオ", "fa-solid fa-location-dot")}
-            {menuLink("/user", "ユーザ", "fa-solid fa-users")}
-            {menuLink("/notice", "通知設定", "fa-solid fa-bell")}
-            {menuLink("/blue-note", "今日の一曲", "fa-solid fa-record-vinyl")}
             {menuLink("/board", "掲示板", "fa-solid fa-clipboard-list")}
+            {menuLink("/user", "ユーザ", "fa-solid fa-users")}
             {menuLink("/issue", "TODO", "fa-solid fa-list-check")}
             {menuLink("/live", "ライブ", "fa-solid fa-guitar")}
             {menuLink("/ticket", "予約者一覧", "fa-solid fa-ticket")}
-            {menuLink("/media", "メディア", "fa-solid fa-photo-film")}
             {menuLink("/accounting", "バランス会計", "fa-solid fa-scale-balanced")}
             {menuLink("/travel-subsidy", "旅費補助額", "fa-solid fa-train-subway")}
-            {menuLink("/expense-apply", "経費申請", "fa-solid fa-file-invoice-dollar")}
             {userData?.isSystemAdmin && menuLink("/expense-review", "経費審査", "fa-solid fa-clipboard-check")}
+            {menuLink("/notice", "通知設定", "fa-solid fa-bell")}
+            {menuLink("/media", "メディア", "fa-solid fa-photo-film")}
+            {menuLink("/blue-note", "今日の一曲", "fa-solid fa-record-vinyl")}
           </div>
         </div>
       </header>

@@ -106,7 +106,7 @@ body.fixed {
   background: #ffffff;
   box-shadow: -4px 0 15px rgba(0,0,0,0.1);
   z-index: 100;
-  padding: 16px 12px;
+  padding: 16px 12px 80px 12px; /* 下部に十分なパディングを確保 */
   box-sizing: border-box;
   transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
   display: flex;
@@ -250,6 +250,102 @@ body.fixed {
   border-color: #dee2e6;
   color: #111;
   transform: translateY(-1px);
+}
+
+/* 区切り線（その他のメニューの見出し） */
+.menu-divider {
+  font-size: 11px;
+  font-weight: bold;
+  color: #888;
+  margin: 16px 4px 8px 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed #eee;
+}
+
+/* ホームメニュー（別枠1列） */
+.slide-menu-section.home-menu {
+  grid-template-columns: 1fr;
+  margin-bottom: 8px;
+}
+
+.slide-menu-section.home-menu a {
+  min-height: 48px;
+  font-size: 14px;
+  flex-direction: row; /* 横並びにする */
+  gap: 8px;
+  background: #e8f5e9; /* ホーム用の明るい緑 */
+  border: 1px solid #c8e6c9;
+  color: #2e7d32;
+  font-weight: bold;
+  border-radius: 12px;
+}
+
+.slide-menu-section.home-menu a i {
+  font-size: 20px;
+  color: #4caf50;
+}
+
+.slide-menu-section.home-menu a:hover {
+  background: #c8e6c9;
+  border-color: #a5d6a7;
+  color: #1b5e20;
+}
+
+/* メインメニュー（2列表示） */
+.slide-menu-section.main-menu {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.slide-menu-section.main-menu a {
+  min-height: 64px; /* 高さを圧縮して縦スクロールを削減 */
+  font-size: 12px;
+  background: #f1f8e9; /* 優しい緑系の背景でメインらしさを演出 */
+  border: 1px solid #dcedc8;
+  color: #2e7d32;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 8px 4px;
+}
+
+.slide-menu-section.main-menu a i {
+  font-size: 18px; /* アイコンをやや小型化 */
+  color: #4caf50;
+  margin-bottom: 2px;
+}
+
+.slide-menu-section.main-menu a:hover {
+  background: #e8f5e9;
+  border-color: #a5d6a7;
+  color: #1b5e20;
+}
+
+/* サブメニュー（3列表示・控えめ） */
+.slide-menu-section.sub-menu {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.slide-menu-section.sub-menu a {
+  background: #fafafa;
+  color: #666;
+  border: 1px solid #f0f0f0;
+  min-height: 46px; /* 高さを圧縮して縦スクロールを削減 */
+  font-size: 10px;
+  padding: 4px 2px;
+  gap: 2px;
+}
+
+.slide-menu-section.sub-menu a i {
+  font-size: 14px; /* アイコンをやや小型化 */
+  color: #777;
+}
+
+.slide-menu-section.sub-menu a:hover {
+  background: #f5f5f5;
+  border-color: #e0e0e0;
+  color: #333;
 }
 
 /* 下段（設定・ログアウト） */
