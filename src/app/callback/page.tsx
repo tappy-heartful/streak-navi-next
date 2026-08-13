@@ -12,14 +12,16 @@ function CallbackContent() {
   const searchParams = useSearchParams();
   const hasCalled = useRef(false); // 二重実行防止フラグ
   const [message, setMessage] = useState(LOADING_MESSAGES[0]);
+  const [isMessageFixed, setIsMessageFixed] = useState(false);
 
   // メッセージのランダムローテーション
   useEffect(() => {
+    if (isMessageFixed) return;
     const interval = setInterval(() => {
       setMessage(LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)]);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isMessageFixed]);
 
   useEffect(() => {
     const code = searchParams.get("code");
@@ -58,6 +60,14 @@ function CallbackContent() {
           return;
         }
         throw new Error(result.error);
+      }
+
+      if (result.isPwaLogin) {
+        setIsMessageFixed(true);
+        setMessage("ログインに成功しました！Streak Naviアプリ（ホーム画面のアイコン）に戻ってください。このブラウザ画面は閉じて構いません。");
+        hideSpinner();
+        await showDialog("ログインに成功しました！Streak Naviアプリ（ホーム画面のアイコン）に戻ってください。このブラウザ画面は閉じて構いません。", true);
+        return;
       }
 
       // 2. Firebaseログイン

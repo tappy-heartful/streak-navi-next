@@ -366,5 +366,12 @@ service cloud.firestore {
     // OAuth状態、通知履歴：フロントエンドからの直接操作を禁止
     match /oauthStates/{oauthStatesId} { allow read, write: if false; }
     match /notificationHistorys/{notificationHistorys} { allow read, write: if false; }
+
+    // PWAログイン用セッション：作成から15分以内の読み取りおよび、クライアントからの削除を許可する
+    match /pwaAuthSessions/{id} {
+      allow read: if resource == null || (request.time - resource.data.createdAt) < duration.value(15, 'm');
+      allow delete: if true;
+      allow create, update: if false;
+    }
   }
 }
