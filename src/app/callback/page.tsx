@@ -63,6 +63,7 @@ function CallbackContent() {
       if (result.isPwaLogin) {
         setMessage("ログインに成功しました！Streak Naviアプリ（ホーム画面のアイコン）に戻ってください。このブラウザ画面は閉じて構いません。");
         hideSpinner();
+        await showDialog("ログインに成功しました！Streak Naviアプリ（ホーム画面のアイコン）に戻ってください。このブラウザ画面は閉じて構いません。", true);
         return;
       }
 
