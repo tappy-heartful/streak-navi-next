@@ -86,6 +86,7 @@ export default function LoginPage() {
   // 手動での認証確認
   const handleCheckAuthAndRedirect = useCallback(async () => {
     if (isAuthCompleted && auth.currentUser) {
+      localStorage.removeItem('pwa_session_id');
       const redirectAfterLogin = "/home";
       if (!authData?.agreedAt) {
         utils.setSession("redirectAfterLogin", redirectAfterLogin);
@@ -111,6 +112,7 @@ export default function LoginPage() {
         }
 
         const redirectAfterLogin = "/home";
+        localStorage.removeItem('pwa_session_id');
         if (!finalData?.agreedAt) {
           utils.setSession("redirectAfterLogin", redirectAfterLogin);
           router.push("/agreement");
@@ -131,10 +133,6 @@ export default function LoginPage() {
   }, [isAuthCompleted, authData, router]);
 
   useEffect(() => {
-    // 1. セッションクリア
-    utils.clearAllAppSession();
-    utils.removeSession("fromLogin");
-
     // 2. スライドショー初期化
     const first = getNextImage();
     setBgState(prev => ({ ...prev, current: { url: first.url, anim: first.anim } }));
@@ -165,6 +163,16 @@ export default function LoginPage() {
 
     }, 10000); // 10秒おき
 
+    return () => {
+      clearInterval(interval);
+    };
+  }, [getNextImage]);
+
+  useEffect(() => {
+    // 1. セッションクリア
+    utils.clearAllAppSession();
+    utils.removeSession("fromLogin");
+
     // 3. PWA Standaloneモードの検知
     const standalone =
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -179,9 +187,13 @@ export default function LoginPage() {
 
     if (standalone) {
       // PWA Standaloneモードの場合
-      const sessionId = typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : 'pwa-' + Math.random().toString(36).substring(2, 15) + '-' + Date.now().toString(36);
+      let sessionId = localStorage.getItem('pwa_session_id');
+      if (!sessionId) {
+        sessionId = typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : 'pwa-' + Math.random().toString(36).substring(2, 15) + '-' + Date.now().toString(36);
+        localStorage.setItem('pwa_session_id', sessionId);
+      }
       setPwaSessionId(sessionId);
 
       // LINEログインの認証URLを事前にサーバーから取得
@@ -236,6 +248,7 @@ export default function LoginPage() {
 
               // セッションドキュメントの削除
               await deleteDoc(doc(db, 'pwaAuthSessions', sessionId));
+              localStorage.removeItem('pwa_session_id');
 
               const redirectAfterLogin = "/home";
               if (!finalData?.agreedAt) {
@@ -260,10 +273,10 @@ export default function LoginPage() {
     }
 
     return () => {
-      clearInterval(interval);
       if (unsub) unsub();
     };
-  }, [getNextImage, router, handleLogin]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className={styles.loginPage}>
