@@ -5,13 +5,13 @@ import { fetchEvents } from "@/src/features/event/api/event-server-actions";
 import { IssueEditClient } from "@/src/features/issue/views/edit/IssueEditClient";
 
 type Props = {
-  searchParams: Promise<{ mode?: string; issueId?: string; parentId?: string; date?: string }>;
+  searchParams: Promise<{ mode?: string; issueId?: string; parentId?: string; date?: string; type?: string }>;
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function IssueEditPage({ searchParams }: Props) {
-  const { mode, issueId, parentId, date } = await searchParams;
+  const { mode, issueId, parentId, date, type } = await searchParams;
   const isEdit = mode === "edit" || mode === "copy";
 
   const [initialIssue, users, sections, issueGroups, events, issues] = await Promise.all([
@@ -35,6 +35,7 @@ export default async function IssueEditPage({ searchParams }: Props) {
       issues={issues}
       parentId={parentId}
       initialDate={date}
+      initialType={type}
     />
   );
 }

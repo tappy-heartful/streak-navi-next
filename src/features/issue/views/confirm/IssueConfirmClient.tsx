@@ -387,7 +387,7 @@ export function IssueConfirmClient({ issueData, issueId, users, sections, issueG
             )}
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               <Link
-                href={`/issue/edit?mode=new&parentId=${issueId}`}
+                href={`/issue/edit?mode=new&parentId=${issueId}&type=${issueData.type}`}
                 className={styles.addChildBtn}
               >
                 <i className="fa-solid fa-plus"></i> 子TODOを新規作成

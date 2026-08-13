@@ -28,9 +28,10 @@ type Props = {
   issues: Issue[];
   parentId?: string;
   initialDate?: string;
+  initialType?: string;
 };
 
-export function IssueEditClient({ mode, issueId, initialIssue, users, sections, issueGroups, events, issues, parentId, initialDate }: Props) {
+export function IssueEditClient({ mode, issueId, initialIssue, users, sections, issueGroups, events, issues, parentId, initialDate, initialType }: Props) {
   const { userData } = useAuth();
   const router = useRouter();
 
@@ -142,7 +143,7 @@ export function IssueEditClient({ mode, issueId, initialIssue, users, sections, 
 
   const form = useAppForm(
     {
-      type: initialIssue?.type || "todo",
+      type: (initialIssue?.type || initialType || "todo") as "todo" | "bug" | "question" | "proposal" | "request",
       groupId: initialIssue?.groupId || "",
       parentId: initialIssue?.parentId || parentId || "",
       assigneeId: initialIssue?.assigneeId || "",
