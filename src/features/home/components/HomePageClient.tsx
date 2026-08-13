@@ -962,9 +962,33 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
 
         <AnnouncementSection data={initialData.announcements} />
 
+        <CalendarSection data={initialData.calendarData} />
+
         <TodoSection todos={myIncompleteTodos} />
 
-        <CalendarSection data={initialData.calendarData} />
+        <main className="container">
+          <div className={styles.scoreHeader}>
+            <h3><i className="fa-solid fa-music" style={{ marginRight: "0.5rem" }} />新着譜面</h3>
+            {scorePlaylistIds && <a href={`https://www.youtube.com/watch_videos?video_ids=${scorePlaylistIds}`} target="_blank" className={styles.playlistButton} rel="noreferrer"><i className="fa-brands fa-youtube"></i> プレイリスト</a>}
+          </div>
+          <div className={styles.scoreList}>
+            {initialData.quickScores.length ? (
+              <div className={styles.quickScoreGrid}>
+                {initialData.quickScores.map((s) => <Link prefetch={true} key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
+              </div>
+            ) : <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>}
+          </div>
+          {initialData.scores.length > 0 && (
+            <Player
+              title={initialData.scores[currentScoreIdx]?.title || "参考演奏"}
+              data={initialData.scores}
+              idx={currentScoreIdx}
+              setIdx={setCurrentScoreIdx}
+              onRandom={() => setCurrentScoreIdx(utils.getRandomIndex(currentScoreIdx, initialData.scores.length))}
+            />
+          )}
+          <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
+        </main>
 
         {settlementSummary && (
           <>
@@ -1011,30 +1035,6 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
             )}
           </>
         )}
-
-        <main className="container">
-          <div className={styles.scoreHeader}>
-            <h3><i className="fa-solid fa-music" style={{ marginRight: "0.5rem" }} />新着譜面</h3>
-            {scorePlaylistIds && <a href={`https://www.youtube.com/watch_videos?video_ids=${scorePlaylistIds}`} target="_blank" className={styles.playlistButton} rel="noreferrer"><i className="fa-brands fa-youtube"></i> プレイリスト</a>}
-          </div>
-          <div className={styles.scoreList}>
-            {initialData.quickScores.length ? (
-              <div className={styles.quickScoreGrid}>
-                {initialData.quickScores.map((s) => <Link prefetch={true} key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
-              </div>
-            ) : <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>}
-          </div>
-          {initialData.scores.length > 0 && (
-            <Player
-              title={initialData.scores[currentScoreIdx]?.title || "参考演奏"}
-              data={initialData.scores}
-              idx={currentScoreIdx}
-              setIdx={setCurrentScoreIdx}
-              onRandom={() => setCurrentScoreIdx(utils.getRandomIndex(currentScoreIdx, initialData.scores.length))}
-            />
-          )}
-          <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
-        </main>
 
         <MenuSectionList isAdmin={!!userData?.isSystemAdmin} />
 
