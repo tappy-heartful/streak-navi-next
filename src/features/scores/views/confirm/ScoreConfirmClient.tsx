@@ -5,6 +5,7 @@ import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { ConfirmLayout } from "@/src/components/Layout/ConfirmLayout";
 import { DisplayField } from "@/src/components/Form/DisplayField";
 import { Genre, Score } from "@/src/lib/firestore/types";
+import styles from "./ScoreConfirmClient.module.css";
 
 type Props = {
   scoreData: Score;
@@ -34,11 +35,25 @@ export function ScoreConfirmClient({ scoreData, allGenres, scoreId }: Props) {
         </DisplayField>
 
         <DisplayField label="譜面">
-          {scoreData.scoreUrl && (
-            <a href={scoreData.scoreUrl} target="_blank" rel="noopener noreferrer">
-              譜面をみる <i className="fas fa-arrow-up-right-from-square"></i>
-            </a>
-          )}
+          {scoreData.scoreUrl ? (
+            <div className={styles.scoreLinkContainer}>
+              <a 
+                href={scoreData.scoreUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={styles.scoreLink}
+              >
+                <div className={styles.iconWrapper}>
+                  <i className="fa-solid fa-music"></i>
+                </div>
+                <div className={styles.textContainer}>
+                  <span className={styles.linkTitle}>譜面を見る ♪</span>
+                  <span className={styles.linkSub}>別タブで開きます</span>
+                </div>
+                <i className={`fas fa-arrow-up-right-from-square ${styles.arrowIcon}`}></i>
+              </a>
+            </div>
+          ) : "未設定"}
         </DisplayField>
 
         <DisplayField label="参考音源">
