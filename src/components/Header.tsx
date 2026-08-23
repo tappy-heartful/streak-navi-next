@@ -188,7 +188,6 @@ export default function Header() {
             {menuLink("/call", "曲募集", "fa-solid fa-bullhorn")}
             {menuLink("/vote", "投票", "fa-solid fa-check-to-slot")}
             {menuLink("/board", "掲示板", "fa-solid fa-clipboard-list")}
-            {menuLink("/user", "ユーザ", "fa-solid fa-users")}
             {menuLink("/issue", "TODO", "fa-solid fa-list-check")}
             {menuLink("/live", "ライブ", "fa-solid fa-guitar")}
             {menuLink("/ticket", "予約者一覧", "fa-solid fa-ticket")}
@@ -198,6 +197,7 @@ export default function Header() {
             {menuLink("/notice", "通知設定", "fa-solid fa-bell")}
             {menuLink("/media", "メディア", "fa-solid fa-photo-film")}
             {menuLink("/blue-note", "今日の一曲", "fa-solid fa-record-vinyl")}
+            {menuLink("/user", "ユーザ", "fa-solid fa-users")}
           </div>
         </div>
       </header>
