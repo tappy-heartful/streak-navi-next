@@ -104,3 +104,29 @@
   color: #9ca3af;
 }
 
+.addRecordingBtn {
+  margin-top: 12px;
+  background-color: #ffffff;
+  color: #475569; /* slate-600 */
+  border: 1px solid #cbd5e1; /* slate-300 */
+  padding: 6px 12px; /* compact size */
+  border-radius: 6px;
+  font-size: 13px; /* smaller font */
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.addRecordingBtn:hover {
+  background-color: #f8fafc; /* slate-50 */
+  border-color: #94a3b8; /* slate-400 */
+  color: #1e293b; /* slate-800 */
+}
+
+.addRecordingBtn:active {
+  transform: scale(0.98);
+}
+

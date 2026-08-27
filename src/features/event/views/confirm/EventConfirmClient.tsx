@@ -799,7 +799,7 @@ export function EventConfirmClient({ eventId, data }: Props) {
                 })}
               </ul>
             )}
-            <button className="add-recording-btn" onClick={handleAddRecording}>
+            <button className={styles.addRecordingBtn} onClick={handleAddRecording}>
               ＋ リンクを追加する
             </button>
           </div>
