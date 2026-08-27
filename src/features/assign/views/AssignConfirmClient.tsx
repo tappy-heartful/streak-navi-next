@@ -79,24 +79,29 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
   const summaryData = useMemo(() => {
     const summary: Record<string, Record<string, number>> = {};
     const sectionIds = event.instrumentConfig ? Object.keys(event.instrumentConfig) : [];
+    
+    // セットリスト内の全曲IDを抽出
+    const songIds = new Set(event.setlist?.flatMap(g => g.songIds) || []);
 
     sectionIds.forEach(sectionId => {
-      const sectionName = masterData.sections[sectionId]?.name || "Unknown";
-      const partConfigs = event.instrumentConfig![sectionId];
+      const partConfigs = event.instrumentConfig![sectionId] || [];
+      const partNames = new Set(partConfigs.map(p => p.partName));
       const counts: Record<string, number> = {};
 
       assigns.forEach(a => {
-        // 現在のセクションのパ―トに含まれているか
-        const isPartInThisSection = partConfigs.some(p => p.partName === a.partName);
-        if (isPartInThisSection) {
-          const name = a.assignValue || "？";
-          counts[name] = (counts[name] || 0) + 1;
+        // セットリスト内の曲かつ、このセクションのパートに含まれているか
+        if (songIds.has(a.songId) && partNames.has(a.partName)) {
+          const name = a.assignValue?.trim();
+          // 空文字や「ー」は集計対象外とする
+          if (name && name !== "ー") {
+            counts[name] = (counts[name] || 0) + 1;
+          }
         }
       });
       summary[sectionId] = counts;
     });
     return summary;
-  }, [event.instrumentConfig, assigns, masterData.sections]);
+  }, [event.instrumentConfig, event.setlist, assigns]);
 
   if (!event.instrumentConfig || Object.keys(event.instrumentConfig).length === 0) {
     return (
