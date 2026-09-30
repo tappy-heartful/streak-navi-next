@@ -27,6 +27,7 @@ import { storage } from "@/src/lib/firebase";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { compressImage } from "@/src/lib/image-compression";
 import { PersonalSettlementCard } from "../../components/PersonalSettlementCard";
+import { ManagerSettlementGuideModal } from "../../components/ManagerSettlementGuideModal";
 
 interface Props {
   initialData: {
@@ -47,6 +48,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
   const { setBreadcrumbs } = useBreadcrumb();
   const router = useRouter();
   const [activeEvidenceUrl, setActiveEvidenceUrl] = useState<string | null>(null);
+  const [isManagerGuideOpen, setIsManagerGuideOpen] = useState(false);
 
   const {
     season,
@@ -934,6 +936,16 @@ export function AccountingConfirmClient({ initialData }: Props) {
                   <i className="fa-solid fa-user-gear"></i> 精算メンバー管理
                 </button>
               )}
+
+              {/* 担当者手順ガイドボタン */}
+              <button
+                type="button"
+                className={`${styles.button} ${styles.outlineButton}`}
+                onClick={() => setIsManagerGuideOpen(true)}
+                style={{ padding: "6px 12px", fontSize: "0.8rem", whiteSpace: 'nowrap' }}
+              >
+                <i className="fa-solid fa-clipboard-check"></i> 担当者手順ガイド
+              </button>
             </div>
           </div>
           {renderGroupedMembers()}
@@ -976,6 +988,11 @@ export function AccountingConfirmClient({ initialData }: Props) {
           />
         </div>
       )}
+
+      <ManagerSettlementGuideModal
+        isOpen={isManagerGuideOpen}
+        onClose={() => setIsManagerGuideOpen(false)}
+      />
     </BaseLayout>
   );
 }

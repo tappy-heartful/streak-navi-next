@@ -1,7 +1,10 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import styles from "./BalanceAccounting.module.css";
 import { AccountingSeason, AccountingSeasonKey } from "@/src/lib/firestore/types";
+import { ManagerSettlementGuideModal } from "./ManagerSettlementGuideModal";
 
 interface PersonalSettlementCardProps {
   season: AccountingSeason | null;
@@ -32,6 +35,8 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
   managerName,
   managerPaypayId,
 }) => {
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+
   if (!season) return null;
 
   return (
@@ -109,6 +114,18 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
           </div>
         )}
 
+        {/* 担当者向け受け取り・送金手順ガイドボタン（清算担当者かどうかにかかわらず表示） */}
+        <div className={styles.managerGuideWrapper}>
+          <button
+            type="button"
+            className={styles.managerGuideBtn}
+            onClick={() => setIsGuideOpen(true)}
+          >
+            <i className="fa-solid fa-clipboard-check" />
+            <span>担当者の受け取り・送金手順ガイド</span>
+          </button>
+        </div>
+
         <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
           <Link href="/expense-apply?mode=new" style={{ textDecoration: "none" }}>
             <button className={`${styles.button} ${styles.primaryButton}`} style={{ width: "100%" }}>
@@ -128,6 +145,11 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
           ※承認済みの経費のみ計上されています。
         </p>
       </div>
+
+      <ManagerSettlementGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+      />
     </div>
   );
 };
