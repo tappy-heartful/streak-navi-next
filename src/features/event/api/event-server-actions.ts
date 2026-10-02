@@ -1,6 +1,12 @@
 import "server-only";
 import admin from "firebase-admin";
 import { adminDb } from "@/src/lib/firebase-admin";
+import { unstable_cache } from "next/cache";
+import {
+  getSectionsServer,
+  getInstrumentsServer,
+  getPrefecturesServer,
+} from "@/src/features/users/api/user-server-actions";
 import {
   Event,
   EventAttendanceAnswer,
@@ -119,19 +125,19 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
     attendanceAnswersSnap,
     adjustAnswersSnap,
     usersSnap,
-    sectionsSnap,
+    sectionsList,
     scoresDocs,
-    attendanceStatusesSnap,
-    adjustStatusesSnap,
+    attendanceStatuses,
+    adjustStatuses,
     recordingsSnap,
   ] = await Promise.all([
     adminDb.collection("eventAttendanceAnswers").where("eventId", "==", eventId).get(),
     adminDb.collection("eventAdjustAnswers").where("eventId", "==", eventId).get(),
     adminDb.collection("users").get(),
-    adminDb.collection("sections").get(),
+    getSectionsServer(),
     fetchScoresPromise(),
-    adminDb.collection("attendanceStatuses").get(),
-    adminDb.collection("eventAdjustStatus").get(),
+    getAttendanceStatusesServer(),
+    getEventAdjustStatusesServer(),
     adminDb.collection("eventRecordings").where("eventId", "==", eventId).orderBy("createdAt", "asc").get(),
   ]);
 
@@ -179,10 +185,11 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
   });
 
   const sectionsMap: Record<string, string> = {};
-  sectionsSnap.docs
+  sectionsList
+    .slice()
     .sort((a, b) => Number(a.id) - Number(b.id))
-    .forEach(d => {
-      sectionsMap[d.id] = d.data().name || "";
+    .forEach(s => {
+      sectionsMap[s.id] = s.name || "";
     });
 
   const scoresMap: Record<string, Score> = {};
@@ -196,15 +203,6 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
       referenceTrack: sd.referenceTrack || "",
     } as Score;
   });
-
-  const attendanceStatuses: AttendanceStatus[] = attendanceStatusesSnap.docs.map(d => ({
-    id: d.id,
-    name: d.data().name || "",
-  }));
-
-  const adjustStatuses: EventAdjustStatus[] = adjustStatusesSnap.docs
-    .map(d => ({ id: d.id, name: d.data().name || "" }))
-    .sort((a, b) => a.id < b.id ? -1 : 1);
 
   const recordings: EventRecording[] = recordingsSnap.docs.map(d => ({
     id: d.id,
@@ -249,6 +247,35 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
   };
 }
 
+/**
+ * 全出欠ステータス情報を取得（24時間キャッシュ）
+ */
+export const getAttendanceStatusesServer = unstable_cache(
+  async (): Promise<AttendanceStatus[]> => {
+    const snap = await adminDb.collection("attendanceStatuses").get();
+    return snap.docs.map(d => ({
+      id: d.id,
+      name: d.data().name || "",
+    }));
+  },
+  ["master-attendance-statuses"],
+  { revalidate: 86400, tags: ["master-attendance-statuses"] }
+);
+
+/**
+ * 全日程調整ステータス情報を取得（24時間キャッシュ）
+ */
+export const getEventAdjustStatusesServer = unstable_cache(
+  async (): Promise<EventAdjustStatus[]> => {
+    const snap = await adminDb.collection("eventAdjustStatus").get();
+    return snap.docs
+      .map(d => ({ id: d.id, name: d.data().name || "" }))
+      .sort((a, b) => (a.id < b.id ? -1 : 1));
+  },
+  ["master-event-adjust-statuses"],
+  { revalidate: 86400, tags: ["master-event-adjust-statuses"] }
+);
+
 export type EventEditData = {
   scores: Score[];
   sections: Section[];
@@ -257,11 +284,11 @@ export type EventEditData = {
 };
 
 export async function fetchEventEditData(): Promise<EventEditData> {
-  const [scoresSnap, sectionsSnap, instrumentsSnap, prefecturesSnap] = await Promise.all([
+  const [scoresSnap, sections, instruments, prefectures] = await Promise.all([
     adminDb.collection("scores").orderBy("title", "asc").get(),
-    adminDb.collection("sections").get(),
-    adminDb.collection("instruments").get(),
-    adminDb.collection("prefectures").orderBy("order", "asc").get(),
+    getSectionsServer(),
+    getInstrumentsServer(),
+    getPrefecturesServer(),
   ]);
 
   const scores: Score[] = scoresSnap.docs.map(d => ({
@@ -271,20 +298,6 @@ export async function fetchEventEditData(): Promise<EventEditData> {
     scoreUrl: d.data().scoreUrl || "",
   })) as Score[];
 
-  const sections: Section[] = sectionsSnap.docs
-    .map(d => ({ id: d.id, name: d.data().name || "" }))
-    .sort((a, b) => Number(a.id) - Number(b.id));
-
-  const instruments: Instrument[] = instrumentsSnap.docs
-    .map(d => ({ id: d.id, name: d.data().name || "", sectionId: d.data().sectionId || "" }))
-    .sort((a, b) => a.id.localeCompare(b.id));
-
-  const prefectures: Prefecture[] = prefecturesSnap.docs.map(d => ({
-    id: d.id,
-    name: d.data().name || "",
-    order: d.data().order ?? 0,
-  }));
-
   return { scores, sections, instruments, prefectures };
 }
 
@@ -292,16 +305,12 @@ export async function fetchAttendanceAnswerPageData(eventId: string): Promise<{
   event: Event;
   attendanceStatuses: AttendanceStatus[];
 } | null> {
-  const [eventDoc, statusesSnap] = await Promise.all([
+  const [eventDoc, attendanceStatuses] = await Promise.all([
     adminDb.collection("events").doc(eventId).get(),
-    adminDb.collection("attendanceStatuses").get(),
+    getAttendanceStatusesServer(),
   ]);
   if (!eventDoc.exists) return null;
   const event = toEventDoc(eventDoc);
-  const attendanceStatuses: AttendanceStatus[] = statusesSnap.docs.map(d => ({
-    id: d.id,
-    name: d.data().name || "",
-  }));
   return { event, attendanceStatuses };
 }
 
@@ -309,14 +318,11 @@ export async function fetchAdjustAnswerPageData(eventId: string): Promise<{
   event: Event;
   adjustStatuses: EventAdjustStatus[];
 } | null> {
-  const [eventDoc, statusesSnap] = await Promise.all([
+  const [eventDoc, adjustStatuses] = await Promise.all([
     adminDb.collection("events").doc(eventId).get(),
-    adminDb.collection("eventAdjustStatus").get(),
+    getEventAdjustStatusesServer(),
   ]);
   if (!eventDoc.exists) return null;
   const event = toEventDoc(eventDoc);
-  const adjustStatuses: EventAdjustStatus[] = statusesSnap.docs
-    .map(d => ({ id: d.id, name: d.data().name || "" }))
-    .sort((a, b) => a.id < b.id ? -1 : 1);
   return { event, adjustStatuses };
 }

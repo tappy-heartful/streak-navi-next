@@ -2,6 +2,7 @@ import 'server-only';
 import { adminDb } from "@/src/lib/firebase-admin";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 import { ExpenseApply, Prefecture, TravelSubsidy, ExpenseApplyHistory, ExpenseType, ExpenseCategory, ExpenseItem } from "@/src/lib/firestore/types";
+import { unstable_cache } from "next/cache";
 
 /** 今日以前のイベント一覧を日付降順で取得 */
 export async function getPastEventsServer(): Promise<{ id: string; title: string; date: string; prefectureId?: string; municipalityId?: string }[]> {
@@ -20,23 +21,35 @@ export async function getPastEventsServer(): Promise<{ id: string; title: string
   }));
 }
 
-/** 経費種別マスタを取得 */
-export async function getExpenseTypesServer(): Promise<ExpenseType[]> {
-  const snap = await adminDb.collection("expenseTypes").orderBy("__name__", "asc").get();
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseType[];
-}
+/** 経費種別マスタを取得（24時間キャッシュ） */
+export const getExpenseTypesServer = unstable_cache(
+  async (): Promise<ExpenseType[]> => {
+    const snap = await adminDb.collection("expenseTypes").orderBy("__name__", "asc").get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseType[];
+  },
+  ["master-expense-types"],
+  { revalidate: 86400, tags: ["master-expense-types"] }
+);
 
-/** 経費区分マスタを取得 */
-export async function getExpenseCategoriesServer(): Promise<ExpenseCategory[]> {
-  const snap = await adminDb.collection("expenseCategories").orderBy("__name__", "asc").get();
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseCategory[];
-}
+/** 経費区分マスタを取得（24時間キャッシュ） */
+export const getExpenseCategoriesServer = unstable_cache(
+  async (): Promise<ExpenseCategory[]> => {
+    const snap = await adminDb.collection("expenseCategories").orderBy("__name__", "asc").get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseCategory[];
+  },
+  ["master-expense-categories"],
+  { revalidate: 86400, tags: ["master-expense-categories"] }
+);
 
-/** 経費項目マスタを取得 */
-export async function getExpenseItemsServer(): Promise<ExpenseItem[]> {
-  const snap = await adminDb.collection("expenseItems").orderBy("__name__", "asc").get();
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseItem[];
-}
+/** 経費項目マスタを取得（24時間キャッシュ） */
+export const getExpenseItemsServer = unstable_cache(
+  async (): Promise<ExpenseItem[]> => {
+    const snap = await adminDb.collection("expenseItems").orderBy("__name__", "asc").get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ExpenseItem[];
+  },
+  ["master-expense-items"],
+  { revalidate: 86400, tags: ["master-expense-items"] }
+);
 
 /** 自分の経費申請一覧を取得 (uidでフィルタ) */
 export async function getMyExpenseAppliesServer(uid: string): Promise<ExpenseApply[]> {

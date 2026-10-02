@@ -1,6 +1,8 @@
 import admin from "firebase-admin";
 import { adminDb } from "@/src/lib/firebase-admin";
 import { toPlainObject } from "@/src/lib/firestore/utils";
+import { unstable_cache } from "next/cache";
+import { getExpenseTypesServer } from "@/src/features/expense-apply/api/expense-apply-server-actions";
 import {
   AccountingSeason,
   AccountingConfig,
@@ -12,24 +14,28 @@ import {
 import * as utils from "@/src/lib/functions";
 
 /**
- * 会計設定を取得
+ * 会計設定を取得（24時間キャッシュ）
  */
-export async function getAccountingConfigServer() {
-  const doc = await adminDb.collection("configs").doc("accounting").get();
-  if (!doc.exists) {
-    // デフォルト値を返すか、初期化が必要
-    return {
-      id: "accounting",
-      seasons: {
-        winter: { name: "冬", startMonth: 1, endMonth: 3 },
-        spring: { name: "春", startMonth: 4, endMonth: 6 },
-        summer: { name: "夏", startMonth: 7, endMonth: 9 },
-        autumn: { name: "秋", startMonth: 10, endMonth: 12 },
-      }
-    } as AccountingConfig;
-  }
-  return toPlainObject(doc) as AccountingConfig;
-}
+export const getAccountingConfigServer = unstable_cache(
+  async (): Promise<AccountingConfig> => {
+    const doc = await adminDb.collection("configs").doc("accounting").get();
+    if (!doc.exists) {
+      // デフォルト値を返すか、初期化が必要
+      return {
+        id: "accounting",
+        seasons: {
+          winter: { name: "冬", startMonth: 1, endMonth: 3 },
+          spring: { name: "春", startMonth: 4, endMonth: 6 },
+          summer: { name: "夏", startMonth: 7, endMonth: 9 },
+          autumn: { name: "秋", startMonth: 10, endMonth: 12 },
+        }
+      } as AccountingConfig;
+    }
+    return toPlainObject(doc) as AccountingConfig;
+  },
+  ["accounting-config"],
+  { revalidate: 86400, tags: ["accounting-config"] }
+);
 
 /**
  * 指定したIDのシーズン情報を取得
@@ -76,17 +82,17 @@ export async function getApprovedExpensesServer(startDate: string, endDate: stri
   const startTimestamp = admin.firestore.Timestamp.fromMillis(startMs);
   const endTimestamp = admin.firestore.Timestamp.fromMillis(endMs);
 
-  const [expenseSnap, typeSnap] = await Promise.all([
+  const [expenseSnap, types] = await Promise.all([
     adminDb.collection("expenseApplies")
       .where("createdAt", ">=", startTimestamp)
       .where("createdAt", "<=", endTimestamp)
       .get(),
-    adminDb.collection("expenseTypes").get()
+    getExpenseTypesServer()
   ]);
 
-  const incomeTypeIds = typeSnap.docs
-    .filter(doc => doc.data().isIncome === true)
-    .map(doc => doc.id);
+  const incomeTypeIds = types
+    .filter(t => t.isIncome === true)
+    .map(t => t.id);
 
   return expenseSnap.docs
     .map(doc => {

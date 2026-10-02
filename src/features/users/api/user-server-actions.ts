@@ -3,6 +3,7 @@ import admin from "firebase-admin";
 import { adminDb } from "@/src/lib/firebase-admin";
 import { User, UserLocation, Section, Role, Instrument, SecretWord, Prefecture, Municipality } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
+import { unstable_cache } from "next/cache";
 
 /**
  * 全ユーザ情報を取得
@@ -22,52 +23,72 @@ export async function getUserServer(uid: string): Promise<User | null> {
 }
 
 /**
- * 全セクション情報を取得（sectionId順）
+ * 全セクション情報を取得（24時間キャッシュ）
  */
-export async function getSectionsServer(): Promise<Section[]> {
-  const snap = await adminDb.collection("sections").orderBy("__name__").get();
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Section[];
-}
+export const getSectionsServer = unstable_cache(
+  async (): Promise<Section[]> => {
+    const snap = await adminDb.collection("sections").orderBy("__name__").get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Section[];
+  },
+  ["master-sections"],
+  { revalidate: 86400, tags: ["master-sections"] }
+);
 
 /**
- * 全役職情報を取得
+ * 全役職情報を取得（24時間キャッシュ）
  */
-export async function getRolesServer(): Promise<Role[]> {
-  const snap = await adminDb.collection("roles").orderBy("__name__").get();
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Role[];
-}
+export const getRolesServer = unstable_cache(
+  async (): Promise<Role[]> => {
+    const snap = await adminDb.collection("roles").orderBy("__name__").get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Role[];
+  },
+  ["master-roles"],
+  { revalidate: 86400, tags: ["master-roles"] }
+);
 
 /**
- * 全楽器情報を取得（sectionId -> id 順）
+ * 全楽器情報を取得（24時間キャッシュ）
  */
-export async function getInstrumentsServer(): Promise<Instrument[]> {
-  const snap = await adminDb.collection("instruments").get();
-  const instruments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Instrument[];
+export const getInstrumentsServer = unstable_cache(
+  async (): Promise<Instrument[]> => {
+    const snap = await adminDb.collection("instruments").get();
+    const instruments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Instrument[];
 
-  return instruments.sort((a, b) => {
-    if (a.sectionId < b.sectionId) return -1;
-    if (a.sectionId > b.sectionId) return 1;
-    if (a.id < b.id) return -1;
-    if (a.id > b.id) return 1;
-    return 0;
-  });
-}
-
-/**
- * 全合言葉（権限一覧）を取得
- */
-export async function getSecretWordsServer(): Promise<SecretWord[]> {
-  const snap = await adminDb.collection("secretWords").get();
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as SecretWord[];
-}
+    return instruments.sort((a, b) => {
+      if (a.sectionId < b.sectionId) return -1;
+      if (a.sectionId > b.sectionId) return 1;
+      if (a.id < b.id) return -1;
+      if (a.id > b.id) return 1;
+      return 0;
+    });
+  },
+  ["master-instruments"],
+  { revalidate: 86400, tags: ["master-instruments"] }
+);
 
 /**
- * 全都道府県情報を取得（order順）
+ * 全合言葉（権限一覧）を取得（24時間キャッシュ）
  */
-export async function getPrefecturesServer(): Promise<Prefecture[]> {
-  const snap = await adminDb.collection("prefectures").orderBy("order", "asc").get();
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Prefecture[];
-}
+export const getSecretWordsServer = unstable_cache(
+  async (): Promise<SecretWord[]> => {
+    const snap = await adminDb.collection("secretWords").get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as SecretWord[];
+  },
+  ["master-secret-words"],
+  { revalidate: 86400, tags: ["master-secret-words"] }
+);
+
+/**
+ * 全都道府県情報を取得（24時間キャッシュ）
+ */
+export const getPrefecturesServer = unstable_cache(
+  async (): Promise<Prefecture[]> => {
+    const snap = await adminDb.collection("prefectures").orderBy("order", "asc").get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Prefecture[];
+  },
+  ["master-prefectures"],
+  { revalidate: 86400, tags: ["master-prefectures"] }
+);
 
 /**
  * 特定の都道府県の市区町村一覧を取得

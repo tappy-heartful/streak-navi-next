@@ -32,16 +32,22 @@ export async function getScoreServer(scoreId: string) {
   } as Score;
 }
 
+import { unstable_cache } from "next/cache";
+
 /**
- * ジャンル一覧を取得（サーバーサイド専用）
+ * ジャンル一覧を取得（24時間キャッシュ）
  */
-export async function getGenresServer(): Promise<Genre[]> {
-  const snapshot = await adminDb.collection("genres").get();
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  })) as Genre[]; // ここで型を確定させる
-}
+export const getGenresServer = unstable_cache(
+  async (): Promise<Genre[]> => {
+    const snapshot = await adminDb.collection("genres").get();
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Genre[];
+  },
+  ["master-genres"],
+  { revalidate: 86400, tags: ["master-genres"] }
+);
 
 /**
  * セットリストが存在する今後のイベントを取得（サーバーサイド専用）
