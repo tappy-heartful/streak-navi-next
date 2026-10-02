@@ -4,7 +4,8 @@ import { adminDb } from "@/src/lib/firebase-admin";
 import { getMunicipalityNamesMapServer } from "@/src/features/users/api/user-server-actions";
 
 export const metadata = { title: "イベント一覧" };
-export const dynamic = "force-dynamic";
+// 1分間キャッシュしてアクセス集中時の多重フェッチを抑止
+export const revalidate = 60;
 
 export default async function EventListPage() {
   const events = await fetchEvents();

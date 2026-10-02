@@ -82,7 +82,7 @@ export default function Header() {
 
   // メニュー用リンクコンポーネント
   const menuLink = (href: string, label: string, icon?: string) => (
-    <Link prefetch={true} href={href} onClick={closeMenu}>
+    <Link prefetch={false} href={href} onClick={closeMenu}>
       {icon && <i className={icon}></i>} {label}
     </Link>
   );
@@ -207,7 +207,7 @@ export default function Header() {
         <div id="breadcrumb-container">
           <nav className="breadcrumb">
             {!isNoHome && (
-              <Link prefetch={true} href="/home">
+              <Link prefetch={false} href="/home">
                 <i className="fa fa-home"></i> ホーム
               </Link>
             )}
@@ -215,7 +215,7 @@ export default function Header() {
               <React.Fragment key={index}>
                 <span className="separator">›</span>
                 {item.href ? (
-                  <Link prefetch={true} href={item.href}>{item.title}</Link>
+                  <Link prefetch={false} href={item.href}>{item.title}</Link>
                 ) : (
                   <span className="current">{item.title}</span>
                 )}

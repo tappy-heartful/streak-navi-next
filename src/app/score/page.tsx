@@ -6,7 +6,8 @@ export const metadata: Metadata = {
   title: "譜面一覧",
 };
 
-export const dynamic = "force-dynamic";
+// 練習日等の集中アクセスによる多重全件取得を防ぐため5分間キャッシュ
+export const revalidate = 300;
 
 export default async function ScoreListPage() {
   // データを並列で取得

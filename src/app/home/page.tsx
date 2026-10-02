@@ -1,28 +1,28 @@
 import { HomePageClient } from "@/src/features/home/components/HomePageClient";
-import { getAnnouncementsServer, getScoresServer, getBlueNotesServer, getMediasServer, getCalendarDataServer } from "@/src/features/home/api/home-service";
+import { getHomeFeedDataServer, getScoresServer, getBlueNotesServer, getMediasServer } from "@/src/features/home/api/home-service";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Home",
 };
 
-export const dynamic = "force-dynamic";
+// 1分間キャッシュして瞬間的な多重フェッチを防ぐ
+export const revalidate = 60;
 
 export default async function HomePage() {
   const [
-    announcements,
+    feedData,
     allScores,
     blueNotes,
-    allMedias,
-    calendarData
+    allMedias
   ] = await Promise.all([
-    getAnnouncementsServer(),
+    getHomeFeedDataServer(),
     getScoresServer(),
     getBlueNotesServer(),
     getMediasServer(10),
-    getCalendarDataServer()
   ]);
 
+  const { announcements, calendarData } = feedData;
   const quickScores = allScores.filter(s => s.isDispTop).slice(0, 6);
   const videoScores = allScores.filter(s => s.isDispTop && !!s.youtubeId);
   const topMedias = allMedias.filter(m => m.isDispTop).slice(0, 4);

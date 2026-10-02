@@ -64,13 +64,13 @@ export function AccountingListClient({ initialData }: Props) {
               {activeSeasons.map((s) => (
                 <tr key={s.id}>
                   <td className="list-table-row-header">
-                    <Link href={`/accounting/confirm?seasonId=${s.id}`}>
+                    <Link prefetch={false} href={`/accounting/confirm?seasonId=${s.id}`}>
                       {getSeasonName(s)}
                     </Link>
                   </td>
                   <td>{getPeriodStr(s)}</td>
                   <td>
-                    <Link href={`/accounting/confirm?seasonId=${s.id}`} className="list-link-button">
+                    <Link prefetch={false} href={`/accounting/confirm?seasonId=${s.id}`} className="list-link-button">
                       表示
                     </Link>
                   </td>
@@ -93,13 +93,13 @@ export function AccountingListClient({ initialData }: Props) {
               {pastSeasons.map((s) => (
                 <tr key={s.id}>
                   <td className="list-table-row-header">
-                    <Link href={`/accounting/confirm?seasonId=${s.id}`}>
+                    <Link prefetch={false} href={`/accounting/confirm?seasonId=${s.id}`}>
                       {getSeasonName(s)}
                     </Link>
                   </td>
                   <td>{getPeriodStr(s)}</td>
                   <td>
-                    <Link href={`/accounting/confirm?seasonId=${s.id}`} className="list-link-button">
+                    <Link prefetch={false} href={`/accounting/confirm?seasonId=${s.id}`} className="list-link-button">
                       表示
                     </Link>
                   </td>

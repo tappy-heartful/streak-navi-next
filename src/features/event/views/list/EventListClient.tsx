@@ -211,7 +211,7 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
                           </span>
                         ))}
                       </div>
-                      <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
+                      <Link prefetch={false} href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
                     </td>
                     <td>{renderStatusCell(e, "schedule")}</td>
                     <td className="text-small">{renderTermDisplay(e)}</td>
@@ -231,7 +231,7 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
           </div>
           {isAdmin && (
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: "1rem" }}>
-              <Link href="/event/edit?mode=new&type=schedule" className="list-add-button" style={{ width: "fit-content", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Link prefetch={false} href="/event/edit?mode=new&type=schedule" className="list-add-button" style={{ width: "fit-content", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 ＋ 新規作成
               </Link>
             </div>
@@ -267,7 +267,7 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
                           </span>
                         ) : "-"}
                       </div>
-                      <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
+                      <Link prefetch={false} href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
                     </td>
                     <td>{renderStatusCell(e, "future")}</td>
                     <td className="text-small">{renderTermDisplay(e)}</td>
@@ -288,7 +288,7 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
         </div>
         {isAdmin && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: "1rem" }}>
-            <Link href="/event/edit?mode=new&type=attendance" className="list-add-button" style={{ width: "fit-content", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Link prefetch={false} href="/event/edit?mode=new&type=attendance" className="list-add-button" style={{ width: "fit-content", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
               ＋ 新規作成
             </Link>
           </div>
@@ -321,7 +321,7 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
                           </span>
                         ) : "-"}
                       </div>
-                      <Link href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
+                      <Link prefetch={false} href={`/event/confirm?eventId=${e.id}`}>{e.title}</Link>
                     </td>
                     <td>{renderStatusCell(e, "closed")}</td>
                     <td className="text-small">{renderTermDisplay(e)}</td>
@@ -343,7 +343,7 @@ export function EventListClient({ events, prefNamesMap = {}, munNamesMap = {} }:
       )}
 
       <div className="page-footer">
-        <Link href="/home" className="back-link">← ホームに戻る</Link>
+        <Link prefetch={false} href="/home" className="back-link">← ホームに戻る</Link>
       </div>
     </BaseLayout>
   );

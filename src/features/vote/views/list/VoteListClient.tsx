@@ -94,7 +94,7 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
                     return (
                       <tr key={vote.id}>
                         <td className="list-table-row-header">
-                          <Link href={`/vote/confirm?voteId=${vote.id}`}>{vote.name}</Link>
+                          <Link prefetch={false} href={`/vote/confirm?voteId=${vote.id}`}>{vote.name}</Link>
                         </td>
                         <td>
                           <span className="answer-status closed">開始前</span>
@@ -148,7 +148,7 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
                     return (
                       <tr key={vote.id}>
                         <td className="list-table-row-header">
-                          <Link href={`/vote/confirm?voteId=${vote.id}`}>{vote.name}</Link>
+                          <Link prefetch={false} href={`/vote/confirm?voteId=${vote.id}`}>{vote.name}</Link>
                         </td>
                         <td>
                           <span className={`answer-status ${statusClass}`}>{statusText}</span>
@@ -195,7 +195,7 @@ export function VoteListClient({ votes, participantCountMap }: Props) {
                     return (
                       <tr key={vote.id}>
                         <td className="list-table-row-header">
-                          <Link href={`/vote/confirm?voteId=${vote.id}`}>{vote.name}</Link>
+                          <Link prefetch={false} href={`/vote/confirm?voteId=${vote.id}`}>{vote.name}</Link>
                         </td>
                         <td>
                           <span className="answer-status closed">期間外</span>

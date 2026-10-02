@@ -39,7 +39,7 @@ export function BoardListClient({ boards, sections }: Props) {
     data.map((b) => ({
       ...b,
       title: (
-        <Link href={`/board/confirm?boardId=${b.id}`} style={{ fontWeight: "bold" }}>
+        <Link prefetch={false} href={`/board/confirm?boardId=${b.id}`} style={{ fontWeight: "bold" }}>
           {b.title || "無題"}
         </Link>
       ),

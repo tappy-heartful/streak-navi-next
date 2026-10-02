@@ -89,7 +89,7 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
                   <div className={styles.dateSub}>
                     {expense.date}
                   </div>
-                  <Link prefetch={true} href={`/expense-apply/confirm?expenseId=${expense.id}`} style={{ textDecoration: "none" }}>
+                  <Link prefetch={false} href={`/expense-apply/confirm?expenseId=${expense.id}`} style={{ textDecoration: "none" }}>
                     {expense.name}
                   </Link>
                 </td>
@@ -131,6 +131,7 @@ export function ExpenseApplyListClient({ initialExpenses }: Props) {
       >
         <div className={styles.addButtonContainer}>
           <Link 
+            prefetch={false}
             href="/expense-apply/edit?mode=new" 
             className={styles.addButton}
           >

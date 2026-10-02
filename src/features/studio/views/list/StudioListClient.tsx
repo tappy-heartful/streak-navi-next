@@ -69,7 +69,7 @@ export function StudioListClient({ initialData }: Props) {
                   {prefStudios.map(studio => (
                     <tr key={studio.id}>
                       <td className="list-table-row-header">
-                        <Link href={`/studio/confirm?studioId=${studio.id}`}>{studio.name}</Link>
+                        <Link prefetch={false} href={`/studio/confirm?studioId=${studio.id}`}>{studio.name}</Link>
                       </td>
 
                       <td>

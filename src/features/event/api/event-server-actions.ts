@@ -1,4 +1,5 @@
 import "server-only";
+import admin from "firebase-admin";
 import { adminDb } from "@/src/lib/firebase-admin";
 import {
   Event,
@@ -88,12 +89,38 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
 
   const isSchedule = event.attendanceType === "schedule";
 
+  // セットリストに含まれる曲IDのみを抽出（全譜面取得を防止）
+  const targetScoreIds = Array.from(
+    new Set((event.setlist || []).flatMap((item: { songIds?: string[] }) => item.songIds || []))
+  ).filter(Boolean) as string[];
+
+  const fetchScoresPromise = async (): Promise<FirebaseFirestore.DocumentSnapshot[]> => {
+    if (targetScoreIds.length === 0) return [];
+    if (targetScoreIds.length <= 30) {
+      const snap = await adminDb
+        .collection("scores")
+        .where(admin.firestore.FieldPath.documentId(), "in", targetScoreIds)
+        .get();
+      return snap.docs;
+    }
+    const docs: FirebaseFirestore.DocumentSnapshot[] = [];
+    for (let i = 0; i < targetScoreIds.length; i += 30) {
+      const chunk = targetScoreIds.slice(i, i + 30);
+      const snap = await adminDb
+        .collection("scores")
+        .where(admin.firestore.FieldPath.documentId(), "in", chunk)
+        .get();
+      docs.push(...snap.docs);
+    }
+    return docs;
+  };
+
   const [
     attendanceAnswersSnap,
     adjustAnswersSnap,
     usersSnap,
     sectionsSnap,
-    scoresSnap,
+    scoresDocs,
     attendanceStatusesSnap,
     adjustStatusesSnap,
     recordingsSnap,
@@ -102,7 +129,7 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
     adminDb.collection("eventAdjustAnswers").where("eventId", "==", eventId).get(),
     adminDb.collection("users").get(),
     adminDb.collection("sections").get(),
-    adminDb.collection("scores").get(),
+    fetchScoresPromise(),
     adminDb.collection("attendanceStatuses").get(),
     adminDb.collection("eventAdjustStatus").get(),
     adminDb.collection("eventRecordings").where("eventId", "==", eventId).orderBy("createdAt", "asc").get(),
@@ -159,8 +186,9 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
     });
 
   const scoresMap: Record<string, Score> = {};
-  scoresSnap.docs.forEach(d => {
+  scoresDocs.forEach(d => {
     const sd = d.data();
+    if (!sd) return;
     scoresMap[d.id] = {
       id: d.id,
       title: sd.title || "",

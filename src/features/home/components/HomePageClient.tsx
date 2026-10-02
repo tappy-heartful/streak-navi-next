@@ -29,7 +29,7 @@ const AnnouncementSection = memo(({ data }: { data: Announcement[] }) => (
         {data.map((a, i) => (
           <li key={i}>
             {a.type === "item" ? (
-              <Link prefetch={true} href={a.link || "#"} className={styles.notificationLink}>
+              <Link prefetch={false} href={a.link || "#"} className={styles.notificationLink}>
                 {a.label}
               </Link>
             ) : a.type === "pending" ? (
@@ -126,7 +126,7 @@ const TodoSection = memo(({ todos }: { todos: Issue[] }) => {
 
               return (
                 <li key={todo.id}>
-                  <Link href={`/issue/confirm?issueId=${todo.id}`} className={styles.todoItem}>
+                  <Link prefetch={false} href={`/issue/confirm?issueId=${todo.id}`} className={styles.todoItem}>
                     <div className={styles.todoItemContent}>
                       <div className={styles.todoItemTitleRow}>
                         <span className={`${styles.todoBadge} ${getTypeBadgeClass(todo.type)}`}>
@@ -178,7 +178,7 @@ const MenuSection = ({ title, items }: { title: string; items: MenuItem[] }) => 
       const label = hasIcon ? parts.slice(2).join(" ") : item.l;
 
       return (
-        <Link prefetch={true} key={item.h} href={item.h} className={`${styles.menuButton} ${styles[item.c]} ${item.b ? styles.badgeInline : ""}`}>
+        <Link prefetch={false} key={item.h} href={item.h} className={`${styles.menuButton} ${styles[item.c]} ${item.b ? styles.badgeInline : ""}`}>
           {iconClass ? <><i className={iconClass} style={{ marginRight: "0.5rem" }} />{label}</> : item.l}
           {item.b && <span className={styles.badge}>{item.b}</span>}
         </Link>
@@ -974,7 +974,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
           <div className={styles.scoreList}>
             {initialData.quickScores.length ? (
               <div className={styles.quickScoreGrid}>
-                {initialData.quickScores.map((s) => <Link prefetch={true} key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
+                {initialData.quickScores.map((s) => <Link prefetch={false} key={s.id} href={`/score/confirm?scoreId=${s.id}`} className={styles.quickScoreLink}>🎼 {s.title}</Link>)}
               </div>
             ) : <div className={styles.emptyMessage}>譜面はまだ登録されていません🍀</div>}
           </div>
@@ -987,7 +987,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
               onRandom={() => setCurrentScoreIdx(utils.getRandomIndex(currentScoreIdx, initialData.scores.length))}
             />
           )}
-          <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
+          <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={false} href="/score" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
         </main>
 
         {settlementSummary && (
@@ -1053,7 +1053,7 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
                 setIdx={setCurrentBNIdx}
                 onRandom={() => setCurrentBNIdx(utils.getRandomIndex(currentBNIdx, initialData.blueNotes.length))}
               />
-              <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={true} href="/blue-note" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
+              <div style={{ textAlign: "center", marginTop: "10px" }}><Link prefetch={false} href="/blue-note" style={{ fontWeight: "bold" }}>もっと見る</Link></div>
             </>
           )}
         </main>

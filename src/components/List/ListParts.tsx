@@ -49,10 +49,10 @@ export const ListRow = ({ children }: { children: React.ReactNode }) => (
   <tr>{children}</tr>
 );
 
-// 内部リンク用（Next.jsのLinkを使用）
+// 内部リンク用（Next.jsのLinkを使用、過剰フェッチ抑止のためprefetch無効化）
 export const ListCellHeader = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <td className="list-table-row-header">
-    <Link href={href}>{children}</Link>
+    <Link prefetch={false} href={href}>{children}</Link>
   </td>
 );
 

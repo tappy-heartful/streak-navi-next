@@ -115,12 +115,14 @@ export function DailyAgendaModal({ activeDateStr, items, onClose }: DailyAgendaM
         {/* Quick Add Actions */}
         <div className={styles.actionsGrid}>
           <Link
+            prefetch={false}
             href={`/event/edit?mode=new&date=${activeDateStr}`}
             className={`${styles.actionBtn} ${styles.eventBtn}`}
           >
             <i className="fa-solid fa-calendar-plus" /> イベント登録
           </Link>
           <Link
+            prefetch={false}
             href={`/issue/edit?mode=new&date=${activeDateStr}`}
             className={`${styles.actionBtn} ${styles.todoBtn}`}
           >

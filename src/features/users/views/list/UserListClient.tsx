@@ -177,7 +177,7 @@ export function UserListClient({ initialData }: Props) {
                 {sectionUsers.map(u => (
                   <tr key={u.id}>
                     <td className="list-table-row-header">
-                      <Link href={`/user/confirm?uid=${u.id}`} className={styles.userLink}>
+                      <Link prefetch={false} href={`/user/confirm?uid=${u.id}`} className={styles.userLink}>
                         <img
                           src={u.pictureUrl || globalLineDefaultImage}
                           alt="icon"
@@ -207,7 +207,7 @@ export function UserListClient({ initialData }: Props) {
               {usersBySection.unknownUsers.map(u => (
                 <tr key={u.id}>
                   <td className="list-table-row-header">
-                    <Link href={`/user/confirm?uid=${u.id}`} className={styles.userLink}>
+                    <Link prefetch={false} href={`/user/confirm?uid=${u.id}`} className={styles.userLink}>
                       <img
                         src={u.pictureUrl || globalLineDefaultImage}
                         alt="icon"

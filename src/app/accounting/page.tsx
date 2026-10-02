@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   title: "バランス会計一覧 | Streak Navi",
 };
 
-export const dynamic = "force-dynamic";
+// 1分間キャッシュ
+export const revalidate = 60;
 
 export default async function AccountingListPage() {
   const [seasons, config] = await Promise.all([

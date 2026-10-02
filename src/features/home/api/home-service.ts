@@ -2,19 +2,15 @@ import { adminDb } from "@/src/lib/firebase-admin";
 import * as utils from "@/src/lib/functions";
 import { Announcement, BlueNote, Media, Score, Issue } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
+import { unstable_cache } from "next/cache";
 
-/**
- * ホーム画面用のお知らせ一覧を取得（サーバーサイド専用）
- */
-export async function getAnnouncementsServer() {
+function buildAnnouncementsFromSnaps(
+  eventsSnap: FirebaseFirestore.QuerySnapshot,
+  votesSnap: FirebaseFirestore.QuerySnapshot,
+  callsSnap: FirebaseFirestore.QuerySnapshot
+): Announcement[] {
   const items: Announcement[] = [];
   const todayStr = utils.format(new Date(), "yyyy.MM.dd");
-
-  const [votes, calls, events] = await Promise.all([
-    adminDb.collection("votes").orderBy("createdAt", "desc").get(),
-    adminDb.collection("calls").orderBy("createdAt", "desc").get(),
-    adminDb.collection("events").get()
-  ]);
 
   const checkTerm = (snap: FirebaseFirestore.QuerySnapshot, msg: string, labelKey: string, linkBase: string) => {
     let headerAdded = false;
@@ -28,11 +24,11 @@ export async function getAnnouncementsServer() {
   };
 
   // 曲投票・候補曲
-  checkTerm(votes, "曲投票、受付中です！", "name", "/vote/confirm?voteId=");
-  checkTerm(calls, "候補曲、募集中です！", "title", "/call/confirm?callId=");
+  checkTerm(votesSnap, "曲投票、受付中です！", "name", "/vote/confirm?voteId=");
+  checkTerm(callsSnap, "候補曲、募集中です！", "title", "/call/confirm?callId=");
 
   // イベント関連のロジック
-  const eventList = events.docs.map(eDoc => {
+  const eventList = eventsSnap.docs.map(eDoc => {
     const d = eDoc.data();
     const isInAcceptTerm = utils.isInTerm(d.acceptStartDate, d.acceptEndDate);
 
@@ -53,14 +49,14 @@ export async function getAnnouncementsServer() {
     };
   });
 
-  // 1. 日程調整 (Schedule adjustments in active acceptance term)
+  // 1. 日程調整
   const activeSchedules = eventList.filter(e => e.attendanceType === "schedule" && e.isInAcceptTerm);
   if (activeSchedules.length) {
     items.push({ type: "pending", message: "日程調整、受付中です！" });
     activeSchedules.forEach(e => items.push({ type: "item", label: `🗓️ ${e.title}`, link: `/event/confirm?eventId=${e.id}` }));
   }
 
-  // 2. 直近のイベント (Confirmed upcoming events)
+  // 2. 直近のイベント
   const upcomingAttendance = eventList
     .filter(e => e.attendanceType === "attendance" && e.date >= todayStr)
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -84,12 +80,49 @@ export async function getAnnouncementsServer() {
   return (items.length ? items : [{ type: "empty", message: "お知らせはありません🍀" }]) as Announcement[];
 }
 
+/**
+ * ホーム画面用の統合フィードデータ（重複クエリを排除し、一括取得）
+ */
+export async function getHomeFeedDataServer() {
+  const [eventsSnap, votesSnap, callsSnap, issuesSnap] = await Promise.all([
+    adminDb.collection("events").get(),
+    adminDb.collection("votes").orderBy("createdAt", "desc").get(),
+    adminDb.collection("calls").orderBy("createdAt", "desc").get(),
+    adminDb.collection("issues").get(),
+  ]);
+
+  const announcements = buildAnnouncementsFromSnaps(eventsSnap, votesSnap, callsSnap);
+
+  const events = eventsSnap.docs.map(toPlainObject);
+  const votes = votesSnap.docs.map(toPlainObject);
+  const calls = callsSnap.docs.map(toPlainObject);
+  const issues = issuesSnap.docs.map(toPlainObject);
+
+  const calendarData = { events, votes, calls, issues };
+
+  return { announcements, calendarData };
+}
 
 /**
- * 全譜面データを取得
+ * ホーム画面用のお知らせ一覧を取得（サーバーサイド専用）
+ */
+export async function getAnnouncementsServer() {
+  const [votes, calls, events] = await Promise.all([
+    adminDb.collection("votes").orderBy("createdAt", "desc").get(),
+    adminDb.collection("calls").orderBy("createdAt", "desc").get(),
+    adminDb.collection("events").get()
+  ]);
+  return buildAnnouncementsFromSnaps(events, votes, calls);
+}
+
+/**
+ * ホーム表示用の譜面データを取得（全件取得ではなくisDispTop=trueのみに絞り込み）
  */
 export async function getScoresServer() {
-  const snap = await adminDb.collection("scores").orderBy("createdAt", "desc").get();
+  const snap = await adminDb.collection("scores")
+    .where("isDispTop", "==", true)
+    .get();
+
   return snap.docs.map(doc => {
     const data = toPlainObject(doc);
     return {
@@ -99,10 +132,17 @@ export async function getScoresServer() {
   }) as unknown as Score[];
 }
 
-export async function getBlueNotesServer() {
-  const snap = await adminDb.collection("blueNotes").orderBy("__name__", "asc").get();
-  return snap.docs.map(toPlainObject) as unknown as BlueNote[];
-}
+/**
+ * 名盤紹介データ（更新頻度が低いため24時間キャッシュ）
+ */
+export const getBlueNotesServer = unstable_cache(
+  async () => {
+    const snap = await adminDb.collection("blueNotes").orderBy("__name__", "asc").get();
+    return snap.docs.map(toPlainObject) as unknown as BlueNote[];
+  },
+  ["home-blue-notes-cache"],
+  { revalidate: 86400 } // 24時間キャッシュ
+);
 
 export async function getMediasServer(count = 10) {
   const snap = await adminDb.collection("medias").orderBy("date", "desc").limit(count).get();

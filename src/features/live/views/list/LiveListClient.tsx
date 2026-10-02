@@ -43,7 +43,7 @@ function LiveTable({ lives, showMap = false }: { lives: Live[]; showMap?: boolea
           {lives.map((l) => (
             <tr key={l.id}>
               <td>
-                <Link href={`/live/confirm?liveId=${l.id}`} className="list-cell-header">
+                <Link prefetch={false} href={`/live/confirm?liveId=${l.id}`} className="list-cell-header">
                   {l.title}
                 </Link>
               </td>
