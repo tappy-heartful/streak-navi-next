@@ -28,6 +28,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import { compressImage } from "@/src/lib/image-compression";
 import { PersonalSettlementCard } from "../../components/PersonalSettlementCard";
 import { ManagerSettlementGuideModal } from "../../components/ManagerSettlementGuideModal";
+import { AverageBurdenCalculationCard } from "../../components/AverageBurdenCalculationCard";
 
 interface Props {
   initialData: {
@@ -950,6 +951,18 @@ export function AccountingConfirmClient({ initialData }: Props) {
           </div>
           {renderGroupedMembers()}
         </div>
+
+        {/* 平均負担額の算出手順カード */}
+        <AverageBurdenCalculationCard
+          totalExpenses={totals.totalExpenses}
+          totalIncomes={totals.totalIncomes}
+          netTotal={totals.netTotal}
+          memberCount={totals.memberCount}
+          averageBurden={totals.averageBurden}
+          onShowExpensesDetail={handleShowTotalExpensesModal}
+          onShowIncomesDetail={handleShowTotalIncomesModal}
+          seasonKey={seasonKey}
+        />
       </div>
 
       <div className="page-footer">

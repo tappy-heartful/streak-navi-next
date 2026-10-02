@@ -1,0 +1,328 @@
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  margin-bottom: 24px;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  gap: 12px;
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.titleIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 10px rgba(118, 75, 162, 0.25);
+  flex-shrink: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-top: 2px;
+}
+
+.toggleBtn {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  color: #4a5568;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.toggleBtn:hover {
+  background: #edf2f7;
+  color: #2d3748;
+}
+
+.summaryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(118, 75, 162, 0.1);
+  color: #764ba2;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.content {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed #e2e8f0;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.leadDescription {
+  font-size: 0.88rem;
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border-left: 4px solid #764ba2;
+}
+
+/* Steps container */
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.stepItem {
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.stepItem:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stepLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: #ffffff;
+  background: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stepBadgeExpense {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
+.stepBadgeIncome {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.stepBadgeNet {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.stepBadgeAverage {
+  background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
+}
+
+.stepTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.detailButton {
+  background: #edf2f7;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  color: #4a5568;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.detailButton:hover {
+  background: #e2e8f0;
+  color: #1a202c;
+}
+
+.stepDesc {
+  font-size: 0.82rem;
+  color: #718096;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.stepFormulaBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f7fafc;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.formulaText {
+  font-size: 0.85rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.stepAmount {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #2d3748;
+}
+
+.amountExpense {
+  color: #e53e3e;
+}
+
+.amountIncome {
+  color: #38a169;
+}
+
+.amountNet {
+  color: #3182ce;
+}
+
+.amountAverage {
+  color: #6b46c1;
+  font-size: 1.35rem;
+}
+
+/* Connectors */
+.stepConnector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  color: #a0aec0;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+/* Final highlight card */
+.highlightStep {
+  background: linear-gradient(to right bottom, #ffffff, #faf5ff);
+  border: 2px solid rgba(107, 70, 193, 0.35);
+  box-shadow: 0 4px 16px rgba(107, 70, 193, 0.12);
+}
+
+.highlightFormulaBox {
+  background: linear-gradient(135deg, rgba(107, 70, 193, 0.08) 0%, rgba(128, 90, 213, 0.12) 100%);
+  border: 1px solid rgba(107, 70, 193, 0.25);
+  padding: 14px 18px;
+  border-radius: 12px;
+}
+
+/* Footer note */
+.footerNote {
+  margin-top: 18px;
+  padding: 12px 16px;
+  background: #fffaf0;
+  border: 1px solid #feebc8;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  color: #7b341e;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.footerNote i {
+  color: #dd6b20;
+  font-size: 1rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .card {
+    padding: 18px 16px;
+    border-radius: 16px;
+  }
+
+  .title {
+    font-size: 1.05rem;
+  }
+
+  .stepItem {
+    padding: 14px 12px;
+  }
+
+  .stepFormulaBox {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .stepAmount {
+    align-self: flex-end;
+  }
+
+  .amountAverage {
+    font-size: 1.2rem;
+  }
+}
