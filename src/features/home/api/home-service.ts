@@ -116,20 +116,38 @@ export async function getAnnouncementsServer() {
 }
 
 /**
- * ホーム表示用の譜面データを取得（全件取得ではなくisDispTop=trueのみに絞り込み）
+ * ホーム表示用の譜面データを取得（全件取得ではなくisDispTop=trueのみに絞り込み、最新順でソート）
  */
 export async function getScoresServer() {
   const snap = await adminDb.collection("scores")
     .where("isDispTop", "==", true)
     .get();
 
-  return snap.docs.map(doc => {
+  const getTime = (val: any): number => {
+    if (!val) return 0;
+    if (typeof val === "number") return val;
+    if (typeof val.toMillis === "function") return val.toMillis();
+    if (val instanceof Date) return val.getTime();
+    if (typeof val === "string") {
+      const parsed = Date.parse(val);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+  };
+
+  const scores = snap.docs.map(doc => {
     const data = toPlainObject(doc);
     return {
       ...data,
       youtubeId: utils.extractYouTubeId(data.referenceTrack)
     };
   }) as unknown as Score[];
+
+  return scores.sort((a: any, b: any) => {
+    const timeA = getTime(a.createdAt) || getTime(a.updatedAt);
+    const timeB = getTime(b.createdAt) || getTime(b.updatedAt);
+    return timeB - timeA;
+  });
 }
 
 /**
