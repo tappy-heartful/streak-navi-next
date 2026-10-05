@@ -12,6 +12,16 @@ export const metadata: Metadata = {
     default: "Streak Navi",       // タイトル未設定時のデフォルト
   },
   description: "Swing Streak Jazz Orchestraの公式ナビゲーションサイトです。",
+  openGraph: {
+    title: {
+      template: "%s | Streak Navi",
+      default: "Streak Navi",
+    },
+    description: "Swing Streak Jazz Orchestraの公式ナビゲーションサイトです。",
+    siteName: "Streak Navi",
+    locale: "ja_JP",
+    type: "website",
+  },
   icons: {
     icon: "https://tappy-heartful.github.io/streak-images/navi/favicon.png",
     apple: "https://tappy-heartful.github.io/streak-images/navi/favicon.png",

@@ -8,7 +8,7 @@ import {
 } from "@/src/features/travel-subsidy/api/travel-subsidy-server-actions";
 
 export const metadata = {
-  title: "旅費補助額",
+  title: "旅費補助額マスタ",
 };
 
 export const dynamic = "force-dynamic";

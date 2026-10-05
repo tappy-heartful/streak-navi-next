@@ -9,10 +9,10 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props) {
   const resolvedParams = await searchParams;
-  if (!resolvedParams.uid) return { title: "ユーザ確認" };
+  if (!resolvedParams.uid) return { title: "メンバープロフィール" };
   const user = await getUserServer(resolvedParams.uid);
   return {
-    title: user?.displayName ? `${user.displayName}` : "ユーザ確認",
+    title: user?.displayName ? `${user.displayName} - プロフィール` : "メンバープロフィール",
   };
 }
 

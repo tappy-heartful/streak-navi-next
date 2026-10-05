@@ -11,12 +11,12 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const { mode, mediaId } = await searchParams;
 
   if (!mode || mode === "new" || !mediaId) {
-    return { title: mode === "edit" ? "メディア編集" : "メディア新規作成" };
+    return { title: "メディア新規作成" };
   }
 
   const mediaData = await getMediaServer(mediaId);
   return {
-    title: mediaData ? `${mediaData.title} | メディア編集` : "メディア編集",
+    title: mediaData?.title ? `${mediaData.title} - メディア編集` : "メディア編集",
   };
 }
 

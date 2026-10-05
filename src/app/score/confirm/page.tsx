@@ -15,12 +15,12 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const resolvedParams = await searchParams;
   const scoreId = resolvedParams.scoreId;
 
-  if (!scoreId) return { title: "譜面確認" };
+  if (!scoreId) return { title: "譜面詳細" };
 
-  const scoreData = await getScoreServer(scoreId) as Score | null;
+  const scoreData = (await getScoreServer(scoreId)) as Score | null;
 
   return {
-    title: scoreData ? `${scoreData.title} | 譜面確認` : "譜面確認",
+    title: scoreData?.title ? `${scoreData.title} - 譜面詳細` : "譜面詳細",
   };
 }
 

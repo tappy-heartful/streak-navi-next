@@ -2,7 +2,7 @@ import { fetchVotes, fetchVoteAnswersMap } from "@/src/features/vote/api/vote-se
 import { VoteListClient } from "@/src/features/vote/views/list/VoteListClient";
 
 export const metadata = {
-  title: "投票一覧",
+  title: "曲投票一覧",
 };
 
 export const dynamic = 'force-dynamic';

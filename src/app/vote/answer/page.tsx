@@ -2,8 +2,23 @@ import { notFound } from "next/navigation";
 import { fetchVote, fetchMyVoteAnswer } from "@/src/features/vote/api/vote-server-actions";
 import { VoteAnswerClient } from "@/src/features/vote/views/answer/VoteAnswerClient";
 
-export const metadata = { title: "投票回答" };
+import type { Metadata } from "next";
+
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ voteId?: string }>;
+}): Promise<Metadata> {
+  const { voteId } = await searchParams;
+  if (!voteId) return { title: "曲投票" };
+
+  const vote = await fetchVote(voteId);
+  return {
+    title: vote?.name ? `${vote.name} - 曲投票` : "曲投票",
+  };
+}
 
 export default async function VoteAnswerPage({ searchParams }: { searchParams: Promise<{ voteId: string }> }) {
   const { voteId } = await searchParams;

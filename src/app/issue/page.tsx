@@ -2,6 +2,10 @@ import { getIssues, getIssueGroups } from "@/src/features/issue/api/issue-server
 import { getUsersServer, getSectionsServer } from "@/src/features/users/api/user-server-actions";
 import { IssueListClient } from "@/src/features/issue/views/list/IssueListClient";
 
+export const metadata = {
+  title: "TODO一覧",
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function IssueListPage() {

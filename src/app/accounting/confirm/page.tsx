@@ -10,11 +10,31 @@ import { AccountingConfirmClient } from "@/src/features/accounting/views/confirm
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "バランス会計確認 | Streak Navi",
+export const dynamic = "force-dynamic";
+
+const seasonLabels: Record<string, string> = {
+  spring: "春シーズン",
+  summer: "夏シーズン",
+  autumn: "秋シーズン",
+  winter: "冬シーズン",
 };
 
-export const dynamic = "force-dynamic";
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ seasonId?: string }>;
+}): Promise<Metadata> {
+  const { seasonId } = await searchParams;
+  if (!seasonId) return { title: "バランス会計清算詳細" };
+
+  const season = await getAccountingSeasonByIdServer(seasonId);
+  if (!season) return { title: "バランス会計清算詳細" };
+
+  const label = seasonLabels[season.seasonKey] || season.seasonKey;
+  return {
+    title: `${season.year}年 ${label} - バランス会計清算`,
+  };
+}
 
 export default async function AccountingConfirmPage({ searchParams }: { searchParams: Promise<{ seasonId?: string }> }) {
   const resolvedParams = await searchParams;

@@ -94,7 +94,7 @@ service cloud.firestore {
           'isStudioAdmin', 'isUserAdmin', 'isNoticeAdmin', 
           'isBlueNoteAdmin', 'isBoardAdmin', 'isLiveAdmin', 'isTicketAdmin', 
           'isMediaAdmin', 'isSystemAdmin', 'isTravelSubsidyAdmin', 'isExpenseAdmin',
-          'isIssueAdmin'
+          'isIssueAdmin', 'isLineLogAdmin'
         ])
       );
 
@@ -106,7 +106,7 @@ service cloud.firestore {
           'isStudioAdmin', 'isUserAdmin', 'isNoticeAdmin', 
           'isBlueNoteAdmin', 'isBoardAdmin', 'isLiveAdmin', 'isTicketAdmin', 
           'isMediaAdmin', 'isSystemAdmin', 'isTravelSubsidyAdmin', 'isExpenseAdmin',
-          'isIssueAdmin'
+          'isIssueAdmin', 'isLineLogAdmin'
         ])
       );
     }
@@ -363,19 +363,19 @@ service cloud.firestore {
       allow delete: if isOwner(uid);
     }
 
-    // LINE通知送信ログ：ログインユーザーは閲覧可能（書き込みはGAS/Admin SDK専用）
+    // LINE通知送信ログ：システム管理者またはLineLog管理者のみ閲覧可能（書き込みはGAS/Admin SDK専用）
     match /lineNotificationLogs/{id} {
-      allow read: if isSignedIn();
+      allow read: if isAdmin("LineLog");
       allow write: if false;
     }
 
-    // 過去の通知送信履歴：ログインユーザーは閲覧可能（書き込みはGAS/Admin SDK専用）
+    // 過去の通知送信履歴：システム管理者またはLineLog管理者のみ閲覧可能（書き込みはGAS/Admin SDK専用）
     match /notificationHistorys/{id} {
-      allow read: if isSignedIn();
+      allow read: if isAdmin("LineLog");
       allow write: if false;
     }
     match /notificationIndividualHistorys/{id} {
-      allow read: if isSignedIn();
+      allow read: if isAdmin("LineLog");
       allow write: if false;
     }
     

@@ -3,6 +3,10 @@ import { getBoards } from "@/src/features/board/api/board-server-actions";
 import { getSectionsServer } from "@/src/features/users/api/user-server-actions";
 import { BoardListClient } from "@/src/features/board/views/list/BoardListClient";
 
+export const metadata = {
+  title: "掲示板",
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function BoardListPage() {

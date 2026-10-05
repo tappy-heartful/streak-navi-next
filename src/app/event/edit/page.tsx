@@ -1,9 +1,25 @@
 import { notFound } from "next/navigation";
 import { fetchEvent, fetchEventEditData } from "@/src/features/event/api/event-server-actions";
 import { EventEditClient } from "@/src/features/event/views/edit/EventEditClient";
+import type { Metadata } from "next";
 
-export const metadata = { title: "イベント管理" };
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ mode?: string; eventId?: string }>;
+}): Promise<Metadata> {
+  const { mode = "new", eventId } = await searchParams;
+  if (mode === "new" || !eventId) {
+    return { title: "イベント新規作成" };
+  }
+
+  const event = await fetchEvent(eventId);
+  return {
+    title: event?.title ? `${event.title} - イベント編集` : "イベント編集",
+  };
+}
 
 export default async function EventEditPage({
   searchParams,

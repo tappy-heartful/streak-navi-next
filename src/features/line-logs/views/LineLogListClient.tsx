@@ -24,8 +24,10 @@ const getInitialYearMonth = () => {
 };
 
 export default function LineLogListClient() {
-  const { userData } = useAuth();
+  const { userData, loading: authLoading } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
+
+  const canView = Boolean(userData?.isSystemAdmin || userData?.isLineLogAdmin);
 
   const [currentYearMonth, setCurrentYearMonth] = useState<string>(getInitialYearMonth());
   const [logs, setLogs] = useState<LineNotificationLog[]>([]);
@@ -60,8 +62,13 @@ export default function LineLogListClient() {
 
   // 年月切り替え時にデータ取得
   useEffect(() => {
+    if (authLoading) return;
+    if (!canView) {
+      setIsLoading(false);
+      return;
+    }
     fetchLogs(currentYearMonth);
-  }, [currentYearMonth, fetchLogs]);
+  }, [currentYearMonth, fetchLogs, authLoading, canView]);
 
   // クォータ（配信枠）サマリーの計算
   const quotaSummary: MonthQuotaSummary = useMemo(() => {
@@ -134,6 +141,39 @@ export default function LineLogListClient() {
   const indivLogsCount = useMemo(() => {
     return logs.filter((l) => !(l.accountType === "group" || l.recipientType === "group" || l.recipientUid === "group")).length;
   }, [logs]);
+
+  // 認証確認中のローディング表示
+  if (authLoading) {
+    return (
+      <div className={styles.pageWrapper}>
+        <div style={{ padding: "60px 16px", textAlign: "center", color: "#64748b" }}>
+          <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: "1.8rem", color: "#06c755", marginBottom: "12px", display: "block" }} />
+          <span>認証情報を確認中...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // システム管理者またはLINE送信履歴管理者以外は閲覧不可
+  if (!canView) {
+    return (
+      <div className={styles.pageWrapper}>
+        <div className={styles.unauthorizedCard}>
+          <div className={styles.unauthorizedIcon}>
+            <i className="fa-solid fa-shield-halved" />
+          </div>
+          <h2 className={styles.unauthorizedTitle}>アクセス権限がありません</h2>
+          <p className={styles.unauthorizedText}>
+            LINE送信履歴および配信枠状況の閲覧は、システム管理者またはLINE送信履歴管理者のみ許可されています。
+          </p>
+          <Link href="/" className={styles.homeBtn}>
+            <i className="fa-solid fa-house" />
+            ホームに戻る
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.pageWrapper}>

@@ -1,9 +1,23 @@
 import { notFound } from "next/navigation";
-import { fetchAdjustAnswerPageData } from "@/src/features/event/api/event-server-actions";
+import { fetchAdjustAnswerPageData, fetchEvent } from "@/src/features/event/api/event-server-actions";
 import { EventAdjustAnswerClient } from "@/src/features/event/views/adjust-answer/EventAdjustAnswerClient";
+import type { Metadata } from "next";
 
-export const metadata = { title: "日程調整回答" };
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ eventId?: string }>;
+}): Promise<Metadata> {
+  const { eventId } = await searchParams;
+  if (!eventId) return { title: "日程調整回答" };
+
+  const event = await fetchEvent(eventId);
+  return {
+    title: event?.title ? `${event.title} - 日程調整回答` : "日程調整回答",
+  };
+}
 
 export default async function EventAdjustAnswerPage({
   searchParams,

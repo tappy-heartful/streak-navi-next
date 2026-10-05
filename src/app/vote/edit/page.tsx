@@ -5,8 +5,25 @@ import { adminDb as db } from "@/src/lib/firebase-admin";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 import { Vote, Call, CallAnswerSong } from "@/src/lib/firestore/types";
 
-export const metadata = { title: "投票管理" };
+import type { Metadata } from "next";
+
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ mode?: string; voteId?: string; callId?: string }>;
+}): Promise<Metadata> {
+  const { mode = "new", voteId } = await searchParams;
+  if (mode === "new" || !voteId) {
+    return { title: "曲投票新規作成" };
+  }
+
+  const vote = await fetchVote(voteId);
+  return {
+    title: vote?.name ? `${vote.name} - 曲投票編集` : "曲投票編集",
+  };
+}
 
 export default async function VoteEditPage({ searchParams }: { searchParams: Promise<{ mode?: string; voteId?: string; callId?: string }> }) {
   const { mode = "new", voteId, callId } = await searchParams;

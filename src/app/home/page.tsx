@@ -3,7 +3,7 @@ import { getHomeFeedDataServer, getScoresServer, getBlueNotesServer, getMediasSe
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Home",
+  title: "ホーム",
 };
 
 // 1分間キャッシュして瞬間的な多重フェッチを防ぐ

@@ -3,8 +3,23 @@ import { fetchVote, fetchVoteAnswersByVoteId } from "@/src/features/vote/api/vot
 import { VoteConfirmClient } from "@/src/features/vote/views/confirm/VoteConfirmClient";
 import { adminDb as db } from "@/src/lib/firebase-admin";
 
-export const metadata = { title: "投票確認" };
+import type { Metadata } from "next";
+
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ voteId?: string }>;
+}): Promise<Metadata> {
+  const { voteId } = await searchParams;
+  if (!voteId) return { title: "曲投票詳細" };
+
+  const vote = await fetchVote(voteId);
+  return {
+    title: vote?.name ? `${vote.name} - 曲投票詳細` : "曲投票詳細",
+  };
+}
 
 export default async function VoteConfirmPage({ searchParams }: { searchParams: Promise<{ voteId: string }> }) {
   const { voteId } = await searchParams;

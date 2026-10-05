@@ -4,12 +4,23 @@ import { getUsersServer, getSectionsServer } from "@/src/features/users/api/user
 import { fetchEvents } from "@/src/features/event/api/event-server-actions";
 import { notFound } from "next/navigation";
 import { IssueConfirmClient } from "@/src/features/issue/views/confirm/IssueConfirmClient";
+import type { Metadata } from "next";
 
 type Props = {
   searchParams: Promise<{ issueId?: string }>;
 };
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const { issueId } = await searchParams;
+  if (!issueId) return { title: "TODO詳細" };
+
+  const issue = await getIssue(issueId);
+  return {
+    title: issue?.title ? `${issue.title} - TODO詳細` : "TODO詳細",
+  };
+}
 
 export default async function IssueConfirmPage({ searchParams }: Props) {
   const { issueId } = await searchParams;

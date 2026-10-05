@@ -8,12 +8,23 @@ import {
 import { getMunicipalityNamesMapServer, getUserServer } from "@/src/features/users/api/user-server-actions";
 import { ExpenseReviewClient } from "@/src/features/expense-review/views/review/ExpenseReviewClient";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
   searchParams: Promise<{ expenseId?: string }>;
 };
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const { expenseId } = await searchParams;
+  if (!expenseId) return { title: "経費審査" };
+
+  const expense = await getExpenseApplyServer(expenseId);
+  return {
+    title: expense?.name ? `${expense.name} - 経費審査` : "経費審査",
+  };
+}
 
 export default async function ExpenseReviewPage({ searchParams }: Props) {
   const { expenseId } = await searchParams;

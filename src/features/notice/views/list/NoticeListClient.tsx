@@ -5,12 +5,16 @@ import Link from "next/link";
 import { Notice } from "@/src/lib/firestore/types";
 import { ListBaseLayout } from "@/src/components/Layout/ListBaseLayout";
 import { format } from "@/src/lib/functions";
+import { useAuth } from "@/src/contexts/AuthContext";
 
 type Props = {
   initialNotices: Notice[];
 };
 
 export function NoticeListClient({ initialNotices }: Props) {
+  const { userData } = useAuth();
+  const canViewLineLogs = Boolean(userData?.isSystemAdmin || userData?.isLineLogAdmin);
+
   const { future, closed } = useMemo(() => {
     const future: Notice[] = [];
     const closed: Notice[] = [];
@@ -59,27 +63,29 @@ export function NoticeListClient({ initialNotices }: Props) {
               <i className="fa-solid fa-chevron-right" style={{ color: "#aaa" }} />
             </Link>
           </li>
-          <li style={{ marginBottom: "12px" }}>
-            <Link
-              href="/line-logs"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "12px 16px",
-                borderRadius: "8px",
-                backgroundColor: "#f9f9f9",
-                boxShadow: "1px 1px 5px rgba(0,0,0,0.05)",
-                textDecoration: "none",
-              }}
-            >
-              <span style={{ fontWeight: "bold", display: "flex", alignItems: "center", gap: "8px" }}>
-                <i className="fa-solid fa-paper-plane" style={{ color: "#06c755" }} />
-                LINE送信履歴・配信枠状況を見る
-              </span>
-              <i className="fa-solid fa-chevron-right" style={{ color: "#aaa" }} />
-            </Link>
-          </li>
+          {canViewLineLogs && (
+            <li style={{ marginBottom: "12px" }}>
+              <Link
+                href="/line-logs"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "12px 16px",
+                  borderRadius: "8px",
+                  backgroundColor: "#f9f9f9",
+                  boxShadow: "1px 1px 5px rgba(0,0,0,0.05)",
+                  textDecoration: "none",
+                }}
+              >
+                <span style={{ fontWeight: "bold", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <i className="fa-solid fa-paper-plane" style={{ color: "#06c755" }} />
+                  LINE送信履歴・配信枠状況を見る
+                </span>
+                <i className="fa-solid fa-chevron-right" style={{ color: "#aaa" }} />
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
 

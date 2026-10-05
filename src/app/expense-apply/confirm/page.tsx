@@ -9,12 +9,23 @@ import { getMunicipalityNamesMapServer } from "@/src/features/users/api/user-ser
 import { ExpenseApplyConfirmClient } from "@/src/features/expense-apply/views/confirm/ExpenseApplyConfirmClient";
 import { ExpenseType } from "@/src/lib/firestore/types";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
   searchParams: Promise<{ expenseId?: string }>;
 };
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const { expenseId } = await searchParams;
+  if (!expenseId) return { title: "経費申請詳細" };
+
+  const expense = await getExpenseApplyServer(expenseId);
+  return {
+    title: expense?.name ? `${expense.name} - 経費申請詳細` : "経費申請詳細",
+  };
+}
 
 export default async function ExpenseConfirmPage({ searchParams }: Props) {
   const { expenseId } = await searchParams;

@@ -8,7 +8,7 @@ import {
 } from "@/src/features/users/api/user-server-actions";
 
 export const metadata = {
-  title: "ユーザ一覧",
+  title: "メンバー一覧",
 };
 
 export const dynamic = "force-dynamic";

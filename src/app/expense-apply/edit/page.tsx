@@ -8,6 +8,7 @@ import {
   getPastEventsServer,
 } from "@/src/features/expense-apply/api/expense-apply-server-actions";
 import { ExpenseApplyEditClient } from "@/src/features/expense-apply/views/edit/ExpenseApplyEditClient";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,18 @@ type Props = {
     eventId?: string;
   }>;
 };
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const { mode = "new", expenseId } = await searchParams;
+  if (mode === "new" || !expenseId) {
+    return { title: "経費申請作成" };
+  }
+
+  const expense = await getExpenseApplyServer(expenseId);
+  return {
+    title: expense?.name ? `${expense.name} - 経費申請編集` : "経費申請編集",
+  };
+}
 
 export default async function ExpenseEditPage({ searchParams }: Props) {
   const { mode, expenseId, typeId, categoryId, itemId, eventId } = await searchParams;

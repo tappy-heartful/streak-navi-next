@@ -17,12 +17,12 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const mode = resolvedParams.mode;
 
   if (!mode || mode === "new" || !scoreId) {
-    return { title: mode === "edit" ? "譜面編集" : "譜面新規作成" };
+    return { title: "譜面新規登録" };
   }
 
   const scoreData = await getScoreServer(scoreId);
   return {
-    title: scoreData ? `${scoreData.title} | 譜面編集` : "譜面編集",
+    title: scoreData?.title ? `${scoreData.title} - 譜面編集` : "譜面編集",
   };
 }
 

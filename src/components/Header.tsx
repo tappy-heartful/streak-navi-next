@@ -195,7 +195,7 @@ export default function Header() {
             {menuLink("/travel-subsidy", "旅費補助額", "fa-solid fa-train-subway")}
             {userData?.isSystemAdmin && menuLink("/expense-review", "経費審査", "fa-solid fa-clipboard-check")}
             {menuLink("/notice", "通知設定", "fa-solid fa-bell")}
-            {menuLink("/line-logs", "LINE送信履歴", "fa-solid fa-paper-plane")}
+            {(userData?.isSystemAdmin || userData?.isLineLogAdmin) && menuLink("/line-logs", "LINE送信履歴", "fa-solid fa-paper-plane")}
             {menuLink("/media", "メディア", "fa-solid fa-photo-film")}
             {menuLink("/blue-note", "今日の一曲", "fa-solid fa-record-vinyl")}
             {menuLink("/user", "ユーザ", "fa-solid fa-users")}

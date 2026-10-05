@@ -57,17 +57,17 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
         form={form} // フックの結果をまるごと渡す！
         onSaveApi={(data) => saveScore(mode, data, scoreId, user?.displayName || undefined)}
       >
-        <AppInput label="タイトル" required {...inputProps("title")} />
-        <AppInput label="譜面（Google Drive URL）" required {...inputProps("scoreUrl")} />
-        <AppInput label="参考音源（YouTube URL）" required {...inputProps("referenceTrack")} />
+        <AppInput label="タイトル" required placeholder="例: Sing, Sing, Sing" {...inputProps("title")} />
+        <AppInput label="譜面（Google Drive URL）" required placeholder="https://drive.google.com/..." {...inputProps("scoreUrl")} />
+        <AppInput label="参考音源（YouTube URL）" required placeholder="https://www.youtube.com/..." {...inputProps("referenceTrack")} />
 
         <FormField label="ジャンル" required error={form.errors.genres}>
           <GenreInput genres={form.formData.genres} allGenres={allGenres} 
             onChange={(val) => form.updateField("genres", val)} />
         </FormField>
 
-        <AppInput label="略称(譜割用)" required {...inputProps("abbreviation")} />
-        <AppInput label="備考" {...inputProps("note")} />
+        <AppInput label="略称(譜割用)" required placeholder="例: SSS" {...inputProps("abbreviation")} />
+        <AppInput label="備考" type="textarea" placeholder="演奏上の注意点や備考があれば入力してください" {...inputProps("note")} />
         <AppInput label="ホームに表示" type="checkbox" {...inputProps("isDispTop")} />
       </EditFormLayout>
     </BaseLayout>

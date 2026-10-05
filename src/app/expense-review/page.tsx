@@ -3,6 +3,10 @@ import { getAllExpenseAppliesServer } from "@/src/features/expense-apply/api/exp
 import { getUsersServer } from "@/src/features/users/api/user-server-actions";
 import { ExpenseReviewListClient } from "@/src/features/expense-review/views/list/ExpenseReviewListClient";
 
+export const metadata = {
+  title: "経費審査",
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function ExpenseReviewPage() {

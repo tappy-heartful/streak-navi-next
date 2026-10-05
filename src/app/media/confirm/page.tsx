@@ -9,11 +9,11 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { mediaId } = await searchParams;
-  if (!mediaId) return { title: "メディア確認" };
+  if (!mediaId) return { title: "メディア詳細" };
 
   const mediaData = await getMediaServer(mediaId);
   return {
-    title: mediaData ? `${mediaData.title} | メディア確認` : "メディア確認",
+    title: mediaData?.title ? `${mediaData.title} - メディア詳細` : "メディア詳細",
   };
 }
 

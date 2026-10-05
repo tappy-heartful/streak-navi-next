@@ -11,12 +11,12 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const { mode, liveId } = await searchParams;
 
   if (!mode || mode === "new" || !liveId) {
-    return { title: mode === "edit" ? "ライブ編集" : "ライブ新規作成" };
+    return { title: "ライブ新規登録" };
   }
 
   const liveData = await getLiveServer(liveId);
   return {
-    title: liveData ? `${liveData.title} | ライブ編集` : "ライブ編集",
+    title: liveData?.title ? `${liveData.title} - ライブ編集` : "ライブ編集",
   };
 }
 

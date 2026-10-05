@@ -130,7 +130,7 @@ graph TD
 `AuthContext` が現在の URL パス（例: `/score/...` なら `Score` モジュール）からモジュールを判定し、ユーザーの権限フラグを参照して `isAdmin` を動的に提供する。
 
 - **特権管理者**: `userData.isSystemAdmin === true`（すべての画面で `isAdmin === true` となる）
-- **モジュール管理者**: `isScoreAdmin`, `isEventAdmin`, `isCallAdmin`, `isVoteAdmin`, `isStudioAdmin`, `isUserAdmin`, `isNoticeAdmin`, `isBlueNoteAdmin`, `isBoardAdmin`, `isLiveAdmin`, `isTicketAdmin`, `isMediaAdmin`, `isTravelSubsidyAdmin`, `isIssueAdmin`
+- **モジュール管理者**: `isScoreAdmin`, `isEventAdmin`, `isCallAdmin`, `isVoteAdmin`, `isStudioAdmin`, `isUserAdmin`, `isNoticeAdmin`, `isBlueNoteAdmin`, `isBoardAdmin`, `isLiveAdmin`, `isTicketAdmin`, `isMediaAdmin`, `isTravelSubsidyAdmin`, `isIssueAdmin`, `isLineLogAdmin`
 
 ### 3.4. AuthGuard によるインターセプト
 未ログイン時の `/login` リダイレクトに加え、以下の厳格なガードを自動適用：

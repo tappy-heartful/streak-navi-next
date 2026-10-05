@@ -6,7 +6,7 @@ import { AccountingListClient } from "@/src/features/accounting/views/list/Accou
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "バランス会計一覧 | Streak Navi",
+  title: "バランス会計",
 };
 
 // 1分間キャッシュ

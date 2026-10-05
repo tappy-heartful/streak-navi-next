@@ -11,12 +11,12 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const { mode, studioId } = await searchParams;
 
   if (!mode || mode === "new" || !studioId) {
-    return { title: mode === "edit" ? "スタジオ編集" : "スタジオ新規作成" };
+    return { title: "スタジオ新規作成" };
   }
 
   const studioData = await getStudioServer(studioId);
   return {
-    title: studioData ? `${studioData.name} | スタジオ編集` : "スタジオ編集",
+    title: studioData?.name ? `${studioData.name} - スタジオ編集` : "スタジオ編集",
   };
 }
 

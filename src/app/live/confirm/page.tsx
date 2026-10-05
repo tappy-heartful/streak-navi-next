@@ -9,11 +9,11 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { liveId } = await searchParams;
-  if (!liveId) return { title: "ライブ確認" };
+  if (!liveId) return { title: "ライブ詳細" };
 
   const liveData = await getLiveServer(liveId);
   return {
-    title: liveData ? `${liveData.title} | ライブ確認` : "ライブ確認",
+    title: liveData?.title ? `${liveData.title} - ライブ詳細` : "ライブ詳細",
   };
 }
 
