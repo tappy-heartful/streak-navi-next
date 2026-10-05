@@ -122,7 +122,7 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
             onClick={() => setIsGuideOpen(true)}
           >
             <i className="fa-solid fa-clipboard-check" />
-            <span>担当者の受け取り・送金手順ガイド</span>
+            <span>清算マニュアル（受け取り・送金手順）</span>
           </button>
         </div>
 

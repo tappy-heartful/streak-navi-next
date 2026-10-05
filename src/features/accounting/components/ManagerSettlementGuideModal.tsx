@@ -52,7 +52,7 @@ export const ManagerSettlementGuideModal: React.FC<ManagerSettlementGuideModalPr
               <i className="fa-solid fa-clipboard-check" />
             </div>
             <h3 id="manager-guide-modal-title" className={styles.modalTitle}>
-              担当者向け 受け取り・送金手順
+              清算マニュアル（受け取り・送金手順）
             </h3>
           </div>
           <button

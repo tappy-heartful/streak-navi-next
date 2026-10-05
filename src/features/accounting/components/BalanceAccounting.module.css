@@ -506,3 +506,58 @@
 .btnToggleSettle.toUnsettle:hover {
   background: #fff5f5;
 }
+
+/* 精算対象メンバー上部のボタングループ */
+.memberActionsBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.managerInfoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #4a5568;
+  background: #f7fafc;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.managerChangeBtn {
+  border: none;
+  background: none;
+  color: #3182ce;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  margin-left: 4px;
+}
+
+.headerActionBtn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .memberActionsBar {
+    gap: 8px;
+  }
+  
+  .managerInfoBadge {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .headerActionBtn {
+    flex: 1;
+    min-width: 130px;
+    text-align: center;
+    justify-content: center;
+  }
+}

@@ -913,15 +913,17 @@ export function AccountingConfirmClient({ initialData }: Props) {
           <div style={{ marginBottom: "16px" }}>
             <h3 style={{ marginBottom: "12px" }}>精算対象メンバー</h3>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+            <div className={styles.memberActionsBar}>
               {/* シーズン担当 */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#4a5568', background: '#f7fafc', padding: '6px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <i className="fa-solid fa-user-tie" style={{ color: '#718096' }}></i>
-                <span style={{ fontWeight: '500' }}>担当: {manager?.displayName || "未設定"}</span>
+              <div className={styles.managerInfoBadge}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <i className="fa-solid fa-user-tie" style={{ color: '#718096' }}></i>
+                  <span style={{ fontWeight: '500' }}>担当: {manager?.displayName || "未設定"}</span>
+                </div>
                 {canSetManager && (
                   <button
                     onClick={handleSetManager}
-                    style={{ border: 'none', background: 'none', color: '#3182ce', cursor: 'pointer', padding: '0 2px', fontSize: '0.75rem', textDecoration: 'underline', marginLeft: '4px' }}
+                    className={styles.managerChangeBtn}
                   >
                     変更
                   </button>
@@ -931,22 +933,20 @@ export function AccountingConfirmClient({ initialData }: Props) {
               {/* 管理ボタン */}
               {userData?.isSystemAdmin && (
                 <button
-                  className={`${styles.button} ${styles.outlineButton}`}
+                  className={`${styles.button} ${styles.outlineButton} ${styles.headerActionBtn}`}
                   onClick={handleOpenMemberSelectModal}
-                  style={{ padding: "6px 12px", fontSize: "0.8rem", whiteSpace: 'nowrap' }}
                 >
                   <i className="fa-solid fa-user-gear"></i> 精算メンバー管理
                 </button>
               )}
 
-              {/* 担当者手順ガイドボタン */}
+              {/* 清算マニュアルボタン */}
               <button
                 type="button"
-                className={`${styles.button} ${styles.outlineButton}`}
+                className={`${styles.button} ${styles.outlineButton} ${styles.headerActionBtn}`}
                 onClick={() => setIsManagerGuideOpen(true)}
-                style={{ padding: "6px 12px", fontSize: "0.8rem", whiteSpace: 'nowrap' }}
               >
-                <i className="fa-solid fa-clipboard-check"></i> 担当者手順ガイド
+                <i className="fa-solid fa-clipboard-check"></i> 清算マニュアル
               </button>
             </div>
           </div>
