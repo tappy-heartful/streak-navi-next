@@ -201,6 +201,20 @@ function sendPrevSeasonSummary(firestore, year, seasonKey) {
           sourceDocId: seasonId,
           title: season.name
         });
+        recordLineLog(firestore, {
+          messageId: messageId,
+          content: message,
+          accountType: 'group',
+          accountName: '全体グループ通知',
+          notificationType: 'accounting',
+          title: `${season.name} 精算結果案内`,
+          recipientType: 'group',
+          recipientUid: 'group',
+          recipientName: '全体グループ (バンドLINE)',
+          recipientLineId: LINE_GROUP_ID,
+          sourceCollection: 'accountingSeasons',
+          sourceDocId: seasonId
+        });
         Logger.log(`履歴保存完了: ${messageId}`);
       } catch (err) {
         Logger.log(`履歴保存エラー: ${err.toString()}`);
@@ -336,6 +350,20 @@ function execAccountingRemindNotification() {
               sourceDocId: seasonId,
               title: s.name
             });
+            recordLineLog(firestore, {
+              messageId: messageId,
+              content: n.msg,
+              accountType: 'individual',
+              accountName: '個別通知BOT',
+              notificationType: 'accounting',
+              title: `${s.name} 精算リマインド`,
+              recipientType: 'individual',
+              recipientUid: n.toUid,
+              recipientName: userMap[n.toUid] || 'メンバー',
+              recipientLineId: lineUid,
+              sourceCollection: 'accountingSeasons',
+              sourceDocId: seasonId
+            });
             Logger.log(`履歴保存完了 (個別): ${messageId}`);
           } catch (err) {
             Logger.log(`履歴保存エラー (個別): ${err.toString()}`);
@@ -448,6 +476,20 @@ function remindYesterdayEventExpenses() {
             sourceCollection: 'events',
             sourceDocId: eventId,
             title: eventTitle
+          });
+          recordLineLog(firestore, {
+            messageId: messageId,
+            content: message,
+            accountType: 'group',
+            accountName: '全体グループ通知',
+            notificationType: 'event',
+            title: `${eventTitle} 旅費補助案内`,
+            recipientType: 'group',
+            recipientUid: 'group',
+            recipientName: '全体グループ (バンドLINE)',
+            recipientLineId: LINE_GROUP_ID,
+            sourceCollection: 'events',
+            sourceDocId: eventId
           });
           Logger.log(`履歴保存完了: ${messageId}`);
         } catch (err) {
@@ -609,6 +651,20 @@ function remindPendingTravelExpenses() {
                 sourceDocId: eventId,
                 title: eventTitle
               });
+              recordLineLog(firestore, {
+                messageId: messageId,
+                content: message,
+                accountType: 'individual',
+                accountName: '個別通知BOT',
+                notificationType: 'accounting',
+                title: `${eventTitle} 旅費補助申請催促`,
+                recipientType: 'individual',
+                recipientUid: uid,
+                recipientName: userMap[uid] || 'メンバー',
+                recipientLineId: lineUid,
+                sourceCollection: 'events',
+                sourceDocId: eventId
+              });
               Logger.log(`履歴保存完了 (個別): ${messageId}`);
             } catch (err) {
               Logger.log(`履歴保存エラー (個別): ${err.toString()}`);
@@ -650,5 +706,53 @@ function sendLinePush(to, messageText) {
   } catch (e) {
     Logger.log('LINE Push Error: ' + e.toString());
     return null;
+  }
+}
+
+/**
+ * LINE送信ログを lineNotificationLogs に保存する共通関数
+ */
+function recordLineLog(firestore, options) {
+  if (!firestore) return;
+  try {
+    const now = new Date();
+    const JST = "Asia/Tokyo";
+    const sentAtFormatted = Utilities.formatDate(now, JST, 'yyyy/MM/dd HH:mm:ss');
+    const yearMonth = Utilities.formatDate(now, JST, 'yyyy-MM');
+    const dateStr = Utilities.formatDate(now, JST, 'yyyy-MM-dd');
+
+    const lines = (options.content || '').split('\n').filter(function(l) { return l.trim().length > 0; });
+    const summary = lines.slice(0, 2).join(' / ');
+
+    const logDoc = {
+      accountType: options.accountType || 'group',
+      accountName: options.accountName || (options.accountType === 'individual' ? '個別通知BOT' : '全体グループ通知'),
+      notificationType: options.notificationType || 'other',
+      notificationTitle: options.title || 'LINE通知',
+      recipientType: options.recipientType || options.accountType || 'group',
+      recipientUid: options.recipientUid || '',
+      recipientName: options.recipientName || (options.accountType === 'group' ? '全体グループ (バンドLINE)' : 'メンバー'),
+      recipientLineId: options.recipientLineId || '',
+      messages: [{ type: 'text', text: options.content }],
+      messageCount: 1,
+      summary: summary.length > 80 ? summary.substring(0, 80) + '...' : summary,
+      details: {
+        messageId: options.messageId,
+        sourceCollection: options.sourceCollection,
+        sourceDocId: options.sourceDocId
+      },
+      status: 'success',
+      statusCode: 200,
+      sentAt: now.getTime(),
+      sentAtFormatted: sentAtFormatted,
+      yearMonth: yearMonth,
+      date: dateStr,
+      sourceCollection: options.sourceCollection,
+      sourceDocId: options.sourceDocId
+    };
+
+    firestore.createDocument('lineNotificationLogs', logDoc);
+  } catch (err) {
+    Logger.log('recordLineLog error: ' + err.toString());
   }
 }

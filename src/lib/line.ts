@@ -61,6 +61,53 @@ export async function sendLinePushMessage(
             sourceDocId: historyMetadata.sourceDocId,
             title: historyMetadata.title,
           });
+
+          // LINE送信履歴 (lineNotificationLogs) にも保存
+          try {
+            const now = new Date();
+            const jstOffset = 9 * 60;
+            const jstDate = new Date(now.getTime() + (jstOffset + now.getTimezoneOffset()) * 60000);
+            const yyyy = jstDate.getFullYear();
+            const MM = String(jstDate.getMonth() + 1).padStart(2, "0");
+            const dd = String(jstDate.getDate()).padStart(2, "0");
+            const HH = String(jstDate.getHours()).padStart(2, "0");
+            const mm = String(jstDate.getMinutes()).padStart(2, "0");
+            const ss = String(jstDate.getSeconds()).padStart(2, "0");
+            const sentAtFormatted = `${yyyy}/${MM}/${dd} ${HH}:${mm}:${ss}`;
+            const yearMonth = `${yyyy}-${MM}`;
+            const dateStr = `${yyyy}-${MM}-${dd}`;
+
+            const sanitizedMessages = chunk.map((m) => {
+              if (m.type === "text") return { type: "text", text: m.text };
+              if (m.type === "image") return { type: "image", originalContentUrl: m.originalContentUrl, previewImageUrl: m.previewImageUrl };
+              return m;
+            });
+
+            await adminDb.collection("lineNotificationLogs").add({
+              accountType: "individual",
+              accountName: "個別通知BOT",
+              notificationType: historyMetadata.sourceCollection === "issues" ? "todo" : historyMetadata.sourceCollection === "accounting" ? "accounting" : "other",
+              notificationTitle: historyMetadata.title,
+              recipientType: "individual",
+              recipientUid: to,
+              recipientName: "メンバー",
+              recipientLineId: to,
+              messages: sanitizedMessages,
+              messageCount: chunk.length,
+              summary: content.length > 80 ? content.substring(0, 80) + "..." : content,
+              status: "success",
+              statusCode: response.status,
+              sentAt: now.getTime(),
+              sentAtFormatted,
+              yearMonth,
+              date: dateStr,
+              sourceCollection: historyMetadata.sourceCollection,
+              sourceDocId: historyMetadata.sourceDocId,
+              details: { messageId },
+            });
+          } catch (logErr) {
+            console.warn("Failed to write to lineNotificationLogs:", logErr);
+          }
         } catch (dbErr) {
           console.error("Failed to save line notification history", dbErr);
         }

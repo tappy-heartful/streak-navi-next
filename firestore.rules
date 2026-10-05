@@ -362,10 +362,25 @@ service cloud.firestore {
     match /lineMessagingIds/{uid} {
       allow delete: if isOwner(uid);
     }
+
+    // LINE通知送信ログ：ログインユーザーは閲覧可能（書き込みはGAS/Admin SDK専用）
+    match /lineNotificationLogs/{id} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // 過去の通知送信履歴：ログインユーザーは閲覧可能（書き込みはGAS/Admin SDK専用）
+    match /notificationHistorys/{id} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+    match /notificationIndividualHistorys/{id} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
     
-    // OAuth状態、通知履歴：フロントエンドからの直接操作を禁止
+    // OAuth状態：フロントエンドからの直接操作を禁止
     match /oauthStates/{oauthStatesId} { allow read, write: if false; }
-    match /notificationHistorys/{notificationHistorys} { allow read, write: if false; }
 
     // PWAログイン用セッション：作成から15分以内の読み取りおよび、クライアントからの削除を許可する
     match /pwaAuthSessions/{id} {

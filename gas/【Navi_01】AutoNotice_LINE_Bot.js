@@ -97,6 +97,39 @@ function evaluateAndSend(colName, docs, dateField, settings, today, JST, attenda
               sourceDocId: docId,
               title: title
             });
+
+            // 共通ログコレクション (lineNotificationLogs) にも保存
+            const now = new Date();
+            const sentAtFormatted = Utilities.formatDate(now, JST, 'yyyy/MM/dd HH:mm:ss');
+            const yearMonth = Utilities.formatDate(now, JST, 'yyyy-MM');
+            const dateStr = Utilities.formatDate(now, JST, 'yyyy-MM-dd');
+            const notifType = colName === 'events' ? 'event' : colName === 'votes' ? 'vote' : colName === 'calls' ? 'call' : 'other';
+            const lines = fullMessage.split('\n').filter(function(l) { return l.trim().length > 0; });
+            const summary = lines.slice(0, 2).join(' / ');
+
+            firestore.createDocument('lineNotificationLogs', {
+              accountType: 'group',
+              accountName: '全体グループ通知',
+              notificationType: notifType,
+              notificationTitle: title,
+              recipientType: 'group',
+              recipientUid: 'group',
+              recipientName: '全体グループ (バンドLINE)',
+              recipientLineId: LINE_GROUP_ID,
+              messages: [{ type: 'text', text: fullMessage }],
+              messageCount: 1,
+              summary: summary.length > 80 ? summary.substring(0, 80) + '...' : summary,
+              details: { messageId: messageId, sourceCollection: colName, sourceDocId: docId },
+              status: 'success',
+              statusCode: 200,
+              sentAt: now.getTime(),
+              sentAtFormatted: sentAtFormatted,
+              yearMonth: yearMonth,
+              date: dateStr,
+              sourceCollection: colName,
+              sourceDocId: docId
+            });
+
             Logger.log(`履歴保存完了: ${messageId}`);
           } catch (err) {
             Logger.log(`履歴保存エラー: ${err.toString()}`);

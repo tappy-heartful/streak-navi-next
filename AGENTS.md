@@ -11,6 +11,7 @@
    - プロジェクトディレクトリ外のOSレベルのシステムファイルの変更、システム全体の再起動やシャットダウンは**絶対に実行しないでください**。
    - 通信エラーやAPIエラーが発生した場合は、ホストマシンの設定を変更するのではなく、プロジェクト内のアプリケーションコードや設定を修正するか、ユーザーに指示を仰いでください。
 4. **自動ビルド検証**: ユーザーの指示に基づいてコードを修正した後は、必ず自動的に `npm run build` を実行してビルドエラーがないか確認してください。もしエラーが発生した場合は、ユーザーに報告する前に**必ず自らエラーを解消し、再度ビルドが通ることを確認**してから完了報告を行うこと。
+5. **Firestoreルールの自動更新**: 新機能の追加、新しいコレクションやサブコレクションの導入、あるいは既存コレクションのアクセス要件変更が発生した際は、必ず `firestore.rules` もセットで確認・更新してください。クライアントSDKからの読み取り・書き込み権限（認証必須、ロール・管理者権限、所有者判定など）を過不足なく定義し、本番環境での Permission Denied エラーやセキュリティホールを未然に防止すること。
 
 ---
 
@@ -240,7 +241,8 @@ graph TD
 | `accountingSeasons` | 会計シーズン清算 | `year`, `seasonKey` (spring/summer/autumn/winter), `memberIds`, `managerId`, `evidenceUrls`, `settledAt` |
 | `incomes` | 団体収入 (チケット売上等) | `uid` (受取人), `title`, `amount`, `date`, `status` |
 | `travelSubsidies` | 旅費補助額マスタ | `departurePrefectureId`, `departureMunicipalityId`, `arrivalPrefectureId`, `arrivalMunicipalityId`, `amount` |
-| `notificationIndividualHistorys` | LINE通知送信履歴 | `messageId`, `content`, `sourceCollection`, `sourceDocId`, `title`, `sentAt` |
+| `notificationIndividualHistorys` | LINE通知送信履歴 (旧形式) | `messageId`, `content`, `sourceCollection`, `sourceDocId`, `title`, `sentAt` |
+| `lineNotificationLogs` | LINE送信履歴・配信枠管理 | `accountType`, `accountName`, `notificationType`, `notificationTitle`, `recipientType`, `recipientUid`, `recipientName`, `recipientLineId`, `messages`, `messageCount`, `summary`, `status`, `sentAt`, `yearMonth`, `date` |
 | `logs` / `errorLogs` | 操作・エラーログ | `uid`, `userName`, `action`, `dataId`, `status`, `errorDetail`, `createdAt` |
 | `accessLogs` | 画面アクセスログ | `uid`, `userName`, `pathname`, `searchParams`, `createdAt` |
 | `archives` | 削除データ退避 | `originalCollection`, `originalId`, `archivedAt`, 退避データ本文 |

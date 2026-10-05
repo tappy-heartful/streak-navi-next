@@ -628,3 +628,39 @@ export interface IssueComment {
   createdAt: number;
 }
 
+// ==========================================
+// LINE 送信履歴用データ型定義
+// ==========================================
+
+export interface LineNotificationMessage {
+  type: "text" | "image" | "flex" | string;
+  text?: string;
+  originalContentUrl?: string;
+  previewImageUrl?: string;
+}
+
+export interface LineNotificationLog {
+  id: string;
+  accountType: "group" | "individual" | "periodic" | "event" | "other"; // "group": グループ全体, "individual": 個人宛て
+  accountName: string; // "バンド全体グループ" | "個別通知BOT" 等
+  notificationType: "event" | "accounting" | "todo" | "vote" | "call" | "morning" | "other";
+  notificationTitle: string; // "出欠リマインド", "会計精算案内" 等
+  recipientType?: "group" | "individual";
+  recipientUid: string; // 送信先UID (グループ通知の場合は "group" または空)
+  recipientName: string; // 送信先表示名 (例: "全体グループ (バンドLINE)", "〇〇さん")
+  recipientLineId: string; // LINE Group ID または LINE User ID
+  messages: LineNotificationMessage[];
+  messageCount: number; // 吹き出し数（月200通上限のカウント単位）
+  summary: string; // リスト表示用要約
+  details?: Record<string, any>;
+  status: "success" | "error";
+  statusCode?: number;
+  errorMessage?: string | null;
+  sentAt: number; // 送信タイムスタンプ（ミリ秒）
+  sentAtFormatted: string; // "yyyy/MM/dd HH:mm:ss"
+  yearMonth: string; // "yyyy-MM" (月別集計用)
+  date: string; // "yyyy-MM-dd"
+  sourceCollection?: string;
+  sourceDocId?: string;
+}
+

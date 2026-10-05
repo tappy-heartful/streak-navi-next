@@ -122,6 +122,20 @@ function execTodoDeadlineNotification() {
               sourceDocId: todo.id,
               title: todo.title
             });
+            recordLineLog(firestore, {
+              messageId: messageId,
+              content: message,
+              accountType: 'individual',
+              accountName: '個別通知BOT',
+              notificationType: 'todo',
+              title: `TODO: ${todo.title}`,
+              recipientType: 'individual',
+              recipientUid: todo.assigneeId,
+              recipientName: todo.assigneeName || '担当メンバー',
+              recipientLineId: lineUid,
+              sourceCollection: 'issues',
+              sourceDocId: todo.id
+            });
             Logger.log(`[TODOリマインド] 履歴保存完了 (個別): ${messageId}`);
           } catch (err) {
             Logger.log(`[TODOリマインド] 履歴保存エラー (個別): ${err.toString()}`);
@@ -207,5 +221,53 @@ function sendLinePush(to, messageText) {
   } catch (e) {
     Logger.log('LINE Push Error: ' + e.toString());
     return null;
+  }
+}
+
+/**
+ * LINE送信ログを lineNotificationLogs に保存する共通関数
+ */
+function recordLineLog(firestore, options) {
+  if (!firestore) return;
+  try {
+    const now = new Date();
+    const JST = "Asia/Tokyo";
+    const sentAtFormatted = Utilities.formatDate(now, JST, 'yyyy/MM/dd HH:mm:ss');
+    const yearMonth = Utilities.formatDate(now, JST, 'yyyy-MM');
+    const dateStr = Utilities.formatDate(now, JST, 'yyyy-MM-dd');
+
+    const lines = (options.content || '').split('\n').filter(function(l) { return l.trim().length > 0; });
+    const summary = lines.slice(0, 2).join(' / ');
+
+    const logDoc = {
+      accountType: options.accountType || 'individual',
+      accountName: options.accountName || '個別通知BOT',
+      notificationType: options.notificationType || 'todo',
+      notificationTitle: options.title || 'TODOリマインド',
+      recipientType: options.recipientType || 'individual',
+      recipientUid: options.recipientUid || '',
+      recipientName: options.recipientName || 'メンバー',
+      recipientLineId: options.recipientLineId || '',
+      messages: [{ type: 'text', text: options.content }],
+      messageCount: 1,
+      summary: summary.length > 80 ? summary.substring(0, 80) + '...' : summary,
+      details: {
+        messageId: options.messageId,
+        sourceCollection: options.sourceCollection,
+        sourceDocId: options.sourceDocId
+      },
+      status: 'success',
+      statusCode: 200,
+      sentAt: now.getTime(),
+      sentAtFormatted: sentAtFormatted,
+      yearMonth: yearMonth,
+      date: dateStr,
+      sourceCollection: options.sourceCollection,
+      sourceDocId: options.sourceDocId
+    };
+
+    firestore.createDocument('lineNotificationLogs', logDoc);
+  } catch (err) {
+    Logger.log('recordLineLog error: ' + err.toString());
   }
 }
