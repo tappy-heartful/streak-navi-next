@@ -219,7 +219,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
     // 2. 過去の（終わった）シーズンの場合
     const activeMemberIds = season?.memberIds || [];
     
-    // 要清算メンバー（担当者を除く、支払額 > 0）
+    // 要清算メンバー（担当者を除く、精算額 !== 0）
     const requiredSettlementMembers = activeMemberIds.filter(uid => {
       if (uid === season?.managerId) return false;
       const user = users.find(u => u.id === uid);
@@ -237,7 +237,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
       
       const contribution = userExpenses - userIncomes;
       const memberSettlement = totals.averageBurden - contribution;
-      return memberSettlement > 0;
+      return memberSettlement !== 0;
     });
 
     if (requiredSettlementMembers.length === 0) {
@@ -619,8 +619,9 @@ export function AccountingConfirmClient({ initialData }: Props) {
         <ul className={styles.memberList}>
           {members.map(m => {
             const memberSettlement = totals.averageBurden - m.contribution;
-            const isRequiredSettlement = m.uid !== season?.managerId && memberSettlement > 0;
+            const isRequiredSettlement = m.uid !== season?.managerId && memberSettlement !== 0;
             const isUploadPending = isRequiredSettlement && !season?.evidenceUrls?.[m.uid];
+            const canManageEvidence = isAccountAdmin || userData?.id === m.uid || userData?.id === season?.managerId;
             return (
               <li key={m.uid} className={`${styles.memberItem} ${isUploadPending ? styles.pendingUpload : ""}`}>
                 {m.pictureUrl ? (
@@ -674,7 +675,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
                             表示
                           </button>
                         )}
-                        {(isAccountAdmin || userData?.id === m.uid) && season?.evidenceUrls?.[m.uid] && (
+                        {canManageEvidence && season?.evidenceUrls?.[m.uid] && (
                           <button
                             type="button"
                             className={styles.btnReceiptDelete}
@@ -684,7 +685,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
                             <i className="fa-solid fa-trash-can"></i>
                           </button>
                         )}
-                        {(isAccountAdmin || userData?.id === m.uid) && memberSettlement > 0 && (
+                        {canManageEvidence && memberSettlement !== 0 && (
                           <label className={styles.btnReceiptUpload} title="エビデンス画像をアップロード">
                             <i className="fa-solid fa-upload"></i>
                             <input
@@ -695,7 +696,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
                             />
                           </label>
                         )}
-                        {!(isAccountAdmin || userData?.id === m.uid) && !season?.evidenceUrls?.[m.uid] && memberSettlement > 0 && (
+                        {!canManageEvidence && !season?.evidenceUrls?.[m.uid] && memberSettlement !== 0 && (
                           <span className={styles.evidencePlaceholder}>エビデンス未登録</span>
                         )}
                       </>
