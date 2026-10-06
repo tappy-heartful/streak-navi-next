@@ -307,6 +307,7 @@ function execAccountingRemindNotification() {
       const avg = Math.floor(netTotal / memberIds.length);
 
       const notifications = []; // { toUid: string, msg: string } のリスト
+      const pendingReceivers = []; // 清算担当者宛てにまとめる受取未完了メンバー
 
       memberIds.forEach(uid => {
         const hasEvidence = s.evidenceUrls && s.evidenceUrls[uid] && s.evidenceUrls[uid].trim() !== "";
@@ -324,15 +325,28 @@ function execAccountingRemindNotification() {
                       `${BASE_URL}/accounting/confirm?seasonId=${s.id}`;
           notifications.push({ toUid: uid, msg: msg });
         } else if (settlement < 0) {
-          // 受取（未受取証跡）: シーズン担当者へ催促
+          // 受取（未受取証跡）: 清算担当者自身はスキップし、リストに集約
+          if (uid === managerId) return;
           const receiverName = userMap[uid] || "メンバー";
-          const msg = `お疲れ様です！Streak Navi コンシェルジュです🍀\n\n` +
-                      `【バランス会計・受取証跡アップロードのお願い】\n` +
-                      `「${s.name}」の${receiverName}さんへの受取証明（スクショ）が未提出です。送金後スクショアップロードをお願いします。🙇‍♂️\n` +
-                      `${BASE_URL}/accounting/confirm?seasonId=${s.id}`;
-          notifications.push({ toUid: managerId, msg: msg });
+          pendingReceivers.push({
+            name: receiverName,
+            amount: Math.abs(settlement)
+          });
         }
       });
+
+      // 清算担当者宛て：受取未提出メンバーがいる場合、1通にまとめて通知
+      if (managerId && pendingReceivers.length > 0) {
+        const receiverListStr = pendingReceivers
+          .map(r => `・${r.name}さん (¥${r.amount.toLocaleString()})`)
+          .join('\n');
+        const msg = `お疲れ様です！Streak Navi コンシェルジュです🍀\n\n` +
+                    `【バランス会計・受取証跡アップロードのお願い】\n` +
+                    `「${s.name}」の以下のメンバーへの受取証明（スクショ）が未提出です。送金後スクショアップロードをお願いします。🙇‍♂️\n\n` +
+                    `${receiverListStr}\n\n` +
+                    `${BASE_URL}/accounting/confirm?seasonId=${s.id}`;
+        notifications.push({ toUid: managerId, msg: msg });
+      }
 
       // 通知の送信
       notifications.forEach(n => {
