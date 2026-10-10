@@ -27,7 +27,8 @@ export default function LineLogListClient() {
   const { userData, loading: authLoading } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
 
-  const canView = Boolean(userData?.isSystemAdmin || userData?.isLineLogAdmin);
+  // ログインユーザーであれば誰でも閲覧可能
+  const canView = Boolean(userData);
 
   const [currentYearMonth, setCurrentYearMonth] = useState<string>(getInitialYearMonth());
   const [logs, setLogs] = useState<LineNotificationLog[]>([]);
@@ -154,21 +155,21 @@ export default function LineLogListClient() {
     );
   }
 
-  // システム管理者またはLINE送信履歴管理者以外は閲覧不可
+  // ログインしていない場合の案内
   if (!canView) {
     return (
       <div className={styles.pageWrapper}>
         <div className={styles.unauthorizedCard}>
           <div className={styles.unauthorizedIcon}>
-            <i className="fa-solid fa-shield-halved" />
+            <i className="fa-solid fa-lock" />
           </div>
-          <h2 className={styles.unauthorizedTitle}>アクセス権限がありません</h2>
+          <h2 className={styles.unauthorizedTitle}>ログインが必要です</h2>
           <p className={styles.unauthorizedText}>
-            LINE送信履歴および配信枠状況の閲覧は、システム管理者またはLINE送信履歴管理者のみ許可されています。
+            LINE送信履歴および配信枠状況を閲覧するにはログインが必要です。
           </p>
-          <Link href="/" className={styles.homeBtn}>
-            <i className="fa-solid fa-house" />
-            ホームに戻る
+          <Link href="/login" className={styles.homeBtn}>
+            <i className="fa-solid fa-arrow-right-to-bracket" />
+            ログイン画面へ
           </Link>
         </div>
       </div>

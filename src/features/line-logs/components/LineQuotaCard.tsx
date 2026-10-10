@@ -64,10 +64,10 @@ export default function LineQuotaCard({ quotaSummary, displayMonthLabel }: LineQ
         </div>
 
         <div className={styles.remainingSection}>
-          <span className={styles.remainingLabel}>今月の残り配信可能数</span>
+          <span className={styles.remainingLabel}>今月の送信数</span>
           <div className={styles.remainingValue}>
             <span className={`${styles.remainingNumber} ${numberColorClass}`}>
-              {info.remaining}
+              {info.consumed}
             </span>
             <span className={styles.remainingUnit}>/ {info.limit} 通</span>
           </div>
@@ -82,7 +82,7 @@ export default function LineQuotaCard({ quotaSummary, displayMonthLabel }: LineQ
           </div>
           <div className={styles.progressTextRow}>
             <span>
-              使用済み: <strong>{info.consumed}</strong> 通 ({info.usageRate}%)
+              残り: <strong>{info.remaining}</strong> 通 ({info.usageRate}% 使用)
             </span>
             <span>上限: {info.limit} 通/月</span>
           </div>

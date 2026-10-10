@@ -24,6 +24,34 @@ export default function LineLogDetailModal({ log, onClose }: LineLogDetailModalP
   const isGroup = log.accountType === "group" || log.recipientType === "group" || log.recipientUid === "group";
   const details = log.details || {};
 
+  // テキスト内のURLを検出してクリッカブルなリンクとしてレンダリングする
+  const renderMessageContent = (text?: string) => {
+    if (!text) return "（テキストなし）";
+
+    const urlRegex = /(https?:\/\/[^\s　\n]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, i) => {
+      if (part.match(/^https?:\/\//)) {
+        return (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.messageLink}
+            onClick={(e) => e.stopPropagation()}
+            title={part}
+          >
+            <span>{part}</span>
+            <i className="fa-solid fa-arrow-up-right-from-square" style={{ fontSize: "0.75em", marginLeft: "4px" }} />
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -117,13 +145,13 @@ export default function LineLogDetailModal({ log, onClose }: LineLogDetailModalP
                   }
                   return (
                     <div key={index} className={styles.messageBubble}>
-                      {msg.text || "（テキストなし）"}
+                      {renderMessageContent(msg.text)}
                     </div>
                   );
                 })
               ) : (
                 <div className={styles.messageBubble}>
-                  {log.summary || "（メッセージデータなし）"}
+                  {renderMessageContent(log.summary)}
                 </div>
               )}
             </div>

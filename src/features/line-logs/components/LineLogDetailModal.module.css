@@ -190,6 +190,25 @@
   align-self: flex-start;
 }
 
+.messageLink {
+  color: #0284c7;
+  text-decoration: underline;
+  word-break: break-all;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background-color: #f0f9ff;
+  padding: 1px 6px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.messageLink:hover {
+  color: #0369a1;
+  background-color: #e0f2fe;
+}
+
 .imageBubble {
   background-color: #ffffff;
   border-radius: 14px;

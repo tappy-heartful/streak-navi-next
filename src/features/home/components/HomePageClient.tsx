@@ -196,7 +196,7 @@ const MenuSectionList = memo(({ isAdmin, isLineLogAdmin }: { isAdmin: boolean; i
       <MenuSection title="アプリメニュー" items={[
         { h: "/user", l: "fa-solid fa-users ユーザ", c: "appMenu" },
         { h: "/notice", l: "fa-solid fa-bell 通知設定", c: "appMenu" },
-        ...(isLineLogAdmin ? [{ h: "/line-logs", l: "fa-solid fa-paper-plane LINE送信履歴", c: "appMenu" }] : []),
+        { h: "/line-logs", l: "fa-solid fa-paper-plane LINE送信履歴", c: "appMenu" },
         { h: "/blue-note", l: "fa-solid fa-record-vinyl 今日の一曲", c: "appMenu", b: "募集中" },
         { h: "/board", l: "fa-solid fa-clipboard-list 掲示板", c: "appMenu" },
         { h: "/issue", l: "fa-solid fa-list-check TODO", c: "appMenu" }

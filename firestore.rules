@@ -363,19 +363,19 @@ service cloud.firestore {
       allow delete: if isOwner(uid);
     }
 
-    // LINE通知送信ログ：システム管理者またはLineLog管理者のみ閲覧可能（書き込みはGAS/Admin SDK専用）
+    // LINE通知送信ログ：ログインユーザーなら誰でも閲覧可能（書き込みはGAS/Admin SDK専用）
     match /lineNotificationLogs/{id} {
-      allow read: if isAdmin("LineLog");
+      allow read: if isSignedIn();
       allow write: if false;
     }
 
-    // 過去の通知送信履歴：システム管理者またはLineLog管理者のみ閲覧可能（書き込みはGAS/Admin SDK専用）
+    // 過去の通知送信履歴：ログインユーザーなら誰でも閲覧可能（書き込みはGAS/Admin SDK専用）
     match /notificationHistorys/{id} {
-      allow read: if isAdmin("LineLog");
+      allow read: if isSignedIn();
       allow write: if false;
     }
     match /notificationIndividualHistorys/{id} {
-      allow read: if isAdmin("LineLog");
+      allow read: if isSignedIn();
       allow write: if false;
     }
     
