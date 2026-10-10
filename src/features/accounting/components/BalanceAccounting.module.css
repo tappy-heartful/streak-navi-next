@@ -206,6 +206,85 @@
   margin-bottom: 4px;
 }
 
+.guideIdRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 4px 0;
+}
+
+.guideIdText {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  word-break: break-all;
+}
+
+.copyPaypayIdBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #c05621;
+  background: #ffffff;
+  border: 1px solid #fbd38d;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  line-height: 1.4;
+}
+
+.copyPaypayIdBtn:hover {
+  background: #feebc8;
+  border-color: #f6ad55;
+  color: #9c4221;
+}
+
+.copyPaypayIdBtn:active {
+  transform: scale(0.97);
+}
+
+.copyPaypayIdBtnSuccess {
+  background: #f0fdf4 !important;
+  border-color: #86efac !important;
+  color: #166534 !important;
+}
+
+.paypayAppBtnWrapper {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.paypayAppBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 8px 18px;
+  background: #ff0033;
+  color: #ffffff;
+  border-radius: 20px;
+  font-weight: bold;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 4px rgba(255, 0, 51, 0.25);
+}
+
+.paypayAppBtn:hover {
+  background: #e6002e;
+  box-shadow: 0 4px 6px rgba(255, 0, 51, 0.35);
+  transform: translateY(-1px);
+}
+
 .managerGuideWrapper {
   margin-top: 14px;
 }

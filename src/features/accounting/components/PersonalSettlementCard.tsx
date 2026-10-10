@@ -36,6 +36,45 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
   managerPaypayId,
 }) => {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const copyTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleCopyPaypayId = async () => {
+    if (!managerPaypayId) return;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(managerPaypayId);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = managerPaypayId;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        textArea.remove();
+      }
+      setIsCopied(true);
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+      copyTimeoutRef.current = setTimeout(() => {
+        setIsCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy PayPay ID:", err);
+    }
+  };
 
   if (!season) return null;
 
@@ -84,30 +123,34 @@ export const PersonalSettlementCard: React.FC<PersonalSettlementCardProps> = ({
               <li>PayPayアプリを開く</li>
               <li>「送る」タブを選択</li>
               <li>
-                {managerPaypayId
-                  ? <><strong>「{managerPaypayId}」</strong>({managerName || "担当者"})を検索</>
-                  : <>{managerName ? `「${managerName}」` : "担当者"}を検索</>
-                }
+                {managerPaypayId ? (
+                  <div className={styles.guideIdRow}>
+                    <span className={styles.guideIdText}>
+                      <strong>「{managerPaypayId}」</strong>
+                      <span>({managerName || "担当者"})を検索</span>
+                    </span>
+                    <button
+                      type="button"
+                      className={`${styles.copyPaypayIdBtn} ${isCopied ? styles.copyPaypayIdBtnSuccess : ""}`}
+                      onClick={handleCopyPaypayId}
+                      title="PayPay IDをコピー"
+                    >
+                      <i className={isCopied ? "fa-solid fa-check" : "fa-regular fa-copy"} />
+                      <span>{isCopied ? "コピー完了" : "PayPay IDをコピー"}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <>{managerName ? `「${managerName}」` : "担当者"}を検索</>
+                )}
               </li>
               <li><strong>¥{settlementAmount.toLocaleString()}</strong> を送金</li>
             </ol>
-            <div style={{ marginTop: "12px", textAlign: "center" }}>
+            <div className={styles.paypayAppBtnWrapper}>
               <a
                 href="paypay://"
-                className={styles.button}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  textDecoration: "none",
-                  fontSize: "0.9rem",
-                  padding: "8px 16px",
-                  background: "#ff0033",
-                  color: "#fff",
-                  borderRadius: "20px",
-                  fontWeight: "bold"
-                }}
+                className={styles.paypayAppBtn}
               >
+                <i className="fa-solid fa-arrow-up-right-from-square" />
                 PayPayアプリを開く
               </a>
             </div>
