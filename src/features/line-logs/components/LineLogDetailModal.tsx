@@ -52,6 +52,17 @@ export default function LineLogDetailModal({ log, onClose }: LineLogDetailModalP
     });
   };
 
+  // LINE宛先名（Uから始まる生IDは表示せず、名前または「メンバー」と表示）
+  const safeRecipientName = (() => {
+    if (isGroup) return "全体グループ (バンドLINE)";
+    if (!log.recipientName) return "メンバー";
+    // Uから始まる英数字（LINE User ID形式）の場合は非表示にして「メンバー」とする
+    if (/^U[a-zA-Z0-9]{10,}$/.test(log.recipientName.trim())) {
+      return "メンバー";
+    }
+    return log.recipientName;
+  })();
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -95,20 +106,13 @@ export default function LineLogDetailModal({ log, onClose }: LineLogDetailModalP
             <div className={styles.metaItem}>
               <span className={styles.metaLabel}>送信先</span>
               <span className={styles.metaValue}>
-                {log.recipientName || (isGroup ? "全体グループ (バンドLINE)" : "メンバー")}
-                {!isGroup && log.recipientUid && ` (${log.recipientUid.substring(0, 6)}...)`}
+                {safeRecipientName}
               </span>
             </div>
             <div className={styles.metaItem}>
               <span className={styles.metaLabel}>消費吹き出し数</span>
               <span className={styles.metaValue}>
                 <strong>{log.messageCount || 1}</strong> 通
-              </span>
-            </div>
-            <div className={styles.metaItem}>
-              <span className={styles.metaLabel}>LINE 宛先 ID</span>
-              <span className={styles.metaValue} style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                {log.recipientLineId ? `${log.recipientLineId.substring(0, 12)}...` : "未設定"}
               </span>
             </div>
           </div>

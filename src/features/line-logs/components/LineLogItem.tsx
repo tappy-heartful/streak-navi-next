@@ -36,6 +36,15 @@ export default function LineLogItem({ log, onClick }: LineLogItemProps) {
     }
   };
 
+  const safeRecipientName = (() => {
+    if (isGroup) return "全体グループ";
+    if (!log.recipientName) return "メンバー";
+    if (/^U[a-zA-Z0-9]{10,}$/.test(log.recipientName.trim())) {
+      return "メンバー";
+    }
+    return log.recipientName;
+  })();
+
   return (
     <div className={styles.itemCard} onClick={onClick}>
       <div className={styles.topRow}>
@@ -86,9 +95,9 @@ export default function LineLogItem({ log, onClick }: LineLogItemProps) {
       </div>
 
       <div className={styles.bottomRow}>
-        <span className={styles.recipientText} title={log.recipientName}>
+        <span className={styles.recipientText} title={safeRecipientName}>
           <i className={isGroup ? "fa-solid fa-users" : "fa-regular fa-user"}></i>
-          宛先: {log.recipientName || (isGroup ? "全体グループ" : "メンバー")}
+          宛先: {safeRecipientName}
         </span>
         <div>
           {!isSuccess ? (
