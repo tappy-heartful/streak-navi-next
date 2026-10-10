@@ -185,7 +185,26 @@
 .logListContainer {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
+}
+
+.dateGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dateHeading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  padding: 4px 2px 2px 2px;
+}
+
+.dateLogList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* 空表示 */

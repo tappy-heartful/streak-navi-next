@@ -112,6 +112,66 @@ export default function LineLogListClient() {
     });
   }, [logs, accountFilter, typeFilter, searchKeyword]);
 
+  // 日付ごとにグルーピングされたログリスト
+  const groupedLogs = useMemo(() => {
+    const groupMap = new Map<string, LineNotificationLog[]>();
+
+    filteredLogs.forEach((log) => {
+      let dateKey = log.date;
+      if (!dateKey && log.sentAtFormatted) {
+        dateKey = log.sentAtFormatted.substring(0, 10).replace(/\//g, "-");
+      }
+      if (!dateKey && log.sentAt) {
+        const d = new Date(log.sentAt);
+        dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+      if (!dateKey) {
+        dateKey = "unknown";
+      }
+
+      if (!groupMap.has(dateKey)) {
+        groupMap.set(dateKey, []);
+      }
+      groupMap.get(dateKey)!.push(log);
+    });
+
+    const groups: Array<{
+      dateKey: string;
+      monthDay: string;
+      dayOfWeek: string;
+      logs: LineNotificationLog[];
+    }> = [];
+
+    groupMap.forEach((logsInDate, dateKey) => {
+      const parts = dateKey.split("-");
+      if (parts.length === 3) {
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10);
+        const d = parseInt(parts[2], 10);
+        const dateObj = new Date(y, m - 1, d);
+        const dayOfWeek = ["日", "月", "火", "水", "木", "金", "土"][dateObj.getDay()];
+        groups.push({
+          dateKey,
+          monthDay: `${m}月${d}日`,
+          dayOfWeek,
+          logs: logsInDate,
+        });
+      } else {
+        groups.push({
+          dateKey,
+          monthDay: "日付未設定",
+          dayOfWeek: "",
+          logs: logsInDate,
+        });
+      }
+    });
+
+    // 日付の新しい順（降順）にソート
+    groups.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+
+    return groups;
+  }, [filteredLogs]);
+
   // 年月操作ヘルパー
   const handlePrevMonth = () => {
     const [y, m] = currentYearMonth.split("-").map(Number);
@@ -292,14 +352,27 @@ export default function LineLogListClient() {
           <div className={styles.loadingSpinner}></div>
           <p>送信履歴を読み込み中...</p>
         </div>
-      ) : filteredLogs.length > 0 ? (
+      ) : groupedLogs.length > 0 ? (
         <div className={styles.logListContainer}>
-          {filteredLogs.map((log) => (
-            <LineLogItem
-              key={log.id}
-              log={log}
-              onClick={() => setSelectedLog(log)}
-            />
+          {groupedLogs.map((group) => (
+            <div key={group.dateKey} className={styles.dateGroup}>
+              {/* 日付見出し */}
+              <div className={styles.dateHeading}>
+                {group.monthDay}
+                {group.dayOfWeek && ` (${group.dayOfWeek})`}
+              </div>
+
+              {/* その日のログ一覧 */}
+              <div className={styles.dateLogList}>
+                {group.logs.map((log) => (
+                  <LineLogItem
+                    key={log.id}
+                    log={log}
+                    onClick={() => setSelectedLog(log)}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       ) : (
