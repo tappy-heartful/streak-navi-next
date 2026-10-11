@@ -1172,20 +1172,6 @@ function recordLineLog(firestore, options) {
     const lines = (options.content || '').split('\n').filter(function(l) { return l.trim().length > 0; });
     const summary = lines.slice(0, 2).join(' / ');
 
-    const isGroup = (options.accountType === 'group') || (options.recipientType === 'group');
-    let groupMemberCount = null;
-    if (isGroup) {
-      try {
-        const lineLogsCfgDoc = firestore.getDocument('configs/lineLogs');
-        const cfg = lineLogsCfgDoc ? (lineLogsCfgDoc.obj || lineLogsCfgDoc) : null;
-        if (cfg && typeof cfg.groupMemberCount === 'number') {
-          groupMemberCount = cfg.groupMemberCount;
-        }
-      } catch (cfgErr) {
-        // スキップ
-      }
-    }
-
     const logDoc = {
       accountType: options.accountType || 'individual',
       accountName: options.accountName || (options.accountType === 'group' ? '全体グループ通知' : '個別通知BOT'),
@@ -1197,13 +1183,11 @@ function recordLineLog(firestore, options) {
       recipientLineId: options.recipientLineId || '',
       messages: [{ type: 'text', text: options.content }],
       messageCount: 1,
-      groupMemberCount: groupMemberCount || undefined,
       summary: summary.length > 80 ? summary.substring(0, 80) + '...' : summary,
       details: {
         messageId: options.messageId,
         sourceCollection: options.sourceCollection,
-        sourceDocId: options.sourceDocId,
-        groupMemberCount: groupMemberCount || undefined
+        sourceDocId: options.sourceDocId
       },
       status: 'success',
       statusCode: 200,
