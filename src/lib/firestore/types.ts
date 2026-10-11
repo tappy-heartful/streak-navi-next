@@ -663,5 +663,12 @@ export interface LineNotificationLog {
   date: string; // "yyyy-MM-dd"
   sourceCollection?: string;
   sourceDocId?: string;
+  groupMemberCount?: number; // 送信時点のグループ参加人数（任意）
+}
+
+export interface LineLogConfig {
+  groupMemberCount: number; // グループLINEの参加人数（無料枠カウント用: 人数 × メッセージ数）
+  updatedAt?: number;
+  updatedBy?: string;
 }
 

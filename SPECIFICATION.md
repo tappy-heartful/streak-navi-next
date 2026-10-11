@@ -308,7 +308,8 @@ Firestore のセキュリティルール（`firestore.rules`）に基づき、�
 | `accountingSeasons` | `{year}-{seasonKey}` | `year`, `seasonKey`, `memberIds`, `managerId`, `evidenceUrls`, `settledAt` | 全メンバー | `isAccountAdmin` / サックスパート |
 | `incomes` | 自動採番 | `uid`, `title`, `amount`, `date`, `status` | 全メンバー | `isExpenseAdmin` / `isAccountAdmin` |
 | `travelSubsidies` | 自動採番 | `departurePrefectureId`, `departureMunicipalityId`, `arrivalPrefectureId`, `arrivalMunicipalityId`, `amount` | 全メンバー | `isTravelSubsidyAdmin` |
-| `lineNotificationLogs` | 自動採番 | `accountType`, `accountName`, `notificationType`, `notificationTitle`, `recipientType`, `recipientUid`, `recipientName`, `recipientLineId`, `messages`, `messageCount`, `summary`, `status`, `sentAt`, `yearMonth`, `date` | 全メンバー | GAS / Admin SDK専用 |
+| `lineNotificationLogs` | 自動採番 | `accountType`, `accountName`, `notificationType`, `notificationTitle`, `recipientType`, `recipientUid`, `recipientName`, `recipientLineId`, `messages`, `messageCount`, `groupMemberCount`, `summary`, `status`, `sentAt`, `yearMonth`, `date` | 全メンバー | GAS / Admin SDK専用 |
+| `configs/lineLogs` | 固定 (`lineLogs`) | `groupMemberCount` (グループ参加人数), `updatedAt`, `updatedBy` | 全メンバー | `isLineLogAdmin` / `isNoticeAdmin` / `isSystemAdmin` |
 | `notificationHistorys` | 自動採番 | 過去のグループ通知送信ログ | 全メンバー | GAS / Admin SDK専用 |
 | `notificationIndividualHistorys` | 自動採番 | 過去の個別通知送信ログ | 全メンバー | GAS / Admin SDK専用 |
 | `lineMessagingIds` | `uid` | `lineUid`, `isNavi` | 本人のみ（削除） | 認証フロー（Admin SDK）専用 |
@@ -354,4 +355,10 @@ Firestore のセキュリティルール（`firestore.rules`）に基づき、�
      - 旅費補助未提出催促（個別LINE）
      - 会計精算未入金・未証跡リマインド（個別LINE）
   2. `runNightlyMaintenance`（夜/深夜実行）: 四半期初日（1/1, 4/1, 7/1, 10/1）の会計新シーズン自動作成、各種運用ログ（`accessLogs`, `logs`, `errorLogs`, `connectLogs`, `connectErrorLogs`）の1,000件超過分削除クリーンアップ。
+
+### 5.5. LINE公式アカウント配信枠・グループ人数連動管理 (`/line-logs`)
+- **グループ配信枠の厳密計算**:
+  - LINE公式アカウントの仕様に基づき、全体グループ通知は「メッセージ数 × グループ参加人数」が消費通数としてカウントされる。
+  - 管理者（`isLineLogAdmin`, `isNoticeAdmin`, `isSystemAdmin`）は `/line-logs` 画面上でグループ参加人数（`configs/lineLogs.groupMemberCount`）を直接登録・変更可能。
+  - 送信ログ一覧および月間クォータゲージ（上限200通）は、設定された参加人数を乗算して正確な残通数・使用率をリアルタイム算出・可視化。
 

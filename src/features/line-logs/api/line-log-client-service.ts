@@ -1,6 +1,6 @@
 import { db } from "@/src/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { LineNotificationLog } from "@/src/lib/firestore/types";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { LineNotificationLog, LineLogConfig } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 
 export const MONTHLY_QUOTA_LIMIT = 200; // LINE公式アカウント無料プランの月間上限通数（吹き出し数）
@@ -17,9 +17,31 @@ export interface AccountQuotaInfo {
 
 export interface MonthQuotaSummary {
   yearMonth: string;
+  groupMemberCount: number;
   group: AccountQuotaInfo;
   individual: AccountQuotaInfo;
   totalConsumed: number;
+}
+
+/**
+ * LINE送信ログ設定 (configs/lineLogs) を取得する
+ */
+export async function getLineLogConfigClient(): Promise<LineLogConfig> {
+  try {
+    const s = await getDoc(doc(db, "configs", "lineLogs"));
+    if (!s.exists()) {
+      return { groupMemberCount: 1 };
+    }
+    const d = s.data();
+    return {
+      groupMemberCount: typeof d.groupMemberCount === "number" ? d.groupMemberCount : 1,
+      updatedAt: d.updatedAt,
+      updatedBy: d.updatedBy,
+    };
+  } catch (err) {
+    console.error("Failed to fetch configs/lineLogs:", err);
+    return { groupMemberCount: 1 };
+  }
 }
 
 /**
@@ -165,10 +187,18 @@ export async function getLineNotificationLogsByMonth(yearMonth: string): Promise
 
 /**
  * 送信ログ一覧からアカウント別（グループ全体 / 個別通知）の残通数・使用状況サマリーを計算する
+ * @param yearMonth 対象年月 ("YYYY-MM")
+ * @param logs 送信ログ一覧
+ * @param groupMemberCount 全体グループの参加人数（人数 × メッセージ数 で消費を計算）
  */
-export function calculateMonthQuotaSummary(yearMonth: string, logs: LineNotificationLog[]): MonthQuotaSummary {
+export function calculateMonthQuotaSummary(
+  yearMonth: string,
+  logs: LineNotificationLog[],
+  groupMemberCount: number = 1
+): MonthQuotaSummary {
   let groupConsumed = 0;
   let individualConsumed = 0;
+  const memberCount = groupMemberCount > 0 ? groupMemberCount : 1;
 
   logs.forEach((log) => {
     const count = log.messageCount || (log.messages?.length || 1);
@@ -176,7 +206,8 @@ export function calculateMonthQuotaSummary(yearMonth: string, logs: LineNotifica
       individualConsumed += count;
     } else {
       // "group" またはその他（デフォルトはグループ配信アカウント）
-      groupConsumed += count;
+      // グループ宛ては 人数 × メッセージ数 で枠を消費
+      groupConsumed += count * memberCount;
     }
   });
 
@@ -191,6 +222,7 @@ export function calculateMonthQuotaSummary(yearMonth: string, logs: LineNotifica
 
   return {
     yearMonth,
+    groupMemberCount: memberCount,
     group: {
       accountType: "group",
       accountName: "全体グループ通知アカウント",

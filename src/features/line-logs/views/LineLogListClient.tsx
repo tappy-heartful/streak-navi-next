@@ -8,8 +8,10 @@ import { LineNotificationLog } from "@/src/lib/firestore/types";
 import {
   getLineNotificationLogsByMonth,
   calculateMonthQuotaSummary,
+  getLineLogConfigClient,
   MonthQuotaSummary,
 } from "../api/line-log-client-service";
+import { saveLineLogConfigAction } from "../api/line-log-server-actions";
 import LineQuotaCard from "../components/LineQuotaCard";
 import LineLogItem from "../components/LineLogItem";
 import LineLogDetailModal from "../components/LineLogDetailModal";
@@ -30,10 +32,16 @@ export default function LineLogListClient() {
   // ログインユーザーであれば誰でも閲覧可能
   const canView = Boolean(userData);
 
+  // 管理者権限（人数変更が可能）
+  const canEditConfig = Boolean(
+    userData?.isSystemAdmin || userData?.isNoticeAdmin || userData?.isLineLogAdmin
+  );
+
   const [currentYearMonth, setCurrentYearMonth] = useState<string>(getInitialYearMonth());
   const [logs, setLogs] = useState<LineNotificationLog[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedLog, setSelectedLog] = useState<LineNotificationLog | null>(null);
+  const [groupMemberCount, setGroupMemberCount] = useState<number>(1);
 
   // フィルター状態
   const [accountFilter, setAccountFilter] = useState<"all" | "group" | "individual">("all");
@@ -47,6 +55,33 @@ export default function LineLogListClient() {
       { title: "LINE送信履歴" },
     ]);
   }, [setBreadcrumbs]);
+
+  // 設定の取得
+  useEffect(() => {
+    if (!canView) return;
+    const loadConfig = async () => {
+      try {
+        const cfg = await getLineLogConfigClient();
+        if (cfg && typeof cfg.groupMemberCount === "number") {
+          setGroupMemberCount(cfg.groupMemberCount);
+        }
+      } catch (err) {
+        console.error("Failed to load lineLogs config:", err);
+      }
+    };
+    loadConfig();
+  }, [canView]);
+
+  // グループ人数保存ハンドラ
+  const handleSaveGroupMemberCount = async (newCount: number) => {
+    if (!userData?.id) return;
+    const res = await saveLineLogConfigAction(newCount, userData.id);
+    if (!res.success) {
+      alert(res.error || "人数の保存に失敗しました。");
+      return;
+    }
+    setGroupMemberCount(newCount);
+  };
 
   // ログの取得関数
   const fetchLogs = useCallback(async (yearMonth: string) => {
@@ -71,10 +106,10 @@ export default function LineLogListClient() {
     fetchLogs(currentYearMonth);
   }, [currentYearMonth, fetchLogs, authLoading, canView]);
 
-  // クォータ（配信枠）サマリーの計算
+  // クォータ（配信枠）サマリーの計算（グループ人数を考慮）
   const quotaSummary: MonthQuotaSummary = useMemo(() => {
-    return calculateMonthQuotaSummary(currentYearMonth, logs);
-  }, [currentYearMonth, logs]);
+    return calculateMonthQuotaSummary(currentYearMonth, logs, groupMemberCount);
+  }, [currentYearMonth, logs, groupMemberCount]);
 
   // フィルタリングされたログリスト
   const filteredLogs = useMemo(() => {
@@ -287,6 +322,8 @@ export default function LineLogListClient() {
       <LineQuotaCard
         quotaSummary={quotaSummary}
         displayMonthLabel={displayMonthLabel}
+        canEdit={canEditConfig}
+        onSaveGroupMemberCount={handleSaveGroupMemberCount}
       />
 
       {/* 絞り込みフィルターカード */}
@@ -368,6 +405,7 @@ export default function LineLogListClient() {
                   <LineLogItem
                     key={log.id}
                     log={log}
+                    groupMemberCount={groupMemberCount}
                     onClick={() => setSelectedLog(log)}
                   />
                 ))}

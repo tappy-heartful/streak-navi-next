@@ -6,14 +6,18 @@ import styles from "./LineLogItem.module.css";
 
 interface LineLogItemProps {
   log: LineNotificationLog;
+  groupMemberCount?: number;
   onClick: () => void;
 }
 
-export default function LineLogItem({ log, onClick }: LineLogItemProps) {
+export default function LineLogItem({ log, groupMemberCount = 1, onClick }: LineLogItemProps) {
   const isGroup = log.accountType === "group" || log.recipientType === "group" || log.recipientUid === "group";
   const isSuccess = log.status === "success";
   const count = log.messageCount || (log.messages?.length || 1);
   const hasImage = log.messages?.some((m) => m.type === "image");
+  const memberCount = groupMemberCount > 0 ? groupMemberCount : 1;
+  const rawCount = hasImage ? 2 : count;
+  const consumedCount = isGroup ? rawCount * memberCount : rawCount;
 
   const getTypeIcon = () => {
     switch (log.notificationType) {
@@ -81,7 +85,15 @@ export default function LineLogItem({ log, onClick }: LineLogItemProps) {
               hasImage ? styles.quotaCostBadgeWithImage : ""
             }`}
           >
-            {hasImage ? (
+            {isGroup && memberCount > 1 ? (
+              <>
+                <i className={hasImage ? "fa-regular fa-images" : "fa-regular fa-comment"}></i>{" "}
+                {consumedCount}通消費{" "}
+                <span style={{ fontSize: "0.72rem", opacity: 0.9 }}>
+                  ({rawCount}通×{memberCount}人)
+                </span>
+              </>
+            ) : hasImage ? (
               <>
                 <i className="fa-regular fa-images"></i> 2通消費 (画像含)
               </>

@@ -1,16 +1,46 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { MonthQuotaSummary, AccountQuotaInfo } from "../api/line-log-client-service";
 import styles from "./LineQuotaCard.module.css";
 
 interface LineQuotaCardProps {
   quotaSummary: MonthQuotaSummary;
   displayMonthLabel: string;
+  canEdit?: boolean;
+  onSaveGroupMemberCount?: (count: number) => Promise<void>;
 }
 
-export default function LineQuotaCard({ quotaSummary, displayMonthLabel }: LineQuotaCardProps) {
-  const { group, individual } = quotaSummary;
+export default function LineQuotaCard({
+  quotaSummary,
+  displayMonthLabel,
+  canEdit = false,
+  onSaveGroupMemberCount,
+}: LineQuotaCardProps) {
+  const { group, individual, groupMemberCount } = quotaSummary;
+
+  const [isEditingMemberCount, setIsEditingMemberCount] = useState<boolean>(false);
+  const [editCountInput, setEditCountInput] = useState<string>(String(groupMemberCount || 1));
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  const handleSaveCount = async () => {
+    const num = parseInt(editCountInput, 10);
+    if (isNaN(num) || num < 1) {
+      alert("人数は1人以上で入力してください。");
+      return;
+    }
+    if (!onSaveGroupMemberCount) return;
+
+    setIsSaving(true);
+    try {
+      await onSaveGroupMemberCount(num);
+      setIsEditingMemberCount(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const renderCard = (info: AccountQuotaInfo, isGroup: boolean) => {
     const isSafe = info.statusLevel === "safe";
@@ -63,8 +93,73 @@ export default function LineQuotaCard({ quotaSummary, displayMonthLabel }: LineQ
           </span>
         </div>
 
+        {/* グループ通知の場合は参加人数の設定・表示エリア */}
+        {isGroup && (
+          <div className={styles.groupMemberSection}>
+            <div className={styles.groupMemberRow}>
+              <span className={styles.groupMemberLabel}>
+                <i className="fa-solid fa-users-viewfinder"></i> グループ参加人数:
+              </span>
+              {isEditingMemberCount ? (
+                <div className={styles.groupMemberEditForm}>
+                  <input
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={editCountInput}
+                    onChange={(e) => setEditCountInput(e.target.value)}
+                    className={styles.groupMemberInput}
+                    autoFocus
+                  />
+                  <span className={styles.groupMemberUnit}>名</span>
+                  <button
+                    type="button"
+                    className={styles.saveBtn}
+                    onClick={handleSaveCount}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? "保存中..." : "保存"}
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.cancelBtn}
+                    onClick={() => {
+                      setIsEditingMemberCount(false);
+                      setEditCountInput(String(groupMemberCount || 1));
+                    }}
+                    disabled={isSaving}
+                  >
+                    取消
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.groupMemberDisplay}>
+                  <strong className={styles.groupMemberCount}>{groupMemberCount || 1}</strong>
+                  <span className={styles.groupMemberUnit}>名</span>
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className={styles.editBtn}
+                      onClick={() => {
+                        setEditCountInput(String(groupMemberCount || 1));
+                        setIsEditingMemberCount(true);
+                      }}
+                      title="グループ参加人数を変更"
+                    >
+                      <i className="fa-solid fa-pen-to-square"></i> 人数を変更
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            <p className={styles.groupMemberNote}>
+              ※グループ通知は「人数 ({groupMemberCount || 1}名) × メッセージ数」で消費されます
+            </p>
+          </div>
+        )}
+
         <div className={styles.remainingSection}>
-          <span className={styles.remainingLabel}>今月の送信数</span>
+          <span className={styles.remainingLabel}>今月の送信数 (消費枠)</span>
           <div className={styles.remainingValue}>
             <span className={`${styles.remainingNumber} ${numberColorClass}`}>
               {info.consumed}
@@ -110,9 +205,10 @@ export default function LineQuotaCard({ quotaSummary, displayMonthLabel }: LineQ
         <p>
           <i className="fa-solid fa-circle-info" style={{ marginRight: "6px", color: "#06c755" }}></i>
           LINE公式アカウントの無料メッセージ枠は1アカウントあたり<strong>月200通</strong>です。
-          テキスト1回につき1カウント消費されます（毎月1日にリセット）。
+          全体グループ宛ては参加人数 × メッセージ数、個別宛ては1通につき1通として消費されます（毎月1日にリセット）。
         </p>
       </div>
     </div>
   );
 }
+
