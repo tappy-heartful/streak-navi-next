@@ -342,7 +342,7 @@ Firestore のセキュリティルール（`firestore.rules`）に基づき、�
 - **CSS Modules の徹底**:
   - 各機能ビューおよびコンポーネントのデザインは、すべて同階層の `*.module.css` に分離して管理。インラインスタイルの多用を禁止し、クリーンで保守性の高いスタイル構成を維持。
 
-### 5.4. GAS 自動運用バッチ (`gas/StreakNavi_Integrated_Bot.js`)
+### 5.4. GAS 自動運用バッチ (`gas/【Navi】Integrated_Bot.js`)
 - **一本化アーキテクチャ**:
   - これまで機能別に分散していた4つのGASスクリプト（`AutoNotice`、`Accounting_Bot`、`Todo_Bot`、`Clean_All_Old_Logs_Bot`）を1つのスクリプトへ一本化。共通処理（LINE Push送信、Firestore接続、ログ記録等）を共通化し、保守性を向上。
 - **2本立てのトリガー運用**:
