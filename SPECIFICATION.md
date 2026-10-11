@@ -346,6 +346,12 @@ Firestore のセキュリティルール（`firestore.rules`）に基づき、�
 - **一本化アーキテクチャ**:
   - これまで機能別に分散していた4つのGASスクリプト（`AutoNotice`、`Accounting_Bot`、`Todo_Bot`、`Clean_All_Old_Logs_Bot`）を1つのスクリプトへ一本化。共通処理（LINE Push送信、Firestore接続、ログ記録等）を共通化し、保守性を向上。
 - **2本立てのトリガー運用**:
-  1. `runDailyNotifications`（昼/朝実行）: イベント/投票/募集の開始・締切案内（全体LINE）、前日イベントの経費・旅費補助案内（全体LINE）、TODO期限リマインド（個別LINE）、旅費補助未提出催促（個別LINE）、会計精算未入金・未証跡リマインド（個別LINE）。
+  1. `runDailyNotifications`（昼/朝実行）:
+     - イベント/投票/募集の開始・締切案内（全体LINE）
+     - **会計シーズン終了翌日（1/1, 4/1, 7/1, 10/1）の清算依頼案内（全体LINE、清算手順・7日期限・確認画面URL付き）**
+     - 前日イベントの経費・旅費補助案内（全体LINE）
+     - TODO期限リマインド（個別LINE）
+     - 旅費補助未提出催促（個別LINE）
+     - 会計精算未入金・未証跡リマインド（個別LINE）
   2. `runNightlyMaintenance`（夜/深夜実行）: 四半期初日（1/1, 4/1, 7/1, 10/1）の会計新シーズン自動作成、各種運用ログ（`accessLogs`, `logs`, `errorLogs`, `connectLogs`, `connectErrorLogs`）の1,000件超過分削除クリーンアップ。
 

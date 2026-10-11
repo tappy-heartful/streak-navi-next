@@ -88,33 +88,41 @@ function runDailyNotifications() {
     Logger.log('execAutoNotification Error: ' + e.toString());
   }
 
-  // 2. 昨日行われたイベントの経費申請・旅費補助案内 (全体LINE)
+  // 2. 会計シーズン終了翌日 (1/1, 4/1, 7/1, 10/1) の全体清算案内 (全体LINE)
   try {
-    Logger.log('--- 2. 昨日イベントの経費・旅費補助案内処理開始 ---');
+    Logger.log('--- 2. 会計シーズン終了翌日の清算案内処理開始 ---');
+    notifySeasonSettlementStart(firestore);
+  } catch (e) {
+    Logger.log('notifySeasonSettlementStart Error: ' + e.toString());
+  }
+
+  // 3. 昨日行われたイベントの経費申請・旅費補助案内 (全体LINE)
+  try {
+    Logger.log('--- 3. 昨日イベントの経費・旅費補助案内処理開始 ---');
     remindYesterdayEventExpenses(firestore);
   } catch (e) {
     Logger.log('remindYesterdayEventExpenses Error: ' + e.toString());
   }
 
-  // 3. TODO期限前・超過リマインド (個別LINE)
+  // 4. TODO期限前・超過リマインド (個別LINE)
   try {
-    Logger.log('--- 3. TODO期限リマインド処理開始 ---');
+    Logger.log('--- 4. TODO期限リマインド処理開始 ---');
     execTodoDeadlineNotification(firestore);
   } catch (e) {
     Logger.log('execTodoDeadlineNotification Error: ' + e.toString());
   }
 
-  // 4. イベント出席者の旅費補助申請未提出リマインド (個別LINE)
+  // 5. イベント出席者の旅費補助申請未提出リマインド (個別LINE)
   try {
-    Logger.log('--- 4. 旅費補助未提出リマインド処理開始 ---');
+    Logger.log('--- 5. 旅費補助未提出リマインド処理開始 ---');
     remindPendingTravelExpenses(firestore);
   } catch (e) {
     Logger.log('remindPendingTravelExpenses Error: ' + e.toString());
   }
 
-  // 5. 会計精算の未入金・受取証跡リマインド (個別LINE)
+  // 6. 会計精算の未入金・受取証跡リマインド (個別LINE)
   try {
-    Logger.log('--- 5. 会計精算リマインド処理開始 ---');
+    Logger.log('--- 6. 会計精算リマインド処理開始 ---');
     execAccountingRemindNotification(firestore);
   } catch (e) {
     Logger.log('execAccountingRemindNotification Error: ' + e.toString());
@@ -967,6 +975,134 @@ function cleanAllOldLogs(firestore) {
   }
 
   Logger.log('--- すべてのログクリーンアップ処理が完了しました ---');
+}
+
+
+// ==============================================================================
+// 機能 8: 会計シーズン終了翌日 (1/1, 4/1, 7/1, 10/1) の全体清算案内 (全体LINE)
+// ==============================================================================
+/**
+ * 会計シーズンが終了した翌日（1/1, 4/1, 7/1, 10/1）に全体LINEへ清算案内を送信する
+ */
+function notifySeasonSettlementStart(firestore) {
+  firestore = firestore || getFirestore();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const date = now.getDate();
+
+  // 四半期初日（1/1, 4/1, 7/1, 10/1）のみ実行
+  if (date !== 1) {
+    return;
+  }
+
+  let targetYear = year;
+  let targetSeasonKey = "";
+  let targetSeasonName = "";
+
+  if (month === 1) {
+    // 1/1 の場合: 前年・秋シーズン (10/1〜12/31) が終了
+    targetYear = year - 1;
+    targetSeasonKey = "autumn";
+    targetSeasonName = `${targetYear}年 秋`;
+  } else if (month === 4) {
+    // 4/1 の場合: 当年・冬シーズン (1/1〜3/31) が終了
+    targetYear = year;
+    targetSeasonKey = "winter";
+    targetSeasonName = `${targetYear}年 冬`;
+  } else if (month === 7) {
+    // 7/1 の場合: 当年・春シーズン (4/1〜6/30) が終了
+    targetYear = year;
+    targetSeasonKey = "spring";
+    targetSeasonName = `${targetYear}年 春`;
+  } else if (month === 10) {
+    // 10/1 の場合: 当年・夏シーズン (7/1〜9/30) が終了
+    targetYear = year;
+    targetSeasonKey = "summer";
+    targetSeasonName = `${targetYear}年 夏`;
+  } else {
+    return;
+  }
+
+  const seasonId = `${targetYear}-${targetSeasonKey}`;
+  let season = null;
+  try {
+    const seasonDoc = firestore.getDocument(`accountingSeasons/${seasonId}`);
+    season = seasonDoc ? (seasonDoc.obj || seasonDoc) : null;
+  } catch (err) {
+    Logger.log(`[シーズン清算案内] シーズン ${seasonId} の取得エラー: ` + err.toString());
+  }
+
+  // シーズン情報から清算担当者（managerId）の取得
+  let managerName = "";
+  let managerPaypayId = "";
+  if (season && season.managerId) {
+    try {
+      const userDoc = firestore.getDocument(`users/${season.managerId}`);
+      const u = userDoc ? (userDoc.obj || userDoc) : null;
+      if (u) {
+        managerName = u.displayName || "";
+        managerPaypayId = u.paypayId || "";
+      }
+    } catch (uErr) {
+      Logger.log('[シーズン清算案内] 担当者取得エラー: ' + uErr.toString());
+    }
+  }
+
+  const managerGuide = managerName
+    ? `シーズン担当（${managerName}さん）`
+    : `シーズン清算担当者`;
+  const paypayGuide = managerPaypayId
+    ? `\n   ※担当者PayPay ID: ${managerPaypayId}`
+    : ``;
+
+  const message = `お疲れ様です！Streak Navi コンシェルジュです🍀\n\n` +
+                  `【バランス会計・${targetSeasonName}シーズン 清算のお願い】\n` +
+                  `前シーズン（${targetSeasonName}シーズン）の会計期間が終了しました！\n` +
+                  `参加メンバーの皆様は、以下のリンクより各自の精算額をご確認のうえ、清算手続きをお願いいたします。🙇‍♂️\n\n` +
+                  `⚠️ 清算期限: ${month}月7日まで ⚠️\n\n` +
+                  `▼ バランス会計確認・清算画面はこちら\n` +
+                  `${BASE_URL}/accounting/confirm?seasonId=${seasonId}\n\n` +
+                  `ーーーーーーーーーーーーーー\n` +
+                  `【清算・送金の手順】\n` +
+                  `① 上記リンクを開き、ご自身の「精算額（支払 または 受取）」を確認\n` +
+                  `②「支払」の方：\n` +
+                  `   PayPayアプリの「送る」より、${managerGuide}へ精算額を送金${paypayGuide}\n` +
+                  `   送金完了後、上記画面の「送金スクショをアップロード」から証明画像を提出してください\n` +
+                  `③「受取」の方：\n` +
+                  `   担当者からの送金をお待ちください（送金が完了すると画面に反映されます）\n` +
+                  `ーーーーーーーーーーーーーー`;
+
+  const messageId = sendLinePush(LINE_GROUP_ID, message);
+  if (messageId) {
+    try {
+      firestore.createDocument('notificationHistorys', {
+        messageId: messageId,
+        content: message,
+        sentAt: new Date(),
+        sourceCollection: 'accountingSeasons',
+        sourceDocId: seasonId,
+        title: `${targetSeasonName}シーズン 清算案内`
+      });
+      recordLineLog(firestore, {
+        messageId: messageId,
+        content: message,
+        accountType: 'group',
+        accountName: '全体グループ通知',
+        notificationType: 'accounting',
+        title: `${targetSeasonName}シーズン 清算案内`,
+        recipientType: 'group',
+        recipientUid: 'group',
+        recipientName: '全体グループ (バンドLINE)',
+        recipientLineId: LINE_GROUP_ID,
+        sourceCollection: 'accountingSeasons',
+        sourceDocId: seasonId
+      });
+      Logger.log(`[シーズン清算案内] 履歴保存完了: ${messageId}`);
+    } catch (err) {
+      Logger.log(`[シーズン清算案内] 履歴保存エラー: ${err.toString()}`);
+    }
+  }
 }
 
 
