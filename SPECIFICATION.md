@@ -341,3 +341,11 @@ Firestore のセキュリティルール（`firestore.rules`）に基づき、�
   - ドロワーメニューやフッター、一覧内のリンクには `prefetch={false}` を付与。App Router のデフォルトプリフェッチによる Firestore の不要な読み取り課金・クォータ枯渇を徹底防止。
 - **CSS Modules の徹底**:
   - 各機能ビューおよびコンポーネントのデザインは、すべて同階層の `*.module.css` に分離して管理。インラインスタイルの多用を禁止し、クリーンで保守性の高いスタイル構成を維持。
+
+### 5.4. GAS 自動運用バッチ (`gas/StreakNavi_Integrated_Bot.js`)
+- **一本化アーキテクチャ**:
+  - これまで機能別に分散していた4つのGASスクリプト（`AutoNotice`、`Accounting_Bot`、`Todo_Bot`、`Clean_All_Old_Logs_Bot`）を1つのスクリプトへ一本化。共通処理（LINE Push送信、Firestore接続、ログ記録等）を共通化し、保守性を向上。
+- **2本立てのトリガー運用**:
+  1. `runDailyNotifications`（昼/朝実行）: イベント/投票/募集の開始・締切案内（全体LINE）、前日イベントの経費・旅費補助案内（全体LINE）、TODO期限リマインド（個別LINE）、旅費補助未提出催促（個別LINE）、会計精算未入金・未証跡リマインド（個別LINE）。
+  2. `runNightlyMaintenance`（夜/深夜実行）: 四半期初日（1/1, 4/1, 7/1, 10/1）の会計新シーズン自動作成、各種運用ログ（`accessLogs`, `logs`, `errorLogs`, `connectLogs`, `connectErrorLogs`）の1,000件超過分削除クリーンアップ。
+
