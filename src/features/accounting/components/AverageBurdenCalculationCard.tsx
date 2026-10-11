@@ -59,7 +59,7 @@ export const AverageBurdenCalculationCard: React.FC<AverageBurdenCalculationCard
         <div className={styles.content}>
           <div className={styles.leadDescription}>
             バランス会計では、シーズン中のバンド活動で発生した全支出から全収入を差し引き、
-            <strong>精算対象メンバー全員で均等に頭割り（端数切り捨て）</strong>した金額を「平均負担額」として定めます。
+            <strong>精算対象メンバー全員で均等に頭割り（端数切り上げ）</strong>した金額を「平均負担額」として定めます。
           </div>
 
           <div className={styles.stepList}>
@@ -175,7 +175,7 @@ export const AverageBurdenCalculationCard: React.FC<AverageBurdenCalculationCard
                 </div>
               </div>
               <div className={styles.stepDesc}>
-                実質負担総額を精算対象メンバー数で均等に割り、1人あたりの基準負担額を決定します（1円未満切り捨て）。
+                実質負担総額を精算対象メンバー数で均等に割り、1人あたりの基準負担額を決定します（1円未満切り上げ）。
               </div>
               <div className={`${styles.stepFormulaBox} ${styles.highlightFormulaBox}`}>
                 <div>
@@ -183,7 +183,7 @@ export const AverageBurdenCalculationCard: React.FC<AverageBurdenCalculationCard
                     実質負担総額 (¥{netTotal.toLocaleString()}) ÷ 対象人数 ({memberCount}名)
                   </span>
                   <div style={{ fontSize: "0.75rem", color: "#6b46c1", marginTop: "2px" }}>
-                    ※ Math.floor による切り捨て処理
+                    ※ 1円未満切り上げ（Math.ceil）。端数による余剰金は清算担当者の手間賃・端数調整として手元に残ります。
                   </div>
                 </div>
                 <span className={`${styles.stepAmount} ${styles.amountAverage}`}>

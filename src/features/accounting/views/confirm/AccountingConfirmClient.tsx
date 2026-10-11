@@ -114,7 +114,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
 
     const netTotal = totalExpenses - totalIncomes;
     const memberCount = activeMemberIds.length;
-    const averageBurden = memberCount > 0 ? Math.floor(netTotal / memberCount) : 0;
+    const averageBurden = memberCount > 0 ? Math.ceil(netTotal / memberCount) : 0;
     return { totalExpenses, totalIncomes, netTotal, memberCount, averageBurden };
   }, [expenses, incomes, season]);
 

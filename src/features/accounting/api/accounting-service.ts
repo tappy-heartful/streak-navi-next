@@ -215,7 +215,7 @@ async function calculateSeasonSummary(userId: string, season: AccountingSeason, 
 
   const netTotal = totalExpenses - totalIncomes;
   const memberCount = activeMemberIds.length;
-  const averageBurden = memberCount > 0 ? Math.floor(netTotal / memberCount) : 0;
+  const averageBurden = memberCount > 0 ? Math.ceil(netTotal / memberCount) : 0;
 
   // 個人の計算
   const myExpenses = expenses
