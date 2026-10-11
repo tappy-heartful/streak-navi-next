@@ -804,22 +804,16 @@ function execAccountingRemindNotification(firestore) {
         notifications.push({ toUid: uid, msg: msg });
       } else if (settlement < 0) {
         if (uid === managerId) return;
-        const receiverName = userMap[uid] || "メンバー";
-        pendingReceivers.push({
-          name: receiverName,
-          amount: Math.abs(settlement)
-        });
+        pendingReceivers.push(uid);
       }
     });
 
     if (managerId && pendingReceivers.length > 0) {
-      const receiverListStr = pendingReceivers
-        .map(r => `・${r.name}さん (¥${r.amount.toLocaleString()})`)
-        .join('\n');
       const msg = `お疲れ様です！Streak Navi コンシェルジュです🍀\n\n` +
                   `【バランス会計・受取証跡アップロードのお願い】\n` +
-                  `「${s.name}」の以下のメンバーへの受取証明（スクショ）が未提出です。送金後スクショアップロードをお願いします。🙇‍♂️\n\n` +
-                  `${receiverListStr}\n\n` +
+                  `「${s.name}」について、未提出の受取証明（スクショ）がございます。\n` +
+                  `以下の画面より対象メンバーと送金額をご確認のうえ、送金およびスクショのアップロードをお願いいたします。🙇‍♂️\n\n` +
+                  `▼ バランス会計確認・スクショアップロードはこちら\n` +
                   `${BASE_URL}/accounting/confirm?seasonId=${s.id}`;
       notifications.push({ toUid: managerId, msg: msg });
     }
