@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Score, SetlistGroup } from "@/src/lib/firestore/types";
 import { extractYouTubeId } from "@/src/lib/functions";
+import { ScoreFileListModal } from "@/src/features/scores/components/ScoreFileListModal";
 
 type Props = {
   setlist: SetlistGroup[];
@@ -10,16 +11,17 @@ type Props = {
 };
 
 export function SetlistConfirm({ setlist, scoresMap }: Props) {
+  const [selectedScore, setSelectedScore] = useState<Score | null>(null);
   const watchIds: string[] = [];
   const setlistGroups = setlist.map((group) => {
     const songs = (group.songIds || []).map((id) => {
       const score = scoresMap[id];
-      if (!score) return { id, title: "曲名が見つかりません", scoreUrl: undefined };
+      if (!score) return { id, score: null, title: "曲名が見つかりません" };
       if (score.referenceTrack) {
         const vid = extractYouTubeId(score.referenceTrack);
         if (vid && !watchIds.includes(vid)) watchIds.push(vid);
       }
-      return { id, title: score.title, scoreUrl: score.scoreUrl };
+      return { id, score, title: score.title };
     });
     return { title: group.title, songs };
   });
@@ -95,15 +97,30 @@ export function SetlistConfirm({ setlist, scoresMap }: Props) {
                   style={{ fontSize: "15px", display: "flex", alignItems: "center", gap: "8px" }}
                 >
                   <span style={{ opacity: 0.5, fontSize: "12px" }}>{j + 1}.</span>
-                  {song.scoreUrl ? (
-                    <a
-                      href={song.scoreUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: "#4daafc", textDecoration: "none" }}
+                  {song.score ? (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedScore(song.score)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        margin: 0,
+                        color: "#4daafc",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        textDecoration: "underline",
+                        textUnderlineOffset: "2px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                      title={`${song.title}の譜面一覧を表示`}
                     >
-                      {song.title}
-                    </a>
+                      <i className="fa-solid fa-music" style={{ fontSize: "12px", opacity: 0.8 }} />
+                      <span>{song.title}</span>
+                    </button>
                   ) : (
                     <span>{song.title}</span>
                   )}
@@ -113,6 +130,15 @@ export function SetlistConfirm({ setlist, scoresMap }: Props) {
           </div>
         ))}
       </div>
+
+      <ScoreFileListModal
+        isOpen={Boolean(selectedScore)}
+        onClose={() => setSelectedScore(null)}
+        title={selectedScore?.title || ""}
+        scoreId={selectedScore?.id}
+        files={selectedScore?.files}
+        legacyScoreUrl={selectedScore?.scoreUrl}
+      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import styles from "./assign.module.css";
 import Link from "next/link";
 import * as utils from "@/src/lib/functions";
+import { ScoreFileListModal } from "@/src/features/scores/components/ScoreFileListModal";
 
 type Props = {
   event: Event;
@@ -23,6 +24,7 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
   const { setBreadcrumbs } = useBreadcrumb();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("");
+  const [selectedScoreForModal, setSelectedScoreForModal] = useState<Score | null>(null);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -188,13 +190,15 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
                       return (
                         <tr key={songId}>
                           <td className={styles.songHeader}>
-                            {score.scoreUrl ? (
-                              <a href={score.scoreUrl} target="_blank" rel="noreferrer">
-                                {score.abbreviation || score.title}
-                              </a>
-                            ) : (
-                              score.abbreviation || score.title
-                            )}
+                            <button
+                              type="button"
+                              className={styles.songLinkButton}
+                              onClick={() => setSelectedScoreForModal(score)}
+                              title={`${score.title}の譜面一覧を表示`}
+                            >
+                              <i className="fa-solid fa-music" style={{ fontSize: "11px", opacity: 0.7 }} />
+                              <span>{score.abbreviation || score.title}</span>
+                            </button>
                           </td>
                           {event.instrumentConfig![activeTab]?.map(p => {
                             const a = assigns.find(a => a.songId === songId && a.partName === p.partName);
@@ -245,6 +249,15 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
       <div className="page-footer">
         <Link href="/assign" className="back-link">← 譜割り一覧に戻る</Link>
       </div>
+
+      <ScoreFileListModal
+        isOpen={Boolean(selectedScoreForModal)}
+        onClose={() => setSelectedScoreForModal(null)}
+        title={selectedScoreForModal?.title || ""}
+        scoreId={selectedScoreForModal?.id}
+        files={selectedScoreForModal?.files}
+        legacyScoreUrl={selectedScoreForModal?.scoreUrl}
+      />
     </BaseLayout>
   );
 }

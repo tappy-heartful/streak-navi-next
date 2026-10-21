@@ -154,6 +154,31 @@
   white-space: nowrap;
 }
 
+.songLinkButton {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: #1976d2;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.songLinkButton:hover {
+  color: #0d47a1;
+}
+
 .assignTable tbody td {
   border: 1px solid #eee;
   padding: 6px 5px;

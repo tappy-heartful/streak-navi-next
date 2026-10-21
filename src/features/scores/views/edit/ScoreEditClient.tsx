@@ -1,14 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { FormField } from "@/src/components/Form/FormField";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { EditFormLayout } from "@/src/components/Layout/EditFormLayout";
 import { GenreInput } from "../../components/GenreInput";
 import { AppInput } from "@/src/components/Form/AppInput";
+import { ScoreFileUpload } from "../../components/ScoreFileUpload";
 import { saveScore } from "@/src/features/scores/api/score-client-service";
 import { rules } from "@/src/lib/validation";
-import { Genre, Score } from "@/src/lib/firestore/types";
+import { Genre, Score, ScoreFile } from "@/src/lib/firestore/types";
 import { useAppForm } from "@/src/hooks/useAppForm";
 
 type Props = {
@@ -20,12 +22,12 @@ type Props = {
 
 export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Props) {
   const { user } = useAuth();
+  const [files, setFiles] = useState<ScoreFile[]>(initialScore?.files || []);
 
   // 1. 設定：初期値とバリデーション
   const form = useAppForm(
     {
       title: (mode === "copy" ? `${initialScore?.title}（コピー）` : initialScore?.title) || "",
-      scoreUrl: initialScore?.scoreUrl || "",
       referenceTrack: initialScore?.referenceTrack || "",
       genres: (initialScore?.genres as string[]) || [""],
       abbreviation: initialScore?.abbreviation || "",
@@ -34,7 +36,6 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
     },
     {
       title: [rules.required],
-      scoreUrl: [rules.required, rules.googleDrive],
       referenceTrack: [rules.required, rules.youtube],
       abbreviation: [rules.required, rules.max8],
       genres: [(v) => (v[0] ? true : "最低1つ選択してください")],
@@ -55,10 +56,14 @@ export function ScoreEditClient({ mode, scoreId, initialScore, allGenres }: Prop
         featureName="譜面" icon="fa-solid fa-music" featureIdKey="scoreId" basePath="/score"
         dataId={scoreId} mode={mode}
         form={form} // フックの結果をまるごと渡す！
-        onSaveApi={(data) => saveScore(mode, data, scoreId, user?.displayName || undefined)}
+        onSaveApi={(data) => saveScore(mode, { ...data, files }, scoreId, user?.displayName || undefined)}
       >
         <AppInput label="タイトル" required placeholder="例: Sing, Sing, Sing" {...inputProps("title")} />
-        <AppInput label="譜面（Google Drive URL）" required placeholder="https://drive.google.com/..." {...inputProps("scoreUrl")} />
+
+        <FormField label="譜面ファイル（Storage）">
+          <ScoreFileUpload files={files} onChange={setFiles} />
+        </FormField>
+
         <AppInput label="参考音源（YouTube URL）" required placeholder="https://www.youtube.com/..." {...inputProps("referenceTrack")} />
 
         <FormField label="ジャンル" required error={form.errors.genres}>

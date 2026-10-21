@@ -1,0 +1,194 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10002; /* ScoreFileListModal (10000) より前面に表示 */
+  padding: 16px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalContent {
+  background: #ffffff;
+  color: #1e293b;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-bottom: 2px solid #fde68a;
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.warningIcon {
+  font-size: 1.35rem;
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0;
+  color: #92400e;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.closeIconButton {
+  background: transparent;
+  border: none;
+  color: #b45309;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.closeIconButton:hover {
+  background: rgba(180, 83, 9, 0.1);
+  color: #78350f;
+}
+
+.modalBody {
+  padding: 24px 20px;
+  overflow-y: auto;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #ffffff;
+}
+
+.targetFileBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #334155;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.targetFileIcon {
+  color: #0284c7;
+  flex-shrink: 0;
+}
+
+.noticeBox {
+  background: #fafaf9;
+  border-left: 4px solid #f59e0b;
+  border-radius: 4px 10px 10px 4px;
+  padding: 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.noticeParagraph {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #334155;
+  font-weight: 500;
+}
+
+.modalFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid #f1f5f9;
+  background: #fafafa;
+}
+
+.agreeButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.agreeButton:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+}
+
+.agreeButton:active {
+  transform: translateY(0);
+}
+
+.cancelButton {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  color: #64748b;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: #f1f5f9;
+  color: #334155;
+}

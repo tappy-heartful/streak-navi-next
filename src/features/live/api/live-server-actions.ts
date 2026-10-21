@@ -21,6 +21,7 @@ export async function fetchLiveEditData(): Promise<{ scores: Score[] }> {
     title: d.data().title || "",
     referenceTrack: d.data().referenceTrack || "",
     scoreUrl: d.data().scoreUrl || "",
+    files: d.data().files || [],
   })) as Score[];
 
   return { scores };

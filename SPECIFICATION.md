@@ -84,7 +84,7 @@ Streak Navi では、モジュールごとの細やかな権限分離（Role-Bas
 | 管理者ロール | 該当フラグ | できること（管理者権限） | 一般メンバー（権限なし時） |
 | :--- | :--- | :--- | :--- |
 | **特権管理者 (システム管理者)** | `isSystemAdmin` | **全機能の完全操作権限**（全モジュールの追加・編集・削除、全メンバーの権限付与・名簿編集・削除、システム設定、監査ログ閲覧） | - |
-| **楽譜管理者** | `isScoreAdmin` | 楽譜マスタの新規登録・編集・PDF URL更新・YouTube音源紐付け・トップ表示設定・削除 | 楽譜一覧・PDF閲覧・ダウンロード、YouTube試聴 |
+| **楽譜管理者** | `isScoreAdmin` | 楽譜マスタの新規登録・編集・譜面ファイル（Storage）アップロード・YouTube音源紐付け・トップ表示設定・削除 | 楽譜一覧・譜面ファイル閲覧・ダウンロード、YouTube試聴 |
 | **イベント管理者** | `isEventAdmin` | 練習・ライブ・イベントの新規作成・編集・削除・複製、全員の出欠/日程調整状況の集計・確認、録音リンクの代理削除 | 自身の出欠回答・日程調整回答の登録/修正/取消、録音リンクの追加、自身の録音リンク削除 |
 | **譜割り管理者** | `isAssignAdmin` | イベント全曲・全パートの譜割り割り当て・変更、プレイリスト生成 | 自身が担当する楽器の譜割り閲覧・編集（誤操作防止フィルタ適用） |
 | **曲募集管理者** | `isCallAdmin` | 選曲募集の新規作成・編集・削除・複製、全応募曲の集計確認・CSVエクスポート | 募集期間中の候補曲リクエスト応募・修正・取消 |
@@ -111,10 +111,15 @@ Streak Navi では、モジュールごとの細やかな権限分離（Role-Bas
 
 ### 3.1. 楽譜管理機能 (`/score`)
 - **目的**: バンドの演奏レパートリー（スコア・パート譜）の集中保管と共有。
+- **特徴・Storage移行 & ダウンロードログ記録**:
+  - **Firebase Storage による複数ファイル管理**: 従来の外部 Google Drive リンクを廃止し、Firebase Storage 上（`scores/files/`）に譜面（PDF、画像、音源等）を直接アップロード・保管。1曲に対してフルスコアや各パート譜などの複数ファイルを登録可能。
+  - **譜面ファイル一覧モーダル (`ScoreFileListModal`)**: 楽譜一覧画面 (`/score`)、譜割り確認画面 (`/assign/confirm`)、セットリスト表示コンポーネント、および譜面詳細確認画面 (`/score/confirm`) の「譜面を見る」ボタンからファイル名一覧モーダルをポップアップ表示。**全画面で譜面ファイルはファイル名の昇順（自然順ソート）で整列表示**。
+  - **利用規約同意モーダル (`ScoreDownloadConsentModal`)**: 譜面ファイルをダウンロード・閲覧する直前に、サークル活動目的の限定利用や無断転載・部外者共有の禁止、退団時の破棄を定めた利用規約同意モーダル（「⚠️ 譜面データダウンロードに関するご注意」）を必ず表示。「同意して開く」ボタンを押下して初めて別タブで開く安全設計。
+  - **譜面ダウンロードログ記録 (`scoreDownloadLogs`)**: メンバーが規約に同意して譜面ファイルをダウンロード・閲覧した際、誰が（UID/氏名）、どの曲の（ID/タイトル）、どのファイル（ファイル名/URL）をダウンロードしたかを専用コレクション `scoreDownloadLogs` へ自動記録。セキュリティ・監査証跡を確保。
 - **画面構成**:
-  - 一覧: `/score` (曲名検索、略称検索、ジャンルフィルター、トップ表示バッジ)
-  - 作成・編集: `/score/edit` (管理者専用: 曲名、略称、楽譜PDF URL、ジャンル、参考音源、YouTube動画ID、トップ表示フラグ)
-  - 詳細・確認: `/score/confirm?scoreId=xxx` (楽譜情報、PDFダウンロード/閲覧、YouTubeプレイヤー埋め込み再生)
+  - 一覧: `/score` (曲名検索、ジャンルフィルター、イベントフィルター、新着/タイトル並び替え、譜面モーダル表示、参考音源プレイリストリンク)
+  - 作成・編集: `/score/edit` (管理者専用: 曲名、複数譜面ファイルアップロード [Storage]、ジャンル、参考音源 [YouTube]、略称、備考、ホーム表示フラグ)
+  - 詳細・確認: `/score/confirm?scoreId=xxx` (楽譜情報、「譜面を見る」ボタンによるモーダル起動、YouTubeプレイヤー埋め込み再生)
 
 ### 3.2. イベント・出欠・日程調整機能 (`/event`)
 - **目的**: 練習、合宿、本番、ミーティングの日程連絡、出欠確認、日程調整、施設アクセス、録音・録画リンクの一元管理。
@@ -287,7 +292,8 @@ Firestore のセキュリティルール（`firestore.rules`）に基づき、�
 | :--- | :--- | :--- | :--- | :--- |
 | `users` | `uid` (ハッシュ化UID) | `displayName`, `pictureUrl`, `sectionId`, `roleId`, `instrumentIds`, `abbreviation`, `paypayId`, `agreedAt`, `isSystemAdmin`, 各種 `is*Admin` | 全メンバー | 本人（管理者フラグ変更不可） / `isUserAdmin` |
 | `users/{uid}/private/location` | `location` | `prefectureId`, `municipalityId` | 本人のみ | 本人のみ |
-| `scores` | 自動採番 | `title`, `abbreviation`, `scoreUrl`, `genres`, `referenceTrack`, `youtubeId`, `isDispTop` | 全員（公開可） | `isScoreAdmin` |
+| `scores` | 自動採番 | `title`, `abbreviation`, `files` (`name`, `url`, `path`), `genres`, `referenceTrack`, `youtubeId`, `isDispTop` | 全員（公開可） | `isScoreAdmin` |
+| `scoreDownloadLogs` | 自動採番 | `uid`, `userName`, `scoreId`, `scoreTitle`, `fileName`, `fileUrl`, `date`, `createdAt` | `isScoreAdmin` / `isSystemAdmin` | 全メンバー（追記のみ、改ざん禁止） |
 | `events` | 自動採番 | `title`, `attendanceType`, `date`, `candidateDates`, `placeName`, `prefectureId`, `municipalityId`, `setlist`, `instrumentConfig` | 全メンバー | `isEventAdmin` |
 | `eventAttendanceAnswers` | `{eventId}_{uid}` | `eventId`, `uid`, `status`, `comment` | 全メンバー | 本人 / `isEventAdmin` |
 | `eventAdjustAnswers` | `{eventId}_{uid}` | `eventId`, `uid`, `answers` (`{ [date]: statusId }`), `comment` | 全メンバー | 本人 / `isEventAdmin` |

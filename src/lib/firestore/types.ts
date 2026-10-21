@@ -5,18 +5,37 @@ export interface Announcement {
   label?: string;
 }
 
+export interface ScoreFile {
+  name: string;
+  url: string;
+  path: string;
+}
+
 export interface Score {
   id: string;
   title: string;
   abbreviation?: string;
   note?: string;
-  scoreUrl?: string;
+  scoreUrl?: string; // 移行用の旧Google Drive URL（非推奨）
+  files?: ScoreFile[];
   genres?: string[];
   referenceTrack?: string;
   youtubeId?: string;
   isDispTop?: boolean;
   createdAt?: number;
   updatedAt?: number;
+}
+
+export interface ScoreDownloadLog {
+  id?: string;
+  uid: string;
+  userName: string;
+  scoreId: string;
+  scoreTitle: string;
+  fileName: string;
+  fileUrl: string;
+  date: string; // yyyy.MM.dd
+  createdAt?: any;
 }
 
 export interface BlueNote {

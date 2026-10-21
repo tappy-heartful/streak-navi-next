@@ -1,0 +1,60 @@
+.scoreModalButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.scoreModalButton:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.scoreModalButton:active {
+  transform: translateY(0);
+}
+
+.fileCountBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 9px;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.scoreModalButton:hover .fileCountBadge {
+  background: #ffffff;
+  color: #2563eb;
+}
+
+.emptyFileButton {
+  background: #f8fafc;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+}
+
+.emptyFileButton:hover {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+  box-shadow: none;
+}

@@ -124,6 +124,14 @@ service cloud.firestore {
     match /genres/{id}                   { allow read: if isSignedIn(); allow write: if isAdmin("Score"); }
     match /scoreStatus/{id}              { allow read: if isSignedIn(); allow write: if isAdmin("Score"); }
     
+    // 【譜面ダウンロードログ (scoreDownloadLogs)】
+    // ログインユーザーによる記録（作成）を許可。閲覧はScore管理者または特権管理者のみ。改ざん・削除は一切禁止。
+    match /scoreDownloadLogs/{id} {
+      allow create: if isSignedIn();
+      allow read: if isSignedIn() && (isAdmin("Score") || isSystemAdmin());
+      allow update, delete: if false;
+    }
+
     // 譜割り：現在は全メンバーが読み書き可能
     match /assigns/{id}                  { allow read, write: if isSignedIn(); }
 

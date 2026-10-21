@@ -50,5 +50,12 @@ service firebase.storage {
                    && request.resource.size < 10 * 1024 * 1024
                    && (request.resource.contentType.matches('image/.*') || request.resource.contentType == 'application/pdf');
     }
+
+    // 7. 譜面ファイル用ルール（認証が必要、最大30MB） ★追加
+    match /scores/files/{allPaths=**} {
+      allow read, delete: if request.auth != null;
+      allow write: if request.auth != null 
+                   && request.resource.size < 30 * 1024 * 1024;
+    }
   }
 }

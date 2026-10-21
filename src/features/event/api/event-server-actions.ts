@@ -200,6 +200,7 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
       id: d.id,
       title: sd.title || "",
       scoreUrl: sd.scoreUrl || "",
+      files: sd.files || [],
       referenceTrack: sd.referenceTrack || "",
     } as Score;
   });
@@ -296,6 +297,7 @@ export async function fetchEventEditData(): Promise<EventEditData> {
     title: d.data().title || "",
     referenceTrack: d.data().referenceTrack || "",
     scoreUrl: d.data().scoreUrl || "",
+    files: d.data().files || [],
   })) as Score[];
 
   return { scores, sections, instruments, prefectures };
