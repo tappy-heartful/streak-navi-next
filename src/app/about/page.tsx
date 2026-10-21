@@ -60,32 +60,32 @@ export default function AboutPage() {
           </p>
         </section>
 
-        {/* 引用について */}
+        {/* 引用・楽譜の取り扱いについて */}
         <section className={`${styles.tabContent} ${activeTab === "quote" ? styles.active : ""}`}>
-          <h2 className={styles.accentTitle}>引用について</h2>
+          <h2 className={styles.accentTitle}>引用・楽譜の取り扱いについて</h2>
           <p>
-            当サイトでは、演奏予定の楽曲や参考資料として、音源・動画・歌詞・コード譜などの一部を引用する場合があります。
-            これらは <strong>著作権法第32条（引用）</strong> に基づき、バンド内での学習・練習目的に限定して使用しています。
+            当サイトでは、演奏予定の楽曲や参考資料として、音源・動画・歌詞・コード譜・楽譜データなどの一部を保管・共有しています。
+            これらは <strong>著作権法第32条（引用）</strong> およびサークル活動の私的利用範囲に基づき、バンド内での学習・練習目的に限定して使用しています。
           </p>
 
-          <h3 className={styles.accentTitle}>引用対象の例</h3>
+          <h3 className={styles.accentTitle}>引用・共有対象の例</h3>
           <ul>
-            <li>楽曲タイトル・歌詞の一部</li>
-            <li>YouTubeなどに公式公開されている演奏動画</li>
-            <li>演奏指示（コード・構成など）に関する簡単な補足資料</li>
+            <li>楽曲タイトル・歌詞・参考音源リンク（YouTube等）</li>
+            <li>サークル演奏用の譜面データ（PDF、パート譜、コード譜）</li>
+            <li>演奏指示（構成・アーティキュレーションなど）に関する補足資料</li>
           </ul>
 
-          <h3 className={styles.accentTitle}>引用の目的と方針</h3>
+          <h3 className={styles.accentTitle}>利用の目的と運用方針</h3>
           <ul>
-            <li>バンドメンバーが楽曲の雰囲気や構成をつかむため</li>
-            <li>楽曲への理解を深め、演奏の質を高めるため</li>
-            <li>必要最小限の範囲にとどめ、引用元を明記する</li>
+            <li>バンドメンバーが楽曲の構成・雰囲気を把握し、合奏の質を高めるため</li>
+            <li>サークル活動（練習および演奏）の目的に限定した利用</li>
+            <li>外部への一般公開は行わず、認証されたメンバーのみにアクセス権を制限</li>
           </ul>
 
-          <h3 className={styles.accentTitle}>注意とお願い</h3>
+          <h3 className={styles.accentTitle}>⚠️ 厳守事項（部外者共有・転載の禁止）</h3>
           <p>
-            著作権者の権利を尊重するため、無断での転載や再配布は禁止しています。
-            外部への公開は一切行っておらず、バンド内部のみの利用にとどめています。
+            著作権者の権利を保護するため、掲載されている譜面・音源データの<strong>外部転載、SNSへのアップロード、部外者への共有（チャットツール等での送信）は固く禁止</strong>します。
+            また、<strong>退団・卒業された際は、端末にダウンロードされた手持ちのデータも含めて速やかに削除・破棄</strong>してください。
           </p>
         </section>
 
@@ -107,13 +107,13 @@ export default function AboutPage() {
         <section className={`${styles.tabContent} ${activeTab === "privacy" ? styles.active : ""}`}>
           <h2 className={styles.accentTitle}>プライバシーポリシー</h2>
           <p>
-            当サイトでは、LINEログインを通じて取得した最低限のユーザー情報（LINEのユーザーID、表示名など）を、本人確認およびアカウント識別のために利用します。
+            当サイトでは、LINEログインを通じて取得した最低限のユーザー情報（LINEのユーザーID、表示名など）およびプロフィール情報（氏名、パート、楽器、居住市区町村等）を、本人確認、アカウント識別、およびバンド運営（旅費精算・出欠連絡等）のために利用します。
           </p>
           <p>
-            これらの情報は、すべて暗号化およびハッシュ化された上で、安全なFirebase Firestoreデータベースに保存され、第三者に開示されることはありません。
+            これらの情報はすべて暗号化およびハッシュ化された上で、安全なGoogle Cloud（Firebase Authentication / Cloud Firestore / Firebase Storage）に保存され、第三者に開示されることはありません。
           </p>
           <p>
-            また、Firebase Authentication や Firestore、Firebase Hosting など Google 提供のクラウドサービスを利用しています。各サービスのプライバシーポリシーは、
+            また、Firebase 各サービスを利用しており、サービスのプライバシーポリシーは、
             <a
               href="https://policies.google.com/privacy?hl=ja"
               target="_blank"

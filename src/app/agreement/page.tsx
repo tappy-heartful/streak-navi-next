@@ -89,48 +89,80 @@ export default function AgreementPage() {
 
       <main>
         <p>
-          本Webアプリ「Streak Navi」は、Swing Streak Jazz Orchestraのメンバー専用の非公開ツールです。<br />
-          活動の運営（旅費精算、連絡等）のため、氏名、パート、居住地（都道府県・市区町村）などの情報を登録いただきます。
+          本Webアプリ「Streak Navi」は、Swing Streak Jazz Orchestra（以下、当バンド）のメンバー専用の内部活動ポータルです。<br />
+          練習やライブの出欠管理、楽譜・音源の共有、選曲・譜割り、旅費・経費の清算、チケット管理などの円滑な運営のため、以下の規約に同意の上ご利用ください。
         </p>
 
         <section className={styles.agreementContent}>
-          <h3 className={styles.sectionTitle}>情報の取得と利用目的について</h3>
+          <h3 className={styles.sectionTitle}>1. 情報の取得と利用目的について</h3>
           <p>
-            本人確認および活動運営のため、以下の情報を取得・保持します：
+            本人確認およびバンド活動運営のため、以下の情報を取得・保持します：
           </p>
           <ul className={styles.list}>
-            <li className={styles.listItem}><strong>LINE連携情報：</strong>表示名、プロフィール画像、ユーザーID</li>
-            <li className={styles.listItem}><strong>プロフィール情報：</strong>氏名、セクション、楽器、居住地（都道府県・市区町村）、PayPay ID（対象者のみ）</li>
+            <li className={styles.listItem}><strong>LINE連携情報：</strong>表示名、プロフィール画像、アカウント識別ID</li>
+            <li className={styles.listItem}><strong>プロフィール情報：</strong>氏名、セクション（パート）、担当楽器、居住地（都道府県・市区町村：旅費補助算出用）、役職、PayPay ID（会計対象者のみ）</li>
+            <li className={styles.listItem}><strong>活動・回答データ：</strong>イベント出欠・日程調整、選曲希望・投票、譜割り回答等</li>
+            <li className={styles.listItem}><strong>会計・精算情報：</strong>立替経費申請データ、領収書・送金確認用スクリーンショット等</li>
+            <li className={styles.listItem}><strong>セキュリティ・ログ情報：</strong>アクセスログ、譜面ダウンロードログ等</li>
           </ul>
-          <p>取得した情報は以下の通り適切に保護されます：</p>
+          <p>取得した情報は以下の通り適切に管理・保護されます：</p>
           <ul className={styles.list}>
-            <li className={styles.listItem}>アカウント識別のみに使用し、バンド外には一切公開されません</li>
+            <li className={styles.listItem}>バンド活動の円滑な運営およびアカウント識別のみに使用し、外部には一切公開されません</li>
             <li className={styles.listItem}>
-              情報は<strong>Googleの提供する安全なクラウドストレージ（Firebase）</strong>にて暗号化・保護して保存されます
+              データは<strong>Google Cloudの安全なインフラ（Firebase Authentication / Cloud Firestore / Storage）</strong>にて厳格に暗号化・保護されます
             </li>
-            <li className={styles.listItem}>第三者に提供・共有されることはありません</li>
+            <li className={styles.listItem}>法令に基づく場合を除き、第三者に提供・共有されることはありません</li>
           </ul>
         </section>
 
         <section className={styles.cautionBox}>
-          <span className={styles.cautionTitle}>⚠️ 注意事項と禁止事項</span>
+          <span className={styles.cautionTitle}>2. ⚠️ 譜面・音源データの取り扱いに関する厳守事項</span>
+          <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem' }}>
+            本システム上で共有・保管される譜面データ（PDF・画像）および参考音源は、著作権保護の観点から以下のルールを厳格に遵守してください：
+          </p>
           <ul className={styles.list}>
             <li className={styles.listItem}>
-              <strong>詳細な個人情報の登録禁止：</strong>
-              住所の番地以降、電話番号、マイナンバー、クレジットカード情報などの個人情報は事前承諾なく入力しないでください。（※居住地は、旅費精算に使用するため市区町村名までを正確に入力してください）
+              <strong>目的外利用の禁止：</strong>
+              掲載されている譜面・音源データは、サークル活動（練習および演奏）の目的でのみご利用いただけます。
             </li>
             <li className={styles.listItem}>
-              <strong>迷惑行為の禁止：</strong>
-              他の利用者が不快に感じるデータや、公序良俗に反する情報の登録は禁止します。
+              <strong>外部転載・部外者共有の禁止：</strong>
+              データの外部への転載、SNSへのアップロード、部外者への共有（SNS・チャットツール等での送信）は固く禁止します。
             </li>
             <li className={styles.listItem}>
-              <strong>不正操作の禁止：</strong>
-              ブラウザの開発者ツール等を用いたシステムの改ざんや、不正なアクセス試行を禁止します。
+              <strong>退団時のデータ破棄：</strong>
+              退団された場合は、手持ちの端末に保存されたデータも含めて速やかに削除・破棄してください。
+            </li>
+            <li className={styles.listItem}>
+              <strong>ダウンロードログの記録：</strong>
+              著作権保護および適正運用の確認のため、譜面ファイルの閲覧・ダウンロード時には監査ログ（実行者、日時、対象ファイル）が自動記録されます。
             </li>
           </ul>
         </section>
 
-        <p className={styles.footerText}>本アプリの円滑な運営のため、上記ルールを守ってご利用ください。</p>
+        <section className={styles.cautionBox}>
+          <span className={styles.cautionTitle}>3. ⚠️ その他の注意事項・禁止事項</span>
+          <ul className={styles.list}>
+            <li className={styles.listItem}>
+              <strong>過剰な個人情報の登録禁止：</strong>
+              住所の番地以降、電話番号、マイナンバー、クレジットカード番号などの機密情報は入力しないでください。（※居住地は、旅費精算に使用するため市区町村名までを正確に入力してください）
+            </li>
+            <li className={styles.listItem}>
+              <strong>会計・精算における不正行為の禁止：</strong>
+              経費の虚偽申請、領収書や送金エビデンスの偽造・改ざん、および割り勘精算の意図的な遅延・未払いは禁止します。
+            </li>
+            <li className={styles.listItem}>
+              <strong>アカウント貸与・不正操作の禁止：</strong>
+              ログインアカウントを第三者（部外者）に貸与・譲渡することや、ブラウザツール等を用いたシステムの改ざん、不正アクセス試行を禁止します。
+            </li>
+            <li className={styles.listItem}>
+              <strong>迷惑行為の禁止：</strong>
+              他のメンバーが不快に感じるデータや、公序良俗に反する情報の登録・発言は禁止します。
+            </li>
+          </ul>
+        </section>
+
+        <p className={styles.footerText}>本アプリおよび当バンドの健全な運営のため、上記ルールを守ってご利用ください。</p>
 
         <div className={styles.checkboxContainer}>
           <label className={styles.label}>
