@@ -1,5 +1,5 @@
 import 'server-only';
-import { adminDb } from "@/src/lib/firebase-admin";
+import { adminDb, adminStorage } from "@/src/lib/firebase-admin";
 import * as utils from "@/src/lib/functions";
 import { Genre, Score, EventWithSetlist } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
@@ -11,8 +11,15 @@ export async function getScoresServer() {
   const snap = await adminDb.collection("scores").orderBy("createdAt", "desc").get();
   return snap.docs.map(doc => {
     const data = toPlainObject(doc);
+    // セキュリティ強化: Storage上のファイルはパブリックトークン付きURLをクライアントに漏洩させず空にする
+    const rawFiles = Array.isArray(data.files) ? data.files : [];
+    const files = rawFiles.map((f: any) => ({
+      ...f,
+      url: f.path ? "" : f.url || "",
+    }));
     return {
       ...data,
+      files,
       youtubeId: utils.extractYouTubeId(data.referenceTrack)
     };
   }) as Score[];
@@ -26,8 +33,14 @@ export async function getScoreServer(scoreId: string) {
   if (!docSnap.exists) return null;
 
   const data = toPlainObject(docSnap);
+  const rawFiles = Array.isArray(data.files) ? data.files : [];
+  const files = rawFiles.map((f: any) => ({
+    ...f,
+    url: f.path ? "" : f.url || "",
+  }));
   return {
     ...data,
+    files,
     youtubeId: utils.extractYouTubeId(data.referenceTrack)
   } as Score;
 }
@@ -69,4 +82,69 @@ export async function getUpcomingEventsWithSetlistServer(): Promise<EventWithSet
       scoreIdsInSetlist: scoreIds,
     };
   }).filter(e => e.scoreIdsInSetlist.length > 0);
+}
+
+/**
+ * 既存の全譜面ファイルから公開トークン（downloadTokens）を無効化し、
+ * Firestore上のurlもサニタイズするセキュリティメンテナンスタスク（サーバーサイド専用）
+ */
+export async function revokeAllScoreDownloadTokensServer() {
+  let revokedFilesCount = 0;
+  let updatedScoresCount = 0;
+
+  try {
+    // 1. Firebase Storage 上の scores/files/ 配下のオブジェクトからトークンを剥奪
+    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "streak-navi.firebasestorage.app";
+    const bucket = adminStorage.bucket(bucketName);
+    const [files] = await bucket.getFiles({ prefix: "scores/files/" });
+
+    for (const file of files) {
+      try {
+        const [meta] = await file.getMetadata();
+        if (meta.metadata && meta.metadata.firebaseStorageDownloadTokens) {
+          await file.setMetadata({
+            metadata: {
+              firebaseStorageDownloadTokens: null,
+            },
+          });
+          revokedFilesCount++;
+        }
+      } catch (fErr) {
+        console.warn(`[Storage Token Revoke] Failed for file: ${file.name}`, fErr);
+      }
+    }
+
+    // 2. Firestore の scores コレクションの各ドキュメントの files 内の url を空にする
+    const snap = await adminDb.collection("scores").get();
+    for (const doc of snap.docs) {
+      const data = doc.data();
+      if (Array.isArray(data.files) && data.files.length > 0) {
+        let changed = false;
+        const newFiles = data.files.map((f: any) => {
+          if (f.path && f.url) {
+            changed = true;
+            return { ...f, url: "" };
+          }
+          return f;
+        });
+
+        if (changed) {
+          await doc.ref.update({ files: newFiles });
+          updatedScoresCount++;
+        }
+      }
+    }
+
+    return {
+      success: true,
+      revokedFilesCount,
+      updatedScoresCount,
+    };
+  } catch (err: any) {
+    console.error("[Storage Token Revoke Error]:", err);
+    return {
+      success: false,
+      error: err.message,
+    };
+  }
 }

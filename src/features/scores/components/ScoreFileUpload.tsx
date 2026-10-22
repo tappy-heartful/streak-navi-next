@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import { ScoreFile } from "@/src/lib/firestore/types";
 import { storage } from "@/src/lib/firebase";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { ref, uploadBytes, deleteObject, getBlob } from "firebase/storage";
 import { showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
 import styles from "./ScoreFileUpload.module.css";
 
@@ -56,8 +56,8 @@ export function ScoreFileUpload({ files, onChange }: ScoreFileUploadProps) {
         const storageRef = ref(storage, path);
 
         await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        newFiles.push({ name: fileName, url, path });
+        // getDownloadURL() を呼ばないことで、storage.rules をバイパスする公開トークン (downloadTokens) の発行を防止
+        newFiles.push({ name: fileName, url: "", path });
       }
       newFiles.sort((a, b) =>
         a.name.localeCompare(b.name, "ja", { numeric: true, sensitivity: "base" })
@@ -100,6 +100,33 @@ export function ScoreFileUpload({ files, onChange }: ScoreFileUploadProps) {
   const sortedFiles = [...files].sort((a, b) =>
     a.name.localeCompare(b.name, "ja", { numeric: true, sensitivity: "base" })
   );
+
+  const handlePreview = async (file: ScoreFile) => {
+    showSpinner();
+    try {
+      if (file.path) {
+        const storageRef = ref(storage, file.path);
+        const blob = await getBlob(storageRef);
+        const lower = file.name.toLowerCase();
+        let mimeType = "application/octet-stream";
+        if (lower.endsWith(".pdf")) mimeType = "application/pdf";
+        else if (lower.endsWith(".png")) mimeType = "image/png";
+        else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) mimeType = "image/jpeg";
+        else if (lower.endsWith(".webp")) mimeType = "image/webp";
+        else if (lower.endsWith(".mp3")) mimeType = "audio/mpeg";
+
+        const blobUrl = URL.createObjectURL(new Blob([blob], { type: mimeType }));
+        window.open(blobUrl, "_blank", "noopener,noreferrer");
+      } else if (file.url) {
+        window.open(file.url, "_blank", "noopener,noreferrer");
+      }
+    } catch (err) {
+      console.error("Score preview failed:", err);
+      showDialog("プレビューの取得に失敗しました。ログイン状態をご確認ください。");
+    } finally {
+      hideSpinner();
+    }
+  };
 
   const handleRemove = async (fileToRemove: ScoreFile) => {
     const confirmed = await showDialog(`「${fileToRemove.name}」を削除しますか？`);
@@ -174,15 +201,14 @@ export function ScoreFileUpload({ files, onChange }: ScoreFileUploadProps) {
                 </div>
                 <span className={styles.fileName}>{file.name}</span>
                 <div className={styles.fileActions}>
-                  <a
-                    href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => handlePreview(file)}
                     className={styles.actionButton}
                     title="プレビュー・確認"
                   >
                     <i className="fa-solid fa-arrow-up-right-from-square" />
-                  </a>
+                  </button>
                   <button
                     type="button"
                     className={`${styles.actionButton} ${styles.deleteButton}`}

@@ -4,6 +4,9 @@ import React, { useEffect, useState } from "react";
 import { ScoreFile } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { recordScoreDownloadLog } from "@/src/features/scores/api/score-client-service";
+import { storage } from "@/src/lib/firebase";
+import { ref, getBlob } from "firebase/storage";
+import { showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
 import { ScoreDownloadConsentModal } from "./ScoreDownloadConsentModal";
 import styles from "./ScoreFileListModal.module.css";
 
@@ -82,16 +85,46 @@ export function ScoreFileListModal({
     a.name.localeCompare(b.name, "ja", { numeric: true, sensitivity: "base" })
   );
 
-  const handleConfirmDownload = () => {
+  const handleConfirmDownload = async () => {
     if (!pendingFile) return;
-    void recordScoreDownloadLog({
-      scoreId,
-      scoreTitle: title,
-      fileName: pendingFile.name,
-      fileUrl: pendingFile.url,
-      user,
-    });
-    window.open(pendingFile.url, "_blank", "noopener,noreferrer");
+
+    showSpinner();
+    try {
+      void recordScoreDownloadLog({
+        scoreId,
+        scoreTitle: title,
+        fileName: pendingFile.name,
+        fileUrl: pendingFile.path || pendingFile.url,
+        user,
+      });
+
+      if (pendingFile.path) {
+        // Storage セキュリティルール (request.auth != null) が適用される getBlob を使用
+        const storageRef = ref(storage, pendingFile.path);
+        const blob = await getBlob(storageRef);
+
+        // MIMEタイプを拡張子から判定して Blob URL を生成 (メモリ内URL)
+        const lower = pendingFile.name.toLowerCase();
+        let mimeType = "application/octet-stream";
+        if (lower.endsWith(".pdf")) mimeType = "application/pdf";
+        else if (lower.endsWith(".png")) mimeType = "image/png";
+        else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) mimeType = "image/jpeg";
+        else if (lower.endsWith(".webp")) mimeType = "image/webp";
+        else if (lower.endsWith(".mp3")) mimeType = "audio/mpeg";
+
+        const typedBlob = new Blob([blob], { type: mimeType });
+        const blobUrl = URL.createObjectURL(typedBlob);
+        window.open(blobUrl, "_blank", "noopener,noreferrer");
+      } else if (pendingFile.url) {
+        // 旧Google Drive等へのフォールバック
+        window.open(pendingFile.url, "_blank", "noopener,noreferrer");
+      }
+    } catch (err) {
+      console.error("Score file access failed:", err);
+      showDialog("譜面データの取得に失敗しました。ログイン状態をご確認ください。");
+    } finally {
+      hideSpinner();
+    }
   };
 
   return (
