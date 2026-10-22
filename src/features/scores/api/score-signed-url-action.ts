@@ -17,19 +17,21 @@ export async function getScoreSignedUrl(storagePath: string, fileName: string): 
   const file = bucket.file(storagePath);
 
   const lower = fileName.toLowerCase();
-  let contentType = "application/octet-stream";
-  if (lower.endsWith(".pdf")) contentType = "application/pdf";
-  else if (lower.endsWith(".png")) contentType = "image/png";
-  else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) contentType = "image/jpeg";
-  else if (lower.endsWith(".webp")) contentType = "image/webp";
-  else if (lower.endsWith(".mp3")) contentType = "audio/mpeg";
+  let responseType = "application/octet-stream";
+  if (lower.endsWith(".pdf")) responseType = "application/pdf";
+  else if (lower.endsWith(".png")) responseType = "image/png";
+  else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) responseType = "image/jpeg";
+  else if (lower.endsWith(".webp")) responseType = "image/webp";
+  else if (lower.endsWith(".mp3")) responseType = "audio/mpeg";
 
-  // 5分間有効な署名付きURLを生成 (ブラウザ内閲覧 inline)
+  // v4 署名で 5分間有効な署名付きURLを生成 (ブラウザ内閲覧 inline)
+  // ※ contentType を指定するとGETヘッダーにContent-Typeが要求されSignatureDoesNotMatchになるため、responseTypeを使用
   const [signedUrl] = await file.getSignedUrl({
+    version: "v4",
     action: "read",
     expires: Date.now() + 5 * 60 * 1000,
     responseDisposition: "inline",
-    contentType,
+    responseType,
   });
 
   return signedUrl;

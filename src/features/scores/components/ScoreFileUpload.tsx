@@ -122,8 +122,8 @@ export function ScoreFileUpload({ files, onChange }: ScoreFileUploadProps) {
           window.matchMedia("(display-mode: standalone)").matches);
 
       if (isLine) {
-        const targetUrl = url.includes("?") ? `${url}&openExternalBrowser=1` : `${url}?openExternalBrowser=1`;
-        window.location.href = targetUrl;
+        // LINE内ブラウザ: 署名を改ざんせず直接遷移して開く
+        window.location.href = url;
       } else if (isStandalone) {
         const a = document.createElement("a");
         a.href = url;

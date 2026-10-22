@@ -94,9 +94,8 @@ export function ScoreFileListModal({
         window.matchMedia("(display-mode: standalone)").matches);
 
     if (isLine) {
-      // LINE内ブラウザ: 外部ブラウザパラメータ (?openExternalBrowser=1) でSafari/Chromeを起動
-      const targetUrl = url.includes("?") ? `${url}&openExternalBrowser=1` : `${url}?openExternalBrowser=1`;
-      window.location.href = targetUrl;
+      // LINE内ブラウザ: 署名を改ざんせず直接遷移して開く
+      window.location.href = url;
     } else if (isStandalone) {
       // iOS PWA: aタグのクリックで外部Safariを起動 (白画面クラッシュを完全防止)
       const a = document.createElement("a");
