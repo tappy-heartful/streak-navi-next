@@ -26,11 +26,8 @@ const getInitialYearMonth = () => {
 };
 
 export default function LineLogListClient() {
-  const { userData, loading: authLoading } = useAuth();
+  const { userData } = useAuth();
   const { setBreadcrumbs } = useBreadcrumb();
-
-  // ログインユーザーであれば誰でも閲覧可能
-  const canView = Boolean(userData);
 
   // 管理者権限（人数変更が可能）
   const canEditConfig = Boolean(
@@ -58,19 +55,14 @@ export default function LineLogListClient() {
 
   // 設定の取得
   useEffect(() => {
-    if (!canView) return;
-    const loadConfig = async () => {
-      try {
-        const cfg = await getLineLogConfigClient();
+    getLineLogConfigClient()
+      .then((cfg) => {
         if (cfg && typeof cfg.groupMemberCount === "number") {
           setGroupMemberCount(cfg.groupMemberCount);
         }
-      } catch (err) {
-        console.error("Failed to load lineLogs config:", err);
-      }
-    };
-    loadConfig();
-  }, [canView]);
+      })
+      .catch((err) => console.error("Failed to load lineLogs config:", err));
+  }, []);
 
   // グループ人数保存ハンドラ
   const handleSaveGroupMemberCount = async (newCount: number) => {
@@ -96,15 +88,10 @@ export default function LineLogListClient() {
     }
   }, []);
 
-  // 年月切り替え時にデータ取得
+  // 年月切り替え時、および画面表示直後に即座にデータ取得 (CANDY準拠)
   useEffect(() => {
-    if (authLoading) return;
-    if (!canView) {
-      setIsLoading(false);
-      return;
-    }
     fetchLogs(currentYearMonth);
-  }, [currentYearMonth, fetchLogs, authLoading, canView]);
+  }, [currentYearMonth, fetchLogs]);
 
   // クォータ（配信枠）サマリーの計算（グループ人数を考慮）
   const quotaSummary: MonthQuotaSummary = useMemo(() => {
@@ -237,39 +224,6 @@ export default function LineLogListClient() {
   const indivLogsCount = useMemo(() => {
     return logs.filter((l) => !(l.accountType === "group" || l.recipientType === "group" || l.recipientUid === "group")).length;
   }, [logs]);
-
-  // 認証確認中のローディング表示
-  if (authLoading) {
-    return (
-      <div className={styles.pageWrapper}>
-        <div style={{ padding: "60px 16px", textAlign: "center", color: "#64748b" }}>
-          <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: "1.8rem", color: "#06c755", marginBottom: "12px", display: "block" }} />
-          <span>認証情報を確認中...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // ログインしていない場合の案内
-  if (!canView) {
-    return (
-      <div className={styles.pageWrapper}>
-        <div className={styles.unauthorizedCard}>
-          <div className={styles.unauthorizedIcon}>
-            <i className="fa-solid fa-lock" />
-          </div>
-          <h2 className={styles.unauthorizedTitle}>ログインが必要です</h2>
-          <p className={styles.unauthorizedText}>
-            LINE送信履歴および配信枠状況を閲覧するにはログインが必要です。
-          </p>
-          <Link href="/login" className={styles.homeBtn}>
-            <i className="fa-solid fa-arrow-right-to-bracket" />
-            ログイン画面へ
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.pageWrapper}>

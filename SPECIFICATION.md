@@ -380,4 +380,8 @@ Firestore のセキュリティルール（`firestore.rules`）に基づき、�
   - LINE公式アカウントの仕様に基づき、全体グループ通知は「メッセージ数 × グループ参加人数」が消費通数としてカウントされる。
   - 管理者（`isLineLogAdmin`, `isNoticeAdmin`, `isSystemAdmin`）は `/line-logs` 画面上でグループ参加人数（`configs/lineLogs.groupMemberCount`）を直接登録・変更可能。
   - 送信ログ一覧および月間クォータゲージ（上限200通）は、設定された参加人数を乗算して正確な残通数・使用率をリアルタイム算出・可視化。
+- **高速即時フェッチ設計 (CANDY準拠)**:
+  - 画面表示直後に `currentYearMonth` で無遅延即時フェッチ（`fetchLogs`）を開始。
+  - コンポーネント内の冗長な認証チェックによる画面ブロック・早期リターンを排除し、`ClientLayout` の `AuthGuard` に認証制御を一元化。
+  - メインとなる `lineNotificationLogs` を最優先で取得しつつ、過去ログ（`notificationHistorys`, `notificationIndividualHistorys`）は `Promise.allSettled` で非同期並列マージすることで、表示直後からの高速かつ確実なデータ表示を実現。
 

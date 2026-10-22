@@ -51,7 +51,7 @@ export async function getLineLogConfigClient(): Promise<LineLogConfig> {
 export async function getLineNotificationLogsByMonth(yearMonth: string): Promise<LineNotificationLog[]> {
   const logs: LineNotificationLog[] = [];
 
-  // 1. lineNotificationLogs から取得
+  // 1. lineNotificationLogs から最優先で取得 (CANDY準拠)
   try {
     const logsRef = collection(db, "lineNotificationLogs");
     const q = query(logsRef, where("yearMonth", "==", yearMonth));
@@ -76,107 +76,106 @@ export async function getLineNotificationLogsByMonth(yearMonth: string): Promise
     }
   }
 
-  // 2. 過去の互換性: notificationHistorys (グループ全体通知の旧ログ) からも取得してマージ
+  // 2. 過去の互換性 (旧ログ notificationHistorys / notificationIndividualHistorys) は並列で安全に取得
   try {
-    const legacyHistoryRef = collection(db, "notificationHistorys");
-    const legacySnap = await getDocs(legacyHistoryRef);
-    legacySnap.forEach((doc) => {
-      const d = doc.data();
-      const sentAtDate = d.sentAt?.toDate ? d.sentAt.toDate() : (d.sentAt ? new Date(d.sentAt) : null);
-      if (!sentAtDate) return;
+    const [legacyRes, indivRes] = await Promise.allSettled([
+      getDocs(collection(db, "notificationHistorys")),
+      getDocs(collection(db, "notificationIndividualHistorys")),
+    ]);
 
-      const ym = `${sentAtDate.getFullYear()}-${String(sentAtDate.getMonth() + 1).padStart(2, "0")}`;
-      if (ym !== yearMonth) return;
+    if (legacyRes.status === "fulfilled") {
+      legacyRes.value.forEach((doc) => {
+        const d = doc.data();
+        const sentAtDate = d.sentAt?.toDate ? d.sentAt.toDate() : (d.sentAt ? new Date(d.sentAt) : null);
+        if (!sentAtDate) return;
 
-      const id = doc.id;
-      // 既に lineNotificationLogs に同一IDや同一messageIdがあるかチェック
-      if (logs.some((l) => l.id === id || (d.messageId && l.details?.messageId === d.messageId))) {
-        return;
-      }
+        const ym = `${sentAtDate.getFullYear()}-${String(sentAtDate.getMonth() + 1).padStart(2, "0")}`;
+        if (ym !== yearMonth) return;
 
-      const text = d.content || "";
-      const lines = text.split("\n").filter((l: string) => l.trim().length > 0);
-      const summary = lines.slice(0, 2).join(" / ") || d.title || "グループ通知";
+        const id = doc.id;
+        if (logs.some((l) => l.id === id || (d.messageId && l.details?.messageId === d.messageId))) {
+          return;
+        }
 
-      const formatted = `${sentAtDate.getFullYear()}/${String(sentAtDate.getMonth() + 1).padStart(2, "0")}/${String(sentAtDate.getDate()).padStart(2, "0")} ${String(sentAtDate.getHours()).padStart(2, "0")}:${String(sentAtDate.getMinutes()).padStart(2, "0")}:${String(sentAtDate.getSeconds()).padStart(2, "0")}`;
-      const dateStr = `${sentAtDate.getFullYear()}-${String(sentAtDate.getMonth() + 1).padStart(2, "0")}-${String(sentAtDate.getDate()).padStart(2, "0")}`;
+        const text = d.content || "";
+        const lines = text.split("\n").filter((l: string) => l.trim().length > 0);
+        const summary = lines.slice(0, 2).join(" / ") || d.title || "グループ通知";
 
-      logs.push({
-        id,
-        accountType: "group",
-        accountName: "全体グループ通知",
-        notificationType: d.sourceCollection === "events" ? "event" : d.sourceCollection === "votes" ? "vote" : d.sourceCollection === "calls" ? "call" : "other",
-        notificationTitle: d.title || "全体自動通知",
-        recipientType: "group",
-        recipientUid: "group",
-        recipientName: "全体グループ (バンドLINE)",
-        recipientLineId: "group",
-        messages: [{ type: "text", text: text }],
-        messageCount: 1,
-        summary: summary.length > 80 ? summary.substring(0, 80) + "..." : summary,
-        details: { messageId: d.messageId, sourceCollection: d.sourceCollection, sourceDocId: d.sourceDocId },
-        status: "success",
-        sentAt: sentAtDate.getTime(),
-        sentAtFormatted: formatted,
-        yearMonth: ym,
-        date: dateStr,
-        sourceCollection: d.sourceCollection,
-        sourceDocId: d.sourceDocId,
+        const formatted = `${sentAtDate.getFullYear()}/${String(sentAtDate.getMonth() + 1).padStart(2, "0")}/${String(sentAtDate.getDate()).padStart(2, "0")} ${String(sentAtDate.getHours()).padStart(2, "0")}:${String(sentAtDate.getMinutes()).padStart(2, "0")}:${String(sentAtDate.getSeconds()).padStart(2, "0")}`;
+        const dateStr = `${sentAtDate.getFullYear()}-${String(sentAtDate.getMonth() + 1).padStart(2, "0")}-${String(sentAtDate.getDate()).padStart(2, "0")}`;
+
+        logs.push({
+          id,
+          accountType: "group",
+          accountName: "全体グループ通知",
+          notificationType: d.sourceCollection === "events" ? "event" : d.sourceCollection === "votes" ? "vote" : d.sourceCollection === "calls" ? "call" : "other",
+          notificationTitle: d.title || "全体自動通知",
+          recipientType: "group",
+          recipientUid: "group",
+          recipientName: "全体グループ (バンドLINE)",
+          recipientLineId: "group",
+          messages: [{ type: "text", text: text }],
+          messageCount: 1,
+          summary: summary.length > 80 ? summary.substring(0, 80) + "..." : summary,
+          details: { messageId: d.messageId, sourceCollection: d.sourceCollection, sourceDocId: d.sourceDocId },
+          status: "success",
+          sentAt: sentAtDate.getTime(),
+          sentAtFormatted: formatted,
+          yearMonth: ym,
+          date: dateStr,
+          sourceCollection: d.sourceCollection,
+          sourceDocId: d.sourceDocId,
+        });
       });
-    });
+    }
+
+    if (indivRes.status === "fulfilled") {
+      indivRes.value.forEach((doc) => {
+        const d = doc.data();
+        const sentAtDate = d.sentAt?.toDate ? d.sentAt.toDate() : (d.sentAt ? new Date(d.sentAt) : null);
+        if (!sentAtDate) return;
+
+        const ym = `${sentAtDate.getFullYear()}-${String(sentAtDate.getMonth() + 1).padStart(2, "0")}`;
+        if (ym !== yearMonth) return;
+
+        const id = doc.id;
+        if (logs.some((l) => l.id === id || (d.messageId && l.details?.messageId === d.messageId))) {
+          return;
+        }
+
+        const text = d.content || "";
+        const lines = text.split("\n").filter((l: string) => l.trim().length > 0);
+        const summary = lines.slice(0, 2).join(" / ") || d.title || "個人通知";
+
+        const formatted = `${sentAtDate.getFullYear()}/${String(sentAtDate.getMonth() + 1).padStart(2, "0")}/${String(sentAtDate.getDate()).padStart(2, "0")} ${String(sentAtDate.getHours()).padStart(2, "0")}:${String(sentAtDate.getMinutes()).padStart(2, "0")}:${String(sentAtDate.getSeconds()).padStart(2, "0")}`;
+        const dateStr = `${sentAtDate.getFullYear()}-${String(sentAtDate.getMonth() + 1).padStart(2, "0")}-${String(sentAtDate.getDate()).padStart(2, "0")}`;
+
+        logs.push({
+          id,
+          accountType: "individual",
+          accountName: "個別通知BOT",
+          notificationType: d.sourceCollection === "issues" ? "todo" : d.sourceCollection === "accounting" ? "accounting" : "other",
+          notificationTitle: d.title || "個別通知リマインド",
+          recipientType: "individual",
+          recipientUid: d.uid || "",
+          recipientName: d.userName && !/^U[a-zA-Z0-9]{10,}$/.test(d.userName.trim()) ? d.userName : "メンバー",
+          recipientLineId: "",
+          messages: [{ type: "text", text: text }],
+          messageCount: 1,
+          summary: summary.length > 80 ? summary.substring(0, 80) + "..." : summary,
+          details: { messageId: d.messageId, sourceCollection: d.sourceCollection, sourceDocId: d.sourceDocId },
+          status: "success",
+          sentAt: sentAtDate.getTime(),
+          sentAtFormatted: formatted,
+          yearMonth: ym,
+          date: dateStr,
+          sourceCollection: d.sourceCollection,
+          sourceDocId: d.sourceDocId,
+        });
+      });
+    }
   } catch (legacyErr) {
-    console.warn("Legacy notificationHistorys fetch skipped/failed:", legacyErr);
-  }
-
-  // 3. 過去の互換性: notificationIndividualHistorys (個人通知の旧ログ) からも取得してマージ
-  try {
-    const indivHistoryRef = collection(db, "notificationIndividualHistorys");
-    const indivSnap = await getDocs(indivHistoryRef);
-    indivSnap.forEach((doc) => {
-      const d = doc.data();
-      const sentAtDate = d.sentAt?.toDate ? d.sentAt.toDate() : (d.sentAt ? new Date(d.sentAt) : null);
-      if (!sentAtDate) return;
-
-      const ym = `${sentAtDate.getFullYear()}-${String(sentAtDate.getMonth() + 1).padStart(2, "0")}`;
-      if (ym !== yearMonth) return;
-
-      const id = doc.id;
-      if (logs.some((l) => l.id === id || (d.messageId && l.details?.messageId === d.messageId))) {
-        return;
-      }
-
-      const text = d.content || "";
-      const lines = text.split("\n").filter((l: string) => l.trim().length > 0);
-      const summary = lines.slice(0, 2).join(" / ") || d.title || "個人通知";
-
-      const formatted = `${sentAtDate.getFullYear()}/${String(sentAtDate.getMonth() + 1).padStart(2, "0")}/${String(sentAtDate.getDate()).padStart(2, "0")} ${String(sentAtDate.getHours()).padStart(2, "0")}:${String(sentAtDate.getMinutes()).padStart(2, "0")}:${String(sentAtDate.getSeconds()).padStart(2, "0")}`;
-      const dateStr = `${sentAtDate.getFullYear()}-${String(sentAtDate.getMonth() + 1).padStart(2, "0")}-${String(sentAtDate.getDate()).padStart(2, "0")}`;
-
-      logs.push({
-        id,
-        accountType: "individual",
-        accountName: "個別通知BOT",
-        notificationType: d.sourceCollection === "issues" ? "todo" : d.sourceCollection === "accounting" ? "accounting" : "other",
-        notificationTitle: d.title || "個別通知リマインド",
-        recipientType: "individual",
-        recipientUid: d.uid || "",
-        recipientName: d.userName && !/^U[a-zA-Z0-9]{10,}$/.test(d.userName.trim()) ? d.userName : "メンバー",
-        recipientLineId: "",
-        messages: [{ type: "text", text: text }],
-        messageCount: 1,
-        summary: summary.length > 80 ? summary.substring(0, 80) + "..." : summary,
-        details: { messageId: d.messageId, sourceCollection: d.sourceCollection, sourceDocId: d.sourceDocId },
-        status: "success",
-        sentAt: sentAtDate.getTime(),
-        sentAtFormatted: formatted,
-        yearMonth: ym,
-        date: dateStr,
-        sourceCollection: d.sourceCollection,
-        sourceDocId: d.sourceDocId,
-      });
-    });
-  } catch (indivErr) {
-    console.warn("Legacy notificationIndividualHistorys fetch skipped/failed:", indivErr);
+    console.warn("Legacy notification history fetch skipped:", legacyErr);
   }
 
   // 送信日時の降順（新しい順）でソート
