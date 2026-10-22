@@ -45,10 +45,14 @@ export function ScoreFileUpload({ files, onChange }: ScoreFileUploadProps) {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
         const fileName = file.name;
-        // Storageパスを生成
+        // Storageパスを生成 (ファイル名の後ろにタイムスタンプを付与)
         const timestamp = Date.now();
-        const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `scores/files/${timestamp}_${safeName}`;
+        const lastDot = fileName.lastIndexOf(".");
+        const ext = lastDot !== -1 ? fileName.slice(lastDot) : "";
+        const base = lastDot !== -1 ? fileName.slice(0, lastDot) : fileName;
+        const safeBase = base.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const safeExt = ext.replace(/[^a-zA-Z0-9.]/g, "_");
+        const path = `scores/files/${safeBase}_${timestamp}${safeExt}`;
         const storageRef = ref(storage, path);
 
         await uploadBytes(storageRef, file);
