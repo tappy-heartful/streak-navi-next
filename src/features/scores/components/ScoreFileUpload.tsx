@@ -3,7 +3,8 @@
 import React, { useRef, useState } from "react";
 import { ScoreFile } from "@/src/lib/firestore/types";
 import { storage } from "@/src/lib/firebase";
-import { ref, uploadBytes, deleteObject, getBlob } from "firebase/storage";
+import { ref, uploadBytes, deleteObject } from "firebase/storage";
+import { getScoreSignedUrl } from "@/src/features/scores/api/score-signed-url-action";
 import { showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
 import styles from "./ScoreFileUpload.module.css";
 
@@ -104,25 +105,39 @@ export function ScoreFileUpload({ files, onChange }: ScoreFileUploadProps) {
   const handlePreview = async (file: ScoreFile) => {
     showSpinner();
     try {
-      if (file.path) {
-        const storageRef = ref(storage, file.path);
-        const blob = await getBlob(storageRef);
-        const lower = file.name.toLowerCase();
-        let mimeType = "application/octet-stream";
-        if (lower.endsWith(".pdf")) mimeType = "application/pdf";
-        else if (lower.endsWith(".png")) mimeType = "image/png";
-        else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) mimeType = "image/jpeg";
-        else if (lower.endsWith(".webp")) mimeType = "image/webp";
-        else if (lower.endsWith(".mp3")) mimeType = "audio/mpeg";
+      const url = file.path
+        ? await getScoreSignedUrl(file.path, file.name)
+        : file.url;
 
-        const blobUrl = URL.createObjectURL(new Blob([blob], { type: mimeType }));
-        window.open(blobUrl, "_blank", "noopener,noreferrer");
-      } else if (file.url) {
-        window.open(file.url, "_blank", "noopener,noreferrer");
+      if (!url) {
+        showDialog("ファイルURLが見つかりません。");
+        return;
+      }
+
+      const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+      const isLine = /Line/i.test(ua);
+      const isStandalone =
+        typeof window !== "undefined" &&
+        ((window.navigator as any).standalone === true ||
+          window.matchMedia("(display-mode: standalone)").matches);
+
+      if (isLine) {
+        const targetUrl = url.includes("?") ? `${url}&openExternalBrowser=1` : `${url}?openExternalBrowser=1`;
+        window.location.href = targetUrl;
+      } else if (isStandalone) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer");
       }
     } catch (err) {
       console.error("Score preview failed:", err);
-      showDialog("プレビューの取得に失敗しました。ログイン状態をご確認ください。");
+      showDialog("プレビューの取得に失敗しました。");
     } finally {
       hideSpinner();
     }

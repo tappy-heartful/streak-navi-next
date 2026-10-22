@@ -4,8 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ScoreFile } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { recordScoreDownloadLog } from "@/src/features/scores/api/score-client-service";
-import { storage } from "@/src/lib/firebase";
-import { ref, getBlob } from "firebase/storage";
+import { getScoreSignedUrl } from "@/src/features/scores/api/score-signed-url-action";
 import { showSpinner, hideSpinner, showDialog } from "@/src/lib/functions";
 import { ScoreDownloadConsentModal } from "./ScoreDownloadConsentModal";
 import styles from "./ScoreFileListModal.module.css";
@@ -85,6 +84,34 @@ export function ScoreFileListModal({
     a.name.localeCompare(b.name, "ja", { numeric: true, sensitivity: "base" })
   );
 
+  // iOS PWA, LINE内ブラウザ, 通常ブラウザのすべてに対応した安全な開き方
+  const openFileUrlCompatibly = (url: string) => {
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const isLine = /Line/i.test(ua);
+    const isStandalone =
+      typeof window !== "undefined" &&
+      ((window.navigator as any).standalone === true ||
+        window.matchMedia("(display-mode: standalone)").matches);
+
+    if (isLine) {
+      // LINE内ブラウザ: 外部ブラウザパラメータ (?openExternalBrowser=1) でSafari/Chromeを起動
+      const targetUrl = url.includes("?") ? `${url}&openExternalBrowser=1` : `${url}?openExternalBrowser=1`;
+      window.location.href = targetUrl;
+    } else if (isStandalone) {
+      // iOS PWA: aタグのクリックで外部Safariを起動 (白画面クラッシュを完全防止)
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      // 通常ブラウザ: 別タブで開く
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   const handleConfirmDownload = async () => {
     if (!pendingFile) return;
 
@@ -99,29 +126,16 @@ export function ScoreFileListModal({
       });
 
       if (pendingFile.path) {
-        // Storage セキュリティルール (request.auth != null) が適用される getBlob を使用
-        const storageRef = ref(storage, pendingFile.path);
-        const blob = await getBlob(storageRef);
-
-        // MIMEタイプを拡張子から判定して Blob URL を生成 (メモリ内URL)
-        const lower = pendingFile.name.toLowerCase();
-        let mimeType = "application/octet-stream";
-        if (lower.endsWith(".pdf")) mimeType = "application/pdf";
-        else if (lower.endsWith(".png")) mimeType = "image/png";
-        else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) mimeType = "image/jpeg";
-        else if (lower.endsWith(".webp")) mimeType = "image/webp";
-        else if (lower.endsWith(".mp3")) mimeType = "audio/mpeg";
-
-        const typedBlob = new Blob([blob], { type: mimeType });
-        const blobUrl = URL.createObjectURL(typedBlob);
-        window.open(blobUrl, "_blank", "noopener,noreferrer");
+        // 短期有効な署名付きURLを取得 (5分間で自動失効するセキュアURL)
+        const signedUrl = await getScoreSignedUrl(pendingFile.path, pendingFile.name);
+        openFileUrlCompatibly(signedUrl);
       } else if (pendingFile.url) {
         // 旧Google Drive等へのフォールバック
-        window.open(pendingFile.url, "_blank", "noopener,noreferrer");
+        openFileUrlCompatibly(pendingFile.url);
       }
     } catch (err) {
       console.error("Score file access failed:", err);
-      showDialog("譜面データの取得に失敗しました。ログイン状態をご確認ください。");
+      showDialog("譜面データの取得に失敗しました。時間をおいて再試行してください。");
     } finally {
       hideSpinner();
     }
