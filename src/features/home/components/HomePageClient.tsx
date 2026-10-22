@@ -16,6 +16,7 @@ import { hasViewPermission } from "@/src/features/issue/lib/issue-search-engine"
 import { db } from "@/src/lib/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { DailyAgendaModal } from "./DailyAgendaModal";
+import { PwaInstallHint } from "./PwaInstallHint";
 
 // --- 再描画させないためのメモ化コンポーネント群 ---
 
@@ -43,6 +44,10 @@ const AnnouncementSection = memo(({ data }: { data: Announcement[] }) => (
             )}
           </li>
         ))}
+        {/* PWA ホーム画面追加ヒント (お知らせ最下位優先度) */}
+        <li className={styles.pwaHintItem}>
+          <PwaInstallHint isInsideAnnouncement={true} />
+        </li>
       </ul>
     </section>
   </main>
