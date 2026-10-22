@@ -196,7 +196,6 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
                               onClick={() => setSelectedScoreForModal(score)}
                               title={`${score.title}の譜面一覧を表示`}
                             >
-                              <i className="fa-solid fa-music" style={{ fontSize: "11px", opacity: 0.7 }} />
                               <span>{score.abbreviation || score.title}</span>
                             </button>
                           </td>
