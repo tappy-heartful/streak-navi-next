@@ -13,6 +13,11 @@
   border-left: 4px solid #10b981;
 }
 
+.waitingTitle {
+  border-left: 4px solid #dd6b20;
+}
+
+.completedTitle,
 .pastTitle {
   border-left: 4px solid #94a3b8;
 }

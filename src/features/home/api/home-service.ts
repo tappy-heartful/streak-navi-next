@@ -1,6 +1,6 @@
 import { adminDb } from "@/src/lib/firebase-admin";
 import * as utils from "@/src/lib/functions";
-import { Announcement, BlueNote, Media, Score, Issue } from "@/src/lib/firestore/types";
+import { Announcement, BlueNote, Media, Score, Issue, Board } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 import { unstable_cache } from "next/cache";
 
@@ -181,4 +181,20 @@ export async function getCalendarDataServer() {
   const issues = issuesSnap.docs.map(toPlainObject);
 
   return { events, votes, calls, issues };
+}
+
+/**
+ * ホーム表示用の最新掲示板投稿を取得
+ */
+export async function getHomeBoardsServer(limit = 10): Promise<Board[]> {
+  const snap = await adminDb.collection("boards").orderBy("createdAt", "desc").limit(limit).get();
+  return snap.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data.createdAt?.toMillis?.() || data.createdAt || 0,
+      updatedAt: data.updatedAt?.toMillis?.() || data.updatedAt || 0,
+    } as Board;
+  });
 }

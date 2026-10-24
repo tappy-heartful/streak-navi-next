@@ -7,7 +7,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import * as utils from "@/src/lib/functions";
 import styles from "./home.module.css";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
-import type { Announcement, Score, BlueNote, Media, Event as FirestoreEvent, Vote, Call, Issue } from "@/src/lib/firestore/types";
+import type { Announcement, Score, BlueNote, Media, Event as FirestoreEvent, Vote, Call, Issue, Board, Section } from "@/src/lib/firestore/types";
 import { InstagramEmbed } from "@/src/components/InstagramEmbed";
 import { getPersonalSettlementSummaryAction } from "@/src/features/accounting/api/accounting-server-actions";
 import { PersonalSettlementCard } from "@/src/features/accounting/components/PersonalSettlementCard";
@@ -217,6 +217,82 @@ const MenuSectionList = memo(({ isAdmin, isLineLogAdmin }: { isAdmin: boolean; i
   </main>
 ));
 MenuSectionList.displayName = "MenuSectionList";
+
+const BoardSection = memo(({ boards, sections }: { boards: Board[]; sections: Section[] }) => {
+  const sectionMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    sections.forEach((s) => {
+      map[s.id] = s.name;
+    });
+    return map;
+  }, [sections]);
+
+  return (
+    <main className="container">
+      <div className={styles.boardContainer}>
+        <div className={styles.boardHeader}>
+          <h3>
+            <i className="fa-solid fa-clipboard-list" style={{ marginRight: "0.5rem" }} />
+            新規掲示板
+          </h3>
+        </div>
+        <div className={styles.boardCard}>
+          {boards.length > 0 ? (
+            <ul className={styles.boardList}>
+              {boards.map((b) => {
+                const isGlobal = !b.sectionId;
+                const sectionName = b.sectionId ? (sectionMap[b.sectionId] || "パート") : "全体";
+                const dateStr = b.createdAt ? utils.format(new Date(b.createdAt), "yyyy.MM.dd") : "";
+
+                return (
+                  <li key={b.id}>
+                    <Link prefetch={false} href={`/board/confirm?boardId=${b.id}`} className={styles.boardItem}>
+                      <div className={styles.boardItemContent}>
+                        <div className={styles.boardTitleRow}>
+                          <span className={isGlobal ? styles.boardBadgeGlobal : styles.boardBadgeSection}>
+                            {sectionName}
+                          </span>
+                          <span className={styles.boardItemTitle}>{b.title || "無題"}</span>
+                          {b.files && b.files.length > 0 && (
+                            <i className={`fa-solid fa-paperclip ${styles.boardAttachmentIcon}`} title="添付ファイルあり" />
+                          )}
+                        </div>
+                        {b.content && (
+                          <div className={styles.boardItemSnippet}>
+                            {b.content.replace(/\r?\n/g, " ")}
+                          </div>
+                        )}
+                        <div className={styles.boardItemMeta}>
+                          <span className={styles.boardMetaItem}>
+                            <i className="fa-solid fa-user" /> {b.createdByName || "匿名"}
+                          </span>
+                          {dateStr && (
+                            <span className={styles.boardMetaItem}>
+                              <i className="fa-regular fa-clock" /> {dateStr}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <i className={`fa-solid fa-chevron-right ${styles.boardChevron}`} />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className={styles.boardEmpty}>
+              掲示板の投稿はありません🍀
+            </div>
+          )}
+        </div>
+        <div style={{ textAlign: "center", marginTop: "10px" }}>
+          <Link prefetch={false} href="/board" style={{ fontWeight: "bold" }}>もっと見る</Link>
+        </div>
+      </div>
+    </main>
+  );
+});
+BoardSection.displayName = "BoardSection";
 
 const MediaSection = memo(({ data }: { data: Media[] }) => (
   <main className="container">
@@ -892,6 +968,8 @@ type InitialData = {
     calls: Call[];
     issues: Issue[];
   };
+  boards?: Board[];
+  sections?: Section[];
 };
 
 export function HomePageClient({ initialData }: { initialData: InitialData }) {
@@ -961,6 +1039,14 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
         return dateA.localeCompare(dateB);
       });
   }, [userData, initialData.calendarData?.issues]);
+
+  const recentBoards = useMemo(() => {
+    const allBoards = initialData.boards || [];
+    const userSectionId = userData?.sectionId || "";
+    // 全体向け、または自セクション向けの投稿を抽出
+    const visible = allBoards.filter((b) => !b.sectionId || b.sectionId === userSectionId);
+    return visible.slice(0, 3);
+  }, [initialData.boards, userData?.sectionId]);
 
   return (
     <BaseLayout>
@@ -1047,6 +1133,12 @@ export function HomePageClient({ initialData }: { initialData: InitialData }) {
             )}
           </>
         )}
+
+        {/* 新規掲示板 */}
+        <BoardSection
+          boards={recentBoards}
+          sections={initialData.sections || []}
+        />
 
         <MenuSectionList
           isAdmin={!!userData?.isSystemAdmin}

@@ -968,4 +968,139 @@
   gap: 2px;
   margin-left: 6px;
   font-weight: bold;
+}
+
+/* 新規掲示板セクション */
+.boardContainer {
+  margin-bottom: 20px;
+}
+
+.boardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.boardCard {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.boardList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.boardItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.15s ease;
+}
+
+.boardItem:hover {
+  background-color: #f8fafc;
+}
+
+.boardItem:last-child {
+  border-bottom: none;
+}
+
+.boardItemContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.boardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.boardBadgeGlobal {
+  background-color: #e0f2fe;
+  color: #0284c7;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.boardBadgeSection {
+  background-color: #fef3c7;
+  color: #b45309;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.boardItemTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.boardAttachmentIcon {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+.boardItemSnippet {
+  font-size: 0.8rem;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.boardItemMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.boardMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.boardChevron {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.boardEmpty {
+  padding: 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
 }

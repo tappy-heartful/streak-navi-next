@@ -128,11 +128,104 @@ export async function getAccountingUsersServer() {
   return snap.docs.map(toPlainObject) as User[];
 }
 
+export type AccountingSeasonStatus = "active" | "waiting" | "completed";
+
+export interface AccountingSeasonWithStatus extends AccountingSeason {
+  status: AccountingSeasonStatus;
+}
+
+/**
+ * 特定のシーズンのステータスを計算（active: 実施中, waiting: 清算中, completed: 終了）
+ */
+async function calculateSeasonStatus(
+  season: AccountingSeason,
+  config: AccountingConfig,
+  users: User[],
+  currentYear: number,
+  currentMonth: number
+): Promise<AccountingSeasonStatus> {
+  const info = config.seasons[season.seasonKey];
+  if (!info) return "active";
+
+  const endMonth = info.endMonth;
+  const endYear = season.year;
+
+  const isPast = currentYear > endYear || (currentYear === endYear && currentMonth > endMonth);
+  if (!isPast) {
+    return "active";
+  }
+
+  // すでに清算完了日時が記録されている場合は完了
+  if (season.settledAt) {
+    return "completed";
+  }
+
+  const ranges = {
+    winter: { start: `${season.year}.01.01`, end: `${season.year}.03.31` },
+    spring: { start: `${season.year}.04.01`, end: `${season.year}.06.30` },
+    summer: { start: `${season.year}.07.01`, end: `${season.year}.09.30` },
+    autumn: { start: `${season.year}.10.01`, end: `${season.year}.12.31` },
+  };
+  const range = ranges[season.seasonKey];
+  if (!range) return "waiting";
+
+  const [expenses, incomes] = await Promise.all([
+    getApprovedExpensesServer(range.start, range.end),
+    getIncomesServer(range.start, range.end)
+  ]);
+
+  const activeMemberIds = season.memberIds || [];
+  const memberCount = activeMemberIds.length;
+  if (memberCount === 0) return "completed";
+
+  const totalExpenses = expenses
+    .filter(e => !e.isIncome)
+    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const totalIncomes = expenses
+    .filter(e => e.isIncome)
+    .reduce((sum, e) => sum + Number(e.amount || 0), 0) +
+    incomes
+      .filter(i => activeMemberIds.includes(i.uid))
+      .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+
+  const netTotal = totalExpenses - totalIncomes;
+  const averageBurden = memberCount > 0 ? Math.ceil(netTotal / memberCount) : 0;
+
+  // 要清算メンバー（担当者を除く、精算額 !== 0）
+  const requiredSettlementMembers = activeMemberIds.filter(uid => {
+    if (uid === season.managerId) return false;
+    const user = users.find(u => u.id === uid);
+    if (!user) return false;
+
+    const userExpenses = expenses
+      .filter(e => e.uid === uid && !e.isIncome)
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
+    const userIncomes = expenses
+      .filter(e => e.uid === uid && e.isIncome)
+      .reduce((s, e) => s + Number(e.amount || 0), 0) +
+      incomes
+        .filter(i => i.uid === uid)
+        .reduce((s, i) => s + Number(i.amount || 0), 0);
+
+    const contribution = userExpenses - userIncomes;
+    const memberSettlement = averageBurden - contribution;
+    return memberSettlement !== 0;
+  });
+
+  if (requiredSettlementMembers.length === 0) {
+    return "completed";
+  }
+
+  const allUploaded = requiredSettlementMembers.every(uid => !!season.evidenceUrls?.[uid]);
+  return allUploaded ? "completed" : "waiting";
+}
+
 /**
  * 全会計シーズン情報を取得（作成日時降順）
  * 2026年冬（2026-winter）以降、かつ現シーズンまでのものを表示対象とする
+ * 各シーズンに status ("active" | "waiting" | "completed") を付与
  */
-export async function getAccountingSeasonsServer() {
+export async function getAccountingSeasonsServer(): Promise<AccountingSeasonWithStatus[]> {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
@@ -142,7 +235,11 @@ export async function getAccountingSeasonsServer() {
   else if (month >= 7 && month <= 9) currentSeasonKey = "summer";
   else if (month >= 10 && month <= 12) currentSeasonKey = "autumn";
 
-  const snap = await adminDb.collection("accountingSeasons").orderBy("createdAt", "desc").get();
+  const [snap, config, users] = await Promise.all([
+    adminDb.collection("accountingSeasons").orderBy("createdAt", "desc").get(),
+    getAccountingConfigServer(),
+    getAccountingUsersServer()
+  ]);
   const seasons = snap.docs.map(toPlainObject) as AccountingSeason[];
 
   const seasonOrder: Record<AccountingSeasonKey, number> = {
@@ -152,7 +249,7 @@ export async function getAccountingSeasonsServer() {
     autumn: 4
   };
 
-  return seasons.filter(s => {
+  const filteredSeasons = seasons.filter(s => {
     // 2026年冬以降であることをチェック
     if (s.year < 2026) return false;
     // 2026年の場合、winter以降（すべてOKだが明示的に）
@@ -165,6 +262,19 @@ export async function getAccountingSeasonsServer() {
 
     return true;
   });
+
+  // 各シーズンのステータスを並列計算して付与
+  const seasonsWithStatus = await Promise.all(
+    filteredSeasons.map(async (s): Promise<AccountingSeasonWithStatus> => {
+      const status = await calculateSeasonStatus(s, config, users, year, month);
+      return {
+        ...s,
+        status
+      };
+    })
+  );
+
+  return seasonsWithStatus;
 }
 
 /**

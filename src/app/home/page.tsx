@@ -1,5 +1,6 @@
 import { HomePageClient } from "@/src/features/home/components/HomePageClient";
-import { getHomeFeedDataServer, getScoresServer, getBlueNotesServer, getMediasServer } from "@/src/features/home/api/home-service";
+import { getHomeFeedDataServer, getScoresServer, getBlueNotesServer, getMediasServer, getHomeBoardsServer } from "@/src/features/home/api/home-service";
+import { getSectionsServer } from "@/src/features/users/api/user-server-actions";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,12 +15,16 @@ export default async function HomePage() {
     feedData,
     allScores,
     blueNotes,
-    allMedias
+    allMedias,
+    boards,
+    sections
   ] = await Promise.all([
     getHomeFeedDataServer(),
     getScoresServer(),
     getBlueNotesServer(),
     getMediasServer(10),
+    getHomeBoardsServer(10),
+    getSectionsServer()
   ]);
 
   const { announcements, calendarData } = feedData;
@@ -35,7 +40,9 @@ export default async function HomePage() {
         scores: videoScores,
         blueNotes,
         medias: topMedias,
-        calendarData
+        calendarData,
+        boards,
+        sections
       }} 
     />
   );

@@ -3,47 +3,62 @@
 import React from "react";
 import { ListBaseLayout } from "@/src/components/Layout/ListBaseLayout";
 import { SimpleTable } from "@/src/components/Table/SimpleTable";
-import { AccountingSeason, AccountingConfig } from "@/src/lib/firestore/types";
+import { AccountingConfig } from "@/src/lib/firestore/types";
+import { AccountingSeasonWithStatus } from "../../api/accounting-service";
 import Link from "next/link";
 import styles from "./AccountingList.module.css";
 
 interface Props {
   initialData: {
-    seasons: AccountingSeason[];
+    seasons: AccountingSeasonWithStatus[];
     config: AccountingConfig;
   };
 }
 
 export function AccountingListClient({ initialData }: Props) {
   const { seasons, config } = initialData;
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
 
-  const isPastSeason = (s: AccountingSeason) => {
-    const info = config.seasons[s.seasonKey];
-    if (!info) return false;
-    const endMonth = info.endMonth;
-    const endYear = s.year;
+  const activeSeasons = seasons.filter((s) => s.status === "active");
+  const waitingSeasons = seasons.filter((s) => s.status === "waiting");
+  const completedSeasons = seasons.filter((s) => s.status === "completed");
 
-    if (currentYear > endYear) return true;
-    if (currentYear === endYear && currentMonth > endMonth) return true;
-    return false;
-  };
-
-  const activeSeasons = seasons.filter((s) => !isPastSeason(s));
-  const pastSeasons = seasons.filter((s) => isPastSeason(s));
-
-  const getSeasonName = (season: AccountingSeason) => {
+  const getSeasonName = (season: AccountingSeasonWithStatus) => {
     const info = config.seasons[season.seasonKey];
     return `${season.year}年 ${info?.name || season.seasonKey}シーズン`;
   };
 
-  const getPeriodStr = (season: AccountingSeason) => {
+  const getPeriodStr = (season: AccountingSeasonWithStatus) => {
     const info = config.seasons[season.seasonKey];
     if (!info) return "-";
     const settlementMonth = info.endMonth === 12 ? 1 : info.endMonth + 1;
     return `${info.startMonth}月〜${info.endMonth}月（精算: ${settlementMonth}月）`;
+  };
+
+  const renderSeasonTable = (seasonList: AccountingSeasonWithStatus[], emptyMessage: string) => {
+    if (seasonList.length === 0) {
+      return <p className={styles.emptyText}>{emptyMessage}</p>;
+    }
+    return (
+      <div className={styles.tableWrapper}>
+        <SimpleTable headers={["シーズン", "期間", "操作"]} hasData={true}>
+          {seasonList.map((s) => (
+            <tr key={s.id}>
+              <td className="list-table-row-header">
+                <Link prefetch={false} href={`/accounting/confirm?seasonId=${s.id}`}>
+                  {getSeasonName(s)}
+                </Link>
+              </td>
+              <td>{getPeriodStr(s)}</td>
+              <td>
+                <Link prefetch={false} href={`/accounting/confirm?seasonId=${s.id}`} className="list-link-button">
+                  表示
+                </Link>
+              </td>
+            </tr>
+          ))}
+        </SimpleTable>
+      </div>
+    );
   };
 
   return (
@@ -54,62 +69,28 @@ export function AccountingListClient({ initialData }: Props) {
       count={seasons.length}
       hideAddButton={true}
     >
+      {/* 1. 実施中のシーズン */}
       <div className="container" style={{ marginBottom: "20px" }}>
         <h3 className={`${styles.sectionTitle} ${styles.activeTitle}`}>
           <i className="fa-solid fa-play"></i> 実施中のシーズン
         </h3>
-        {activeSeasons.length > 0 ? (
-          <div className={styles.tableWrapper}>
-            <SimpleTable headers={["シーズン", "期間", "操作"]} hasData={true}>
-              {activeSeasons.map((s) => (
-                <tr key={s.id}>
-                  <td className="list-table-row-header">
-                    <Link prefetch={false} href={`/accounting/confirm?seasonId=${s.id}`}>
-                      {getSeasonName(s)}
-                    </Link>
-                  </td>
-                  <td>{getPeriodStr(s)}</td>
-                  <td>
-                    <Link prefetch={false} href={`/accounting/confirm?seasonId=${s.id}`} className="list-link-button">
-                      表示
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </SimpleTable>
-          </div>
-        ) : (
-          <p className={styles.emptyText}>実施中のシーズンはありません</p>
-        )}
+        {renderSeasonTable(activeSeasons, "実施中のシーズンはありません")}
       </div>
 
+      {/* 2. 清算中のシーズン */}
       <div className="container" style={{ marginBottom: "20px" }}>
-        <h3 className={`${styles.sectionTitle} ${styles.pastTitle}`}>
-          <i className="fa-solid fa-archive"></i> 過去のシーズン
+        <h3 className={`${styles.sectionTitle} ${styles.waitingTitle}`}>
+          <i className="fa-solid fa-hourglass-half"></i> 清算中のシーズン
         </h3>
-        {pastSeasons.length > 0 ? (
-          <div className={styles.tableWrapper}>
-            <SimpleTable headers={["シーズン", "期間", "操作"]} hasData={true}>
-              {pastSeasons.map((s) => (
-                <tr key={s.id}>
-                  <td className="list-table-row-header">
-                    <Link prefetch={false} href={`/accounting/confirm?seasonId=${s.id}`}>
-                      {getSeasonName(s)}
-                    </Link>
-                  </td>
-                  <td>{getPeriodStr(s)}</td>
-                  <td>
-                    <Link prefetch={false} href={`/accounting/confirm?seasonId=${s.id}`} className="list-link-button">
-                      表示
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </SimpleTable>
-          </div>
-        ) : (
-          <p className={styles.emptyText}>過去のシーズンはありません</p>
-        )}
+        {renderSeasonTable(waitingSeasons, "清算中のシーズンはありません")}
+      </div>
+
+      {/* 3. 終了したシーズン */}
+      <div className="container" style={{ marginBottom: "20px" }}>
+        <h3 className={`${styles.sectionTitle} ${styles.completedTitle}`}>
+          <i className="fa-solid fa-circle-check"></i> 終了したシーズン
+        </h3>
+        {renderSeasonTable(completedSeasons, "終了したシーズンはありません")}
       </div>
     </ListBaseLayout>
   );

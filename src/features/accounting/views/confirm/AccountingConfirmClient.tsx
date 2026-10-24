@@ -190,6 +190,8 @@ export function AccountingConfirmClient({ initialData }: Props) {
   const isAccountAdmin = userData?.isAccountAdmin || userData?.isSystemAdmin;
   const isSaxPart = userData?.sectionId === "1";
   const canSetManager = isSaxPart || isAccountAdmin;
+  const isManager = Boolean(season?.managerId && userData?.id === season.managerId);
+  const isManagerOrAdmin = isManager || isAccountAdmin;
 
   // 期間が終了している（過去のシーズン）かどうかの判定
   const isPastSeason = useMemo(() => {
@@ -814,7 +816,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
             )}
             {status === "waiting" && (
               <span className={`${styles.statusBadge} ${styles.statusWaiting}`}>
-                <i className="fa-solid fa-hourglass-half"></i> 終了(清算待ち)
+                <i className="fa-solid fa-hourglass-half"></i> 清算中
               </span>
             )}
             {status === "active" && (
@@ -906,6 +908,33 @@ export function AccountingConfirmClient({ initialData }: Props) {
             managerName={manager?.displayName}
             managerPaypayId={manager?.paypayId}
           />
+        )}
+
+        {/* 担当者向け注意喚起カード */}
+        {isManagerOrAdmin && (
+          <div className={styles.managerNoticeCard}>
+            <div className={styles.managerNoticeHeader}>
+              <span className={styles.managerNoticeBadge}>
+                <i className="fa-solid fa-user-tie"></i> 担当者の方へ
+              </span>
+              <h4 className={styles.managerNoticeTitle}>
+                <i className="fa-solid fa-triangle-exclamation"></i> エビデンス画像登録のお願い
+              </h4>
+            </div>
+            <p className={styles.managerNoticeText}>
+              支払い・受け取りの<strong>「金額」</strong>と<strong>「相手（人）」</strong>がわかる<strong>「受取/支払完了画面」</strong>（スクリーンショット）をエビデンスとしてアップロードしてください。
+            </p>
+            <div className={styles.managerNoticePoints}>
+              <div className={styles.managerNoticePointItem}>
+                <i className="fa-solid fa-check"></i>
+                <span><strong>支払メンバーからの集金</strong>: メンバーが登録した送金完了画面（金額・送金先）を確認</span>
+              </div>
+              <div className={styles.managerNoticePointItem}>
+                <i className="fa-solid fa-check"></i>
+                <span><strong>受取メンバーへの送金</strong>: 担当者がPayPay等で送金後、受取/送金完了画面を各メンバー枠にアップロード</span>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* メンバー一覧 */}
