@@ -40,43 +40,245 @@
 }
 
 .idListButton {
-  background-color: #2196F3;
+  background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
   color: white;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
-  transition: background-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 6px rgba(13, 71, 161, 0.3);
+  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
 .idListButton:hover {
-  background-color: #1e88e5;
-  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+  background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+  box-shadow: 0 4px 10px rgba(13, 71, 161, 0.4);
+  transform: translateY(-1px);
 }
 
+/* 運用方針ガイドカード */
+.guideCard {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 1.2rem;
+}
+
+.guideHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.guideContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.guideItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.guideBadge {
+  background-color: #e2e8f0;
+  color: #334155;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.guideBadgeCash {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+/* ノルマ達成ダッシュボード */
+.quotaDashboard {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+.dashboardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dashboardTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #1e3a8a;
+}
+
+.statusBadgeInProgress {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #ffedd5;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.statusBadgeAchieved {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #dcfce7;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* 進捗バー */
+.progressBarWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.progressBarTrack {
+  flex: 1;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+.progressPercentText {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1e3a8a;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* 3指標サマリーグリッド */
+.summaryGrid {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+  gap: 8px;
+}
+
+.summaryGridItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.gridLabel {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.gridValue {
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.gridValue strong {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.highlightBlue strong {
+  color: #2563eb;
+}
+
+.highlightOrange strong {
+  color: #ea580c;
+}
+
+.highlightGreen strong {
+  color: #16a34a;
+}
+
+.gridSubPrice {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.gridDivider {
+  width: 1px;
+  height: 36px;
+  background-color: #e2e8f0;
+}
+
+/* テーブルセクション */
 .modalTableSection {
   margin-bottom: 1.5rem;
 }
 
 .modalSectionTitle {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
-  border-left: 4px solid #2196F3;
+  border-left: 4px solid #1976d2;
   padding-left: 8px;
   margin-bottom: 10px;
-  color: #333;
+  color: #1e293b;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sectionSubtotal {
+  font-size: 12px;
+  font-weight: normal;
+  color: #64748b;
 }
 
 .modalTableWrapper {
   width: 100%;
   overflow-x: auto;
-  border: 1px solid #eee;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
 }
 
@@ -87,18 +289,30 @@
 
 .modalTable th,
 .modalTable td {
-  padding: 8px 12px;
+  padding: 8px 10px;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #f1f5f9;
   font-size: 13px;
   word-break: break-all;
 }
 
 .modalTable th {
-  background-color: #f8f9fa;
+  background-color: #f8fafc;
   font-weight: bold;
-  color: #555;
-  width: 50%;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.modalTable th:nth-child(1) {
+  min-width: 120px;
+}
+
+.modalTable th:nth-child(2) {
+  min-width: 80px;
+}
+
+.modalTable th:nth-child(3) {
+  min-width: 130px;
 }
 
 .modalTable tr:last-child td {
@@ -109,4 +323,57 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.guestBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.guestPrice {
+  color: #c2410c;
+  font-weight: normal;
+  font-size: 11px;
+}
+
+.noGuests {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.musicianIdText {
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.noIdText {
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+/* フッター注意ボックス */
+.noticeFooterBox {
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 1rem;
+}
+
+.noticeFooterText {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #92400e;
+  margin: 0;
 }

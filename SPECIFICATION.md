@@ -131,7 +131,8 @@ Streak Navi では、モジュールごとの細やかな権限分離（Role-Bas
     - 譜面閲覧時はサーバーサイド Server Action（`getScoreSignedUrl`）を経由し、**有効期限5分間のセキュアな署名付きURL（Signed URL）** を動的に発行。期限後はURL直叩きしても `403 Forbidden` となり流出・部外者利用を完全防止。
     - **モバイル・PWA・LINE WebView完全対応 (`openFileUrlCompatibly`)**:
       - `blob:` URL による iOS PWA での白画面クラッシュや LINE WebView でのポップアップブロックを解消。
-      - iOS PWA（ホーム画面追加時）では Safari / SFSafariViewController を安全に起動し、LINE 内ブラウザでは `openExternalBrowser=1` パラメータによって標準ブラウザをスムーズに起動して高品質な閲覧体験を提供。
+      - **iOS Safari ポップアップブロック警告の完全防止 (先行取得 & 同期オープン)**: 署名付きURLを非同期取得（`await`）した後にウィンドウを開くと、iOS Safari がユーザー直接操作ではないと判定し「このサイトではポップアップウィンドウが開きます」警告を表示してしまうため、ファイル選択中（同意モーダル確認中）に裏で署名付きURLを先行取得（Prefetch）。「同意して開く」タップ時に完全な同期的コンテキストで新規タブを開くことで警告を根絶。未取得時もタップ同期でのウィンドウ確保によるフォールバックを完備。
+      - iOS PWA（ホーム画面追加時）では Safari / SFSafariViewController を安全に起動し、LINE 内ブラウザでは直接遷移して高品質な閲覧体験を提供。
 - **画面構成**:
   - 一覧: `/score` (曲名検索、ジャンルフィルター、イベントフィルター、新着/タイトル並び替え、譜面モーダル表示、参考音源プレイリストリンク)
   - 作成・編集: `/score/edit` (管理者専用: 曲名、複数譜面ファイルアップロード [Storage]、ジャンル、参考音源 [YouTube]、略称、備考、ホーム表示フラグ)
@@ -288,8 +289,16 @@ Streak Navi では、モジュールごとの細やかな権限分離（Role-Bas
   - パート別タブフィルター、略称検索。
   - 担当楽器（複数選択可）、役職、略称（譜割り用）の設定。
   - サックスパート向け PayPay ID 登録機能。
+  - **倉敷ジャズストリート連携（ID・チケットノルマ相殺集計）**:
+    - **運用方針 & チケットノルマ**: 出演者1人につき1枚（1,500円・なるべく現金集金）の購入ノルマあり。出演者パスでは他バンドの演奏が見られないため、自分自身が他ステージを鑑賞する場合もチケットが必要となる。そのため、他も見たい人は自分用鑑賞チケット（1枚）もお客さんの中に含めて回答し、他は見ない人のノルマ枠はお客さんへの販売実績でカバー・相殺する運用を採用。
+    - **プロフィール設定**: 「2026年 倉敷ジャズスト ミュージシャンID」（画面上編集不可）および「倉敷ジャズストリート 呼べるお客さんの数（自分観覧分含む）」（プルダウンで0〜15人）を設定可能。
+    - **チケット相殺・ID一覧モーダル**: 名簿一覧画面の「2026年 倉敷ジャズスト（ID・チケット集計）」ボタンからモーダルを起動。
+      - **運用方針ガイド**: ノルマ・観覧（自分観覧分も回答人数に含む）・相殺・現金集金の4つの前提ルールをわかりやすく解説。
+      - **ノルマ達成ダッシュボード**: バンド全体ノルマ総数（ミュージシャンIDが登録されている出演者人数分）、呼べるお客さん・自分観覧見込み枚数、相殺差引残り枠、および達成進捗率（プログレスバー）を視覚化。
+      - **パート別小計 & 一覧テーブル**: 各メンバーのIDと呼べるお客さん・自分観覧数および見込み金額を一覧表示。
+      - **手渡し・集金案内フッター**: 事前手渡し方法の相談決定や現金集金に関する注意喚起を明記。
 - **画面構成**:
-  - 名簿一覧: `/user`
+  - 名簿一覧: `/user` (倉敷ジャズスト チケット相殺・ID一覧モーダル)
   - プロフィール詳細: `/user/confirm?userId=xxx`
   - プロフィール編集: `/user/edit`
 
@@ -314,7 +323,7 @@ Firestore のセキュリティルール（`firestore.rules`）に基づき、�
 
 | コレクション名 | ドキュメントID | 主なフィールド | 読み取り権限 | 書き込み/更新権限 |
 | :--- | :--- | :--- | :--- | :--- |
-| `users` | `uid` (ハッシュ化UID) | `displayName`, `pictureUrl`, `sectionId`, `roleId`, `instrumentIds`, `abbreviation`, `paypayId`, `agreedAt`, `isSystemAdmin`, 各種 `is*Admin` | 全メンバー | 本人（管理者フラグ変更不可） / `isUserAdmin` |
+| `users` | `uid` (ハッシュ化UID) | `displayName`, `pictureUrl`, `sectionId`, `roleId`, `instrumentIds`, `abbreviation`, `paypayId`, `agreedAt`, `isSystemAdmin`, 各種 `is*Admin`, `kurashikiJazzMusicianId`, `kurashikiJazzGuestCount` | 全メンバー | 本人（管理者フラグ変更不可） / `isUserAdmin` |
 | `users/{uid}/private/location` | `location` | `prefectureId`, `municipalityId` | 本人のみ | 本人のみ |
 | `scores` | 自動採番 | `title`, `abbreviation`, `files` (`name`, `url`, `path`), `genres`, `referenceTrack`, `youtubeId`, `isDispTop` | 全員（公開可） | `isScoreAdmin` |
 | `scoreDownloadLogs` | 自動採番 | `uid`, `userName`, `scoreId`, `scoreTitle`, `fileName`, `fileUrl`, `date`, `createdAt` | `isScoreAdmin` / `isSystemAdmin` | 全メンバー（追記のみ、改ざん禁止） |

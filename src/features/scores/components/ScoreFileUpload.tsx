@@ -103,6 +103,13 @@ export function ScoreFileUpload({ files, onChange }: ScoreFileUploadProps) {
   );
 
   const handlePreview = async (file: ScoreFile) => {
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const isLine = /Line/i.test(ua);
+    let targetWindow: Window | null = null;
+    if (!isLine) {
+      targetWindow = window.open("about:blank", "_blank");
+    }
+
     showSpinner();
     try {
       const url = file.path
@@ -110,21 +117,22 @@ export function ScoreFileUpload({ files, onChange }: ScoreFileUploadProps) {
         : file.url;
 
       if (!url) {
+        if (targetWindow) targetWindow.close();
         showDialog("ファイルURLが見つかりません。");
         return;
       }
 
-      const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
-      const isLine = /Line/i.test(ua);
       const isStandalone =
         typeof window !== "undefined" &&
         ((window.navigator as any).standalone === true ||
           window.matchMedia("(display-mode: standalone)").matches);
 
       if (isLine) {
+        if (targetWindow) targetWindow.close();
         // LINE内ブラウザ: 署名を改ざんせず直接遷移して開く
         window.location.href = url;
       } else if (isStandalone) {
+        if (targetWindow) targetWindow.close();
         const a = document.createElement("a");
         a.href = url;
         a.target = "_blank";
@@ -133,10 +141,15 @@ export function ScoreFileUpload({ files, onChange }: ScoreFileUploadProps) {
         a.click();
         document.body.removeChild(a);
       } else {
-        window.open(url, "_blank", "noopener,noreferrer");
+        if (targetWindow && !targetWindow.closed) {
+          targetWindow.location.href = url;
+        } else {
+          window.open(url, "_blank", "noopener,noreferrer");
+        }
       }
     } catch (err) {
       console.error("Score preview failed:", err);
+      if (targetWindow) targetWindow.close();
       showDialog("プレビューの取得に失敗しました。");
     } finally {
       hideSpinner();

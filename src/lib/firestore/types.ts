@@ -82,6 +82,7 @@ export interface User {
   isLineLogAdmin?: boolean;
   realName?: string;
   kurashikiJazzMusicianId?: string;
+  kurashikiJazzGuestCount?: number;
   [key: string]: any; // 動的フラグ (e.g. isScoreAdmin)
 }
 

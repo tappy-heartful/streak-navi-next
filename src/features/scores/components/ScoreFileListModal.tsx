@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ScoreFile } from "@/src/lib/firestore/types";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { recordScoreDownloadLog } from "@/src/features/scores/api/score-client-service";
@@ -58,6 +58,8 @@ export function ScoreFileListModal({
 }: ScoreFileListModalProps) {
   const { user } = useAuth();
   const [pendingFile, setPendingFile] = useState<ScoreFile | null>(null);
+  const [prefetchedUrl, setPrefetchedUrl] = useState<string | null>(null);
+  const prefetchPromiseRef = useRef<Promise<string> | null>(null);
 
   // ESCキーで閉じる
   useEffect(() => {
@@ -84,8 +86,38 @@ export function ScoreFileListModal({
     a.name.localeCompare(b.name, "ja", { numeric: true, sensitivity: "base" })
   );
 
+  // ファイル選択時に裏で署名付きURLを先行取得（同意モーダル確認中に完了させ、タップ時に完全同期で開けるようにする）
+  const handleSelectFile = (file: ScoreFile) => {
+    setPendingFile(file);
+    setPrefetchedUrl(null);
+
+    if (file.path) {
+      const promise = getScoreSignedUrl(file.path, file.name)
+        .then((url) => {
+          setPrefetchedUrl(url);
+          return url;
+        })
+        .catch((err) => {
+          console.error("Signed URL prefetch error:", err);
+          return "";
+        });
+      prefetchPromiseRef.current = promise;
+    } else if (file.url) {
+      setPrefetchedUrl(file.url);
+      prefetchPromiseRef.current = Promise.resolve(file.url);
+    } else {
+      prefetchPromiseRef.current = null;
+    }
+  };
+
+  const handleCloseConsent = () => {
+    setPendingFile(null);
+    setPrefetchedUrl(null);
+    prefetchPromiseRef.current = null;
+  };
+
   // iOS PWA, LINE内ブラウザ, 通常ブラウザのすべてに対応した安全な開き方
-  const openFileUrlCompatibly = (url: string) => {
+  const openFileUrlCompatibly = (url: string, existingWindow?: Window | null) => {
     const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
     const isLine = /Line/i.test(ua);
     const isStandalone =
@@ -94,9 +126,11 @@ export function ScoreFileListModal({
         window.matchMedia("(display-mode: standalone)").matches);
 
     if (isLine) {
+      if (existingWindow) existingWindow.close();
       // LINE内ブラウザ: 署名を改ざんせず直接遷移して開く
       window.location.href = url;
     } else if (isStandalone) {
+      if (existingWindow) existingWindow.close();
       // iOS PWA: aタグのクリックで外部Safariを起動 (白画面クラッシュを完全防止)
       const a = document.createElement("a");
       a.href = url;
@@ -106,34 +140,67 @@ export function ScoreFileListModal({
       a.click();
       document.body.removeChild(a);
     } else {
-      // 通常ブラウザ: 別タブで開く
-      window.open(url, "_blank", "noopener,noreferrer");
+      // 通常ブラウザ (Safari, Chrome 等)
+      if (existingWindow && !existingWindow.closed) {
+        existingWindow.location.href = url;
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
     }
   };
 
   const handleConfirmDownload = async () => {
     if (!pendingFile) return;
 
+    // ログ記録は非同期・バックグラウンドで実行（UIをブロックしない）
+    void recordScoreDownloadLog({
+      scoreId,
+      scoreTitle: title,
+      fileName: pendingFile.name,
+      fileUrl: pendingFile.path || pendingFile.url,
+      user,
+    });
+
+    // パターン1: 同意モーダル表示中に先行取得が完了している場合（通常ケース）
+    // ★ ここは完全な同期的コンテキスト！awaitなし！
+    // iPhone Safari でも「このサイトではポップアップウィンドウが開きます」は出ない！
+    if (prefetchedUrl) {
+      openFileUrlCompatibly(prefetchedUrl);
+      return;
+    }
+
+    // パターン2: ユーザーが素早くタップして先行取得が未完了の場合
+    // タップの同期的瞬間に事前ウィンドウを開いておくことでSafariの非同期ポップアップブロックを回避
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+    const isLine = /Line/i.test(ua);
+    let targetWindow: Window | null = null;
+    if (!isLine) {
+      targetWindow = window.open("about:blank", "_blank");
+    }
+
     showSpinner();
     try {
-      void recordScoreDownloadLog({
-        scoreId,
-        scoreTitle: title,
-        fileName: pendingFile.name,
-        fileUrl: pendingFile.path || pendingFile.url,
-        user,
-      });
+      let finalUrl = "";
+      if (prefetchPromiseRef.current) {
+        finalUrl = await prefetchPromiseRef.current;
+      }
+      if (!finalUrl) {
+        if (pendingFile.path) {
+          finalUrl = await getScoreSignedUrl(pendingFile.path, pendingFile.name);
+        } else if (pendingFile.url) {
+          finalUrl = pendingFile.url;
+        }
+      }
 
-      if (pendingFile.path) {
-        // 短期有効な署名付きURLを取得 (5分間で自動失効するセキュアURL)
-        const signedUrl = await getScoreSignedUrl(pendingFile.path, pendingFile.name);
-        openFileUrlCompatibly(signedUrl);
-      } else if (pendingFile.url) {
-        // 旧Google Drive等へのフォールバック
-        openFileUrlCompatibly(pendingFile.url);
+      if (finalUrl) {
+        openFileUrlCompatibly(finalUrl, targetWindow);
+      } else {
+        if (targetWindow) targetWindow.close();
+        showDialog("譜面データの取得に失敗しました。時間をおいて再試行してください。");
       }
     } catch (err) {
       console.error("Score file access failed:", err);
+      if (targetWindow) targetWindow.close();
       showDialog("譜面データの取得に失敗しました。時間をおいて再試行してください。");
     } finally {
       hideSpinner();
@@ -179,7 +246,7 @@ export function ScoreFileListModal({
                       <button
                         type="button"
                         className={styles.fileItem}
-                        onClick={() => setPendingFile(file)}
+                        onClick={() => handleSelectFile(file)}
                       >
                         <div className={`${styles.fileIconWrapper} ${iconInfo.className}`}>
                           <i className={iconInfo.icon} />
@@ -215,7 +282,7 @@ export function ScoreFileListModal({
 
       <ScoreDownloadConsentModal
         isOpen={Boolean(pendingFile)}
-        onClose={() => setPendingFile(null)}
+        onClose={handleCloseConsent}
         onConfirm={handleConfirmDownload}
         targetFileName={pendingFile?.name}
       />
