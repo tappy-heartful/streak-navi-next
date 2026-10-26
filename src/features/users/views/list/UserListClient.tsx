@@ -221,8 +221,11 @@ export function UserListClient({ initialData }: Props) {
                     <thead>
                       <tr>
                         <th>氏名 / ユーザー名</th>
+                        <th>
+                          呼べるお客さん人数
+                          <span className={styles.headerSubText}>・自分鑑賞用</span>
+                        </th>
                         <th>2026年 ID</th>
-                        <th>呼べるお客さん・自分観覧数</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -242,13 +245,6 @@ export function UserListClient({ initialData }: Props) {
                               </div>
                             </td>
                             <td>
-                              {u.kurashikiJazzMusicianId ? (
-                                <span className={styles.musicianIdText}>{u.kurashikiJazzMusicianId}</span>
-                              ) : (
-                                <span className={styles.noIdText}>未設定</span>
-                              )}
-                            </td>
-                            <td>
                               {guestCount > 0 ? (
                                 <span className={styles.guestBadge}>
                                   <strong>{guestCount}</strong> 人
@@ -258,6 +254,13 @@ export function UserListClient({ initialData }: Props) {
                                 </span>
                               ) : (
                                 <span className={styles.noGuests}>0人</span>
+                              )}
+                            </td>
+                            <td>
+                              {u.kurashikiJazzMusicianId ? (
+                                <span className={styles.musicianIdText}>{u.kurashikiJazzMusicianId}</span>
+                              ) : (
+                                <span className={styles.noIdText}>未設定</span>
                               )}
                             </td>
                           </tr>
@@ -286,8 +289,11 @@ export function UserListClient({ initialData }: Props) {
                     <thead>
                       <tr>
                         <th>氏名 / ユーザー名</th>
+                        <th>
+                          呼べるお客さん人数
+                          <span className={styles.headerSubText}>・自分鑑賞用</span>
+                        </th>
                         <th>2026年 ID</th>
-                        <th>呼べるお客さん・自分観覧数</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -307,13 +313,6 @@ export function UserListClient({ initialData }: Props) {
                               </div>
                             </td>
                             <td>
-                              {u.kurashikiJazzMusicianId ? (
-                                <span className={styles.musicianIdText}>{u.kurashikiJazzMusicianId}</span>
-                              ) : (
-                                <span className={styles.noIdText}>未設定</span>
-                              )}
-                            </td>
-                            <td>
                               {guestCount > 0 ? (
                                 <span className={styles.guestBadge}>
                                   <strong>{guestCount}</strong> 人
@@ -323,6 +322,13 @@ export function UserListClient({ initialData }: Props) {
                                 </span>
                               ) : (
                                 <span className={styles.noGuests}>0人</span>
+                              )}
+                            </td>
+                            <td>
+                              {u.kurashikiJazzMusicianId ? (
+                                <span className={styles.musicianIdText}>{u.kurashikiJazzMusicianId}</span>
+                              ) : (
+                                <span className={styles.noIdText}>未設定</span>
                               )}
                             </td>
                           </tr>
