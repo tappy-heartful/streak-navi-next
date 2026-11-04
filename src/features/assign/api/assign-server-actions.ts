@@ -1,7 +1,7 @@
 "use server";
 
 import { adminDb as db } from "@/src/lib/firebase-admin";
-import { Assign, Event, Score, User, Section, Instrument } from "@/src/lib/firestore/types";
+import { Assign, Event, Score, User, Section, Instrument, AssignComment } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 
 /**
@@ -68,4 +68,17 @@ export async function getAssignMasterData() {
   });
 
   return { scores, users, sections, instruments };
+}
+
+/**
+ * 指定したイベントの譜割りコメント一覧を取得（更新日時降順）
+ */
+export async function getAssignComments(eventId: string): Promise<AssignComment[]> {
+  const snap = await db.collection("assignComments")
+    .where("eventId", "==", eventId)
+    .get();
+
+  return snap.docs
+    .map(doc => toPlainObject(doc) as AssignComment)
+    .sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
 }

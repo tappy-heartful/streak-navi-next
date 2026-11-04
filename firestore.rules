@@ -134,6 +134,11 @@ service cloud.firestore {
 
     // 譜割り：現在は全メンバーが読み書き可能
     match /assigns/{id}                  { allow read, write: if isSignedIn(); }
+    match /assignComments/{id} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && (request.resource.data.uid == request.auth.uid || isAdmin("Assign"));
+      allow delete: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin("Assign"));
+    }
 
     // 【イベント・出欠管理 (Event)】
     match /{path=**}/events/{id}         { allow read: if isSignedIn(); allow write: if isAdmin("Event"); }

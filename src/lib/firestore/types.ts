@@ -471,6 +471,17 @@ export interface Assign {
   createdAt?: number;
 }
 
+export interface AssignComment {
+  id: string;
+  eventId: string;
+  uid: string;
+  type: "all" | "section";
+  sectionId?: string;
+  comment: string;
+  createdAt?: number;
+  updatedAt?: number;
+}
+
 // ===== 経費マスタ =====
 
 export interface ExpenseType {

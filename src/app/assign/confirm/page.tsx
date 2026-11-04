@@ -1,7 +1,8 @@
 import { 
   getEventById, 
   getAssignsByEvent, 
-  getAssignMasterData 
+  getAssignMasterData,
+  getAssignComments
 } from "@/src/features/assign/api/assign-server-actions";
 import { AssignConfirmClient } from "@/src/features/assign/views/AssignConfirmClient";
 import { notFound } from "next/navigation";
@@ -31,10 +32,11 @@ export default async function AssignConfirmPage({
   const { eventId } = await searchParams;
   if (!eventId) notFound();
 
-  const [event, assigns, masterData] = await Promise.all([
+  const [event, assigns, masterData, comments] = await Promise.all([
     getEventById(eventId),
     getAssignsByEvent(eventId),
     getAssignMasterData(),
+    getAssignComments(eventId),
   ]);
 
   if (!event) notFound();
@@ -43,5 +45,6 @@ export default async function AssignConfirmPage({
     event={event} 
     assigns={assigns} 
     masterData={masterData} 
+    initialComments={comments}
   />;
 }

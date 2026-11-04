@@ -163,6 +163,7 @@ Streak Navi では、モジュールごとの細やかな権限分離（Role-Bas
   - **ソロパートのハイライト表示**: イベント側で設定されたソロ対象曲・パートのセルを、確認画面および編集画面でウォームイエローの背景色と「Solo」バッジで視覚的に強調（横幅が膨らまないコンパクト設計）。
   - **ソロ小計と楽器順集計**: 各メンバーの演奏曲数に加え、ソロ担当曲数（`ソロ 〇曲`）を集計・表示（ソロ担当があるメンバーは強調バッジ）。セクション内の小計は名前順ではなく、楽器マスタおよびパート設定順に基づき「楽器順」にグループ化して整列表示。
   - **自セクション優先表示と他セクションの折り畳み**: ログインユーザーの所属セクションの小計カードを最優先で上部に表示（「あなたのセクション」バッジ付）。自分以外のセクションの小計は「その他の小計」としてアコーディオン（折り畳み）形式で整理し、ワンタップで展開・確認可能。
+  - **譜割りコメント機能 (`assignComments`)**: 各メンバーがイベント出欠回答と同様の清潔なリストUIで、「全体向け」または「パート向け（自パート）」のコメントを投稿・編集・削除可能。確認画面下部にてアバター、名前、宛先バッジ（全体/パート）、投稿日時、コメント本文が一覧表示され、フィルタータブ（すべて / 全体向け / 自パート）による絞り込み閲覧に対応。
 - **画面構成**:
   - 一覧: `/assign`
   - 編集: `/assign/edit?eventId=xxx`
@@ -333,6 +334,7 @@ Firestore のセキュリティルール（`firestore.rules`）に基づき、�
 | `eventAdjustAnswers` | `{eventId}_{uid}` | `eventId`, `uid`, `answers` (`{ [date]: statusId }`), `comment` | 全メンバー | 本人 / `isEventAdmin` |
 | `eventRecordings` | 自動採番 | `eventId`, `uid`, `title`, `url` | 全メンバー | 本人（作成） / 本人 or `isEventAdmin`（削除） |
 | `assigns` | 自動採番 | `eventId`, `songId`, `partName`, `userId`, `isRehearsal` | 全メンバー | 全メンバー（UIで担当楽器制御） |
+| `assignComments` | `{eventId}_{uid}_{type}` | `eventId`, `uid`, `type` (all/section), `sectionId`, `comment`, `createdAt`, `updatedAt` | 全メンバー | 本人 / `isAssignAdmin` |
 | `lives` | 自動採番 | `title`, `date`, `open`, `start`, `venue`, `advance`, `door`, `ticketStock`, `totalReserved` | 全員（公開可） | `isLiveAdmin`（予約数は全メンバー更新可） |
 | `tickets` | 自動採番 | `liveId`, `uid`, `reservationNo`, `resType`, `representativeName`, `companions`, `groups` | 全員 | 本人 / `isTicketAdmin` |
 | `liveCheckIns` | 自動採番 | `liveId`, `ticketId`, `reservationNo`, `name`, `type` | 全メンバー | `isLiveAdmin` / `isTicketAdmin` |

@@ -40,3 +40,35 @@ export async function releaseAssign(eventId: string, songId: string, partName: s
   
   await archiveAndDeleteDoc("assigns", assignId);
 }
+
+/**
+ * 譜割りコメントを保存（新規または更新）
+ */
+export async function saveAssignComment(
+  eventId: string,
+  uid: string,
+  type: "all" | "section",
+  comment: string,
+  sectionId?: string
+) {
+  const commentId = `${eventId}_${uid}_${type}`;
+  const ref = doc(db, "assignComments", commentId);
+  await setDoc(ref, {
+    eventId,
+    uid,
+    type,
+    comment,
+    sectionId: sectionId || null,
+    updatedAt: serverTimestamp(),
+    createdAt: serverTimestamp(),
+  }, { merge: true });
+  return commentId;
+}
+
+/**
+ * 譜割りコメントを削除
+ */
+export async function deleteAssignComment(eventId: string, uid: string, type: "all" | "section") {
+  const commentId = `${eventId}_${uid}_${type}`;
+  await archiveAndDeleteDoc("assignComments", commentId);
+}

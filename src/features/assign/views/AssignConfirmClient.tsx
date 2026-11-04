@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { Event, Assign, Score, User, Section, Instrument } from "@/src/lib/firestore/types";
+import { Event, Assign, Score, User, Section, Instrument, AssignComment } from "@/src/lib/firestore/types";
+import { saveAssignComment, deleteAssignComment } from "@/src/features/assign/api/assign-client-service";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -19,13 +20,126 @@ type Props = {
     sections: Record<string, Section>;
     instruments?: Record<string, Instrument>;
   };
+  initialComments?: AssignComment[];
 };
 
-export function AssignConfirmClient({ event, assigns, masterData }: Props) {
+export function AssignConfirmClient({ event, assigns, masterData, initialComments }: Props) {
   const { setBreadcrumbs } = useBreadcrumb();
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("");
   const [selectedScoreForModal, setSelectedScoreForModal] = useState<Score | null>(null);
+
+  // コメント機能用ステート
+  const [comments, setComments] = useState<AssignComment[]>(initialComments || []);
+  const [commentType, setCommentType] = useState<"all" | "section">("all");
+  const [commentText, setCommentText] = useState<string>("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [filterTab, setFilterTab] = useState<"all" | "type_all" | "my_section">("all");
+
+  const mySectionId = user?.uid ? (masterData.users[user.uid]?.sectionId || userData?.sectionId) : undefined;
+  const mySectionName = mySectionId ? (masterData.sections[mySectionId]?.name || "") : "";
+
+  // 自分の投稿済みコメント
+  const myAllComment = useMemo(() => {
+    return comments.find(c => c.uid === user?.uid && c.type === "all");
+  }, [comments, user?.uid]);
+
+  const mySectionComment = useMemo(() => {
+    return comments.find(c => c.uid === user?.uid && c.type === "section");
+  }, [comments, user?.uid]);
+
+  // タイプ切り替え時のコメント初期入力同期
+  useEffect(() => {
+    if (commentType === "all") {
+      setCommentText(myAllComment?.comment || "");
+    } else {
+      setCommentText(mySectionComment?.comment || "");
+    }
+  }, [commentType, myAllComment, mySectionComment]);
+
+  // コメント保存
+  const handleSaveComment = async () => {
+    if (!user?.uid) {
+      await utils.showDialog("ログインが必要です", true);
+      return;
+    }
+    if (!commentText.trim()) {
+      await utils.showDialog("コメントを入力してください", true);
+      return;
+    }
+
+    const targetLabel = commentType === "all" ? "全体向け" : `パート向け (${mySectionName || "自パート"})`;
+    const isEditing = commentType === "all" ? Boolean(myAllComment) : Boolean(mySectionComment);
+    const confirmed = await utils.showDialog(`${targetLabel}のコメントを${isEditing ? "更新" : "投稿"}しますか？`);
+    if (!confirmed) return;
+
+    utils.showSpinner();
+    try {
+      await saveAssignComment(
+        event.id,
+        user.uid,
+        commentType,
+        commentText.trim(),
+        commentType === "section" ? mySectionId : undefined
+      );
+
+      setComments(prev => {
+        const filtered = prev.filter(c => !(c.uid === user.uid && c.type === commentType));
+        const newC: AssignComment = {
+          id: `${event.id}_${user.uid}_${commentType}`,
+          eventId: event.id,
+          uid: user.uid,
+          type: commentType,
+          sectionId: commentType === "section" ? mySectionId : undefined,
+          comment: commentText.trim(),
+          updatedAt: Date.now(),
+          createdAt: Date.now(),
+        };
+        return [newC, ...filtered];
+      });
+
+      utils.hideSpinner();
+      await utils.showDialog("コメントを保存しました", true);
+      setIsFormOpen(false);
+    } catch (err) {
+      console.error(err);
+      utils.hideSpinner();
+      await utils.showDialog("コメントの保存に失敗しました", true);
+    }
+  };
+
+  // コメント削除
+  const handleDeleteComment = async (type: "all" | "section") => {
+    if (!user?.uid) return;
+    const confirmed = await utils.showDialog("コメントを削除しますか？");
+    if (!confirmed) return;
+
+    utils.showSpinner();
+    try {
+      await deleteAssignComment(event.id, user.uid, type);
+      setComments(prev => prev.filter(c => !(c.uid === user.uid && c.type === type)));
+      if (commentType === type) {
+        setCommentText("");
+      }
+      utils.hideSpinner();
+      await utils.showDialog("コメントを削除しました", true);
+    } catch (err) {
+      console.error(err);
+      utils.hideSpinner();
+      await utils.showDialog("コメントの削除に失敗しました", true);
+    }
+  };
+
+  // フィルタリングされたコメント一覧
+  const filteredComments = useMemo(() => {
+    if (filterTab === "type_all") {
+      return comments.filter(c => c.type === "all");
+    }
+    if (filterTab === "my_section" && mySectionId) {
+      return comments.filter(c => c.type === "section" && c.sectionId === mySectionId);
+    }
+    return comments;
+  }, [comments, filterTab, mySectionId]);
 
   useEffect(() => {
     setBreadcrumbs([
@@ -240,8 +354,7 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
     return result;
   }, [event.instrumentConfig, event.setlist, assigns, masterData.instruments, masterData.users, solosSet]);
 
-  // 自分のセクションIDとセクション表示順序
-  const mySectionId = user?.uid ? masterData.users[user.uid]?.sectionId : undefined;
+  // セクション表示順序
   const sectionIds = useMemo(() => {
     return event.instrumentConfig ? Object.keys(event.instrumentConfig) : [];
   }, [event.instrumentConfig]);
@@ -448,6 +561,185 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
               </div>
             </details>
           )}
+        </div>
+
+        {/* 譜割りコメントセクション */}
+        <div className={styles.commentsSectionWrapper}>
+          <div className={styles.commentsSectionHeader}>
+            <h3>
+              <i className="fa-solid fa-comments" style={{ marginRight: "0.5rem" }} />
+              譜割りコメント
+              <span className={styles.commentCountBadge}>{comments.length}</span>
+            </h3>
+            <button
+              type="button"
+              className={styles.openFormBtn}
+              onClick={() => setIsFormOpen(prev => !prev)}
+            >
+              <i className={`fa-solid ${isFormOpen ? "fa-xmark" : "fa-pen"}`} style={{ marginRight: "4px" }} />
+              {isFormOpen ? "閉じる" : "コメントを書く"}
+            </button>
+          </div>
+
+          {/* コメント投稿・編集フォーム */}
+          {isFormOpen && (
+            <div className={styles.commentFormBox}>
+              <div className={styles.formTypeSelector}>
+                <label className={styles.typeOption}>
+                  <input
+                    type="radio"
+                    name="commentType"
+                    value="all"
+                    checked={commentType === "all"}
+                    onChange={() => setCommentType("all")}
+                  />
+                  <span>🌐 全体向け</span>
+                </label>
+                <label className={styles.typeOption}>
+                  <input
+                    type="radio"
+                    name="commentType"
+                    value="section"
+                    checked={commentType === "section"}
+                    onChange={() => setCommentType("section")}
+                  />
+                  <span>
+                    <i className="fa-solid fa-users" style={{ marginRight: "4px" }} />
+                    パート向け {mySectionName ? `(${mySectionName})` : ""}
+                  </span>
+                </label>
+              </div>
+
+              <textarea
+                className={styles.commentTextarea}
+                rows={3}
+                value={commentText}
+                onChange={e => setCommentText(e.target.value)}
+                placeholder={commentType === "all" ? "全体向けコメントを入力..." : `${mySectionName || "パート"}向けコメントを入力...`}
+              />
+
+              <div className={styles.formActionButtons}>
+                <button
+                  type="button"
+                  className={styles.submitCommentBtn}
+                  onClick={handleSaveComment}
+                >
+                  <i className="fa-solid fa-paper-plane" style={{ marginRight: "4px" }} />
+                  {(commentType === "all" ? myAllComment : mySectionComment) ? "更新する" : "投稿する"}
+                </button>
+                {(commentType === "all" ? myAllComment : mySectionComment) && (
+                  <button
+                    type="button"
+                    className={styles.deleteCommentBtn}
+                    onClick={() => handleDeleteComment(commentType)}
+                  >
+                    <i className="fa-solid fa-trash-can" style={{ marginRight: "4px" }} />
+                    削除
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* フィルター切り替えタブ */}
+          <div className={styles.commentFilterTabs}>
+            <button
+              type="button"
+              className={`${styles.filterTab} ${filterTab === "all" ? styles.filterTabActive : ""}`}
+              onClick={() => setFilterTab("all")}
+            >
+              すべて ({comments.length})
+            </button>
+            <button
+              type="button"
+              className={`${styles.filterTab} ${filterTab === "type_all" ? styles.filterTabActive : ""}`}
+              onClick={() => setFilterTab("type_all")}
+            >
+              🌐 全体向け ({comments.filter(c => c.type === "all").length})
+            </button>
+            {mySectionId && (
+              <button
+                type="button"
+                className={`${styles.filterTab} ${filterTab === "my_section" ? styles.filterTabActive : ""}`}
+                onClick={() => setFilterTab("my_section")}
+              >
+                自パート ({comments.filter(c => c.type === "section" && c.sectionId === mySectionId).length})
+              </button>
+            )}
+          </div>
+
+          {/* コメント一覧ブロック */}
+          <div className={styles.commentsListBlock}>
+            {filteredComments.length === 0 ? (
+              <div className={styles.emptyComments}>コメントはまだありません。</div>
+            ) : (
+              filteredComments.map(c => {
+                const author = masterData.users[c.uid];
+                const authorName = author?.displayName || author?.abbreviation || "メンバー";
+                const authorPic = author?.pictureUrl || utils.globalLineDefaultImage;
+                const isMine = c.uid === user?.uid;
+                const secName = c.sectionId ? (masterData.sections[c.sectionId]?.name || "") : "";
+
+                return (
+                  <div key={c.id || `${c.eventId}_${c.uid}_${c.type}`} className={styles.commentItem}>
+                    <img
+                      src={authorPic}
+                      alt={authorName}
+                      className={styles.commentAvatar}
+                      onError={e => { e.currentTarget.src = utils.globalLineDefaultImage; }}
+                    />
+                    <div className={styles.commentContentArea}>
+                      <div className={styles.commentHeader}>
+                        <div className={styles.commentAuthorInfo}>
+                          <span className={styles.commentAuthorName}>{authorName}</span>
+                          {c.type === "all" ? (
+                            <span className={styles.commentBadgeAll}>
+                              <i className="fa-solid fa-earth-americas" /> 全体向け
+                            </span>
+                          ) : (
+                            <span className={styles.commentBadgeSection}>
+                              <i className="fa-solid fa-tag" /> {secName || "パート"}向け
+                            </span>
+                          )}
+                        </div>
+                        {c.updatedAt && (
+                          <span className={styles.commentDate}>
+                            {utils.format(new Date(c.updatedAt), "yyyy/MM/dd HH:mm")}
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.commentText}>{c.comment}</div>
+                      {isMine && (
+                        <div className={styles.commentMineActions}>
+                          <button
+                            type="button"
+                            className={styles.commentActionLink}
+                            onClick={() => {
+                              setCommentType(c.type);
+                              setCommentText(c.comment);
+                              setIsFormOpen(true);
+                            }}
+                          >
+                            <i className="fa-solid fa-pen" style={{ marginRight: "3px" }} />
+                            編集
+                          </button>
+                          <span style={{ color: "#cbd5e1", margin: "0 6px" }}>|</span>
+                          <button
+                            type="button"
+                            className={`${styles.commentActionLink} ${styles.commentDeleteLink}`}
+                            onClick={() => handleDeleteComment(c.type)}
+                          >
+                            <i className="fa-solid fa-trash-can" style={{ marginRight: "3px" }} />
+                            削除
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
 
         <div className={styles.editButtonContainer}>
