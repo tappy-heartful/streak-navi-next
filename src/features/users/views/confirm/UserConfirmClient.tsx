@@ -97,16 +97,6 @@ export function UserConfirmClient({ uid, userData, sections, roles, instruments,
           {userData.realName || "未設定"}
         </DisplayField>
 
-        <DisplayField label="2026年 倉敷ジャズスト ミュージシャンID">
-          {userData.kurashikiJazzMusicianId || "未設定"}
-        </DisplayField>
-
-        <DisplayField label="倉敷ジャズストリート 呼べるお客さんの数（自分観覧分含む）">
-          {userData.kurashikiJazzGuestCount !== undefined && userData.kurashikiJazzGuestCount !== null && userData.kurashikiJazzGuestCount > 0
-            ? `${userData.kurashikiJazzGuestCount}人 (${(userData.kurashikiJazzGuestCount * 1500).toLocaleString()}円)`
-            : "0人"}
-        </DisplayField>
-
         <DisplayField label="管理者権限">
           {adminRoles || "なし"}
         </DisplayField>

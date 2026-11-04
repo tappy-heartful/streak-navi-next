@@ -32,8 +32,6 @@ type UserFormData = {
   paypayId: string;
   prefectureId: string;
   municipalityId: string;
-  kurashikiJazzMusicianId: string;
-  kurashikiJazzGuestCount: number;
   realName: string;
 };
 
@@ -67,8 +65,6 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
     paypayId: userData.paypayId || "",
     prefectureId: initialLocation?.prefectureId || "",
     municipalityId: initialLocation?.municipalityId || "",
-    kurashikiJazzMusicianId: userData.kurashikiJazzMusicianId || "",
-    kurashikiJazzGuestCount: userData.kurashikiJazzGuestCount ?? 0,
     realName: userData.realName || "",
   };
 
@@ -121,7 +117,6 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
   const handleSave = async (data: UserFormData) => {
     await saveUser(uid, {
       ...data,
-      kurashikiJazzGuestCount: Number(data.kurashikiJazzGuestCount) || 0,
     });
     if (isSelf) {
       await refreshUserData();
@@ -224,36 +219,6 @@ export function UserEditClient({ uid, userData, initialLocation, sections, roles
       <div className="musical-hint" style={{ marginTop: '-12px', marginBottom: '16px' }}>
         ※ライブのエントリーなどに用います。LINE表示名が本名の漢字表記ではない場合にご入力ください
       </div>
-
-      <AppInput
-        label="2026年 倉敷ジャズスト ミュージシャンID"
-        field="kurashikiJazzMusicianId"
-        value={form.formData.kurashikiJazzMusicianId}
-        updateField={form.updateField}
-        disabled={true}
-        error={form.errors.kurashikiJazzMusicianId}
-        placeholder="未設定"
-      />
-      <div className="musical-hint" style={{ marginTop: '-12px', marginBottom: '16px' }}>
-        ※ 倉敷ジャズストリートのミュージシャンIDは編集できません
-      </div>
-
-      <FormField label="倉敷ジャズストリート 呼べるお客さんの数（自分観覧分含む）" error={form.errors.kurashikiJazzGuestCount}>
-        <select
-          className="form-control"
-          value={form.formData.kurashikiJazzGuestCount}
-          onChange={(e) => form.updateField("kurashikiJazzGuestCount", Number(e.target.value))}
-        >
-          {Array.from({ length: 16 }, (_, i) => (
-            <option key={i} value={i}>
-              {i}人{i > 0 ? ` (${(i * 1500).toLocaleString()}円)` : ""}
-            </option>
-          ))}
-        </select>
-        <div className="musical-hint" style={{ marginTop: '4px', marginBottom: '16px' }}>
-          ※ 出演者1人につき1枚（1,500円・なるべく現金）の購入ノルマがあります。<strong>ご自身が他ステージを鑑賞する場合もチケットが必要なため、自分が見る分（1枚）もお客さんの人数に含めて選択してください</strong>（例: 自分が鑑賞1枚＋お客さん2人の場合は「3人」）。
-        </div>
-      </FormField>
 
       <hr style={{ margin: "2rem 0", border: "0", borderTop: "1px solid #eee" }} />
       <h3 style={{ marginBottom: "0.5rem" }}><i className="fa-solid fa-location-dot" style={{ marginRight: "0.5rem" }} />居住地情報（本人以外には非表示・任意）</h3>
