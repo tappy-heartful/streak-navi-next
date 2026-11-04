@@ -238,8 +238,15 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
           </div>
         </div>
 
-        <div style={{ marginTop: "30px", textAlign: "center" }}>
-          <Link href={`/assign/edit?eventId=${event.id}`} className={styles.editButton}>
+        <div className={styles.editButtonContainer}>
+          <Link
+            href={`/assign/edit?eventId=${event.id}`}
+            className={styles.editButton}
+            onClick={() => {
+              utils.showSpinner();
+            }}
+          >
+            <i className="fa-solid fa-pen-to-square" style={{ marginRight: "8px" }} />
             編集画面へ
           </Link>
         </div>

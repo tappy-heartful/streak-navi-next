@@ -110,6 +110,18 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
     }));
   };
 
+  // クリア（編集前の初期状態に戻す）
+  const handleClear = async () => {
+    if (await showDialog("編集前に戻しますか？")) {
+      const map: Record<string, Record<string, string>> = {};
+      initialAssigns.forEach(a => {
+        if (!map[a.songId]) map[a.songId] = {};
+        map[a.songId][a.partName] = a.userId || "";
+      });
+      setCurrentMap(map);
+    }
+  };
+
   // 保存
   const handleSave = async () => {
     if (!(await showDialog("譜割りを更新しますか？"))) return;
@@ -148,15 +160,14 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
       await Promise.all(promises);
       await writeLog({ dataId: event.id, action: "譜割り更新" });
       await showDialog("更新しました", true);
+      showSpinner();
       router.refresh();
       router.push(`/assign/confirm?eventId=${event.id}`);
-      router.refresh(); // Server Componentsの再検証
     } catch (e) {
+      hideSpinner();
       console.error(e);
       await writeLog({ dataId: event.id, action: "譜割り更新", status: "error", errorDetail: { message: (e as Error).message } });
-      await showDialog("更新に失敗しました");
-    } finally {
-      hideSpinner();
+      await showDialog("更新に失敗しました", true);
     }
   };
 
@@ -261,11 +272,11 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
           </div>
         </div>
 
-        <div className="confirm-buttons" style={{ marginTop: "30px", textAlign: "center", display: "flex", justifyContent: "center", gap: "20px" }}>
-          <button className={styles.clearButton} onClick={() => router.refresh()}>
-            編集前に戻す
+        <div className="confirm-buttons" style={{ marginTop: "30px", display: "flex", gap: "15px" }}>
+          <button type="button" className={`clear-button ${styles.clearButton}`} onClick={handleClear}>
+            クリア
           </button>
-          <button className={styles.saveButton} onClick={handleSave}>
+          <button type="button" className={`save-button ${styles.saveButton}`} onClick={handleSave}>
             更新する
           </button>
         </div>
