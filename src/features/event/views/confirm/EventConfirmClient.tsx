@@ -673,14 +673,44 @@ export function EventConfirmClient({ eventId, data }: Props) {
           <div className="form-group">
             <label className="label-title">ソロ</label>
             <div className="label-value">
-              {event.solos.map((s, idx) => {
-                const score = scoresMap[s.songId];
+              {(() => {
+                const grouped: { songId: string; songName: string; parts: string[] }[] = [];
+                const songMap = new Map<string, { songId: string; songName: string; parts: string[] }>();
+
+                event.solos.forEach(s => {
+                  const score = scoresMap[s.songId];
+                  const songName = score?.abbreviation || score?.title || "曲名不明";
+                  if (!songMap.has(s.songId)) {
+                    const item = { songId: s.songId, songName, parts: [] };
+                    songMap.set(s.songId, item);
+                    grouped.push(item);
+                  }
+                  if (s.partName) {
+                    songMap.get(s.songId)!.parts.push(s.partName);
+                  }
+                });
+
                 return (
-                  <div key={idx} style={{ marginBottom: "4px" }}>
-                    🎷 <strong>{score?.abbreviation || score?.title || "曲不明"}</strong>: {s.partName}
+                  <div className={styles.soloTableWrapper}>
+                    <table className={styles.soloTable}>
+                      <thead>
+                        <tr>
+                          <th className={styles.soloSongHeader}>曲名</th>
+                          <th className={styles.soloPartHeader}>ソロ楽器</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {grouped.map(g => (
+                          <tr key={g.songId}>
+                            <td className={styles.soloSongCell}>{g.songName}</td>
+                            <td className={styles.soloPartCell}>{g.parts.join(", ")}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 );
-              })}
+              })()}
             </div>
           </div>
         )}

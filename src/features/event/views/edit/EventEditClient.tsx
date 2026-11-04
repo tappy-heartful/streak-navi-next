@@ -118,6 +118,12 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
   const [instrumentConfig, setInstrumentConfig] = useState<InstrumentSectionState[]>(initInstrumentConfig);
   const [solos, setSolos] = useState<EventSolo[]>(initialEvent?.solos || []);
+
+  useEffect(() => {
+    if (initialEvent?.solos) {
+      setSolos(initialEvent.solos);
+    }
+  }, [initialEvent]);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [studioModalOpen, setStudioModalOpen] = useState(false);
   const [studios, setStudios] = useState<Studio[]>([]);
@@ -870,6 +876,11 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                     style={{ flex: 1.2 }}
                   >
                     <option value="">曲を選択</option>
+                    {solo.songId && !availableSongs.some(s => s.id === solo.songId) && (
+                      <option value={solo.songId}>
+                        {scores.find(s => s.id === solo.songId)?.abbreviation || scores.find(s => s.id === solo.songId)?.title || "曲名不明"}
+                      </option>
+                    )}
                     {availableSongs.map(s => (
                       <option key={s.id} value={s.id}>{s.label}</option>
                     ))}
@@ -880,6 +891,9 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                     style={{ flex: 1 }}
                   >
                     <option value="">パートを選択</option>
+                    {solo.partName && !availableParts.includes(solo.partName) && (
+                      <option value={solo.partName}>{solo.partName}</option>
+                    )}
                     {availableParts.map(p => (
                       <option key={p} value={p}>{p}</option>
                     ))}
