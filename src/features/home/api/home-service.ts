@@ -77,6 +77,18 @@ function buildAnnouncementsFromSnaps(
     assignPending.forEach(e => items.push({ type: "item", label: `🎵${e.date} ${e.title}`, link: `/assign/confirm?eventId=${e.id}` }));
   }
 
+  // 4. 未来のすべてのイベント（他のお知らせと同様の形式でお知らせの最後に表示）
+  if (upcomingAttendance.length > 0) {
+    items.push({ type: "pending", message: "今後のイベント予定" });
+    upcomingAttendance.forEach(e => {
+      items.push({
+        type: "item",
+        label: `📅${e.date} ${e.title}`,
+        link: `/event/confirm?eventId=${e.id}`
+      });
+    });
+  }
+
   return (items.length ? items : [{ type: "empty", message: "お知らせはありません🍀" }]) as Announcement[];
 }
 
