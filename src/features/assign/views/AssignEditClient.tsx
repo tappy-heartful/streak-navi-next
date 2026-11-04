@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { Event, Assign, Score, User, Section } from "@/src/lib/firestore/types";
+import { Event, Assign, Score, User, Section, Instrument } from "@/src/lib/firestore/types";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -20,12 +20,13 @@ type Props = {
     scores: Record<string, Score>;
     users: Record<string, User>;
     sections: Record<string, Section>;
+    instruments?: Record<string, Instrument>;
   };
 };
 
 export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
   const { setBreadcrumbs } = useBreadcrumb();
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const router = useRouter();
 
   // 現在の割り当て状態を管理 { songId: { partName: userId } }
@@ -103,6 +104,211 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
   const solosSet = useMemo(() => {
     return new Set((event.solos || []).map(s => `${s.songId}__${s.partName}`));
   }, [event.solos]);
+
+  // 譜割り集計用（リアルタイム計算：currentMapの変更に連動）
+  const sectionSummaries = useMemo(() => {
+    interface MemberSummary {
+      name: string;
+      count: number;
+      soloCount: number;
+      instrumentId: string;
+      instrumentName: string;
+      instrumentOrder: number;
+    }
+
+    interface InstrumentGroup {
+      instrumentId: string;
+      instrumentName: string;
+      instrumentOrder: number;
+      members: MemberSummary[];
+    }
+
+    const result: Record<string, InstrumentGroup[]> = {};
+    const sectionIds = event.instrumentConfig ? Object.keys(event.instrumentConfig) : [];
+    const songIds = new Set(event.setlist?.flatMap(g => g.songIds) || []);
+    const instrumentsMap = masterData.instruments || {};
+
+    sectionIds.forEach(sectionId => {
+      const partConfigs = event.instrumentConfig![sectionId] || [];
+      const partNames = new Set(partConfigs.map(p => p.partName));
+
+      // このセクションでのパート別 instrumentId マップ
+      const partInstrumentMap: Record<string, string> = {};
+      const partInstrumentOrder: Record<string, number> = {};
+      let instOrderIdx = 0;
+      partConfigs.forEach(p => {
+        if (p.instrumentId) {
+          partInstrumentMap[p.partName] = p.instrumentId;
+          if (partInstrumentOrder[p.instrumentId] === undefined) {
+            partInstrumentOrder[p.instrumentId] = instOrderIdx++;
+          }
+        }
+      });
+
+      // メンバーごとの集計用マップ
+      const memberMap: Record<string, {
+        name: string;
+        count: number;
+        soloCount: number;
+        matchedUser?: User;
+        playedPartNames: Set<string>;
+      }> = {};
+
+      // currentMap から集計
+      songIds.forEach(songId => {
+        const songParts = currentMap[songId] || {};
+        partConfigs.forEach(p => {
+          const userId = songParts[p.partName];
+          if (userId && userId !== "ー") {
+            const userObj = masterData.users[userId];
+            const name = userObj ? (userObj.abbreviation || userObj.displayName || "？") : userId;
+
+            if (!memberMap[userId]) {
+              memberMap[userId] = {
+                name,
+                count: 0,
+                soloCount: 0,
+                matchedUser: userObj,
+                playedPartNames: new Set(),
+              };
+            }
+
+            memberMap[userId].count += 1;
+            memberMap[userId].playedPartNames.add(p.partName);
+
+            if (solosSet.has(`${songId}__${p.partName}`)) {
+              memberMap[userId].soloCount += 1;
+            }
+          }
+        });
+      });
+
+      // 各メンバーの楽器を特定
+      const members: MemberSummary[] = Object.values(memberMap).map(m => {
+        let instId = "";
+        if (m.matchedUser?.instrumentIds && m.matchedUser.instrumentIds.length > 0) {
+          const matchSecInst = m.matchedUser.instrumentIds.find(id => instrumentsMap[id]?.sectionId === sectionId);
+          if (matchSecInst) {
+            instId = matchSecInst;
+          } else if (m.matchedUser.instrumentIds[0]) {
+            instId = m.matchedUser.instrumentIds[0];
+          }
+        }
+
+        if (!instId) {
+          for (const pName of m.playedPartNames) {
+            if (partInstrumentMap[pName]) {
+              instId = partInstrumentMap[pName];
+              break;
+            }
+          }
+        }
+
+        const inst = instrumentsMap[instId];
+        const instName = inst?.name || "その他";
+
+        let order = 99999;
+        if (instId && partInstrumentOrder[instId] !== undefined) {
+          order = partInstrumentOrder[instId];
+        } else if (instId && inst) {
+          order = 1000 + (parseInt(instId, 10) || 0);
+        }
+
+        return {
+          name: m.name,
+          count: m.count,
+          soloCount: m.soloCount,
+          instrumentId: instId || "other",
+          instrumentName: instName,
+          instrumentOrder: order,
+        };
+      });
+
+      // 楽器ごとにグループ化
+      const groupsMap: Record<string, InstrumentGroup> = {};
+      members.forEach(m => {
+        const key = m.instrumentId || "other";
+        if (!groupsMap[key]) {
+          groupsMap[key] = {
+            instrumentId: key,
+            instrumentName: m.instrumentName,
+            instrumentOrder: m.instrumentOrder,
+            members: [],
+          };
+        }
+        groupsMap[key].members.push(m);
+      });
+
+      // 各グループ内のメンバーを名前順ソート
+      const groups = Object.values(groupsMap).map(g => {
+        g.members.sort((a, b) => a.name.localeCompare(b.name, "ja"));
+        return g;
+      });
+
+      // グループを楽器順にソート
+      groups.sort((a, b) => {
+        if (a.instrumentOrder !== b.instrumentOrder) {
+          return a.instrumentOrder - b.instrumentOrder;
+        }
+        return a.instrumentName.localeCompare(b.instrumentName, "ja");
+      });
+
+      result[sectionId] = groups;
+    });
+
+    return result;
+  }, [event.instrumentConfig, event.setlist, currentMap, masterData.instruments, masterData.users, solosSet]);
+
+  // 自分のセクションとセクション一覧
+  const mySectionId = user?.uid ? (masterData.users[user.uid]?.sectionId || userData?.sectionId) : undefined;
+  const sectionIds = useMemo(() => {
+    return event.instrumentConfig ? Object.keys(event.instrumentConfig) : [];
+  }, [event.instrumentConfig]);
+
+  const primarySectionId = useMemo(() => {
+    if (mySectionId && sectionIds.includes(mySectionId)) {
+      return mySectionId;
+    }
+    return sectionIds[0] || "";
+  }, [mySectionId, sectionIds]);
+
+  const otherSectionIds = useMemo(() => {
+    return sectionIds.filter(id => id !== primarySectionId);
+  }, [sectionIds, primarySectionId]);
+
+  // セクション小計レンダリング関数
+  const renderSectionSummary = (secId: string) => {
+    const groups = sectionSummaries[secId] || [];
+    if (groups.length === 0) {
+      return <p className={styles.emptySummary}>割り当てはありません</p>;
+    }
+
+    return (
+      <div className={styles.instrumentGroupsContainer}>
+        {groups.map(group => (
+          <div key={group.instrumentId} className={styles.instrumentGroup}>
+            <div className={styles.instrumentGroupTitle}>
+              <i className="fa-solid fa-tag" style={{ fontSize: "11px", opacity: 0.7 }} />
+              <span>{group.instrumentName}</span>
+            </div>
+            <ul className={styles.summaryList}>
+              {group.members.map(m => (
+                <li key={m.name} className={styles.summaryItem}>
+                  <span className={styles.summaryMemberName}>{m.name}</span>
+                  <span className={styles.summaryCountGroup}>
+                    <span className={styles.songCount}><strong>{m.count}</strong>曲</span>
+                    <span className={`${styles.soloCount} ${m.soloCount > 0 ? styles.hasSolo : ""}`}>
+                      (ソロ <strong>{m.soloCount}</strong>曲)
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   // 変更処理
   const handleChange = (songId: string, partName: string, userId: string) => {
@@ -279,6 +485,47 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* リアルタイム小計 */}
+        <div className={styles.summaryWrapper}>
+          {primarySectionId && (
+            <div className={styles.summarySectionPrimary}>
+              <div className={styles.summarySectionHeader}>
+                <h3>
+                  <i className="fa-solid fa-calculator" style={{ marginRight: "0.5rem" }} />
+                  {masterData.sections[primarySectionId]?.name || "セクション"} 小計
+                  {mySectionId === primarySectionId && (
+                    <span className={styles.mySectionBadge}>あなたのセクション</span>
+                  )}
+                </h3>
+              </div>
+              {renderSectionSummary(primarySectionId)}
+            </div>
+          )}
+
+          {otherSectionIds.length > 0 && (
+            <details className={styles.otherSectionsDetails}>
+              <summary className={styles.otherSectionsSummary}>
+                <span className={styles.summaryTitleText}>
+                  <i className="fa-solid fa-layer-group" style={{ marginRight: "0.5rem" }} />
+                  その他の小計
+                </span>
+                <span className={styles.detailsToggleText}>タップして表示 / 折り畳む</span>
+              </summary>
+              <div className={styles.otherSectionsContent}>
+                {otherSectionIds.map(secId => (
+                  <div key={secId} className={styles.summarySectionSecondary}>
+                    <h4 className={styles.secondarySectionTitle}>
+                      <i className="fa-solid fa-calculator" style={{ marginRight: "0.4rem", fontSize: "13px" }} />
+                      {masterData.sections[secId]?.name || secId} 小計
+                    </h4>
+                    {renderSectionSummary(secId)}
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
         </div>
 
         <div className="confirm-buttons" style={{ marginTop: "30px", display: "flex", gap: "15px" }}>
