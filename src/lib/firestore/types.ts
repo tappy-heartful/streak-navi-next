@@ -261,6 +261,11 @@ export interface EventRentTimeRange {
   endTime: string;   // "HH:mm"
 }
 
+export interface EventSolo {
+  songId: string;
+  partName: string;
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -286,6 +291,7 @@ export interface Event {
   allowAssign?: boolean;
   setlist?: SetlistGroup[];
   instrumentConfig?: Record<string, InstrumentPart[]>;
+  solos?: EventSolo[];
   isVenueReserved?: boolean;
   createdBy?: string;
   createdAt?: number;

@@ -7,7 +7,7 @@ import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import { FormFooter } from "@/src/components/Form/FormFooter";
 import { Modal } from "@/src/components/Modal";
-import { Event, Score, Section, Instrument, Studio, SetlistGroup, InstrumentPart, Prefecture, Municipality } from "@/src/lib/firestore/types";
+import { Event, Score, Section, Instrument, Studio, SetlistGroup, InstrumentPart, Prefecture, Municipality, EventSolo } from "@/src/lib/firestore/types";
 import { addEvent, updateEvent } from "@/src/features/event/api/event-client-service";
 import { showDialog, showSpinner, hideSpinner, dotDateToHyphen, hyphenDateToDot, format } from "@/src/lib/functions";
 import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
@@ -117,6 +117,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
     });
 
   const [instrumentConfig, setInstrumentConfig] = useState<InstrumentSectionState[]>(initInstrumentConfig);
+  const [solos, setSolos] = useState<EventSolo[]>(initialEvent?.solos || []);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [studioModalOpen, setStudioModalOpen] = useState(false);
   const [studios, setStudios] = useState<Studio[]>([]);
@@ -201,6 +202,47 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
   const updateRentTimeRange = (idx: number, field: "startTime" | "endTime", val: string) => {
     setRentTimeRanges(prev => prev.map((item, i) => i === idx ? { ...item, [field]: val } : item));
+  };
+
+  // ソロ設定用の利用可能な曲一覧（セットリスト内の全曲）
+  const availableSongs = React.useMemo(() => {
+    const songIdSet = new Set<string>();
+    setlistGroups.forEach(g => {
+      g.songIds.forEach(id => {
+        if (id) songIdSet.add(id);
+      });
+    });
+    return Array.from(songIdSet).map(songId => {
+      const score = scores.find(s => s.id === songId);
+      return {
+        id: songId,
+        label: score?.abbreviation || score?.title || "曲名不明"
+      };
+    });
+  }, [setlistGroups, scores]);
+
+  // ソロ設定用の利用可能なパート一覧（楽器構成内のパート名）
+  const availableParts = React.useMemo(() => {
+    const partSet = new Set<string>();
+    instrumentConfig.forEach(sec => {
+      sec.parts.forEach(p => {
+        const name = p.partName.trim();
+        if (name) partSet.add(name);
+      });
+    });
+    return Array.from(partSet);
+  }, [instrumentConfig]);
+
+  const addSolo = () => {
+    setSolos(prev => [...prev, { songId: "", partName: "" }]);
+  };
+
+  const updateSolo = (index: number, field: "songId" | "partName", value: string) => {
+    setSolos(prev => prev.map((s, idx) => idx === index ? { ...s, [field]: value } : s));
+  };
+
+  const removeSolo = (index: number) => {
+    setSolos(prev => prev.filter((_, idx) => idx !== index));
   };
 
   // ---- Instrument config helpers ----
@@ -370,6 +412,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       allowAssign,
       setlist,
       instrumentConfig: instrConfig,
+      solos: allowAssign ? solos.filter(s => s.songId && s.partName) : [],
       isVenueReserved,
       createdBy: initialEvent?.createdBy || userData?.displayName || "",
     };
@@ -804,6 +847,62 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* ソロ設定 */}
+        {allowAssign && (
+          <div className="form-group">
+            <label>ソロ設定 (譜割り用)</label>
+            <p style={{ fontSize: "12px", color: "#666", marginBottom: "8px" }}>
+              ソロがある曲とパートを選択してください。譜割り確認・編集画面でハイライト表示されます。
+            </p>
+            {solos.length === 0 ? (
+              <p style={{ fontSize: "13px", color: "#888", marginBottom: "8px" }}>
+                ソロ設定はありません
+              </p>
+            ) : (
+              solos.map((solo, idx) => (
+                <div key={idx} className="choice-wrapper" style={{ marginBottom: "8px" }}>
+                  <select
+                    value={solo.songId}
+                    onChange={e => updateSolo(idx, "songId", e.target.value)}
+                    style={{ flex: 1.2 }}
+                  >
+                    <option value="">曲を選択</option>
+                    {availableSongs.map(s => (
+                      <option key={s.id} value={s.id}>{s.label}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={solo.partName}
+                    onChange={e => updateSolo(idx, "partName", e.target.value)}
+                    style={{ flex: 1 }}
+                  >
+                    <option value="">パートを選択</option>
+                    {availableParts.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="remove-choice"
+                    onClick={() => removeSolo(idx)}
+                    title="削除"
+                  >
+                    <i className="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              ))
+            )}
+            <button
+              type="button"
+              className="add-choice"
+              onClick={addSolo}
+              style={{ display: "flex", alignItems: "center", gap: "6px" }}
+            >
+              <i className="fa-solid fa-plus"></i> ソロを追加
+            </button>
           </div>
         )}
 

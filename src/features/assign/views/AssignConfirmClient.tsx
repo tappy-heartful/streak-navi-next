@@ -105,6 +105,11 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
     return summary;
   }, [event.instrumentConfig, event.setlist, assigns]);
 
+  // ソロ判定用のSet (songId__partName)
+  const solosSet = useMemo(() => {
+    return new Set((event.solos || []).map(s => `${s.songId}__${s.partName}`));
+  }, [event.solos]);
+
   if (!event.instrumentConfig || Object.keys(event.instrumentConfig).length === 0) {
     return (
       <BaseLayout>
@@ -201,9 +206,13 @@ export function AssignConfirmClient({ event, assigns, masterData }: Props) {
                           </td>
                           {event.instrumentConfig![activeTab]?.map(p => {
                             const a = assigns.find(a => a.songId === songId && a.partName === p.partName);
+                            const isSolo = solosSet.has(`${songId}__${p.partName}`);
                             return (
-                              <td key={p.partName} className={styles.assignCell}>
-                                {a?.assignValue || "ー"}
+                              <td key={p.partName} className={`${styles.assignCell} ${isSolo ? styles.soloCell : ""}`}>
+                                <div className={styles.cellContent}>
+                                  {isSolo && <span className={styles.soloBadge}>Solo</span>}
+                                  <span>{a?.assignValue || "ー"}</span>
+                                </div>
                               </td>
                             );
                           })}

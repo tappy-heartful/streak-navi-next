@@ -149,7 +149,7 @@ Streak Navi では、モジュールごとの細やかな権限分離（Role-Bas
   - **日程調整 (`schedule`)**: 複数の候補日に対する可否（◯/△/✕）をマトリクス形式で回答。
 - **画面構成**:
   - 一覧: `/event` (日付順、都道府県/市区町村バッジ、出欠回答ステータスバッジ)
-  - 作成・編集: `/event/edit` (タイトル、日時/候補日、場所・Google Map・アクセス、施設利用時間、会場押さえ状況、セットリスト、楽器構成)
+  - 作成・編集: `/event/edit` (タイトル、日時/候補日、場所・Google Map・アクセス、施設利用時間、会場押さえ状況、セットリスト、楽器構成、ソロ設定)
   - 詳細・確認: `/event/confirm?eventId=xxx` (出欠集計、未回答者モーダル、日程調整マトリクス集計、録音リンク追加/削除、YouTubeタイムスタンプ再生)
   - 出欠回答: `/event/attendance-answer?eventId=xxx`
   - 日程調整回答: `/event/adjust-answer?eventId=xxx`
@@ -160,6 +160,7 @@ Streak Navi では、モジュールごとの細やかな権限分離（Role-Bas
   - **楽器連動型編集フィルタ**: ログインユーザーが担当している楽器（`myInstrumentIds`）に一致するパートのみを編集対象として抽出し、他パートの譜割りを誤って上書きする事故を未然防止。
   - **プレイリストURL自動生成**: セットリストの全曲からYouTube動画IDを抽出し、ワンクリックで全曲連続再生できるプレイリストURL（`youtube.com/watch_videos?video_ids=...`）を自動生成。
   - **スムーズな画面遷移と操作性**: 確認画面（`/assign/confirm`）ではカード幅いっぱいの大きな編集ボタンを配置。編集画面（`/assign/edit`）での登録・更新後は自動的に確認画面へ遷移。リセット操作も他画面と統一された「クリア」ボタン（灰色、確認ダイアログ「編集前に戻しますか？」付き）を採用。
+  - **ソロパートのハイライト表示**: イベント側で設定されたソロ対象曲・パートのセルを、確認画面および編集画面でウォームイエローの背景色と「🎷 Solo」バッジで視覚的に強調。
 - **画面構成**:
   - 一覧: `/assign`
   - 編集: `/assign/edit?eventId=xxx`
@@ -325,7 +326,7 @@ Firestore のセキュリティルール（`firestore.rules`）に基づき、�
 | `users/{uid}/private/location` | `location` | `prefectureId`, `municipalityId` | 本人のみ | 本人のみ |
 | `scores` | 自動採番 | `title`, `abbreviation`, `files` (`name`, `url`, `path`), `genres`, `referenceTrack`, `youtubeId`, `isDispTop` | 全員（公開可） | `isScoreAdmin` |
 | `scoreDownloadLogs` | 自動採番 | `uid`, `userName`, `scoreId`, `scoreTitle`, `fileName`, `fileUrl`, `date`, `createdAt` | `isScoreAdmin` / `isSystemAdmin` | 全メンバー（追記のみ、改ざん禁止） |
-| `events` | 自動採番 | `title`, `attendanceType`, `date`, `candidateDates`, `placeName`, `prefectureId`, `municipalityId`, `setlist`, `instrumentConfig` | 全メンバー | `isEventAdmin` |
+| `events` | 自動採番 | `title`, `attendanceType`, `date`, `candidateDates`, `placeName`, `prefectureId`, `municipalityId`, `setlist`, `instrumentConfig`, `solos` | 全メンバー | `isEventAdmin` |
 | `eventAttendanceAnswers` | `{eventId}_{uid}` | `eventId`, `uid`, `status`, `comment` | 全メンバー | 本人 / `isEventAdmin` |
 | `eventAdjustAnswers` | `{eventId}_{uid}` | `eventId`, `uid`, `answers` (`{ [date]: statusId }`), `comment` | 全メンバー | 本人 / `isEventAdmin` |
 | `eventRecordings` | 自動採番 | `eventId`, `uid`, `title`, `url` | 全メンバー | 本人（作成） / 本人 or `isEventAdmin`（削除） |

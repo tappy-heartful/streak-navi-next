@@ -668,6 +668,23 @@ export function EventConfirmClient({ eventId, data }: Props) {
           </div>
         )}
 
+        {/* ソロパート */}
+        {event.solos && event.solos.length > 0 && (
+          <div className="form-group">
+            <label className="label-title">ソロ</label>
+            <div className="label-value">
+              {event.solos.map((s, idx) => {
+                const score = scoresMap[s.songId];
+                return (
+                  <div key={idx} style={{ marginBottom: "4px" }}>
+                    🎷 <strong>{score?.abbreviation || score?.title || "曲不明"}</strong>: {s.partName}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* 回答状況 */}
         <div className="form-group">
           <label className="label-title">{isSchedule ? "日程調整" : "出欠"}</label>

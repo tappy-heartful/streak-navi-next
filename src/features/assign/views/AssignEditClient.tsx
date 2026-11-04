@@ -99,6 +99,11 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
     return `https://www.youtube.com/watch_videos?video_ids=${Array.from(videoIds).join(",")}`;
   }, [event.setlist, masterData.scores]);
 
+  // ソロ判定用のSet (songId__partName)
+  const solosSet = useMemo(() => {
+    return new Set((event.solos || []).map(s => `${s.songId}__${s.partName}`));
+  }, [event.solos]);
+
   // 変更処理
   const handleChange = (songId: string, partName: string, userId: string) => {
     setCurrentMap(prev => ({
@@ -244,20 +249,24 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
                             parts.map(p => {
                               const val = currentMap[songId]?.[p.partName] || "";
                               const candidates = p.instrumentId ? (usersByInstrument[p.instrumentId] || []) : [];
+                              const isSolo = solosSet.has(`${songId}__${p.partName}`);
                               return (
-                                <td key={p.partName} className={styles.assignCell}>
-                                  <select 
-                                    className={styles.assignSelect}
-                                    value={val}
-                                    onChange={e => handleChange(songId, p.partName, e.target.value)}
-                                  >
-                                    <option value="">ー</option>
-                                    {candidates.map(u => (
-                                      <option key={u.id} value={u.id}>
-                                        {u.abbreviation || u.displayName}
-                                      </option>
-                                    ))}
-                                  </select>
+                                <td key={p.partName} className={`${styles.assignCell} ${isSolo ? styles.soloCell : ""}`}>
+                                  <div className={styles.cellContent}>
+                                    {isSolo && <span className={styles.soloBadge}>Solo</span>}
+                                    <select 
+                                      className={`${styles.assignSelect} ${isSolo ? styles.soloSelect : ""}`}
+                                      value={val}
+                                      onChange={e => handleChange(songId, p.partName, e.target.value)}
+                                    >
+                                      <option value="">ー</option>
+                                      {candidates.map(u => (
+                                        <option key={u.id} value={u.id}>
+                                          {u.abbreviation || u.displayName}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
                                 </td>
                               );
                             })
