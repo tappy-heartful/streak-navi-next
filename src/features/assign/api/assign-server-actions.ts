@@ -1,7 +1,7 @@
 "use server";
 
 import { adminDb as db } from "@/src/lib/firebase-admin";
-import { Assign, Event, Score, User, Section } from "@/src/lib/firestore/types";
+import { Assign, Event, Score, User, Section, Instrument } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
 
 /**
@@ -40,10 +40,11 @@ export async function getEventById(eventId: string) {
  * 譜割りに関連する全情報を一括取得（マスターデータ）
  */
 export async function getAssignMasterData() {
-  const [scoresSnap, usersSnap, sectionsSnap] = await Promise.all([
+  const [scoresSnap, usersSnap, sectionsSnap, instrumentsSnap] = await Promise.all([
     db.collection("scores").get(),
     db.collection("users").get(),
     db.collection("sections").get(),
+    db.collection("instruments").get(),
   ]);
 
   const scores: Record<string, Score> = {};
@@ -61,5 +62,10 @@ export async function getAssignMasterData() {
     sections[doc.id] = toPlainObject(doc) as Section;
   });
 
-  return { scores, users, sections };
+  const instruments: Record<string, Instrument> = {};
+  instrumentsSnap.docs.forEach(doc => {
+    instruments[doc.id] = toPlainObject(doc) as Instrument;
+  });
+
+  return { scores, users, sections, instruments };
 }
