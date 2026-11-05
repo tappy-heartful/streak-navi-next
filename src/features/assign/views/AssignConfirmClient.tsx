@@ -10,6 +10,7 @@ import styles from "./assign.module.css";
 import Link from "next/link";
 import * as utils from "@/src/lib/functions";
 import { ScoreFileListModal } from "@/src/features/scores/components/ScoreFileListModal";
+import { AssignMemberDetailModal, MemberSongAssign } from "@/src/features/assign/components/AssignMemberDetailModal";
 
 type Props = {
   event: Event;
@@ -35,6 +36,7 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
   const [commentText, setCommentText] = useState<string>("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [filterTab, setFilterTab] = useState<"all" | "type_all" | "my_section">("all");
+  const [selectedMemberModal, setSelectedMemberModal] = useState<{ name: string; userId?: string } | null>(null);
 
   const mySectionId = user?.uid ? (masterData.users[user.uid]?.sectionId || userData?.sectionId) : undefined;
   const mySectionName = mySectionId ? (masterData.sections[mySectionId]?.name || "") : "";
@@ -197,10 +199,45 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
     return new Set((event.solos || []).map(s => `${s.songId}__${s.partName}`));
   }, [event.solos]);
 
+  // 選択中メンバーの担当曲リスト
+  const memberAssignedSongs = useMemo(() => {
+    if (!selectedMemberModal) return [];
+
+    const result: MemberSongAssign[] = [];
+    const targetName = selectedMemberModal.name;
+    const targetUid = selectedMemberModal.userId;
+
+    event.setlist?.forEach(group => {
+      group.songIds?.forEach(songId => {
+        const score = masterData.scores[songId];
+        const matchingAssigns = assigns.filter(a => {
+          if (a.songId !== songId) return false;
+          if (targetUid && a.userId === targetUid) return true;
+          return a.assignValue === targetName;
+        });
+
+        matchingAssigns.forEach(a => {
+          result.push({
+            songId,
+            songTitle: score?.title || "曲名不明",
+            songAbbreviation: score?.abbreviation,
+            groupTitle: group.title,
+            partName: a.partName,
+            isSolo: solosSet.has(`${songId}__${a.partName}`),
+            score,
+          });
+        });
+      });
+    });
+
+    return result;
+  }, [selectedMemberModal, event.setlist, assigns, masterData.scores, solosSet]);
+
   // 譜割り集計用（セクションごと、楽器順にグループ化＆ソロ曲数集計）
   const sectionSummaries = useMemo(() => {
     interface MemberSummary {
       name: string;
+      userId?: string;
       count: number;
       soloCount: number;
       instrumentId: string;
@@ -241,6 +278,7 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
       // メンバーごとの集計用マップ
       const memberMap: Record<string, {
         name: string;
+        userId?: string;
         count: number;
         soloCount: number;
         matchedUser?: User;
@@ -252,12 +290,13 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
           const name = a.assignValue?.trim();
           if (name && name !== "ー") {
             if (!memberMap[name]) {
-              const userObj = a.userId 
-                ? masterData.users[a.userId] 
+              const userObj = a.userId
+                ? masterData.users[a.userId]
                 : usersList.find(u => u.abbreviation === name || u.displayName === name);
 
               memberMap[name] = {
                 name,
+                userId: a.userId || userObj?.id,
                 count: 0,
                 soloCount: 0,
                 matchedUser: userObj,
@@ -311,6 +350,7 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
 
         return {
           name: m.name,
+          userId: m.userId,
           count: m.count,
           soloCount: m.soloCount,
           instrumentId: instId || "other",
@@ -388,7 +428,15 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
             <ul className={styles.summaryList}>
               {group.members.map(m => (
                 <li key={m.name} className={styles.summaryItem}>
-                  <span className={styles.summaryMemberName}>{m.name}</span>
+                  <button
+                    type="button"
+                    className={styles.summaryMemberButton}
+                    onClick={() => setSelectedMemberModal({ name: m.name, userId: m.userId })}
+                    title={`${m.name}の担当曲とソロを表示`}
+                  >
+                    <span>{m.name}</span>
+                    <i className="fa-solid fa-circle-info" aria-hidden="true" />
+                  </button>
                   <span className={styles.summaryCountGroup}>
                     <span className={styles.songCount}><strong>{m.count}</strong>曲</span>
                     <span className={`${styles.soloCount} ${m.soloCount > 0 ? styles.hasSolo : ""}`}>
@@ -767,6 +815,13 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
         scoreId={selectedScoreForModal?.id}
         files={selectedScoreForModal?.files}
         legacyScoreUrl={selectedScoreForModal?.scoreUrl}
+      />
+
+      <AssignMemberDetailModal
+        isOpen={Boolean(selectedMemberModal)}
+        onClose={() => setSelectedMemberModal(null)}
+        memberName={selectedMemberModal?.name || ""}
+        assignedSongs={memberAssignedSongs}
       />
     </BaseLayout>
   );

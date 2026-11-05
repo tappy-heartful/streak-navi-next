@@ -12,6 +12,7 @@ import { FormFooter } from "@/src/components/Form/FormFooter";
 import * as utils from "@/src/lib/functions";
 import { showSpinner, hideSpinner, showDialog, writeLog } from "@/src/lib/functions";
 import { saveAssign, releaseAssign } from "@/src/features/assign/api/assign-client-service";
+import { AssignMemberDetailModal, MemberSongAssign } from "@/src/features/assign/components/AssignMemberDetailModal";
 import { getPastAssignHistory } from "@/src/features/assign/api/assign-server-actions";
 
 type Props = {
@@ -110,6 +111,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
   const sectionSummaries = useMemo(() => {
     interface MemberSummary {
       name: string;
+      userId?: string;
       count: number;
       soloCount: number;
       instrumentId: string;
@@ -149,6 +151,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
       // メンバーごとの集計用マップ
       const memberMap: Record<string, {
         name: string;
+        userId?: string;
         count: number;
         soloCount: number;
         matchedUser?: User;
@@ -167,6 +170,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
             if (!memberMap[userId]) {
               memberMap[userId] = {
                 name,
+                userId,
                 count: 0,
                 soloCount: 0,
                 matchedUser: userObj,
@@ -217,6 +221,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
 
         return {
           name: m.name,
+          userId: m.userId,
           count: m.count,
           soloCount: m.soloCount,
           instrumentId: instId || "other",
@@ -277,6 +282,46 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
     return sectionIds.filter(id => id !== primarySectionId);
   }, [sectionIds, primarySectionId]);
 
+  // メンバー詳細モーダル用ステート
+  const [selectedMemberModal, setSelectedMemberModal] = useState<{ name: string; userId?: string } | null>(null);
+
+  // 選択中メンバーの担当曲リスト（currentMapとリアルタイム連動）
+  const memberAssignedSongs = useMemo(() => {
+    if (!selectedMemberModal) return [];
+
+    const result: MemberSongAssign[] = [];
+    const targetName = selectedMemberModal.name;
+    const targetUid = selectedMemberModal.userId;
+
+    event.setlist?.forEach(group => {
+      group.songIds?.forEach(songId => {
+        const score = masterData.scores[songId];
+        const songParts = currentMap[songId] || {};
+
+        Object.entries(songParts).forEach(([partName, userId]) => {
+          if (!userId || userId === "ー") return;
+          const userObj = masterData.users[userId];
+          const userName = userObj ? (userObj.abbreviation || userObj.displayName || "？") : userId;
+
+          const isMatch = (targetUid && userId === targetUid) || userName === targetName;
+          if (isMatch) {
+            result.push({
+              songId,
+              songTitle: score?.title || "曲名不明",
+              songAbbreviation: score?.abbreviation,
+              groupTitle: group.title,
+              partName,
+              isSolo: solosSet.has(`${songId}__${partName}`),
+              score,
+            });
+          }
+        });
+      });
+    });
+
+    return result;
+  }, [selectedMemberModal, event.setlist, currentMap, masterData.scores, masterData.users, solosSet]);
+
   // セクション小計レンダリング関数
   const renderSectionSummary = (secId: string) => {
     const groups = sectionSummaries[secId] || [];
@@ -295,7 +340,15 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
             <ul className={styles.summaryList}>
               {group.members.map(m => (
                 <li key={m.name} className={styles.summaryItem}>
-                  <span className={styles.summaryMemberName}>{m.name}</span>
+                  <button
+                    type="button"
+                    className={styles.summaryMemberButton}
+                    onClick={() => setSelectedMemberModal({ name: m.name, userId: m.userId })}
+                    title={`${m.name}の担当曲とソロを表示`}
+                  >
+                    <span>{m.name}</span>
+                    <i className="fa-solid fa-circle-info" aria-hidden="true" />
+                  </button>
                   <span className={styles.summaryCountGroup}>
                     <span className={styles.songCount}><strong>{m.count}</strong>曲</span>
                     <span className={`${styles.soloCount} ${m.soloCount > 0 ? styles.hasSolo : ""}`}>
@@ -492,6 +545,13 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
           </p>
         </div>
         <FormFooter backHref={`/assign/confirm?eventId=${event.id}`} backText="譜割り確認" />
+
+        <AssignMemberDetailModal
+          isOpen={Boolean(selectedMemberModal)}
+          onClose={() => setSelectedMemberModal(null)}
+          memberName={selectedMemberModal?.name || ""}
+          assignedSongs={memberAssignedSongs}
+        />
       </BaseLayout>
     );
   }
