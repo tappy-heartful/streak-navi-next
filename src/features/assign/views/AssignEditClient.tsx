@@ -12,6 +12,7 @@ import { FormFooter } from "@/src/components/Form/FormFooter";
 import * as utils from "@/src/lib/functions";
 import { showSpinner, hideSpinner, showDialog, writeLog } from "@/src/lib/functions";
 import { saveAssign, releaseAssign } from "@/src/features/assign/api/assign-client-service";
+import { getPastAssignHistory } from "@/src/features/assign/api/assign-server-actions";
 
 type Props = {
   event: Event;
@@ -52,13 +53,13 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
 
   // ユーザーが編集可能なパート構成 (自分の担当楽器にマッチするもの)
   const myInstrumentIds = masterData.users[user?.uid || ""]?.instrumentIds || [];
-  
+
   const editGroups = useMemo(() => {
     const groups: Record<string, { partName: string; instrumentId?: string }[]> = {};
     if (!event.instrumentConfig) return groups;
 
     Object.keys(event.instrumentConfig).forEach(sectionId => {
-      const parts = event.instrumentConfig![sectionId].filter(p => 
+      const parts = event.instrumentConfig![sectionId].filter(p =>
         p.instrumentId && myInstrumentIds.includes(p.instrumentId)
       );
       if (parts.length > 0) {
@@ -321,6 +322,106 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
     }));
   };
 
+  // 過去の譜割りから自動入力
+  const handleAutoAssignFromHistory = async () => {
+    const confirmed = await showDialog(
+      "過去の実績（演奏回数・直近の演奏曲）に基づいて、担当可能なパートの譜割りを自動入力しますか？"
+    );
+    if (!confirmed) return;
+
+    showSpinner();
+    try {
+      const pastRecords = await getPastAssignHistory(event.id);
+      if (pastRecords.length === 0) {
+        hideSpinner();
+        await showDialog("過去のイベントの譜割り履歴が見つかりませんでした。", true);
+        return;
+      }
+
+      // 自分が編集可能なパート一覧
+      const editablePartsList: { partName: string; instrumentId?: string }[] = [];
+      Object.values(editGroups).forEach(parts => {
+        parts.forEach(p => editablePartsList.push(p));
+      });
+
+      if (editablePartsList.length === 0) {
+        hideSpinner();
+        await showDialog("編集可能なパートがありません。", true);
+        return;
+      }
+
+      const songIds = event.setlist?.flatMap(g => g.songIds) || [];
+      let updatedCount = 0;
+      const nextMap: Record<string, Record<string, string>> = {};
+
+      Object.keys(currentMap).forEach(sId => {
+        nextMap[sId] = { ...(currentMap[sId] || {}) };
+      });
+
+      songIds.forEach(songId => {
+        if (!nextMap[songId]) nextMap[songId] = {};
+
+        editablePartsList.forEach(p => {
+          const validCandidates = p.instrumentId ? (usersByInstrument[p.instrumentId] || []) : [];
+          const validCandidateIds = new Set(validCandidates.map(u => u.id));
+
+          // 該当する過去履歴
+          const matchRecords = pastRecords.filter(
+            r => r.songId === songId && r.partName === p.partName && validCandidateIds.has(r.userId)
+          );
+
+          if (matchRecords.length > 0) {
+            // 各ユーザーの演奏回数と最新日を集計
+            const userStats: Record<string, { count: number; latestDate: string }> = {};
+            matchRecords.forEach(r => {
+              if (!userStats[r.userId]) {
+                userStats[r.userId] = { count: 0, latestDate: r.eventDate };
+              }
+              userStats[r.userId].count += 1;
+              if (r.eventDate > userStats[r.userId].latestDate) {
+                userStats[r.userId].latestDate = r.eventDate;
+              }
+            });
+
+            // 1. 演奏回数降順 -> 2. 最新日付降順
+            const bestUser = Object.entries(userStats).sort((a, b) => {
+              if (b[1].count !== a[1].count) {
+                return b[1].count - a[1].count;
+              }
+              return b[1].latestDate.localeCompare(a[1].latestDate);
+            })[0];
+
+            if (bestUser && bestUser[0]) {
+              const currentVal = nextMap[songId][p.partName] || "";
+              if (currentVal !== bestUser[0]) {
+                nextMap[songId][p.partName] = bestUser[0];
+                updatedCount += 1;
+              }
+            }
+          }
+        });
+      });
+
+      hideSpinner();
+      if (updatedCount > 0) {
+        setCurrentMap(nextMap);
+        await showDialog(
+          `過去の譜割りから ${updatedCount} 箇所のパートを自動入力しました。\n（※「更新する」ボタンを押すまで保存されません）`,
+          true
+        );
+      } else {
+        await showDialog(
+          "過去の実績と一致するパート、または新しい割り当て対象は見つかりませんでした。",
+          true
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      hideSpinner();
+      await showDialog("過去の譜割りの読み込みに失敗しました。", true);
+    }
+  };
+
   // クリア（編集前の初期状態に戻す）
   const handleClear = async () => {
     if (await showDialog("編集前に戻しますか？")) {
@@ -417,6 +518,17 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
           </div>
         )}
 
+        <div className={styles.editActionToolbar}>
+          <button
+            type="button"
+            className={styles.autoAssignButton}
+            onClick={handleAutoAssignFromHistory}
+          >
+            <i className="fa-solid fa-clock-rotate-left" style={{ marginRight: "6px" }} />
+            過去の実績から入力
+          </button>
+        </div>
+
         <div className={styles.tableViewWrapper}>
           <div className={styles.tableResponsive}>
             <table className={styles.assignTable}>
@@ -430,7 +542,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
                   ))}
                 </tr>
                 <tr>
-                  {Object.values(editGroups).flatMap(parts => 
+                  {Object.values(editGroups).flatMap(parts =>
                     parts.map(p => <th key={p.partName} className={styles.partHeaderCell}>{p.partName}</th>)
                   )}
                 </tr>
@@ -451,7 +563,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
                           <td className={styles.songHeader}>
                             {score.abbreviation || score.title}
                           </td>
-                          {Object.values(editGroups).flatMap(parts => 
+                          {Object.values(editGroups).flatMap(parts =>
                             parts.map(p => {
                               const val = currentMap[songId]?.[p.partName] || "";
                               const candidates = p.instrumentId ? (usersByInstrument[p.instrumentId] || []) : [];
@@ -460,7 +572,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
                                 <td key={p.partName} className={`${styles.assignCell} ${isSolo ? styles.soloCell : ""}`}>
                                   <div className={styles.cellContent}>
                                     {isSolo && <span className={styles.soloBadge}>Solo</span>}
-                                    <select 
+                                    <select
                                       className={`${styles.assignSelect} ${isSolo ? styles.soloSelect : ""}`}
                                       value={val}
                                       onChange={e => handleChange(songId, p.partName, e.target.value)}

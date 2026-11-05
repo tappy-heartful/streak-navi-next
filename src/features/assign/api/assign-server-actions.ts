@@ -82,3 +82,48 @@ export async function getAssignComments(eventId: string): Promise<AssignComment[
     .map(doc => toPlainObject(doc) as AssignComment)
     .sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
 }
+
+export interface PastAssignRecord {
+  songId: string;
+  partName: string;
+  userId: string;
+  eventDate: string;
+}
+
+/**
+ * 過去のイベントの譜割り履歴を取得（現在のイベントを除く）
+ */
+export async function getPastAssignHistory(currentEventId: string): Promise<PastAssignRecord[]> {
+  const eventsSnap = await db.collection("events")
+    .where("allowAssign", "==", true)
+    .get();
+
+  const eventDateMap: Record<string, string> = {};
+  eventsSnap.docs.forEach(doc => {
+    if (doc.id !== currentEventId) {
+      eventDateMap[doc.id] = doc.data().date || "";
+    }
+  });
+
+  const pastEventIds = Object.keys(eventDateMap);
+  if (pastEventIds.length === 0) return [];
+
+  const assignsSnap = await db.collection("assigns").get();
+
+  const records: PastAssignRecord[] = [];
+  assignsSnap.docs.forEach(doc => {
+    const data = doc.data();
+    if (data.eventId && data.eventId !== currentEventId && eventDateMap[data.eventId] !== undefined) {
+      if (data.songId && data.partName && data.userId) {
+        records.push({
+          songId: data.songId,
+          partName: data.partName,
+          userId: data.userId,
+          eventDate: eventDateMap[data.eventId] || "",
+        });
+      }
+    }
+  });
+
+  return records;
+}
