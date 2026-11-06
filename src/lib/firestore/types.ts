@@ -589,8 +589,10 @@ export interface AccountingSeason {
   id: string; // e.g. "2026-spring"
   year: number;
   seasonKey: AccountingSeasonKey;
+  name?: string;
   memberIds: string[];
   managerId?: string; // シーズン担当者（サックスパートから選出）
+  endDate?: string;   // "yyyy.MM.dd"
   evidenceUrls?: Record<string, string>; // uid -> downloadUrl
   settledAt?: number;
   createdAt: number;

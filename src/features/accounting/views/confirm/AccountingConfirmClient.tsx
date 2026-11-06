@@ -29,6 +29,10 @@ import { compressImage } from "@/src/lib/image-compression";
 import { PersonalSettlementCard } from "../../components/PersonalSettlementCard";
 import { ManagerSettlementGuideModal } from "../../components/ManagerSettlementGuideModal";
 import { AverageBurdenCalculationCard } from "../../components/AverageBurdenCalculationCard";
+import {
+  calculateBalanceAccounting,
+  calculatePersonalBalance,
+} from "../../lib/accounting-calculator";
 
 interface Props {
   initialData: {
@@ -99,41 +103,19 @@ export function AccountingConfirmClient({ initialData }: Props) {
     return users.find(u => u.id === season.managerId);
   }, [season?.managerId, users]);
 
-  // 会計計算
-  const totals = useMemo(() => {
+  // 会計計算（共通ロジック）
+  const balanceResult = useMemo(() => {
     const activeMemberIds = season?.memberIds || [];
-    const totalExpenses = expenses
-      .filter(e => activeMemberIds.includes(e.uid) && !e.isIncome)
-      .reduce((sum, e) => sum + Number(e.amount || 0), 0);
-    const totalIncomes = expenses
-      .filter(e => activeMemberIds.includes(e.uid) && e.isIncome)
-      .reduce((sum, e) => sum + Number(e.amount || 0), 0) +
-      incomes
-        .filter(i => activeMemberIds.includes(i.uid))
-        .reduce((sum, i) => sum + Number(i.amount || 0), 0);
-
-    const netTotal = totalExpenses - totalIncomes;
-    const memberCount = activeMemberIds.length;
-    const averageBurden = memberCount > 0 ? Math.ceil(netTotal / memberCount) : 0;
-    return { totalExpenses, totalIncomes, netTotal, memberCount, averageBurden };
+    return calculateBalanceAccounting(activeMemberIds, expenses, incomes);
   }, [expenses, incomes, season]);
+
+  const totals = balanceResult.totals;
 
   // 個人の計算
   const personal = useMemo(() => {
     if (!userData) return null;
-    const myExpenses = expenses
-      .filter(e => e.uid === userData.id && !e.isIncome)
-      .reduce((s, e) => s + Number(e.amount || 0), 0);
-    const myIncomes = expenses
-      .filter(e => e.uid === userData.id && e.isIncome)
-      .reduce((s, e) => s + Number(e.amount || 0), 0) +
-      incomes
-        .filter(i => i.uid === userData.id)
-        .reduce((s, i) => s + Number(i.amount || 0), 0);
-    const myContribution = myExpenses - myIncomes;
     const isTarget = !!season?.memberIds.includes(userData.id);
-    const settlementAmount = (isTarget ? totals.averageBurden : 0) - myContribution;
-    return { myExpenses, myIncomes, myContribution, isTarget, settlementAmount };
+    return calculatePersonalBalance(userData.id, totals.averageBurden, isTarget, expenses, incomes);
   }, [userData, expenses, incomes, season, totals]);
 
   // メンバーをセクションでグルーピングし、roleIdで二次ソート
@@ -142,22 +124,14 @@ export function AccountingConfirmClient({ initialData }: Props) {
       .map(uid => {
         const user = users.find(u => u.id === uid);
         if (!user) return null;
-        const userExpenses = expenses
-          .filter(e => e.uid === uid && !e.isIncome)
-          .reduce((s, e) => s + Number(e.amount || 0), 0);
-        const userIncomes = expenses
-          .filter(e => e.uid === uid && e.isIncome)
-          .reduce((s, e) => s + Number(e.amount || 0), 0) +
-          incomes
-            .filter(i => i.uid === uid)
-            .reduce((s, i) => s + Number(i.amount || 0), 0);
+        const calc = balanceResult.memberCalculations[uid];
         return {
           uid,
           name: user.displayName || "不明なユーザー",
           pictureUrl: user.pictureUrl,
           sectionId: user.sectionId ?? "unknown",
           roleId: user.roleId ?? "unknown",
-          contribution: userExpenses - userIncomes,
+          contribution: calc ? calc.contribution : 0,
           paypayId: user.paypayId
         };
       })

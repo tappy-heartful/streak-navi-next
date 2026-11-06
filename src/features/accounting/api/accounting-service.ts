@@ -12,6 +12,10 @@ import {
   AccountingSeasonKey
 } from "@/src/lib/firestore/types";
 import * as utils from "@/src/lib/functions";
+import {
+  calculateBalanceAccounting,
+  calculatePersonalBalance,
+} from "@/src/features/accounting/lib/accounting-calculator";
 
 /**
  * 会計設定を取得（24時間キャッシュ）
@@ -175,21 +179,9 @@ async function calculateSeasonStatus(
   ]);
 
   const activeMemberIds = season.memberIds || [];
-  const memberCount = activeMemberIds.length;
-  if (memberCount === 0) return "completed";
+  if (activeMemberIds.length === 0) return "completed";
 
-  const totalExpenses = expenses
-    .filter(e => !e.isIncome)
-    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
-  const totalIncomes = expenses
-    .filter(e => e.isIncome)
-    .reduce((sum, e) => sum + Number(e.amount || 0), 0) +
-    incomes
-      .filter(i => activeMemberIds.includes(i.uid))
-      .reduce((sum, i) => sum + Number(i.amount || 0), 0);
-
-  const netTotal = totalExpenses - totalIncomes;
-  const averageBurden = memberCount > 0 ? Math.ceil(netTotal / memberCount) : 0;
+  const { memberCalculations } = calculateBalanceAccounting(activeMemberIds, expenses, incomes);
 
   // 要清算メンバー（担当者を除く、精算額 !== 0）
   const requiredSettlementMembers = activeMemberIds.filter(uid => {
@@ -197,19 +189,8 @@ async function calculateSeasonStatus(
     const user = users.find(u => u.id === uid);
     if (!user) return false;
 
-    const userExpenses = expenses
-      .filter(e => e.uid === uid && !e.isIncome)
-      .reduce((s, e) => s + Number(e.amount || 0), 0);
-    const userIncomes = expenses
-      .filter(e => e.uid === uid && e.isIncome)
-      .reduce((s, e) => s + Number(e.amount || 0), 0) +
-      incomes
-        .filter(i => i.uid === uid)
-        .reduce((s, i) => s + Number(i.amount || 0), 0);
-
-    const contribution = userExpenses - userIncomes;
-    const memberSettlement = averageBurden - contribution;
-    return memberSettlement !== 0;
+    const calc = memberCalculations[uid];
+    return calc && calc.settlementAmount !== 0;
   });
 
   if (requiredSettlementMembers.length === 0) {
@@ -311,45 +292,18 @@ async function calculateSeasonSummary(userId: string, season: AccountingSeason, 
   const incomes = await getIncomesServer(range.start, range.end);
 
   const activeMemberIds = season.memberIds || [];
-
-  // 全体集計
-  const totalExpenses = expenses
-    .filter(e => !e.isIncome)
-    .reduce((sum, e) => sum + Number(e.amount || 0), 0);
-  const totalIncomes = expenses
-    .filter(e => e.isIncome)
-    .reduce((sum, e) => sum + Number(e.amount || 0), 0) +
-    incomes
-      .filter(i => activeMemberIds.includes(i.uid))
-      .reduce((sum, i) => sum + Number(i.amount || 0), 0);
-
-  const netTotal = totalExpenses - totalIncomes;
-  const memberCount = activeMemberIds.length;
-  const averageBurden = memberCount > 0 ? Math.ceil(netTotal / memberCount) : 0;
-
-  // 個人の計算
-  const myExpenses = expenses
-    .filter(e => e.uid === userId && !e.isIncome)
-    .reduce((s, e) => s + Number(e.amount || 0), 0);
-  const myIncomes = expenses
-    .filter(e => e.uid === userId && e.isIncome)
-    .reduce((s, e) => s + Number(e.amount || 0), 0) +
-    incomes
-      .filter(i => i.uid === userId)
-      .reduce((s, i) => s + Number(i.amount || 0), 0);
-
-  const myContribution = myExpenses - myIncomes;
+  const { totals } = calculateBalanceAccounting(activeMemberIds, expenses, incomes);
   const isTarget = activeMemberIds.includes(userId);
-  const settlementAmount = (isTarget ? averageBurden : 0) - myContribution;
+  const personal = calculatePersonalBalance(userId, totals.averageBurden, isTarget, expenses, incomes);
 
   return {
     season,
     seasonName,
     periodStr,
-    averageBurden,
-    myExpenses,
-    myIncomes,
-    settlementAmount,
+    averageBurden: totals.averageBurden,
+    myExpenses: personal.myExpenses,
+    myIncomes: personal.myIncomes,
+    settlementAmount: personal.settlementAmount,
     isTarget,
     managerName,
     managerPaypayId
