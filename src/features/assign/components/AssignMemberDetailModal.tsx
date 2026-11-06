@@ -11,6 +11,7 @@ export interface MemberSongAssign {
   groupTitle?: string;
   partName: string;
   isSolo: boolean;
+  isFeature: boolean;
   score?: Score;
 }
 
@@ -44,6 +45,7 @@ export function AssignMemberDetailModal({
   if (!isOpen) return null;
 
   const soloCount = assignedSongs.filter(s => s.isSolo).length;
+  const featureCount = assignedSongs.filter(s => s.isFeature).length;
 
   // グループ（部/ステージ）ごとにまとめる
   const groupedSongs: { groupTitle: string; songs: MemberSongAssign[] }[] = [];
@@ -95,6 +97,12 @@ export function AssignMemberDetailModal({
               ソロ {soloCount}曲
             </span>
           )}
+          {featureCount > 0 && (
+            <span className={styles.totalFeatureBadge}>
+              <i className="fa-solid fa-star" style={{ fontSize: "10px" }} />
+              Feat {featureCount}曲
+            </span>
+          )}
         </div>
 
         <div className={styles.modalBody}>
@@ -113,7 +121,7 @@ export function AssignMemberDetailModal({
                   {group.songs.map((song, idx) => (
                     <div
                       key={`${song.songId}_${song.partName}_${idx}`}
-                      className={`${styles.songCard} ${song.isSolo ? styles.isSoloCard : ""}`}
+                      className={`${styles.songCard} ${song.isFeature ? styles.isFeatureCard : song.isSolo ? styles.isSoloCard : ""}`}
                     >
                       <div className={styles.songInfo}>
                         <div className={styles.songMainName}>
@@ -127,6 +135,9 @@ export function AssignMemberDetailModal({
                       </div>
                       <div className={styles.badgesArea}>
                         <span className={styles.partBadge}>{song.partName}</span>
+                        {song.isFeature && (
+                          <span className={styles.featureBadge}>Feat</span>
+                        )}
                         {song.isSolo && (
                           <span className={styles.soloBadge}>Solo</span>
                         )}

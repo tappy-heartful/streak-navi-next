@@ -715,6 +715,53 @@ export function EventConfirmClient({ eventId, data }: Props) {
           </div>
         )}
 
+        {/* フィーチャーパート */}
+        {event.features && event.features.length > 0 && (
+          <div className="form-group">
+            <label className="label-title">フィーチャー (Feat)</label>
+            <div className="label-value">
+              {(() => {
+                const grouped: { songId: string; songName: string; parts: string[] }[] = [];
+                const songMap = new Map<string, { songId: string; songName: string; parts: string[] }>();
+
+                event.features.forEach(f => {
+                  const score = scoresMap[f.songId];
+                  const songName = score?.abbreviation || score?.title || "曲名不明";
+                  if (!songMap.has(f.songId)) {
+                    const item = { songId: f.songId, songName, parts: [] };
+                    songMap.set(f.songId, item);
+                    grouped.push(item);
+                  }
+                  if (f.partName) {
+                    songMap.get(f.songId)!.parts.push(f.partName);
+                  }
+                });
+
+                return (
+                  <div className={styles.soloTableWrapper}>
+                    <table className={styles.soloTable}>
+                      <thead>
+                        <tr>
+                          <th className={styles.soloSongHeader}>曲名</th>
+                          <th className={styles.soloPartHeader}>Feat 楽器</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {grouped.map(g => (
+                          <tr key={g.songId}>
+                            <td className={styles.soloSongCell}>{g.songName}</td>
+                            <td className={styles.soloPartCell}>{g.parts.join(", ")}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+
         {/* 回答状況 */}
         <div className="form-group">
           <label className="label-title">{isSchedule ? "日程調整" : "出欠"}</label>

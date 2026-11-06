@@ -266,6 +266,8 @@ export interface EventSolo {
   partName: string;
 }
 
+export type EventFeature = EventSolo;
+
 export interface Event {
   id: string;
   title: string;
@@ -292,6 +294,7 @@ export interface Event {
   setlist?: SetlistGroup[];
   instrumentConfig?: Record<string, InstrumentPart[]>;
   solos?: EventSolo[];
+  features?: EventFeature[];
   isVenueReserved?: boolean;
   createdBy?: string;
   createdAt?: number;

@@ -384,6 +384,29 @@
   color: #b45309;
 }
 
+.featureCount {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.featureCount strong {
+  font-weight: 600;
+}
+
+.hasFeature {
+  color: #831843;
+  background-color: #fce7f3;
+  border: 1px solid #fbcfe8;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-weight: 600;
+}
+
+.hasFeature strong {
+  color: #831843;
+}
+
 .emptySummary {
   font-size: 13px;
   color: #94a3b8;
@@ -623,6 +646,32 @@ select.assignSelect {
 .soloSelect {
   border-color: #eab308 !important;
   background-color: #fffef0 !important;
+  font-weight: 600;
+}
+
+/* フィーチャーパートのハイライト */
+.featureCell {
+  background-color: #fdf2f8 !important; /* 淡いローズピンク */
+  position: relative;
+}
+
+.featureBadge {
+  display: inline-block;
+  background-color: #fce7f3;
+  color: #831843;
+  border: 1px solid #fbcfe8;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 0 4px;
+  border-radius: 3px;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.featureSelect {
+  border-color: #ec4899 !important;
+  background-color: #fff1f2 !important;
   font-weight: 600;
 }
 

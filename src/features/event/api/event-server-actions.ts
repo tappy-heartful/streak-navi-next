@@ -58,6 +58,10 @@ function toEventDoc(doc: FirebaseFirestore.DocumentSnapshot): Event {
       songId: s.songId || "",
       partName: s.partName || "",
     })),
+    features: (d.features || []).map((f: any) => ({
+      songId: f.songId || "",
+      partName: f.partName || "",
+    })),
     isVenueReserved: d.isVenueReserved ?? false,
     createdBy: d.createdBy || "",
     createdAt: d.createdAt?.toMillis?.() ?? 0,
@@ -99,11 +103,12 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
 
   const isSchedule = event.attendanceType === "schedule";
 
-  // セットリストおよびソロに含まれる曲IDのみを抽出（全譜面取得を防止）
+  // セットリスト、ソロ、およびフィーチャーに含まれる曲IDのみを抽出（全譜面取得を防止）
   const targetScoreIds = Array.from(
     new Set([
       ...(event.setlist || []).flatMap((item: { songIds?: string[] }) => item.songIds || []),
-      ...(event.solos || []).map(s => s.songId)
+      ...(event.solos || []).map(s => s.songId),
+      ...(event.features || []).map(f => f.songId),
     ])
   ).filter(Boolean) as string[];
 

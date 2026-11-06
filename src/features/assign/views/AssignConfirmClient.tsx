@@ -199,6 +199,11 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
     return new Set((event.solos || []).map(s => `${s.songId}__${s.partName}`));
   }, [event.solos]);
 
+  // フィーチャー判定用のSet (songId__partName)
+  const featuresSet = useMemo(() => {
+    return new Set((event.features || []).map(f => `${f.songId}__${f.partName}`));
+  }, [event.features]);
+
   // 選択中メンバーの担当曲リスト
   const memberAssignedSongs = useMemo(() => {
     if (!selectedMemberModal) return [];
@@ -224,6 +229,7 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
             groupTitle: group.title,
             partName: a.partName,
             isSolo: solosSet.has(`${songId}__${a.partName}`),
+            isFeature: featuresSet.has(`${songId}__${a.partName}`),
             score,
           });
         });
@@ -231,7 +237,7 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
     });
 
     return result;
-  }, [selectedMemberModal, event.setlist, assigns, masterData.scores, solosSet]);
+  }, [selectedMemberModal, event.setlist, assigns, masterData.scores, solosSet, featuresSet]);
 
   // 譜割り集計用（セクションごと、楽器順にグループ化＆ソロ曲数集計）
   const sectionSummaries = useMemo(() => {
@@ -240,6 +246,7 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
       userId?: string;
       count: number;
       soloCount: number;
+      featureCount: number;
       instrumentId: string;
       instrumentName: string;
       instrumentOrder: number;
@@ -281,6 +288,7 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
         userId?: string;
         count: number;
         soloCount: number;
+        featureCount: number;
         matchedUser?: User;
         playedPartNames: Set<string>;
       }> = {};
@@ -299,6 +307,7 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
                 userId: a.userId || userObj?.id,
                 count: 0,
                 soloCount: 0,
+                featureCount: 0,
                 matchedUser: userObj,
                 playedPartNames: new Set(),
               };
@@ -309,6 +318,9 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
 
             if (solosSet.has(`${a.songId}__${a.partName}`)) {
               memberMap[name].soloCount += 1;
+            }
+            if (featuresSet.has(`${a.songId}__${a.partName}`)) {
+              memberMap[name].featureCount += 1;
             }
           }
         }
@@ -353,6 +365,7 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
           userId: m.userId,
           count: m.count,
           soloCount: m.soloCount,
+          featureCount: m.featureCount,
           instrumentId: instId || "other",
           instrumentName: instName,
           instrumentOrder: order,
@@ -392,7 +405,7 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
     });
 
     return result;
-  }, [event.instrumentConfig, event.setlist, assigns, masterData.instruments, masterData.users, solosSet]);
+  }, [event.instrumentConfig, event.setlist, assigns, masterData.instruments, masterData.users, solosSet, featuresSet]);
 
   // セクション表示順序
   const sectionIds = useMemo(() => {
@@ -442,6 +455,11 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
                     <span className={`${styles.soloCount} ${m.soloCount > 0 ? styles.hasSolo : ""}`}>
                       (ソロ <strong>{m.soloCount}</strong>曲)
                     </span>
+                    {m.featureCount > 0 && (
+                      <span className={`${styles.featureCount} ${styles.hasFeature}`}>
+                        (Feat <strong>{m.featureCount}</strong>曲)
+                      </span>
+                    )}
                   </span>
                 </li>
               ))}
@@ -549,9 +567,12 @@ export function AssignConfirmClient({ event, assigns, masterData, initialComment
                           {event.instrumentConfig![activeTab]?.map(p => {
                             const a = assigns.find(a => a.songId === songId && a.partName === p.partName);
                             const isSolo = solosSet.has(`${songId}__${p.partName}`);
+                            const isFeature = featuresSet.has(`${songId}__${p.partName}`);
+                            const cellClass = isFeature ? styles.featureCell : isSolo ? styles.soloCell : "";
                             return (
-                              <td key={p.partName} className={`${styles.assignCell} ${isSolo ? styles.soloCell : ""}`}>
+                              <td key={p.partName} className={`${styles.assignCell} ${cellClass}`}>
                                 <div className={styles.cellContent}>
+                                  {isFeature && <span className={styles.featureBadge}>Feat</span>}
                                   {isSolo && <span className={styles.soloBadge}>Solo</span>}
                                   <span>{a?.assignValue || "ー"}</span>
                                 </div>

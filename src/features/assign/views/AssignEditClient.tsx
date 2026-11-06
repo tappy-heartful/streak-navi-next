@@ -107,6 +107,11 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
     return new Set((event.solos || []).map(s => `${s.songId}__${s.partName}`));
   }, [event.solos]);
 
+  // フィーチャー判定用のSet (songId__partName)
+  const featuresSet = useMemo(() => {
+    return new Set((event.features || []).map(f => `${f.songId}__${f.partName}`));
+  }, [event.features]);
+
   // 譜割り集計用（リアルタイム計算：currentMapの変更に連動）
   const sectionSummaries = useMemo(() => {
     interface MemberSummary {
@@ -114,6 +119,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
       userId?: string;
       count: number;
       soloCount: number;
+      featureCount: number;
       instrumentId: string;
       instrumentName: string;
       instrumentOrder: number;
@@ -154,6 +160,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
         userId?: string;
         count: number;
         soloCount: number;
+        featureCount: number;
         matchedUser?: User;
         playedPartNames: Set<string>;
       }> = {};
@@ -173,6 +180,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
                 userId,
                 count: 0,
                 soloCount: 0,
+                featureCount: 0,
                 matchedUser: userObj,
                 playedPartNames: new Set(),
               };
@@ -183,6 +191,9 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
 
             if (solosSet.has(`${songId}__${p.partName}`)) {
               memberMap[userId].soloCount += 1;
+            }
+            if (featuresSet.has(`${songId}__${p.partName}`)) {
+              memberMap[userId].featureCount += 1;
             }
           }
         });
@@ -224,6 +235,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
           userId: m.userId,
           count: m.count,
           soloCount: m.soloCount,
+          featureCount: m.featureCount,
           instrumentId: instId || "other",
           instrumentName: instName,
           instrumentOrder: order,
@@ -263,7 +275,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
     });
 
     return result;
-  }, [event.instrumentConfig, event.setlist, currentMap, masterData.instruments, masterData.users, solosSet]);
+  }, [event.instrumentConfig, event.setlist, currentMap, masterData.instruments, masterData.users, solosSet, featuresSet]);
 
   // 自分のセクションとセクション一覧
   const mySectionId = user?.uid ? (masterData.users[user.uid]?.sectionId || userData?.sectionId) : undefined;
@@ -312,6 +324,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
               groupTitle: group.title,
               partName,
               isSolo: solosSet.has(`${songId}__${partName}`),
+              isFeature: featuresSet.has(`${songId}__${partName}`),
               score,
             });
           }
@@ -320,7 +333,7 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
     });
 
     return result;
-  }, [selectedMemberModal, event.setlist, currentMap, masterData.scores, masterData.users, solosSet]);
+  }, [selectedMemberModal, event.setlist, currentMap, masterData.scores, masterData.users, solosSet, featuresSet]);
 
   // セクション小計レンダリング関数
   const renderSectionSummary = (secId: string) => {
@@ -354,6 +367,11 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
                     <span className={`${styles.soloCount} ${m.soloCount > 0 ? styles.hasSolo : ""}`}>
                       (ソロ <strong>{m.soloCount}</strong>曲)
                     </span>
+                    {m.featureCount > 0 && (
+                      <span className={`${styles.featureCount} ${styles.hasFeature}`}>
+                        (Feat <strong>{m.featureCount}</strong>曲)
+                      </span>
+                    )}
                   </span>
                 </li>
               ))}
@@ -628,12 +646,16 @@ export function AssignEditClient({ event, initialAssigns, masterData }: Props) {
                               const val = currentMap[songId]?.[p.partName] || "";
                               const candidates = p.instrumentId ? (usersByInstrument[p.instrumentId] || []) : [];
                               const isSolo = solosSet.has(`${songId}__${p.partName}`);
+                              const isFeature = featuresSet.has(`${songId}__${p.partName}`);
+                              const cellClass = isFeature ? styles.featureCell : isSolo ? styles.soloCell : "";
+                              const selectClass = isFeature ? styles.featureSelect : isSolo ? styles.soloSelect : "";
                               return (
-                                <td key={p.partName} className={`${styles.assignCell} ${isSolo ? styles.soloCell : ""}`}>
+                                <td key={p.partName} className={`${styles.assignCell} ${cellClass}`}>
                                   <div className={styles.cellContent}>
+                                    {isFeature && <span className={styles.featureBadge}>Feat</span>}
                                     {isSolo && <span className={styles.soloBadge}>Solo</span>}
                                     <select
-                                      className={`${styles.assignSelect} ${isSolo ? styles.soloSelect : ""}`}
+                                      className={`${styles.assignSelect} ${selectClass}`}
                                       value={val}
                                       onChange={e => handleChange(songId, p.partName, e.target.value)}
                                     >

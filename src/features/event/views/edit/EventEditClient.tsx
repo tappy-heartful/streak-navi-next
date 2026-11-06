@@ -14,6 +14,7 @@ import { SetlistEdit } from "@/src/components/Setlist/SetlistEdit";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/src/lib/firebase";
 import { getMunicipalitiesClient } from "@/src/features/users/api/user-client-service";
+import { SoloFeatureModal } from "@/src/features/event/components/SoloFeatureModal";
 import styles from "./EventEdit.module.css";
 
 type Props = {
@@ -118,10 +119,15 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
 
   const [instrumentConfig, setInstrumentConfig] = useState<InstrumentSectionState[]>(initInstrumentConfig);
   const [solos, setSolos] = useState<EventSolo[]>(initialEvent?.solos || []);
+  const [features, setFeatures] = useState<EventSolo[]>(initialEvent?.features || []);
+  const [soloFeatureModalOpen, setSoloFeatureModalOpen] = useState(false);
 
   useEffect(() => {
     if (initialEvent?.solos) {
       setSolos(initialEvent.solos);
+    }
+    if (initialEvent?.features) {
+      setFeatures(initialEvent.features);
     }
   }, [initialEvent]);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -238,18 +244,6 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
     });
     return Array.from(partSet);
   }, [instrumentConfig]);
-
-  const addSolo = () => {
-    setSolos(prev => [...prev, { songId: "", partName: "" }]);
-  };
-
-  const updateSolo = (index: number, field: "songId" | "partName", value: string) => {
-    setSolos(prev => prev.map((s, idx) => idx === index ? { ...s, [field]: value } : s));
-  };
-
-  const removeSolo = (index: number) => {
-    setSolos(prev => prev.filter((_, idx) => idx !== index));
-  };
 
   // ---- Instrument config helpers ----
 
@@ -419,6 +413,7 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
       setlist,
       instrumentConfig: instrConfig,
       solos: allowAssign ? solos.filter(s => s.songId && s.partName) : [],
+      features: allowAssign ? features.filter(f => f.songId && f.partName) : [],
       isVenueReserved,
       createdBy: initialEvent?.createdBy || userData?.displayName || "",
     };
@@ -856,67 +851,76 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
           </div>
         )}
 
-        {/* ソロ設定 */}
+        {/* ソロ・フィーチャー設定 */}
         {allowAssign && (
           <div className="form-group">
-            <label>ソロ設定 (譜割り用)</label>
+            <label>ソロ・フィーチャー設定 (譜割り用)</label>
             <p style={{ fontSize: "12px", color: "#666", marginBottom: "8px" }}>
-              ソロがある曲とパートを選択してください。譜割り確認・編集画面でハイライト表示されます。
+              曲ごとのソロパートおよびフィーチャー（Feat）パートを設定できます。譜割り確認・編集画面でハイライト表示されます。
             </p>
-            {solos.length === 0 ? (
-              <p style={{ fontSize: "13px", color: "#888", marginBottom: "8px" }}>
-                ソロ設定はありません
-              </p>
-            ) : (
-              solos.map((solo, idx) => (
-                <div key={idx} className="choice-wrapper" style={{ marginBottom: "8px" }}>
-                  <select
-                    value={solo.songId}
-                    onChange={e => updateSolo(idx, "songId", e.target.value)}
-                    style={{ flex: 1.2 }}
-                  >
-                    <option value="">曲を選択</option>
-                    {solo.songId && !availableSongs.some(s => s.id === solo.songId) && (
-                      <option value={solo.songId}>
-                        {scores.find(s => s.id === solo.songId)?.abbreviation || scores.find(s => s.id === solo.songId)?.title || "曲名不明"}
-                      </option>
-                    )}
-                    {availableSongs.map(s => (
-                      <option key={s.id} value={s.id}>{s.label}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={solo.partName}
-                    onChange={e => updateSolo(idx, "partName", e.target.value)}
-                    style={{ flex: 1 }}
-                  >
-                    <option value="">パートを選択</option>
-                    {solo.partName && !availableParts.includes(solo.partName) && (
-                      <option value={solo.partName}>{solo.partName}</option>
-                    )}
-                    {availableParts.map(p => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    className="remove-choice"
-                    onClick={() => removeSolo(idx)}
-                    title="削除"
-                  >
-                    <i className="fa-solid fa-trash-can"></i>
-                  </button>
-                </div>
-              ))
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap", marginBottom: "8px" }}>
+              <button
+                type="button"
+                className="add-choice"
+                style={{ width: "auto", padding: "8px 16px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                onClick={() => setSoloFeatureModalOpen(true)}
+              >
+                <i className="fa-solid fa-sliders" /> ソロ・フィーチャーを設定する
+              </button>
+              <div style={{ fontSize: "13px", color: "#475569" }}>
+                <span>ソロ: <strong>{solos.length}</strong>箇所</span>
+                <span style={{ margin: "0 6px" }}>/</span>
+                <span>Feat: <strong>{features.length}</strong>箇所</span>
+              </div>
+            </div>
+
+            {/* 設定サマリのプレビューカード */}
+            {(solos.length > 0 || features.length > 0) && (
+              <div style={{
+                backgroundColor: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "8px",
+                padding: "10px 14px",
+                fontSize: "12px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px"
+              }}>
+                {Array.from(new Set([...solos.map(s => s.songId), ...features.map(f => f.songId)])).map(songId => {
+                  const score = scores.find(s => s.id === songId);
+                  const songName = score?.abbreviation || score?.title || "曲名不明";
+                  const songSolos = solos.filter(s => s.songId === songId);
+                  const songFeatures = features.filter(f => f.songId === songId);
+                  return (
+                    <div key={songId} style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                      <span style={{ fontWeight: 700, color: "#1e293b" }}>{songName}:</span>
+                      {songSolos.map(s => (
+                        <span key={s.partName} style={{
+                          backgroundColor: "#fef08a",
+                          color: "#713f12",
+                          padding: "1px 6px",
+                          borderRadius: "4px",
+                          fontWeight: 600
+                        }}>
+                          Solo: {s.partName}
+                        </span>
+                      ))}
+                      {songFeatures.map(f => (
+                        <span key={f.partName} style={{
+                          backgroundColor: "#fce7f3",
+                          color: "#831843",
+                          padding: "1px 6px",
+                          borderRadius: "4px",
+                          fontWeight: 600
+                        }}>
+                          Feat: {f.partName}
+                        </span>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
             )}
-            <button
-              type="button"
-              className="add-choice"
-              onClick={addSolo}
-              style={{ display: "flex", alignItems: "center", gap: "6px" }}
-            >
-              <i className="fa-solid fa-plus"></i> ソロを追加
-            </button>
           </div>
         )}
 
@@ -992,6 +996,21 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
           </div>
         </Modal>
       )}
+
+      {/* ソロ・フィーチャー設定モーダル */}
+      <SoloFeatureModal
+        isOpen={soloFeatureModalOpen}
+        onClose={() => setSoloFeatureModalOpen(false)}
+        setlistGroups={setlistGroups}
+        scores={scores}
+        availableParts={availableParts}
+        solos={solos}
+        features={features}
+        onSave={(newSolos, newFeatures) => {
+          setSolos(newSolos);
+          setFeatures(newFeatures);
+        }}
+      />
     </BaseLayout>
   );
 }
