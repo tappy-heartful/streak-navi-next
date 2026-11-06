@@ -160,7 +160,7 @@ export function ScoreEditClient({
         { partName: "Pf", instrumentId: allInstruments.find((i) => i.id === "pf" || i.id === "7")?.id || "" },
         { partName: "Gt", instrumentId: allInstruments.find((i) => i.id === "gt" || i.id === "8")?.id || "" },
         { partName: "Ba", instrumentId: allInstruments.find((i) => i.id === "ba" || i.id === "9")?.id || "" },
-        { partName: "Dr", instrumentId: allInstruments.find((i) => i.id === "dr" || i.id === "10")?.id || "" },
+        { partName: "Drs", instrumentId: allInstruments.find((i) => i.id === "dr" || i.id === "10")?.id || "" },
       ];
     }
 
@@ -209,7 +209,7 @@ export function ScoreEditClient({
           { partName: "Pf", instrumentId: allInstruments.find((i) => i.id === "pf" || i.id === "7")?.id || "" },
           { partName: "Gt", instrumentId: allInstruments.find((i) => i.id === "gt" || i.id === "8")?.id || "" },
           { partName: "Ba", instrumentId: allInstruments.find((i) => i.id === "ba" || i.id === "9")?.id || "" },
-          { partName: "Dr", instrumentId: allInstruments.find((i) => i.id === "dr" || i.id === "10")?.id || "" },
+          { partName: "Drs", instrumentId: allInstruments.find((i) => i.id === "dr" || i.id === "10")?.id || "" },
         ];
       }
     });

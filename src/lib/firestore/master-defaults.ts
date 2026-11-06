@@ -69,7 +69,7 @@ export const DEFAULT_INSTRUMENT_CONFIG: Record<string, InstrumentPart[]> = {
     { partName: "Pf", instrumentId: "pf" },
     { partName: "Gt", instrumentId: "gt" },
     { partName: "Ba", instrumentId: "ba" },
-    { partName: "Dr", instrumentId: "dr" },
+    { partName: "Drs", instrumentId: "drs" },
   ],
 };
 
