@@ -1,8 +1,8 @@
-import { getScoreServer, getGenresServer } from "@/src/features/scores/api/score-server-actions";
+import { getScoreServer, getGenresServer, getSectionsServer, getInstrumentsServer } from "@/src/features/scores/api/score-server-actions";
 import { ScoreConfirmClient } from "@/src/features/scores/views/confirm/ScoreConfirmClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Genre, Score } from "@/src/lib/firestore/types"; // 型をインポート
+import { Genre, Score, Section, Instrument } from "@/src/lib/firestore/types"; // 型をインポート
 
 type Props = {
   searchParams: Promise<{ scoreId?: string }>;
@@ -36,9 +36,11 @@ export default async function ScoreConfirmPage({ searchParams }: Props) {
   if (!scoreId) notFound();
 
   // サーバーサイドでデータ取得。型を明示的に指定する
-  const [scoreData, allGenres] = await Promise.all([
+  const [scoreData, allGenres, allSections, allInstruments] = await Promise.all([
     getScoreServer(scoreId) as Promise<Score | null>,
     getGenresServer() as Promise<Genre[]>,
+    getSectionsServer() as Promise<Section[]>,
+    getInstrumentsServer() as Promise<Instrument[]>,
   ]);
 
   if (!scoreData) notFound();
@@ -47,7 +49,9 @@ export default async function ScoreConfirmPage({ searchParams }: Props) {
     <ScoreConfirmClient 
       scoreData={scoreData} 
       allGenres={allGenres} 
-      scoreId={scoreId} 
+      scoreId={scoreId}
+      allSections={allSections}
+      allInstruments={allInstruments}
     />
   );
 }

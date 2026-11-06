@@ -21,6 +21,9 @@ export interface Score {
   genres?: string[];
   referenceTrack?: string;
   youtubeId?: string;
+  instrumentConfig?: Record<string, InstrumentPart[]>;
+  solos?: InstrumentPart[];
+  features?: InstrumentPart[];
   isDispTop?: boolean;
   createdAt?: number;
   updatedAt?: number;
@@ -78,6 +81,7 @@ export interface User {
   createdAt?: number;
   updatedAt?: number;
   isSystemAdmin?: boolean;
+  isMasterAdmin?: boolean;
   isIssueAdmin?: boolean;
   isLineLogAdmin?: boolean;
   realName?: string;
@@ -95,17 +99,28 @@ export interface UserLocation {
 export interface Section {
   id: string;
   name: string;
+  order?: number;
+  color?: string;
 }
 
 export interface Role {
   id: string;
   name: string;
+  order?: number;
 }
 
 export interface Instrument {
   id: string;
   name: string;
   sectionId: string;
+  order?: number;
+}
+
+/** デフォルト楽器構成マスタドキュメント (masters/defaultInstrumentConfig) */
+export interface DefaultInstrumentConfigDoc {
+  config: Record<string, InstrumentPart[]>;
+  updatedAt?: number;
+  updatedBy?: string;
 }
 
 export interface SecretWord {

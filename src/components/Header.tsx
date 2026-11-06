@@ -199,6 +199,7 @@ export default function Header() {
             {menuLink("/media", "メディア", "fa-solid fa-photo-film")}
             {menuLink("/blue-note", "今日の一曲", "fa-solid fa-record-vinyl")}
             {menuLink("/user", "ユーザ", "fa-solid fa-users")}
+            {(userData?.isSystemAdmin || userData?.isMasterAdmin) && menuLink("/master", "マスタ管理", "fa-solid fa-sliders")}
           </div>
         </div>
       </header>

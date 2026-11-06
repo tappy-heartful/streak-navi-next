@@ -105,28 +105,136 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
     [{ title: "", songIds: [] }]
   );
 
-  // Instrument config: one entry per section
-  const initInstrumentConfig = () =>
-    sections.map(sec => {
-      const parts = initialEvent?.instrumentConfig?.[sec.id] || [];
+  // ---- セットリストの譜面から楽器構成・ソロ・フィーチャーを生成するロジック ----
+  const extractConfigAndSolosFromSetlist = React.useCallback((targetSetlist: SetlistGroup[]) => {
+    const songIds = Array.from(new Set(targetSetlist.flatMap(g => g.songIds).filter(Boolean)));
+    const targetScores = songIds
+      .map(id => scores.find(s => s.id === id))
+      .filter((s): s is Score => !!s);
+
+    // 1. 楽器構成
+    const newConfig: InstrumentSectionState[] = sections.map(sec => {
+      const partsMap = new Map<string, { originalName: string; instrumentId: string }>();
+
+      targetScores.forEach(score => {
+        const secParts = score.instrumentConfig?.[sec.id] || [];
+        secParts.forEach(p => {
+          const name = p.partName.trim();
+          if (!name && !p.instrumentId) return;
+          const key = name.toLowerCase();
+          if (!partsMap.has(key)) {
+            partsMap.set(key, { originalName: name || "パート", instrumentId: p.instrumentId || "" });
+          } else {
+            const current = partsMap.get(key)!;
+            if (!current.instrumentId && p.instrumentId) {
+              current.instrumentId = p.instrumentId;
+            }
+          }
+        });
+      });
+
+      const parts: InstrumentPartState[] = Array.from(partsMap.values()).map(item => ({
+        partName: item.originalName,
+        instrumentId: item.instrumentId,
+      }));
+
       return {
         sectionId: sec.id,
-        parts: parts.length > 0
-          ? parts.map(p => ({ partName: p.partName, instrumentId: p.instrumentId || "" }))
-          : [{ partName: "", instrumentId: "" }],
+        parts: parts.length > 0 ? parts : [{ partName: "", instrumentId: "" }],
       };
     });
 
+    // 2. ソロ
+    const newSolos: EventSolo[] = [];
+    targetScores.forEach(score => {
+      (score.solos || []).forEach(s => {
+        const pName = s.partName.trim();
+        if (!pName) return;
+        if (!newSolos.some(exist => exist.songId === score.id && exist.partName === pName)) {
+          newSolos.push({ songId: score.id, partName: pName });
+        }
+      });
+    });
+
+    // 3. フィーチャー
+    const newFeatures: EventSolo[] = [];
+    targetScores.forEach(score => {
+      (score.features || []).forEach(f => {
+        const pName = f.partName.trim();
+        if (!pName) return;
+        if (!newFeatures.some(exist => exist.songId === score.id && exist.partName === pName)) {
+          newFeatures.push({ songId: score.id, partName: pName });
+        }
+      });
+    });
+
+    const hasAnyConfig = newConfig.some(sec => sec.parts.some(p => p.partName || p.instrumentId));
+
+    return {
+      songCount: targetScores.length,
+      hasAnyConfig,
+      newConfig,
+      newSolos,
+      newFeatures,
+    };
+  }, [sections, scores]);
+
+  // Instrument config: 初期値設定
+  const initInstrumentConfig = () => {
+    // 既存イベントに楽器構成が登録されている場合は最優先で使用
+    const hasInitialConfig = sections.some(sec => (initialEvent?.instrumentConfig?.[sec.id] || []).length > 0);
+    if (hasInitialConfig) {
+      return sections.map(sec => {
+        const parts = initialEvent?.instrumentConfig?.[sec.id] || [];
+        return {
+          sectionId: sec.id,
+          parts: parts.length > 0
+            ? parts.map(p => ({ partName: p.partName, instrumentId: p.instrumentId || "" }))
+            : [{ partName: "", instrumentId: "" }],
+        };
+      });
+    }
+
+    // 既存の楽器構成がない場合、セットリストの曲から初期設定
+    const initialSetlist = initialEvent?.setlist?.map(g => ({ title: g.title, songIds: g.songIds || [] })) || [{ title: "", songIds: [] }];
+    const extracted = extractConfigAndSolosFromSetlist(initialSetlist);
+    if (extracted.hasAnyConfig) {
+      return extracted.newConfig;
+    }
+
+    return sections.map(sec => ({
+      sectionId: sec.id,
+      parts: [{ partName: "", instrumentId: "" }],
+    }));
+  };
+
   const [instrumentConfig, setInstrumentConfig] = useState<InstrumentSectionState[]>(initInstrumentConfig);
-  const [solos, setSolos] = useState<EventSolo[]>(initialEvent?.solos || []);
-  const [features, setFeatures] = useState<EventSolo[]>(initialEvent?.features || []);
+
+  const [solos, setSolos] = useState<EventSolo[]>(() => {
+    if (initialEvent?.solos && initialEvent.solos.length > 0) {
+      return initialEvent.solos;
+    }
+    const initialSetlist = initialEvent?.setlist?.map(g => ({ title: g.title, songIds: g.songIds || [] })) || [{ title: "", songIds: [] }];
+    const extracted = extractConfigAndSolosFromSetlist(initialSetlist);
+    return extracted.newSolos;
+  });
+
+  const [features, setFeatures] = useState<EventSolo[]>(() => {
+    if (initialEvent?.features && initialEvent.features.length > 0) {
+      return initialEvent.features;
+    }
+    const initialSetlist = initialEvent?.setlist?.map(g => ({ title: g.title, songIds: g.songIds || [] })) || [{ title: "", songIds: [] }];
+    const extracted = extractConfigAndSolosFromSetlist(initialSetlist);
+    return extracted.newFeatures;
+  });
+
   const [soloFeatureModalOpen, setSoloFeatureModalOpen] = useState(false);
 
   useEffect(() => {
-    if (initialEvent?.solos) {
+    if (initialEvent?.solos && initialEvent.solos.length > 0) {
       setSolos(initialEvent.solos);
     }
-    if (initialEvent?.features) {
+    if (initialEvent?.features && initialEvent.features.length > 0) {
       setFeatures(initialEvent.features);
     }
   }, [initialEvent]);
@@ -277,6 +385,40 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
         ? { ...sec, parts: sec.parts.map((p, j) => j === partIdx ? { ...p, instrumentId: val } : p) }
         : sec
     ));
+  };
+
+  // ---- セットリストから楽器構成・ソロ・フィーチャーを一括反映 ----
+  const handleApplyFromSetlistScores = async () => {
+    const extracted = extractConfigAndSolosFromSetlist(setlistGroups);
+    if (extracted.songCount === 0) {
+      await showDialog("セットリストに曲が選択されていません。先にセットリストの曲を選択してください。", true);
+      return;
+    }
+
+    const totalParts = extracted.newConfig.reduce(
+      (acc, sec) => acc + sec.parts.filter(p => p.partName || p.instrumentId).length,
+      0
+    );
+
+    const confirm = await showDialog(
+      `セットリストに含まれる譜面（計${extracted.songCount}曲）から、楽器構成、ソロ、フィーチャーを自動反映しますか？\n` +
+      `（現在の楽器構成・ソロ・Feat設定は上書きされます）`
+    );
+    if (!confirm) return;
+
+    if (extracted.hasAnyConfig) {
+      setInstrumentConfig(extracted.newConfig);
+    }
+    setSolos(extracted.newSolos);
+    setFeatures(extracted.newFeatures);
+
+    await showDialog(
+      `セットリストから反映が完了しました！\n` +
+      `・楽器構成: ${totalParts}パート\n` +
+      `・ソロ: ${extracted.newSolos.length}件\n` +
+      `・フィーチャー: ${extracted.newFeatures.length}件`,
+      true
+    );
   };
 
   // ---- Studio selection ----
@@ -803,7 +945,28 @@ export function EventEditClient({ mode, eventId, initialEvent, initialType, scor
         {/* 楽器構成 */}
         {allowAssign && (
           <div className="form-group">
-            <label>楽器構成(譜割り用)</label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
+              <label style={{ margin: 0 }}>楽器構成(譜割り用)</label>
+              <button
+                type="button"
+                className="add-choice"
+                style={{
+                  width: "auto",
+                  padding: "6px 14px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "13px",
+                  backgroundColor: "#f0f9ff",
+                  borderColor: "#0284c7",
+                  color: "#0284c7",
+                }}
+                onClick={handleApplyFromSetlistScores}
+                title="セットリストに含まれる譜面マスタから楽器構成・ソロ・フィーチャーを一括反映します"
+              >
+                <i className="fa-solid fa-wand-magic-sparkles" /> セットリストから楽器構成・ソロ・Featを反映
+              </button>
+            </div>
             {instrumentConfig.map((sec, sectionIdx) => {
               const section = sections.find(s => s.id === sec.sectionId);
               const sectionInstruments = instruments.filter(inst => inst.sectionId === sec.sectionId);

@@ -1,8 +1,12 @@
 import 'server-only';
 import { adminDb, adminStorage } from "@/src/lib/firebase-admin";
 import * as utils from "@/src/lib/functions";
-import { Genre, Score, EventWithSetlist } from "@/src/lib/firestore/types";
+import { Genre, Score, EventWithSetlist, Section, Instrument } from "@/src/lib/firestore/types";
 import { toPlainObject } from "@/src/lib/firestore/utils";
+import { getSectionsServer, getInstrumentsServer } from "@/src/features/users/api/user-server-actions";
+import { getDefaultInstrumentConfigServer } from "@/src/features/master/api/master-server-actions";
+
+export { getSectionsServer, getInstrumentsServer, getDefaultInstrumentConfigServer };
 
 /**
  * 全譜面データを取得（サーバーサイド専用）

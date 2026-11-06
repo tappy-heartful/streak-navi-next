@@ -1,6 +1,6 @@
 import { db, auth } from "@/src/lib/firebase"; // クライアント用SDK
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { ScoreFile } from "@/src/lib/firestore/types";
+import { ScoreFile, InstrumentPart } from "@/src/lib/firestore/types";
 import { getSession, getJSTDate, formatDateToYMDDot } from "@/src/lib/functions";
 
 export type ScoreFormData = {
@@ -11,6 +11,9 @@ export type ScoreFormData = {
   abbreviation: string;
   note: string;
   isDispTop: boolean;
+  instrumentConfig?: Record<string, InstrumentPart[]>;
+  solos?: InstrumentPart[];
+  features?: InstrumentPart[];
 };
 
 /**

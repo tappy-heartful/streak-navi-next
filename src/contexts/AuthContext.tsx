@@ -12,7 +12,7 @@ import { User as FirestoreUser } from "@/src/lib/firestore/types";
 export type AdminModule =
   | "Score" | "Event" | "Call" | "Vote" | "Studio"
   | "User" | "Notice" | "BlueNote" | "Board" | "Live" | "Ticket" | "Media"
-  | "TravelSubsidy" | "Issue" | "LineLog";
+  | "TravelSubsidy" | "Issue" | "LineLog" | "Master";
 
 // パスセグメントとモジュールのマッピング
 const PATH_TO_MODULE: Record<string, AdminModule> = {
@@ -31,6 +31,7 @@ const PATH_TO_MODULE: Record<string, AdminModule> = {
   "travel-subsidy": "TravelSubsidy",
   issue: "Issue",
   "line-logs": "LineLog",
+  master: "Master",
 };
 
 interface AuthContextType {

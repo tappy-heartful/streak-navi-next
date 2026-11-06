@@ -1,9 +1,11 @@
 /**
  * FirebaseのDocumentSnapshotをプレーンなオブジェクトに変換する
+ * （doc.data() をすでに呼んだプレーンオブジェクトが渡された場合にも安全に対応）
  */
 export const toPlainObject = (doc: any) => {
-  const data = doc.data();
-  const obj = { ...data, id: doc.id };
+  if (!doc) return doc;
+  const data = typeof doc.data === "function" ? doc.data() : doc;
+  const obj = { ...data, ...(doc.id ? { id: doc.id } : {}) };
   
   // 再帰的にTimestampをミリ秒(number)に変換する
   const convertTimestamps = (item: any): any => {

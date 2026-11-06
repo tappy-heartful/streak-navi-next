@@ -1,8 +1,8 @@
-import { getScoreServer, getGenresServer } from "@/src/features/scores/api/score-server-actions";
+import { getScoreServer, getGenresServer, getSectionsServer, getInstrumentsServer, getDefaultInstrumentConfigServer } from "@/src/features/scores/api/score-server-actions";
 import { ScoreEditClient } from "@/src/features/scores/views/edit/ScoreEditClient";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Genre } from "@/src/lib/firestore";
+import { Genre, Section, Instrument, InstrumentPart } from "@/src/lib/firestore/types";
 
 type Props = {
   searchParams: Promise<{ mode?: string; scoreId?: string }>;
@@ -34,13 +34,18 @@ export default async function ScoreEditPage({ searchParams }: Props) {
   const validModes = ["new", "edit", "copy"];
   if (!mode || !validModes.includes(mode)) notFound();
 
-  const [initialScore, allGenresData] = await Promise.all([
+  const [initialScore, allGenresData, allSectionsData, allInstrumentsData, defaultInstrumentConfig] = await Promise.all([
     scoreId ? getScoreServer(scoreId) : null,
     getGenresServer(),
+    getSectionsServer(),
+    getInstrumentsServer(),
+    getDefaultInstrumentConfigServer(),
   ]);
 
   // 取得したデータを Genre[] として扱う
   const allGenres = allGenresData as Genre[];
+  const allSections = allSectionsData as Section[];
+  const allInstruments = allInstrumentsData as Instrument[];
 
   if ((mode === "edit" || mode === "copy") && !initialScore) {
     notFound();
@@ -52,6 +57,9 @@ export default async function ScoreEditPage({ searchParams }: Props) {
       scoreId={scoreId}
       initialScore={initialScore}
       allGenres={allGenres}
+      allSections={allSections}
+      allInstruments={allInstruments}
+      defaultInstrumentConfig={defaultInstrumentConfig}
     />
   );
 }

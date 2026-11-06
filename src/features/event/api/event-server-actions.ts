@@ -2,6 +2,7 @@ import "server-only";
 import admin from "firebase-admin";
 import { adminDb } from "@/src/lib/firebase-admin";
 import { unstable_cache } from "next/cache";
+import { toPlainObject } from "@/src/lib/firestore/utils";
 import {
   getSectionsServer,
   getInstrumentsServer,
@@ -304,13 +305,20 @@ export async function fetchEventEditData(): Promise<EventEditData> {
     getPrefecturesServer(),
   ]);
 
-  const scores: Score[] = scoresSnap.docs.map(d => ({
-    id: d.id,
-    title: d.data().title || "",
-    referenceTrack: d.data().referenceTrack || "",
-    scoreUrl: d.data().scoreUrl || "",
-    files: d.data().files || [],
-  })) as Score[];
+  const scores: Score[] = scoresSnap.docs.map(d => {
+    const data = toPlainObject(d);
+    return {
+      ...data,
+      id: d.id,
+      title: data.title || "",
+      referenceTrack: data.referenceTrack || "",
+      scoreUrl: data.scoreUrl || "",
+      files: data.files || [],
+      instrumentConfig: data.instrumentConfig || {},
+      solos: data.solos || [],
+      features: data.features || [],
+    };
+  }) as Score[];
 
   return { scores, sections, instruments, prefectures };
 }

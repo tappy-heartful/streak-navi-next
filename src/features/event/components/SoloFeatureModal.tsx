@@ -81,6 +81,33 @@ export function SoloFeatureModal({
     setLocalFeatures(prev => prev.filter(f => !(f.songId === songId && f.partName === partName)));
   };
 
+  // 譜面マスタからソロ・Featを読み込む
+  const handleLoadFromScores = () => {
+    const allSongIds = Array.from(new Set(setlistGroups.flatMap(g => g.songIds).filter(Boolean)));
+    const targetScores = allSongIds.map(id => scoreMap.get(id)).filter((s): s is Score => !!s);
+
+    const newSolos: EventSolo[] = [];
+    const newFeatures: EventSolo[] = [];
+
+    targetScores.forEach(score => {
+      (score.solos || []).forEach(s => {
+        const pName = s.partName.trim();
+        if (pName && !newSolos.some(exist => exist.songId === score.id && exist.partName === pName)) {
+          newSolos.push({ songId: score.id, partName: pName });
+        }
+      });
+      (score.features || []).forEach(f => {
+        const pName = f.partName.trim();
+        if (pName && !newFeatures.some(exist => exist.songId === score.id && exist.partName === pName)) {
+          newFeatures.push({ songId: score.id, partName: pName });
+        }
+      });
+    });
+
+    setLocalSolos(newSolos);
+    setLocalFeatures(newFeatures);
+  };
+
   // 保存処理
   const handleSave = () => {
     onSave(localSolos, localFeatures);
@@ -123,8 +150,33 @@ export function SoloFeatureModal({
         </div>
 
         <div className={styles.modalSubHeader}>
-          セットリストの各曲に対して、ソロパートやフィーチャー（Feat）パートを設定できます。<br />
-          プルダウンからパートを選択して追加してください（1曲に複数設定可能）。
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+            <span>
+              セットリストの各曲に対して、ソロパートやフィーチャー（Feat）パートを設定できます。<br />
+              プルダウンからパートを選択して追加してください（1曲に複数設定可能）。
+            </span>
+            {totalSongsCount > 0 && availableParts.length > 0 && (
+              <button
+                type="button"
+                className="add-choice"
+                style={{
+                  width: "auto",
+                  padding: "5px 12px",
+                  fontSize: "12px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  backgroundColor: "#f0f9ff",
+                  borderColor: "#0284c7",
+                  color: "#0284c7",
+                }}
+                onClick={handleLoadFromScores}
+                title="セットリストの各譜面マスタに設定されているソロ・Featパートをこのモーダルに読み込みます"
+              >
+                <i className="fa-solid fa-wand-magic-sparkles" /> 譜面マスタからソロ・Featを読み込む
+              </button>
+            )}
+          </div>
         </div>
 
         <div className={styles.modalBody}>

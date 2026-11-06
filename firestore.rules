@@ -264,14 +264,15 @@ service cloud.firestore {
     // アーカイブ：データ削除時の移動先。移動処理を許可するためisSignedInを維持
     match /{path=**}/archives/{id}       { allow read, write: if isSignedIn(); }
 
-    // 【マスタデータ (ReadOnly)】
-    // 基本的に管理画面でのみ更新される想定のため、アプリからは読み取りのみ許可
-    match /secretWords/{id}              { allow read: if isSignedIn(); }
-    match /roles/{id}                    { allow read: if isSignedIn(); }
-    match /instruments/{id}              { allow read: if isSignedIn(); }
-    match /sections/{id}                 { allow read: if isSignedIn(); }
-    match /prefectures/{id}              { allow read: if isSignedIn(); }
-    match /municipalities/{id}           { allow read: if isSignedIn(); }
+    // 【マスタデータ (Master)】
+    // ログインユーザーは閲覧可能。マスタ管理者またはシステム管理者は書き込み・管理可能。
+    match /secretWords/{id}              { allow read: if isSignedIn(); allow write: if isAdmin("Master"); }
+    match /roles/{id}                    { allow read: if isSignedIn(); allow write: if isAdmin("Master"); }
+    match /instruments/{id}              { allow read: if isSignedIn(); allow write: if isAdmin("Master"); }
+    match /sections/{id}                 { allow read: if isSignedIn(); allow write: if isAdmin("Master"); }
+    match /prefectures/{id}              { allow read: if isSignedIn(); allow write: if isAdmin("Master"); }
+    match /municipalities/{id}           { allow read: if isSignedIn(); allow write: if isAdmin("Master"); }
+    match /masters/{id}                  { allow read: if isSignedIn(); allow write: if isAdmin("Master"); }
     
     // 【経費マスタ (Expense Master)】
     // ログイン済みユーザーであれば誰でも参照可能
