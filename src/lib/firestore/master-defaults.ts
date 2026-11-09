@@ -8,7 +8,7 @@ export const DEFAULT_SECTIONS: Section[] = [
   { id: "2", name: "📯トロンボーン", order: 3, color: "#2563eb" },
   { id: "3", name: "🎺トランペット", order: 2, color: "#dc2626" },
   { id: "4", name: "🥁リズム", order: 4, color: "#059669" },
-  { id: "5", name: "✨その他", order: 4, color: "#6601e0ff" },
+  { id: "5", name: "✨その他", order: 5, color: "#6601e0ff" },
 ];
 
 /**
@@ -37,7 +37,7 @@ export const DEFAULT_INSTRUMENTS: Instrument[] = [
   { id: "4041", name: "ドラム", sectionId: "4", order: 4 },
 
   // その他
-  { id: "501", name: "ボーカル", sectionId: "4", order: 1 },
+  { id: "501", name: "ボーカル", sectionId: "5", order: 1 },
 ];
 
 /**
