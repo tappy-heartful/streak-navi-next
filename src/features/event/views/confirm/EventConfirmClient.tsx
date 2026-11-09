@@ -668,99 +668,102 @@ export function EventConfirmClient({ eventId, data }: Props) {
           </div>
         )}
 
-        {/* ソロパート */}
-        {event.solos && event.solos.length > 0 && (
-          <div className="form-group">
-            <label className="label-title">ソロ</label>
-            <div className="label-value">
-              {(() => {
-                const grouped: { songId: string; songName: string; parts: string[] }[] = [];
-                const songMap = new Map<string, { songId: string; songName: string; parts: string[] }>();
+        {/* ソロ・フィーチャー */}
+        {(() => {
+          const hasSolos = Boolean(event.solos && event.solos.length > 0);
+          const hasFeatures = Boolean(event.features && event.features.length > 0);
+          if (!hasSolos && !hasFeatures) return null;
 
-                event.solos.forEach(s => {
-                  const score = scoresMap[s.songId];
-                  const songName = score?.abbreviation || score?.title || "曲名不明";
-                  if (!songMap.has(s.songId)) {
-                    const item = { songId: s.songId, songName, parts: [] };
-                    songMap.set(s.songId, item);
-                    grouped.push(item);
-                  }
-                  if (s.partName) {
-                    songMap.get(s.songId)!.parts.push(s.partName);
-                  }
+          const allSoloFeatureSongIds = new Set([
+            ...(event.solos || []).filter(s => s.songId && s.partName).map(s => s.songId),
+            ...(event.features || []).filter(f => f.songId && f.partName).map(f => f.songId),
+          ]);
+
+          if (allSoloFeatureSongIds.size === 0) return null;
+
+          const setlist = event.setlist || [];
+          const usedSongIds = new Set<string>();
+          const groupedSections: { title: string; songIds: string[] }[] = [];
+
+          if (setlist.length > 0) {
+            setlist.forEach((group, idx) => {
+              const validSongIdsInGroup: string[] = [];
+              (group.songIds || []).forEach(id => {
+                if (allSoloFeatureSongIds.has(id)) {
+                  validSongIdsInGroup.push(id);
+                  usedSongIds.add(id);
+                }
+              });
+              if (validSongIdsInGroup.length > 0) {
+                groupedSections.push({
+                  title: group.title?.trim() || `Set ${idx + 1}`,
+                  songIds: validSongIdsInGroup,
                 });
+              }
+            });
+          }
 
-                return (
-                  <div className={styles.soloTableWrapper}>
-                    <table className={styles.soloTable}>
-                      <thead>
-                        <tr>
-                          <th className={styles.soloSongHeader}>曲名</th>
-                          <th className={styles.soloPartHeader}>ソロ楽器</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {grouped.map(g => (
-                          <tr key={g.songId}>
-                            <td className={styles.soloSongCell}>{g.songName}</td>
-                            <td className={styles.soloPartCell}>{g.parts.join(", ")}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                );
-              })()}
+          const remainingSongIds = Array.from(allSoloFeatureSongIds).filter(id => !usedSongIds.has(id));
+          if (remainingSongIds.length > 0) {
+            groupedSections.push({
+              title: setlist.length > 0 ? "その他" : "",
+              songIds: remainingSongIds,
+            });
+          }
+
+          if (groupedSections.length === 0) return null;
+
+          return (
+            <div className="form-group">
+              <label className="label-title">ソロ・フィーチャー</label>
+              <div className="label-value">
+                <div className={styles.soloFeatureContainer}>
+                  {groupedSections.map((section, sIdx) => (
+                    <div key={sIdx} className={styles.groupSection}>
+                      {section.title && (
+                        <h4 className={styles.groupHeading}>{section.title}</h4>
+                      )}
+                      <div className={styles.songList}>
+                        {section.songIds.map(songId => {
+                          const score = scoresMap[songId];
+                          const songName = score?.abbreviation || score?.title || "曲名不明";
+                          const songSolos = (event.solos || []).filter(s => s.songId === songId && s.partName);
+                          const songFeatures = (event.features || []).filter(f => f.songId === songId && f.partName);
+
+                          const soloParts = Array.from(new Set(songSolos.map(s => s.partName.trim()))).join(", ");
+                          const featParts = Array.from(new Set(songFeatures.map(f => f.partName.trim()))).join(", ");
+
+                          return (
+                            <div key={songId} className={styles.songRow}>
+                              <div className={styles.songName}>
+                                <i className="fa-solid fa-music" />
+                                <span>{songName}</span>
+                              </div>
+                              <div className={styles.badgesWrapper}>
+                                {soloParts && (
+                                  <span className={styles.soloBadge}>
+                                    <span className={styles.soloBadgeLabel}>Solo:</span>
+                                    <span>{soloParts}</span>
+                                  </span>
+                                )}
+                                {featParts && (
+                                  <span className={styles.featBadge}>
+                                    <span className={styles.featBadgeLabel}>Feat:</span>
+                                    <span>{featParts}</span>
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* フィーチャーパート */}
-        {event.features && event.features.length > 0 && (
-          <div className="form-group">
-            <label className="label-title">フィーチャー (Feat)</label>
-            <div className="label-value">
-              {(() => {
-                const grouped: { songId: string; songName: string; parts: string[] }[] = [];
-                const songMap = new Map<string, { songId: string; songName: string; parts: string[] }>();
-
-                event.features.forEach(f => {
-                  const score = scoresMap[f.songId];
-                  const songName = score?.abbreviation || score?.title || "曲名不明";
-                  if (!songMap.has(f.songId)) {
-                    const item = { songId: f.songId, songName, parts: [] };
-                    songMap.set(f.songId, item);
-                    grouped.push(item);
-                  }
-                  if (f.partName) {
-                    songMap.get(f.songId)!.parts.push(f.partName);
-                  }
-                });
-
-                return (
-                  <div className={styles.soloTableWrapper}>
-                    <table className={styles.soloTable}>
-                      <thead>
-                        <tr>
-                          <th className={styles.soloSongHeader}>曲名</th>
-                          <th className={styles.soloPartHeader}>Feat 楽器</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {grouped.map(g => (
-                          <tr key={g.songId}>
-                            <td className={styles.soloSongCell}>{g.songName}</td>
-                            <td className={styles.soloPartCell}>{g.parts.join(", ")}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* 回答状況 */}
         <div className="form-group">

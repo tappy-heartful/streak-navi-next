@@ -212,6 +212,7 @@ export async function fetchEventConfirmData(eventId: string): Promise<EventConfi
     scoresMap[d.id] = {
       id: d.id,
       title: sd.title || "",
+      abbreviation: sd.abbreviation || "",
       scoreUrl: sd.scoreUrl || "",
       files: sd.files || [],
       referenceTrack: sd.referenceTrack || "",
