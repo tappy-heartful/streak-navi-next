@@ -4,10 +4,11 @@ import { Instrument, Section, InstrumentPart } from "./types";
  * 初期セクション（パート）一覧
  */
 export const DEFAULT_SECTIONS: Section[] = [
-  { id: "1", name: "サックス", order: 1, color: "#d97706" },
-  { id: "2", name: "トランペット", order: 2, color: "#dc2626" },
-  { id: "3", name: "トロンボーン", order: 3, color: "#2563eb" },
-  { id: "4", name: "リズム", order: 4, color: "#059669" },
+  { id: "1", name: "🎷サックス", order: 1, color: "#d97706" },
+  { id: "2", name: "📯トロンボーン", order: 3, color: "#2563eb" },
+  { id: "3", name: "🎺トランペット", order: 2, color: "#dc2626" },
+  { id: "4", name: "🥁リズム", order: 4, color: "#059669" },
+  { id: "5", name: "✨その他", order: 4, color: "#6601e0ff" },
 ];
 
 /**
@@ -15,27 +16,28 @@ export const DEFAULT_SECTIONS: Section[] = [
  */
 export const DEFAULT_INSTRUMENTS: Instrument[] = [
   // サックス
-  { id: "as", name: "Alto Sax", sectionId: "1", order: 1 },
-  { id: "ts", name: "Tenor Sax", sectionId: "1", order: 2 },
-  { id: "bs", name: "Baritone Sax", sectionId: "1", order: 3 },
-  { id: "ss", name: "Soprano Sax", sectionId: "1", order: 4 },
-  { id: "fl", name: "Flute", sectionId: "1", order: 5 },
-  { id: "cl", name: "Clarinet", sectionId: "1", order: 6 },
-
-  // トランペット
-  { id: "tp", name: "Trumpet", sectionId: "2", order: 1 },
-  { id: "flh", name: "Flugelhorn", sectionId: "2", order: 2 },
+  { id: "101", name: "アルトサックス", sectionId: "1", order: 1 },
+  { id: "102", name: "テナーサックス", sectionId: "1", order: 2 },
+  { id: "103", name: "バリトンサックス", sectionId: "1", order: 3 },
+  { id: "104", name: "フルート", sectionId: "1", order: 4 },
+  { id: "105", name: "ソプラノサックス", sectionId: "1", order: 5 },
 
   // トロンボーン
-  { id: "tb", name: "Trombone", sectionId: "3", order: 1 },
-  { id: "btb", name: "Bass Trombone", sectionId: "3", order: 2 },
+  { id: "201", name: "トロンボーン", sectionId: "2", order: 1 },
+  { id: "202", name: "バストロンボーン", sectionId: "2", order: 2 },
+
+  // トランペット
+  { id: "301", name: "トランペット", sectionId: "3", order: 1 },
+  { id: "302", name: "フリューゲルホルン", sectionId: "3", order: 2 },
 
   // リズム
-  { id: "pf", name: "Piano", sectionId: "4", order: 1 },
-  { id: "gt", name: "Guitar", sectionId: "4", order: 2 },
-  { id: "ba", name: "Bass", sectionId: "4", order: 3 },
-  { id: "dr", name: "Drums", sectionId: "4", order: 4 },
-  { id: "perc", name: "Percussion", sectionId: "4", order: 5 },
+  { id: "4011", name: "ギター", sectionId: "4", order: 1 },
+  { id: "4021", name: "ピアノ", sectionId: "4", order: 2 },
+  { id: "4031", name: "ベース", sectionId: "4", order: 3 },
+  { id: "4041", name: "ドラム", sectionId: "4", order: 4 },
+
+  // その他
+  { id: "501", name: "ボーカル", sectionId: "4", order: 1 },
 ];
 
 /**
@@ -44,32 +46,32 @@ export const DEFAULT_INSTRUMENTS: Instrument[] = [
 export const DEFAULT_INSTRUMENT_CONFIG: Record<string, InstrumentPart[]> = {
   // サックス (5)
   "1": [
-    { partName: "A1", instrumentId: "as" },
-    { partName: "A2", instrumentId: "as" },
-    { partName: "T1", instrumentId: "ts" },
-    { partName: "T2", instrumentId: "ts" },
-    { partName: "B", instrumentId: "bs" },
-  ],
-  // トランペット (4)
-  "2": [
-    { partName: "1", instrumentId: "tp" },
-    { partName: "2", instrumentId: "tp" },
-    { partName: "3", instrumentId: "tp" },
-    { partName: "4", instrumentId: "tp" },
+    { partName: "As1", instrumentId: "101" },
+    { partName: "As2", instrumentId: "101" },
+    { partName: "Ts1", instrumentId: "102" },
+    { partName: "Ts2", instrumentId: "102" },
+    { partName: "Bs", instrumentId: "103" },
   ],
   // トロンボーン (4)
+  "2": [
+    { partName: "Tb1", instrumentId: "201" },
+    { partName: "Tb2", instrumentId: "201" },
+    { partName: "Tb3", instrumentId: "201" },
+    { partName: "Tb4", instrumentId: "201" },
+  ],
+  // トランペット (4)
   "3": [
-    { partName: "1", instrumentId: "tb" },
-    { partName: "2", instrumentId: "tb" },
-    { partName: "3", instrumentId: "tb" },
-    { partName: "4 (B)", instrumentId: "btb" },
+    { partName: "Tp1", instrumentId: "301" },
+    { partName: "Tp2", instrumentId: "301" },
+    { partName: "Tp3", instrumentId: "301" },
+    { partName: "Tp4", instrumentId: "301" },
   ],
   // リズム (4)
   "4": [
-    { partName: "Pf", instrumentId: "pf" },
-    { partName: "Gt", instrumentId: "gt" },
-    { partName: "Ba", instrumentId: "ba" },
-    { partName: "Drs", instrumentId: "drs" },
+    { partName: "Gt", instrumentId: "4011" },
+    { partName: "Pf", instrumentId: "4021" },
+    { partName: "Ba", instrumentId: "4031" },
+    { partName: "Drs", instrumentId: "4041" },
   ],
 };
 
