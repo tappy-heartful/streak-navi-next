@@ -166,7 +166,9 @@
 .playerControls {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 15px;
 }
 
@@ -175,17 +177,27 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  font-size: 16px;
+  font-size: 15px;
   border: none;
   border-radius: 8px;
   background-color: #4caf50;
   color: white;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .playerControl:hover {
   background-color: #45a049;
+}
+
+.playerControlActive {
+  background-color: #4caf50;
+  box-shadow: 0 0 0 2px #86efac;
+}
+
+.playerControlInactive {
+  background-color: #64748b;
+  opacity: 0.85;
 }
 
 /* メニューボタン一覧 */

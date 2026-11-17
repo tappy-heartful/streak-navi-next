@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, memo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
 import Link from "next/link";
 import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -8,6 +8,7 @@ import * as utils from "@/src/lib/functions";
 import styles from "./home.module.css";
 import { BaseLayout } from "@/src/components/Layout/BaseLayout";
 import type { Announcement, Score, BlueNote, Media, Event as FirestoreEvent, Vote, Call, Issue, Board, Section } from "@/src/lib/firestore/types";
+import { YouTubePlayer } from "@/src/components/Common/YouTubePlayer";
 import { InstagramEmbed } from "@/src/components/InstagramEmbed";
 import { getPersonalSettlementSummaryAction } from "@/src/features/accounting/api/accounting-server-actions";
 import { PersonalSettlementCard } from "@/src/features/accounting/components/PersonalSettlementCard";
@@ -312,20 +313,77 @@ const MediaSection = memo(({ data }: { data: Media[] }) => (
 ));
 MediaSection.displayName = "MediaSection";
 
-const Player = memo(({ title, subtitle, data, idx, setIdx, onRandom }: { title?: string; subtitle?: string; data: (Score | BlueNote)[]; idx: number; setIdx: React.Dispatch<React.SetStateAction<number>>; onRandom: () => void }) => (
-  <div>
-    <h2 className={styles.playerTitle}>
-      {subtitle && <div style={{ fontSize: "14px", color: "#4caf50", marginBottom: "4px", fontWeight: "normal" }}>{subtitle}</div>}
-      {title}
-    </h2>
-    <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(idx, data), false) }} />
-    <div className={styles.playerControls}>
-      <button onClick={() => setIdx((idx - 1 + data.length) % data.length)} className={styles.playerControl}><i className="fa-solid fa-backward-step"></i></button>
-      <button onClick={onRandom} className={styles.playerControl}>ランダム <i className="fa-solid fa-arrows-rotate"></i></button>
-      <button onClick={() => setIdx((idx + 1) % data.length)} className={styles.playerControl}><i className="fa-solid fa-forward-step"></i></button>
+const Player = memo(({ title, subtitle, data, idx, setIdx, onRandom }: { title?: string; subtitle?: string; data: (Score | BlueNote)[]; idx: number; setIdx: React.Dispatch<React.SetStateAction<number>>; onRandom: () => void }) => {
+  const [isContinuous, setIsContinuous] = useState(true);
+
+  const currentItem = data[idx];
+  const currentVideoId =
+    currentItem?.youtubeId ||
+    utils.extractYouTubeId((currentItem as any)?.referenceTrack || "") ||
+    "";
+
+  const handleEnded = useCallback(() => {
+    if (isContinuous) {
+      setIdx((prev) => (prev + 1) % data.length);
+    }
+  }, [isContinuous, data.length, setIdx]);
+
+  return (
+    <div>
+      <h2 className={styles.playerTitle}>
+        {subtitle && <div style={{ fontSize: "14px", color: "#4caf50", marginBottom: "4px", fontWeight: "normal" }}>{subtitle}</div>}
+        {title}
+      </h2>
+      {currentVideoId ? (
+        <YouTubePlayer
+          videoId={currentVideoId}
+          onEnded={handleEnded}
+          autoPlay={false}
+        />
+      ) : (
+        <div dangerouslySetInnerHTML={{ __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(idx, data), false) }} />
+      )}
+      <div className={styles.playerControls}>
+        <button
+          type="button"
+          onClick={() => setIdx((idx - 1 + data.length) % data.length)}
+          className={styles.playerControl}
+          title="前へ"
+          aria-label="前へ"
+        >
+          <i className="fa-solid fa-backward-step"></i>
+        </button>
+        <button
+          type="button"
+          onClick={onRandom}
+          className={styles.playerControl}
+          title="ランダム再生"
+        >
+          ランダム <i className="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button
+          type="button"
+          onClick={() => setIdx((idx + 1) % data.length)}
+          className={styles.playerControl}
+          title="次へ"
+          aria-label="次へ"
+        >
+          <i className="fa-solid fa-forward-step"></i>
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsContinuous(!isContinuous)}
+          className={`${styles.playerControl} ${isContinuous ? styles.playerControlActive : styles.playerControlInactive}`}
+          title={isContinuous ? "連続再生: ON（曲が終わると自動で次の曲へ）" : "連続再生: OFF"}
+          aria-label={isContinuous ? "連続再生 ON" : "連続再生 OFF"}
+        >
+          <i className={`fa-solid ${isContinuous ? "fa-repeat" : "fa-arrow-right"}`}></i>
+          {isContinuous ? "連続再生 ON" : "連続再生 OFF"}
+        </button>
+      </div>
     </div>
-  </div>
-));
+  );
+});
 Player.displayName = "Player";
 
 const CalendarSection = memo(({ data }: { data: { events: FirestoreEvent[], votes: Vote[], calls: Call[], issues: Issue[] } }) => {

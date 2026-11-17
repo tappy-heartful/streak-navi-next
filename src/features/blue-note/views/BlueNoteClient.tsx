@@ -7,6 +7,7 @@ import { useBreadcrumb } from "@/src/contexts/BreadcrumbContext";
 import { useAuth } from "@/src/contexts/AuthContext";
 import * as utils from "@/src/lib/functions";
 import { showSpinner, hideSpinner, showDialog, writeLog } from "@/src/lib/functions";
+import { YouTubePlayer } from "@/src/components/Common/YouTubePlayer";
 import { saveBlueNote, deleteBlueNote, fetchBlueNotes } from "@/src/features/blue-note/api/blue-note-client-service";
 import styles from "./blue-note.module.css";
 import Link from "next/link";
@@ -21,6 +22,14 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
   const [blueNotes, setBlueNotes] = useState<BlueNote[]>(initialBlueNotes);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [isContinuous, setIsContinuous] = useState(true);
+
+  // 終了時に自動で次の曲へ
+  const handleEnded = useCallback(() => {
+    if (isContinuous) {
+      setCurrentIdx((prev) => (prev + 1) % blueNotes.length);
+    }
+  }, [isContinuous, blueNotes.length]);
 
   // 1. パンくず設定
   useEffect(() => {
@@ -194,9 +203,17 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
               </div>
               {blueNotes[currentIdx]?.title || "Now Playing"}
             </div>
-            <div dangerouslySetInnerHTML={{
-              __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(currentIdx, blueNotes), false)
-            }} />
+            {blueNotes[currentIdx]?.youtubeId ? (
+              <YouTubePlayer
+                videoId={blueNotes[currentIdx].youtubeId}
+                onEnded={handleEnded}
+                autoPlay={false}
+              />
+            ) : (
+              <div dangerouslySetInnerHTML={{
+                __html: utils.buildYouTubeHtml(utils.getWatchVideosOrder(currentIdx, blueNotes), false)
+              }} />
+            )}
             <div className={styles.playerControls}>
               <button
                 className={styles.controlButton}
@@ -215,6 +232,13 @@ export function BlueNoteClient({ initialBlueNotes }: Props) {
                 onClick={() => setCurrentIdx((currentIdx + 1) % blueNotes.length)}
               >
                 次へ <i className="fa-solid fa-forward-step" />
+              </button>
+              <button
+                className={`${styles.controlButton} ${isContinuous ? styles.activeButton : ""}`}
+                onClick={() => setIsContinuous(!isContinuous)}
+                title={isContinuous ? "連続再生: ON（曲が終わると自動で次の曲へ）" : "連続再生: OFF"}
+              >
+                <i className={`fa-solid ${isContinuous ? "fa-repeat" : "fa-arrow-right"}`} /> {isContinuous ? "連続再生 ON" : "連続再生 OFF"}
               </button>
             </div>
           </div>
