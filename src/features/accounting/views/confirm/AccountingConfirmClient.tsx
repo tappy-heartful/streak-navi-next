@@ -172,11 +172,11 @@ export function AccountingConfirmClient({ initialData }: Props) {
     if (!season) return false;
     const info = config.seasons[seasonKey];
     if (!info) return false;
-    
+
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
-    
+
     const endMonth = info.endMonth;
     const endYear = year;
 
@@ -194,13 +194,13 @@ export function AccountingConfirmClient({ initialData }: Props) {
 
     // 2. 過去の（終わった）シーズンの場合
     const activeMemberIds = season?.memberIds || [];
-    
+
     // 要清算メンバー（担当者を除く、精算額 !== 0）
     const requiredSettlementMembers = activeMemberIds.filter(uid => {
       if (uid === season?.managerId) return false;
       const user = users.find(u => u.id === uid);
       if (!user) return false;
-      
+
       const userExpenses = expenses
         .filter(e => e.uid === uid && !e.isIncome)
         .reduce((s, e) => s + Number(e.amount || 0), 0);
@@ -210,7 +210,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
         incomes
           .filter(i => i.uid === uid)
           .reduce((s, i) => s + Number(i.amount || 0), 0);
-      
+
       const contribution = userExpenses - userIncomes;
       const memberSettlement = totals.averageBurden - contribution;
       return memberSettlement !== 0;
@@ -347,7 +347,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
 
   const handleShowTotalIncomesModal = async () => {
     const activeMemberIds = season?.memberIds || [];
-    
+
     // 1. 経費申請の中の収入項目
     const targetExpenses = expenses.filter(e => activeMemberIds.includes(e.uid) && e.isIncome);
     // 2. 収入一覧
@@ -896,16 +896,16 @@ export function AccountingConfirmClient({ initialData }: Props) {
               </h4>
             </div>
             <p className={styles.managerNoticeText}>
-              支払い・受け取りの<strong>「金額」</strong>と<strong>「相手（人）」</strong>がわかる<strong>「受取/支払完了画面」</strong>（スクリーンショット）をエビデンスとしてアップロードしてください。
+              支払い・受け取りの<strong>「金額」</strong>と<strong>「相手（人）」</strong>と<strong>取引番号</strong>がわかる<strong>「受取/支払完了画面」</strong>（スクリーンショット）をエビデンスとしてアップロードしてください。
             </p>
             <div className={styles.managerNoticePoints}>
               <div className={styles.managerNoticePointItem}>
                 <i className="fa-solid fa-check"></i>
-                <span><strong>支払メンバーからの集金</strong>: メンバーが登録した送金完了画面（金額・送金先）を確認</span>
+                <span><strong>支払メンバーからの集金</strong>: 受取完了画面を各メンバー枠にアップロード</span>
               </div>
               <div className={styles.managerNoticePointItem}>
                 <i className="fa-solid fa-check"></i>
-                <span><strong>受取メンバーへの送金</strong>: 担当者がPayPay等で送金後、受取/送金完了画面を各メンバー枠にアップロード</span>
+                <span><strong>受取メンバーへの送金</strong>: 送金完了画面を各メンバー枠にアップロード</span>
               </div>
             </div>
           </div>
@@ -973,7 +973,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
         <Link href="/accounting" className="back-link">← 一覧に戻る</Link>
       </div>
       {activeEvidenceUrl && (
-        <div 
+        <div
           onClick={() => setActiveEvidenceUrl(null)}
           style={{
             position: 'fixed',
@@ -991,9 +991,9 @@ export function AccountingConfirmClient({ initialData }: Props) {
             boxSizing: 'border-box'
           }}
         >
-          <img 
-            src={activeEvidenceUrl} 
-            alt="Evidence" 
+          <img
+            src={activeEvidenceUrl}
+            alt="Evidence"
             style={{
               maxWidth: '100%',
               maxHeight: '90vh',
@@ -1001,7 +1001,7 @@ export function AccountingConfirmClient({ initialData }: Props) {
               borderRadius: '8px',
               boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
               userSelect: 'none'
-            }} 
+            }}
           />
         </div>
       )}
